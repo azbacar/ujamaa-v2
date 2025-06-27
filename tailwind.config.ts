@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,35 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Couleurs spécifiques aux Comores
+				emerald: {
+					DEFAULT: '#10b981',
+					50: '#ecfdf5',
+					100: '#d1fae5',
+					500: '#10b981',
+					600: '#059669',
+					700: '#047857',
+					800: '#065f46',
+					900: '#064e3b'
+				},
+				ocean: {
+					DEFAULT: '#0ea5e9',
+					50: '#f0f9ff',
+					100: '#e0f2fe',
+					500: '#0ea5e9',
+					600: '#0284c7',
+					700: '#0369a1',
+					800: '#075985',
+					900: '#0c4a6e'
+				},
+				gold: {
+					DEFAULT: '#f59e0b',
+					50: '#fffbeb',
+					100: '#fef3c7',
+					500: '#f59e0b',
+					600: '#d97706',
+					700: '#b45309'
 				}
 			},
 			borderRadius: {
@@ -84,11 +114,22 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					from: {
+						opacity: '0',
+						transform: 'translateY(20px)'
+					},
+					to: {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.5s ease-out'
 			}
 		}
 	},
