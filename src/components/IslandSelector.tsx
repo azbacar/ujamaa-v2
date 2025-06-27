@@ -8,6 +8,7 @@ interface Island {
   description: string;
   activeCount: number;
   image: string;
+  gradient: string;
 }
 
 const IslandSelector = () => {
@@ -17,55 +18,68 @@ const IslandSelector = () => {
       nameLocal: "Ngazidja",
       description: "Capitale Moroni, volcans actifs",
       activeCount: 142,
-      image: "🏔️"
+      image: "🏔️",
+      gradient: "from-red-400 to-orange-500"
     },
     {
       name: "Anjouan",
       nameLocal: "Ndzuwani",
       description: "L'île aux parfums",
       activeCount: 89,
-      image: "🌺"
+      image: "🌺",
+      gradient: "from-pink-400 to-rose-500"
     },
     {
       name: "Mohéli",
       nameLocal: "Mwali",
       description: "Réserve marine nationale",
       activeCount: 34,
-      image: "🐢"
+      image: "🐢",
+      gradient: "from-emerald-400 to-teal-500"
     },
     {
       name: "Mayotte",
       nameLocal: "Maore",
       description: "Département français",
       activeCount: 67,
-      image: "🏝️"
+      image: "🏝️",
+      gradient: "from-blue-400 to-cyan-500"
     }
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Informations par île</h2>
-        <Badge variant="outline" className="text-emerald-600 border-emerald-200">
-          4 îles disponibles
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Informations par île</h2>
+          <p className="text-gray-600">Découvrez les données spécifiques à chaque île</p>
+        </div>
+        <Badge variant="outline" className="text-emerald-700 border-emerald-300 bg-emerald-50 px-4 py-2 text-base font-semibold">
+          🏝️ 4 îles disponibles
         </Badge>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {islands.map((island, index) => (
-          <Card key={index} className="card-hover cursor-pointer">
-            <CardContent className="p-4">
-              <div className="text-center space-y-3">
-                <div className="text-3xl mb-2">{island.image}</div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">{island.name}</h3>
-                  <p className="text-sm text-emerald-600 font-medium">{island.nameLocal}</p>
-                </div>
-                <p className="text-xs text-gray-600">{island.description}</p>
-                <Badge variant="secondary" className="text-xs">
-                  {island.activeCount} informations actives
-                </Badge>
+          <Card key={index} className="feature-card card-hover group overflow-hidden">
+            <CardContent className="p-6 text-center space-y-4">
+              <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-br ${island.gradient} flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                {island.image}
               </div>
+              <div className="space-y-2">
+                <h3 className="font-bold text-lg text-gray-900 group-hover:text-emerald-700 transition-colors">
+                  {island.name}
+                </h3>
+                <p className="text-emerald-600 font-semibold text-base">
+                  {island.nameLocal}
+                </p>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {island.description}
+              </p>
+              <Badge variant="secondary" className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 font-medium px-3 py-1">
+                📊 {island.activeCount} informations
+              </Badge>
             </CardContent>
           </Card>
         ))}

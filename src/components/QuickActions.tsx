@@ -9,56 +9,71 @@ const QuickActions = () => {
       type: "ALERTE",
       title: "Avis de tempête - Grande Comore",
       time: "Il y a 2h",
-      severity: "high"
+      severity: "high",
+      icon: "🚨"
     },
     {
       type: "APPEL D'OFFRES",
       title: "Rénovation infrastructure Anjouan",
       time: "Expire dans 5 jours",
-      severity: "medium"
+      severity: "medium",
+      icon: "📋"
     },
     {
       type: "ÉVÉNEMENT",
       title: "Festival culturel Mohéli",
       time: "Demain 14h",
-      severity: "low"
+      severity: "low",
+      icon: "🎭"
     }
   ];
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'high': return 'bg-red-100 text-red-700 border-red-200';
-      case 'medium': return 'bg-orange-100 text-orange-700 border-orange-200';
-      default: return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'high': return 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300';
+      case 'medium': return 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border-orange-300';
+      default: return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300';
     }
   };
 
   return (
-    <Card className="glass-effect">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Informations urgentes</h2>
-          <Badge variant="destructive" className="animate-pulse">
-            {urgentInfo.length} alertes
+    <Card className="glass-effect shadow-2xl">
+      <CardContent className="p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Informations urgentes</h2>
+            <p className="text-gray-600">Restez informé en temps réel</p>
+          </div>
+          <Badge variant="destructive" className="animate-pulse bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 text-base font-bold shadow-lg">
+            🔔 {urgentInfo.length} alertes
           </Badge>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           {urgentInfo.map((info, index) => (
-            <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-white/50 hover:bg-white/80 transition-colors cursor-pointer">
-              <Badge variant="outline" className={getSeverityColor(info.severity)}>
-                {info.type}
-              </Badge>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm text-gray-900 truncate">{info.title}</p>
-                <p className="text-xs text-gray-500">{info.time}</p>
+            <div key={index} className="group flex items-start gap-4 p-4 rounded-xl bg-white/60 hover:bg-white/90 transition-all duration-300 cursor-pointer border border-white/30 hover:shadow-lg">
+              <div className="text-2xl group-hover:scale-110 transition-transform duration-300">
+                {info.icon}
+              </div>
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="flex items-start gap-3">
+                  <Badge variant="outline" className={`${getSeverityColor(info.severity)} font-semibold text-xs px-3 py-1`}>
+                    {info.type}
+                  </Badge>
+                </div>
+                <p className="font-semibold text-base text-gray-900 group-hover:text-emerald-700 transition-colors">
+                  {info.title}
+                </p>
+                <p className="text-sm text-gray-500 flex items-center gap-1">
+                  <span>⏰</span> {info.time}
+                </p>
               </div>
             </div>
           ))}
         </div>
         
-        <Button variant="outline" className="w-full mt-4 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-          Voir toutes les alertes
+        <Button variant="outline" className="w-full mt-6 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold py-3 text-base rounded-xl shadow-sm">
+          📢 Voir toutes les alertes
         </Button>
       </CardContent>
     </Card>

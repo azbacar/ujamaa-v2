@@ -58,28 +58,32 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50/30">
+    <div className="min-h-screen">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
-      <main className="container mx-auto px-4 py-8 space-y-12">
+      <main className="container mx-auto px-6 py-12 space-y-16">
         {/* Section Héro */}
-        <section className="text-center space-y-6 py-12">
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-bold gradient-text animate-fade-in">
-              Bienvenue sur UJAMAA
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        <section className="text-center space-y-8 py-16 hero-gradient rounded-3xl">
+          <div className="space-y-6">
+            <div className="floating-element">
+              <h1 className="text-5xl md:text-7xl font-black gradient-text mb-4">
+                Bienvenue sur UJAMAA
+              </h1>
+              <div className="w-32 h-1 bg-gradient-to-r from-emerald-500 to-ocean-500 mx-auto rounded-full"></div>
+            </div>
+            <p className="text-xl md:text-2xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium">
               Votre hub central pour toutes les informations publiques des Comores. 
-              Accédez facilement aux données actualisées dans tous les domaines.
+              <br className="hidden md:block" />
+              <span className="text-emerald-600 font-semibold">Accédez facilement aux données actualisées</span> dans tous les domaines.
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white px-8 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all">
-              Explorer les informations
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
+            <Button size="lg" className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-10 py-4 rounded-2xl font-bold shadow-2xl hover:shadow-emerald-300/50 transition-all text-lg h-auto">
+              🚀 Explorer les informations
             </Button>
-            <Button variant="outline" size="lg" className="border-emerald-200 text-emerald-700 px-8 py-3 rounded-xl">
-              Contacter UJAMAA IA
+            <Button variant="outline" size="lg" className="border-2 border-emerald-300 text-emerald-700 px-10 py-4 rounded-2xl font-bold bg-white/80 hover:bg-emerald-50 text-lg h-auto">
+              🤖 Contacter UJAMAA IA
             </Button>
           </div>
         </section>
@@ -88,17 +92,20 @@ const Index = () => {
         <IslandSelector />
 
         {/* Actions rapides et informations urgentes */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2">
-            <div className="space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-900">Catégories d'information</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-8">
+              <div className="text-center lg:text-left">
+                <h2 className="text-4xl font-bold text-gray-900 mb-3">Catégories d'information</h2>
+                <p className="text-xl text-gray-600">Explorez nos différentes catégories de données</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {categories.map((category, index) => (
                   <CategoryCard
                     key={index}
                     title={category.title}
                     description={category.description}
-                    icon={<span className="text-2xl">{category.icon}</span>}
+                    icon={<span className="text-3xl">{category.icon}</span>}
                     itemCount={category.itemCount}
                     lastUpdate={category.lastUpdate}
                     featured={category.featured}
@@ -108,25 +115,27 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-8">
             <QuickActions />
             
             {/* Statistiques */}
-            <Card className="glass-effect">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Statistiques du jour</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Nouvelles informations</span>
-                    <span className="font-semibold text-emerald-600">+34</span>
+            <Card className="glass-effect shadow-2xl">
+              <CardContent className="p-8">
+                <h3 className="font-bold text-2xl text-gray-900 mb-6 flex items-center gap-3">
+                  📊 Statistiques du jour
+                </h3>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
+                    <span className="text-base text-gray-700 font-medium">Nouvelles informations</span>
+                    <span className="font-bold text-2xl text-emerald-600">+34</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Recherches effectuées</span>
-                    <span className="font-semibold text-ocean-600">1,247</span>
+                  <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
+                    <span className="text-base text-gray-700 font-medium">Recherches effectuées</span>
+                    <span className="font-bold text-2xl text-ocean-600">1,247</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Îles actives</span>
-                    <span className="font-semibold text-gold-600">4/4</span>
+                  <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
+                    <span className="text-base text-gray-700 font-medium">Îles actives</span>
+                    <span className="font-bold text-2xl text-gold-600">4/4</span>
                   </div>
                 </div>
               </CardContent>
@@ -135,75 +144,86 @@ const Index = () => {
         </div>
 
         {/* Section IA Assistant */}
-        <Card className="glass-effect">
-          <CardContent className="p-8">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-ocean-500 rounded-full mx-auto flex items-center justify-center text-white text-2xl font-bold">
-                🤖
+        <Card className="glass-effect shadow-2xl overflow-hidden">
+          <CardContent className="p-12">
+            <div className="text-center space-y-8">
+              <div className="relative">
+                <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 via-emerald-600 to-ocean-500 rounded-full mx-auto flex items-center justify-center text-white text-4xl font-bold shadow-2xl floating-element">
+                  🤖
+                </div>
+                <div className="absolute inset-0 w-24 h-24 bg-gradient-to-br from-emerald-400 to-ocean-400 rounded-full mx-auto pulse-ring"></div>
               </div>
-              <h3 className="text-2xl font-semibold gradient-text">UJAMAA IA</h3>
-              <p className="text-gray-600 max-w-2xl mx-auto">
+              <div className="space-y-4">
+                <h3 className="text-4xl font-bold gradient-text">UJAMAA IA</h3>
+                <div className="w-24 h-1 bg-gradient-to-r from-emerald-500 to-ocean-500 mx-auto rounded-full"></div>
+              </div>
+              <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
                 Votre assistant intelligent pour naviguer dans l'information comorienne. 
-                Posez vos questions en français, anglais, arabe, swahili ou shikomori.
+                <br />
+                <span className="font-semibold text-emerald-600">Posez vos questions en français, anglais, arabe, swahili ou shikomori.</span>
               </p>
-              <Button className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white px-6 py-3 rounded-xl">
-                Démarrer une conversation
+              <Button className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-10 py-4 rounded-2xl font-bold shadow-xl hover:shadow-emerald-300/50 transition-all text-lg">
+                💬 Démarrer une conversation
               </Button>
             </div>
           </CardContent>
         </Card>
       </main>
       
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 mt-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-ocean-500 rounded-lg flex items-center justify-center text-white font-bold">
+      {/* Footer amélioré */}
+      <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-900 text-white py-16 mt-20">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-ocean-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
                   U
                 </div>
-                <span className="text-xl font-bold">UJAMAA</span>
+                <span className="text-2xl font-bold">UJAMAA</span>
               </div>
-              <p className="text-gray-400 text-sm">
-                Centralisé • Actualisé • Accessible<br />
+              <p className="text-gray-300 text-base leading-relaxed">
+                <span className="font-semibold text-emerald-400">Centralisé • Actualisé • Accessible</span>
+                <br />
                 L'information comorienne à portée de main
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Informations</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Prix & Marchés</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Appels d'Offres</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Événements</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Services Publics</a></li>
+              <h4 className="font-bold text-lg mb-6 text-emerald-400">Informations</h4>
+              <ul className="space-y-3 text-gray-300">
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 Prix & Marchés</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Appels d'Offres</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🎭 Événements</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏛️ Services Publics</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Îles</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Grande Comore</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Anjouan</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Mohéli</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Mayotte</a></li>
+              <h4 className="font-bold text-lg mb-6 text-emerald-400">Îles</h4>
+              <ul className="space-y-3 text-gray-300">
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏔️ Grande Comore</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌺 Anjouan</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🐢 Mohéli</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏝️ Mayotte</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">À propos</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Politique de confidentialité</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Conditions d'utilisation</a></li>
+              <h4 className="font-bold text-lg mb-6 text-emerald-400">Support</h4>
+              <ul className="space-y-3 text-gray-300">
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📞 Contact</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">ℹ️ À propos</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🔒 Confidentialité</a></li>
+                <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Conditions</a></li>
               </ul>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 UJAMAA Call Center. Tous droits réservés. 🇰🇲</p>
+          <div className="border-t border-gray-700 mt-12 pt-8 text-center">
+            <p className="text-gray-400 text-base">
+              &copy; 2024 UJAMAA Call Center. Tous droits réservés. 
+              <span className="ml-2 text-2xl">🇰🇲</span>
+            </p>
           </div>
         </div>
       </footer>
