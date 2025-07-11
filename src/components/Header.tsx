@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { Search, Menu, Globe, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   currentLanguage: string;
@@ -25,7 +25,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between gap-6">
           {/* Logo et Titre */}
-          <div className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
             <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 via-emerald-600 to-ocean-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
               U
             </div>
@@ -33,17 +33,36 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               <h1 className="text-2xl font-bold gradient-text">UJAMAA</h1>
               <p className="text-sm text-emerald-600 font-medium">Call Center</p>
             </div>
-          </div>
+          </Link>
+
+          {/* Navigation */}
+          <nav className="hidden lg:flex items-center space-x-6">
+            <Link to="/" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              🏠 Accueil
+            </Link>
+            <Link to="/prix" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              💰 Prix & Marchés
+            </Link>
+            <a href="#" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              📋 Appels d'Offres
+            </a>
+            <a href="#" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              🎭 Événements
+            </a>
+            <a href="#" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              🏛️ Services
+            </a>
+          </nav>
 
           {/* Barre de recherche */}
-          <div className="flex-1 max-w-2xl relative">
+          <div className="flex-1 max-w-xl relative">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-emerald-500 w-5 h-5" />
             <Input
               type="text"
               placeholder="🔍 Rechercher des informations, prix, événements..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 pr-6 h-14 bg-white/90 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-2xl shadow-sm text-base placeholder:text-gray-500"
+              className="pl-12 pr-6 h-12 bg-white/90 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-2xl shadow-sm text-base placeholder:text-gray-500"
             />
           </div>
 
@@ -70,7 +89,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             </Button>
 
             {/* Menu mobile */}
-            <Button variant="outline" size="sm" className="sm:hidden h-12 w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50">
+            <Button variant="outline" size="sm" className="lg:hidden h-12 w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50">
               <Menu className="w-5 h-5 text-emerald-600" />
               <span className="sr-only">Menu</span>
             </Button>
