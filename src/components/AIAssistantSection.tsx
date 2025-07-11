@@ -22,7 +22,7 @@ const AIAssistantSection = () => {
             <br />
             <span className="font-semibold text-emerald-600">Posez vos questions en français, anglais, arabe, swahili ou shikomori.</span>
           </p>
-          <Button className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-10 py-4 rounded-2xl font-bold shadow-xl hover:shadow-emerald-300/50 transition-all text-lg">
+          <Button className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-10 py-4 rounded-2xl font-bold shadow-xl hover:shadow-magenta-500/50 transition-all text-lg">
             💬 Démarrer une conversation
           </Button>
         </div>

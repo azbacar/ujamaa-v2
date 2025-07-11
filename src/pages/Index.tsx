@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Header from '@/components/Header';
 import IslandSelector from '@/components/IslandSelector';
@@ -6,8 +5,9 @@ import QuickActions from '@/components/QuickActions';
 import HeroSection from '@/components/HeroSection';
 import StatisticsCard from '@/components/StatisticsCard';
 import AIAssistantSection from '@/components/AIAssistantSection';
-import Footer from '@/components/Footer';
 import CategoriesSection from '@/components/CategoriesSection';
+import AnnouncementsSection from '@/components/AnnouncementsSection';
+import Footer from '@/components/Footer';
 
 const Index = () => {
   const [currentLanguage, setCurrentLanguage] = useState('fr');
@@ -20,6 +20,9 @@ const Index = () => {
         <HeroSection />
         <IslandSelector />
 
+        {/* Section Annonces IA */}
+        <AnnouncementsSection />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2">
             <CategoriesSection />
@@ -30,7 +33,8 @@ const Index = () => {
             <StatisticsCard />
           </div>
         </div>
-
+        
+        {/* Section Assistant IA */}
         <AIAssistantSection />
       </main>
       
