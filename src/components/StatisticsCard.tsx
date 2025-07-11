@@ -19,7 +19,7 @@ const StatisticsCard = () => {
           </div>
           <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
             <span className="text-base text-gray-700 font-medium">Îles actives</span>
-            <span className="font-bold text-2xl text-gold-600">4/4</span>
+            <span className="font-bold text-2xl text-magenta-600">4/4</span>
           </div>
         </div>
       </CardContent>

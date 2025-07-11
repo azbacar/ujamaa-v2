@@ -24,7 +24,7 @@ const CategoryCard = ({ title, description, icon, itemCount, lastUpdate, feature
             <div className="text-3xl">{icon}</div>
           </div>
           {featured && (
-            <Badge variant="secondary" className="bg-gradient-to-r from-gold-100 to-gold-200 text-gold-800 border-gold-300/50 shadow-sm">
+            <Badge variant="secondary" className="bg-gradient-to-r from-magenta-100 to-magenta-200 text-magenta-800 border-magenta-300/50 shadow-sm">
               ⭐ Populaire
             </Badge>
           )}
