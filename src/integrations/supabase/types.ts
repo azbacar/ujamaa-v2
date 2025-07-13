@@ -14,7 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      comments: {
+        Row: {
+          author_id: number
+          content: string
+          created_at: string
+          id: number
+          post_id: number
+        }
+        Insert: {
+          author_id: number
+          content: string
+          created_at?: string
+          id?: never
+          post_id: number
+        }
+        Update: {
+          author_id?: number
+          content?: string
+          created_at?: string
+          id?: never
+          post_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          author_id: number
+          content: string
+          created_at: string
+          id: number
+          title: string
+        }
+        Insert: {
+          author_id: number
+          content: string
+          created_at?: string
+          id?: never
+          title: string
+        }
+        Update: {
+          author_id?: number
+          content?: string
+          created_at?: string
+          id?: never
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          id: number
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: never
+          username: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: never
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

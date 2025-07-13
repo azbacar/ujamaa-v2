@@ -131,19 +131,179 @@ const pricesData: PriceData[] = [
     lastUpdated: "2024-01-15",
     trend: "stable",
     unit: "boîte 400g"
+  },
+  {
+    id: 9,
+    product: "Manioc frais",
+    category: "Tubercules",
+    price: 300,
+    currency: "FC",
+    vendor: "Coopérative de Tsembehou",
+    location: { village: "Tsembehou", city: "Moroni", region: "Ngazidja", island: "Grande Comore" },
+    market: "Marché de Tsembehou",
+    lastUpdated: "2024-01-16",
+    trend: "stable",
+    unit: "kg"
+  },
+  {
+    id: 10,
+    product: "Mangues",
+    category: "Fruits",
+    price: 600,
+    currency: "FC",
+    vendor: "Ali Mzé",
+    location: { village: "Patsy", city: "Mutsamudu", region: "Ndzuwani", island: "Anjouan" },
+    market: "Marché de Patsy",
+    lastUpdated: "2024-01-16",
+    trend: "down",
+    unit: "kg"
+  },
+  {
+    id: 11,
+    product: "Ciment",
+    category: "Matériaux",
+    price: 7500,
+    currency: "FC",
+    vendor: "Quincaillerie Moderne",
+    location: { village: "Coulée", city: "Moroni", region: "Ngazidja", island: "Grande Comore" },
+    market: "Zone Industrielle Coulée",
+    lastUpdated: "2024-01-15",
+    trend: "up",
+    unit: "sac 50kg"
+  },
+  {
+    id: 12,
+    product: "Poisson rouge",
+    category: "Poissons",
+    price: 1800,
+    currency: "FC",
+    vendor: "Pêcheurs de Nioumachoua",
+    location: { village: "Nioumachoua", city: "Fomboni", region: "Mwali", island: "Mohéli" },
+    market: "Port de Nioumachoua",
+    lastUpdated: "2024-01-16",
+    trend: "stable",
+    unit: "kg"
+  },
+  {
+    id: 13,
+    product: "Clous de girofle",
+    category: "Épices",
+    price: 12000,
+    currency: "FC",
+    vendor: "Exportateur Anjouan",
+    location: { village: "Ouani", city: "Ouani", region: "Ndzuwani", island: "Anjouan" },
+    market: "Centre d'Export Ouani",
+    lastUpdated: "2024-01-14",
+    trend: "up",
+    unit: "kg"
+  },
+  {
+    id: 14,
+    product: "Pommes de terre",
+    category: "Légumes",
+    price: 1200,
+    currency: "FC",
+    vendor: "Importateur Hadoud",
+    location: { village: "Mkazi", city: "Moroni", region: "Ngazidja", island: "Grande Comore" },
+    market: "Marché de Mkazi",
+    lastUpdated: "2024-01-15",
+    trend: "down",
+    unit: "kg"
+  },
+  {
+    id: 15,
+    product: "Piment",
+    category: "Épices",
+    price: 2500,
+    currency: "FC",
+    vendor: "Fatou Saada",
+    location: { village: "Pomoni", city: "Pomoni", region: "Ndzuwani", island: "Anjouan" },
+    market: "Marché de Pomoni",
+    lastUpdated: "2024-01-16",
+    trend: "stable",
+    unit: "kg"
+  },
+  {
+    id: 16,
+    product: "Carburant essence",
+    category: "Carburants",
+    price: 950,
+    currency: "FC",
+    vendor: "Station Total",
+    location: { village: "Chindini", city: "Fomboni", region: "Mwali", island: "Mohéli" },
+    market: "Station-service Chindini",
+    lastUpdated: "2024-01-16",
+    trend: "up",
+    unit: "litre"
+  },
+  {
+    id: 17,
+    product: "Bœuf local",
+    category: "Viandes",
+    price: 3000,
+    currency: "FC",
+    vendor: "Boucherie Moderne",
+    location: { village: "Mitsoudjé", city: "Moroni", region: "Ngazidja", island: "Grande Comore" },
+    market: "Boucherie Mitsoudjé",
+    lastUpdated: "2024-01-15",
+    trend: "stable",
+    unit: "kg"
+  },
+  {
+    id: 18,
+    product: "Savon en poudre",
+    category: "Produits ménagers",
+    price: 2200,
+    currency: "FC",
+    vendor: "Supermarché Jumbo",
+    location: { village: "Adda-Douéni", city: "Mutsamudu", region: "Ndzuwani", island: "Anjouan" },
+    market: "Supermarché Jumbo",
+    lastUpdated: "2024-01-16",
+    trend: "stable",
+    unit: "paquet 2kg"
+  },
+  {
+    id: 19,
+    product: "Noix de coco",
+    category: "Fruits",
+    price: 200,
+    currency: "FC",
+    vendor: "Récolteurs Locaux",
+    location: { village: "Djoiezi", city: "Fomboni", region: "Mwali", island: "Mohéli" },
+    market: "Marché de Djoiezi",
+    lastUpdated: "2024-01-16",
+    trend: "down",
+    unit: "pièce"
+  },
+  {
+    id: 20,
+    product: "Sucre blanc",
+    category: "Produits alimentaires",
+    price: 1100,
+    currency: "FC",
+    vendor: "Épicerie Centrale",
+    location: { village: "Itsandra", city: "Moroni", region: "Ngazidja", island: "Grande Comore" },
+    market: "Épicerie Itsandra",
+    lastUpdated: "2024-01-15",
+    trend: "up",
+    unit: "kg"
   }
 ];
 
 const categories = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.category)))];
 const islands = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.location.island)))];
+const regions = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.location.region)))];
 const cities = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.location.city)))];
+const villages = ["Tous", ...Array.from(new Set(pricesData.map(p => p.location.village)))];
 const vendors = ["Tous", ...Array.from(new Set(pricesData.map(p => p.vendor)))];
 
 const PricesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Toutes');
   const [selectedIsland, setSelectedIsland] = useState('Toutes');
+  const [selectedRegion, setSelectedRegion] = useState('Toutes');
   const [selectedCity, setSelectedCity] = useState('Toutes');
+  const [selectedVillage, setSelectedVillage] = useState('Tous');
   const [selectedVendor, setSelectedVendor] = useState('Tous');
   const [currentLanguage, setCurrentLanguage] = useState('fr');
 
@@ -151,15 +311,18 @@ const PricesPage = () => {
     return pricesData.filter(price => {
       const matchesSearch = price.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            price.vendor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           price.location.village.toLowerCase().includes(searchTerm.toLowerCase());
+                           price.location.village.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           price.market.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'Toutes' || price.category === selectedCategory;
       const matchesIsland = selectedIsland === 'Toutes' || price.location.island === selectedIsland;
+      const matchesRegion = selectedRegion === 'Toutes' || price.location.region === selectedRegion;
       const matchesCity = selectedCity === 'Toutes' || price.location.city === selectedCity;
+      const matchesVillage = selectedVillage === 'Tous' || price.location.village === selectedVillage;
       const matchesVendor = selectedVendor === 'Tous' || price.vendor === selectedVendor;
 
-      return matchesSearch && matchesCategory && matchesIsland && matchesCity && matchesVendor;
+      return matchesSearch && matchesCategory && matchesIsland && matchesRegion && matchesCity && matchesVillage && matchesVendor;
     });
-  }, [searchTerm, selectedCategory, selectedIsland, selectedCity, selectedVendor]);
+  }, [searchTerm, selectedCategory, selectedIsland, selectedRegion, selectedCity, selectedVillage, selectedVendor]);
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -187,7 +350,9 @@ const PricesPage = () => {
     setSearchTerm('');
     setSelectedCategory('Toutes');
     setSelectedIsland('Toutes');
+    setSelectedRegion('Toutes');
     setSelectedCity('Toutes');
+    setSelectedVillage('Tous');
     setSelectedVendor('Tous');
   };
 
@@ -228,7 +393,7 @@ const PricesPage = () => {
             </div>
 
             {/* Filtres dropdown */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="h-12 border-emerald-200">
                   <SelectValue placeholder="Catégorie" />
@@ -255,6 +420,19 @@ const PricesPage = () => {
                 </SelectContent>
               </Select>
 
+              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                <SelectTrigger className="h-12 border-emerald-200">
+                  <SelectValue placeholder="Région" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-emerald-200 shadow-lg z-50">
+                  {regions.map(region => (
+                    <SelectItem key={region} value={region} className="hover:bg-emerald-50">
+                      {region}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <Select value={selectedCity} onValueChange={setSelectedCity}>
                 <SelectTrigger className="h-12 border-emerald-200">
                   <SelectValue placeholder="Ville" />
@@ -263,6 +441,19 @@ const PricesPage = () => {
                   {cities.map(city => (
                     <SelectItem key={city} value={city} className="hover:bg-emerald-50">
                       {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedVillage} onValueChange={setSelectedVillage}>
+                <SelectTrigger className="h-12 border-emerald-200">
+                  <SelectValue placeholder="Village" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border border-emerald-200 shadow-lg z-50">
+                  {villages.map(village => (
+                    <SelectItem key={village} value={village} className="hover:bg-emerald-50">
+                      {village}
                     </SelectItem>
                   ))}
                 </SelectContent>
