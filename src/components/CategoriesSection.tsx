@@ -9,28 +9,32 @@ const CategoriesSection = () => {
       icon: "💰",
       itemCount: 156,
       lastUpdate: "Aujourd'hui",
-      featured: true
+      featured: true,
+      link: "/prix"
     },
     {
       title: "Appels d'Offres",
       description: "Marchés publics, appels à projets et opportunités d'affaires",
       icon: "📋",
       itemCount: 23,
-      lastUpdate: "Hier"
+      lastUpdate: "Hier",
+      link: "/appels-offres"
     },
     {
       title: "Événements",
       description: "Manifestations culturelles, cérémonies officielles et événements communautaires",
       icon: "🎭",
       itemCount: 45,
-      lastUpdate: "Il y a 3h"
+      lastUpdate: "Il y a 3h",
+      link: "/evenements"
     },
     {
       title: "Services Publics",
       description: "Horaires, contacts et informations sur les administrations et services",
       icon: "🏛️",
       itemCount: 78,
-      lastUpdate: "Cette semaine"
+      lastUpdate: "Cette semaine",
+      link: "/services"
     },
     {
       title: "Transport",
@@ -45,7 +49,8 @@ const CategoriesSection = () => {
       icon: "🏥",
       itemCount: 67,
       lastUpdate: "Il y a 2h",
-      featured: true
+      featured: true,
+      link: "/services"
     }
   ];
 
@@ -65,6 +70,7 @@ const CategoriesSection = () => {
             itemCount={category.itemCount}
             lastUpdate={category.lastUpdate}
             featured={category.featured}
+            link={category.link}
           />
         ))}
       </div>

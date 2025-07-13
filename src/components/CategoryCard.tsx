@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 
 interface CategoryCardProps {
   title: string;
@@ -9,10 +10,11 @@ interface CategoryCardProps {
   itemCount: number;
   lastUpdate: string;
   featured?: boolean;
+  link?: string;
 }
 
-const CategoryCard = ({ title, description, icon, itemCount, lastUpdate, featured = false }: CategoryCardProps) => {
-  return (
+const CategoryCard = ({ title, description, icon, itemCount, lastUpdate, featured = false, link }: CategoryCardProps) => {
+  const cardContent = (
     <Card className={`feature-card card-hover group ${featured ? 'ring-2 ring-emerald-300/50 shadow-emerald-100/50' : ''}`}>
       <CardContent className="p-8">
         <div className="flex items-start justify-between mb-6">
@@ -49,6 +51,12 @@ const CategoryCard = ({ title, description, icon, itemCount, lastUpdate, feature
       </CardContent>
     </Card>
   );
+
+  return link ? (
+    <Link to={link} className="block">
+      {cardContent}
+    </Link>
+  ) : cardContent;
 };
 
 export default CategoryCard;

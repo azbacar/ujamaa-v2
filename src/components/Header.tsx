@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Search, Menu, Globe, Bell } from 'lucide-react';
+import { Search, Menu, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
+import NotificationSystem from './NotificationSystem';
 
 interface HeaderProps {
   currentLanguage: string;
@@ -43,15 +44,15 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/prix" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               💰 Prix & Marchés
             </Link>
-            <a href="#" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+            <Link to="/appels-offres" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               📋 Appels d'Offres
-            </a>
-            <a href="#" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+            </Link>
+            <Link to="/evenements" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🎭 Événements
-            </a>
-            <a href="#" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+            </Link>
+            <Link to="/services" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🏛️ Services
-            </a>
+            </Link>
           </nav>
 
           {/* Barre de recherche */}
@@ -82,11 +83,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             </div>
 
             {/* Notifications */}
-            <Button variant="outline" size="sm" className="h-12 w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50 relative">
-              <Bell className="w-5 h-5 text-emerald-600" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="sr-only">Notifications</span>
-            </Button>
+            <NotificationSystem />
 
             {/* Menu mobile */}
             <Button variant="outline" size="sm" className="lg:hidden h-12 w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50">

@@ -1,5 +1,6 @@
 
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const HeroSection = () => {
   return (
@@ -19,11 +20,11 @@ const HeroSection = () => {
       </div>
       
       <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
-        <Button size="lg" className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-10 py-4 rounded-2xl font-bold shadow-2xl hover:shadow-magenta-500/50 transition-all text-lg h-auto">
-          🚀 Explorer les informations
+        <Button size="lg" className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-10 py-4 rounded-2xl font-bold shadow-2xl hover:shadow-magenta-500/50 transition-all text-lg h-auto" asChild>
+          <Link to="/prix">🚀 Explorer les informations</Link>
         </Button>
-        <Button variant="outline" size="lg" className="border-2 border-emerald-300 text-emerald-700 px-10 py-4 rounded-2xl font-bold bg-white/80 hover:bg-emerald-50 text-lg h-auto">
-          🤖 Contacter UJAMAA IA
+        <Button variant="outline" size="lg" className="border-2 border-emerald-300 text-emerald-700 px-10 py-4 rounded-2xl font-bold bg-white/80 hover:bg-emerald-50 text-lg h-auto" asChild>
+          <Link to="#assistant-ia">🤖 Contacter UJAMAA IA</Link>
         </Button>
       </div>
     </section>
