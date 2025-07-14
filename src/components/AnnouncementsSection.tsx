@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Clock, MapPin, User, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Announcement {
   id: number;
@@ -156,26 +157,30 @@ const AnnouncementsSection = () => {
                 </div>
               </div>
 
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full mt-4 border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:shadow-magenta-200/50 transition-all group"
-              >
-                <span>Lire plus</span>
-                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              <Link to={`/annonce/${announcement.id}`}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full mt-4 border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:shadow-magenta-200/50 transition-all group"
+                >
+                  <span>Lire plus</span>
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="text-center pt-8">
-        <Button 
-          size="lg" 
-          className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-12 py-4 rounded-2xl font-bold shadow-xl hover:shadow-magenta-500/50 transition-all text-lg"
-        >
-          🔍 Voir toutes les annonces
-        </Button>
+        <Link to="/annonces">
+          <Button 
+            size="lg" 
+            className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-12 py-4 rounded-2xl font-bold shadow-xl hover:shadow-magenta-500/50 transition-all text-lg"
+          >
+            🔍 Voir toutes les annonces
+          </Button>
+        </Link>
       </div>
     </section>
   );

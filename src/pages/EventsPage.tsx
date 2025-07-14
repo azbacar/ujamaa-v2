@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, Clock, Users, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
@@ -231,9 +232,11 @@ const EventsPage = () => {
                   <Badge variant="outline" className="text-emerald-700 border-emerald-300">
                     📍 {event.island}
                   </Badge>
-                  <Button variant="outline" size="sm">
-                    Voir détails
-                  </Button>
+                  <Link to={`/evenements/${event.id}`}>
+                    <Button variant="outline" size="sm">
+                      Voir détails
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
