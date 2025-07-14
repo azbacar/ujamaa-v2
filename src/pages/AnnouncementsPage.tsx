@@ -8,6 +8,7 @@ import { Clock, MapPin, User, ArrowRight, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { announcements } from '@/components/AnnouncementsSection';
 
 interface Announcement {
   id: number;
@@ -21,69 +22,6 @@ interface Announcement {
   price?: string;
 }
 
-const announcements: Announcement[] = [
-  {
-    id: 1,
-    title: "Prix du riz en baisse au marché de Volo-Volo",
-    category: "Prix & Marchés",
-    description: "Le prix du riz importé a diminué de 15% cette semaine suite à l'arrivée d'un nouveau stock. Prix actuel : 1500 FC/kg.",
-    location: "Moroni, Grande Comore",
-    date: "Il y a 2 heures",
-    author: "Direction du Commerce",
-    type: "featured"
-  },
-  {
-    id: 2,
-    title: "Appel d'offres : Construction d'une école primaire",
-    category: "Appels d'Offres",
-    description: "Le Ministère de l'Éducation lance un appel d'offres pour la construction d'une école primaire de 6 classes à Sima, Anjouan.",
-    location: "Sima, Anjouan",
-    date: "Il y a 5 heures",
-    author: "Ministère de l'Éducation",
-    type: "urgent",
-    price: "Budget : 250M FC"
-  },
-  {
-    id: 3,
-    title: "Festival culturel de Mohéli - Inscriptions ouvertes",
-    category: "Événements",
-    description: "Le festival annuel de Mohéli aura lieu du 15 au 17 décembre. Inscriptions ouvertes pour les artistes et artisans locaux.",
-    location: "Fomboni, Mohéli",
-    date: "Il y a 1 jour",
-    author: "Office du Tourisme Mohéli",
-    type: "normal"
-  },
-  {
-    id: 4,
-    title: "Nouvelle ligne de transport Moroni-Mitsamiouli",
-    category: "Transports",
-    description: "Mise en service d'une nouvelle ligne de bus reliant Moroni à Mitsamiouli avec 8 rotations quotidiennes.",
-    location: "Grande Comore",
-    date: "Il y a 1 jour",
-    author: "Société de Transport Comorien",
-    type: "normal"
-  },
-  {
-    id: 5,
-    title: "Campagne de vaccination contre la rougeole",
-    category: "Santé",
-    description: "Campagne gratuite de vaccination des enfants de 6 mois à 5 ans dans tous les centres de santé des îles.",
-    location: "Toutes les îles",
-    date: "Il y a 2 jours",
-    author: "Ministère de la Santé",
-    type: "urgent"
-  },
-  {
-    id: 6,
-    title: "Ouverture des inscriptions universitaires 2024-2025",
-    category: "Éducation",
-    description: "L'Université des Comores ouvre les pré-inscriptions pour l'année académique 2024-2025. Candidatures en ligne jusqu'au 31 janvier.",
-    location: "Moroni, Grande Comore",
-    date: "Il y a 3 jours",
-    author: "Université des Comores",
-    type: "featured"
-  }
-];
 
 const AnnouncementsPage = () => {
   const [currentLanguage, setCurrentLanguage] = useState('fr');
@@ -123,7 +61,7 @@ const AnnouncementsPage = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-ocean-50 to-magenta-50">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
       <main className="container mx-auto px-6 py-12">

@@ -17,7 +17,7 @@ const IslandSelector = () => {
       name: "Grande Comore",
       nameLocal: "Ngazidja",
       description: "Capitale Moroni, volcans actifs",
-      activeCount: 142,
+      activeCount: 95,
       image: "🏔️",
       gradient: "from-red-400 to-orange-500"
     },
@@ -25,7 +25,7 @@ const IslandSelector = () => {
       name: "Anjouan",
       nameLocal: "Ndzuwani",
       description: "L'île aux parfums",
-      activeCount: 89,
+      activeCount: 47,
       image: "🌺",
       gradient: "from-pink-400 to-rose-500"
     },
@@ -33,15 +33,15 @@ const IslandSelector = () => {
       name: "Mohéli",
       nameLocal: "Mwali",
       description: "Réserve marine nationale",
-      activeCount: 34,
+      activeCount: 18,
       image: "🐢",
       gradient: "from-emerald-400 to-teal-500"
     },
     {
       name: "Mayotte",
       nameLocal: "Maore",
-      description: "Département français",
-      activeCount: 67,
+      description: "L'île au lagon",
+      activeCount: 32,
       image: "🏝️",
       gradient: "from-blue-400 to-cyan-500"
     }

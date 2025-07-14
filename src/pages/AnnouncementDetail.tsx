@@ -102,7 +102,115 @@ const announcements: Announcement[] = [
       "Développement rural d'Anjouan"
     ]
   },
-  // Ajout des autres annonces...
+  {
+    id: 3,
+    title: "Festival culturel de Mohéli - Inscriptions ouvertes",
+    category: "Événements",
+    description: "Le festival annuel de Mohéli aura lieu du 15 au 17 décembre. Inscriptions ouvertes pour les artistes et artisans locaux.",
+    fullContent: `
+      <h3>Festival Culturel Traditionnel de Mohéli</h3>
+      <p>Le festival culturel annuel de Mohéli revient pour sa 10ème édition ! Cet événement emblématique met à l'honneur les traditions et la culture locale de l'île préservée de Mohéli.</p>
+      
+      <h4>Programme des festivités</h4>
+      <ul>
+        <li><strong>Vendredi 15 décembre :</strong> Ouverture avec défilé traditionnel</li>
+        <li><strong>Samedi 16 décembre :</strong> Concours d'artisanat et danses folkloriques</li>
+        <li><strong>Dimanche 17 décembre :</strong> Grand marché culturel et spectacle de clôture</li>
+      </ul>
+      
+      <h4>Appel aux artistes</h4>
+      <p>Les inscriptions sont ouvertes pour tous les artistes, artisans, musiciens et danseurs souhaitant participer. Une belle opportunité de promouvoir les talents locaux !</p>
+    `,
+    location: "Fomboni, Mohéli",
+    date: "Il y a 1 jour",
+    author: "Office du Tourisme Mohéli",
+    type: "normal",
+    tags: ["culture", "festival", "artisanat", "Mohéli"]
+  },
+  {
+    id: 4,
+    title: "Nouvelle ligne de transport Moroni-Mitsamiouli",
+    category: "Transports",
+    description: "Mise en service d'une nouvelle ligne de bus reliant Moroni à Mitsamiouli avec 8 rotations quotidiennes.",
+    fullContent: `
+      <h3>Amélioration du Transport Public</h3>
+      <p>La Société de Transport Comorien annonce la mise en service d'une nouvelle ligne de bus moderne reliant la capitale Moroni à Mitsamiouli, au nord de la Grande Comore.</p>
+      
+      <h4>Horaires et fréquence</h4>
+      <ul>
+        <li>8 rotations quotidiennes dans chaque sens</li>
+        <li>Premier départ : 6h00 de Moroni</li>
+        <li>Dernier départ : 19h00 de Mitsamiouli</li>
+        <li>Durée du trajet : 45 minutes</li>
+      </ul>
+      
+      <h4>Tarifs attractifs</h4>
+      <p>Tarif unique : <strong>500 FC</strong> par trajet, avec réductions pour les étudiants et personnes âgées.</p>
+    `,
+    location: "Grande Comore",
+    date: "Il y a 1 jour",
+    author: "Société de Transport Comorien",
+    type: "normal",
+    tags: ["transport", "bus", "Grande Comore", "service public"]
+  },
+  {
+    id: 5,
+    title: "Campagne de vaccination contre la rougeole",
+    category: "Santé",
+    description: "Campagne gratuite de vaccination des enfants de 6 mois à 5 ans dans tous les centres de santé des îles.",
+    fullContent: `
+      <h3>Campagne Nationale de Vaccination</h3>
+      <p>Le Ministère de la Santé lance une campagne de vaccination gratuite contre la rougeole pour tous les enfants âgés de 6 mois à 5 ans sur l'ensemble du territoire comorien.</p>
+      
+      <h4>Objectifs de la campagne</h4>
+      <ul>
+        <li>Vacciner 95% des enfants cibles</li>
+        <li>Prévenir les épidémies de rougeole</li>
+        <li>Renforcer l'immunité collective</li>
+      </ul>
+      
+      <h4>Centres de vaccination</h4>
+      <p>La vaccination est disponible dans tous les centres de santé publics et privés des quatre îles, ainsi que dans les écoles et centres communautaires.</p>
+      
+      <h4>Documents nécessaires</h4>
+      <p>Apportez le carnet de vaccination de votre enfant et une pièce d'identité.</p>
+    `,
+    location: "Toutes les îles",
+    date: "Il y a 2 jours",
+    author: "Ministère de la Santé",
+    type: "urgent",
+    tags: ["santé", "vaccination", "enfants", "prévention"]
+  },
+  {
+    id: 6,
+    title: "Ouverture des inscriptions universitaires 2024-2025",
+    category: "Éducation",
+    description: "L'Université des Comores ouvre les pré-inscriptions pour l'année académique 2024-2025. Candidatures en ligne jusqu'au 31 janvier.",
+    fullContent: `
+      <h3>Rentrée Universitaire 2024-2025</h3>
+      <p>L'Université des Comores ouvre officiellement ses pré-inscriptions pour l'année académique 2024-2025. Une opportunité unique pour poursuivre ses études supérieures dans l'archipel.</p>
+      
+      <h4>Filières disponibles</h4>
+      <ul>
+        <li>Sciences Économiques et Gestion</li>
+        <li>Droit et Sciences Politiques</li>
+        <li>Lettres et Sciences Humaines</li>
+        <li>Sciences et Technologies</li>
+        <li>Médecine (nouveau !)</li>
+      </ul>
+      
+      <h4>Processus d'inscription</h4>
+      <p>Les candidatures se font exclusivement en ligne sur le portail étudiant. Les dossiers complets doivent être déposés avant le 31 janvier 2024.</p>
+      
+      <h4>Bourses disponibles</h4>
+      <p>Des bourses d'excellence sont disponibles pour les meilleurs étudiants de chaque filière.</p>
+    `,
+    location: "Moroni, Grande Comore",
+    date: "Il y a 3 jours",
+    author: "Université des Comores",
+    type: "featured",
+    tags: ["éducation", "université", "inscription", "bourse"]
+  }
 ];
 
 const AnnouncementDetail = () => {
@@ -146,7 +254,7 @@ const AnnouncementDetail = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-ocean-50 to-magenta-50">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
       <main className="container mx-auto px-6 py-12">

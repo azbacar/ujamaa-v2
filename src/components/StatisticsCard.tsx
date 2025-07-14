@@ -11,11 +11,11 @@ const StatisticsCard = () => {
         <div className="space-y-6">
           <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
             <span className="text-base text-gray-700 font-medium">Nouvelles informations</span>
-            <span className="font-bold text-2xl text-emerald-600">+34</span>
+            <span className="font-bold text-2xl text-emerald-600">+23</span>
           </div>
           <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
             <span className="text-base text-gray-700 font-medium">Recherches effectuées</span>
-            <span className="font-bold text-2xl text-ocean-600">1,247</span>
+            <span className="font-bold text-2xl text-ocean-600">892</span>
           </div>
           <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
             <span className="text-base text-gray-700 font-medium">Îles actives</span>

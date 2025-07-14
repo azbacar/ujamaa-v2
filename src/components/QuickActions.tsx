@@ -50,8 +50,12 @@ const QuickActions = () => {
         </div>
         
         <div className="space-y-4">
-          {urgentInfo.map((info, index) => (
-            <div key={index} className="group flex items-start gap-4 p-4 rounded-xl bg-white/60 hover:bg-white/90 transition-all duration-300 cursor-pointer border border-white/30 hover:shadow-lg">
+           {urgentInfo.map((info, index) => (
+            <div 
+              key={index} 
+              className="group flex items-start gap-4 p-4 rounded-xl bg-white/60 hover:bg-white/90 transition-all duration-300 cursor-pointer border border-white/30 hover:shadow-lg"
+              onClick={() => window.location.href = '/annonces'}
+            >
               <div className="text-2xl group-hover:scale-110 transition-transform duration-300">
                 {info.icon}
               </div>
@@ -72,7 +76,11 @@ const QuickActions = () => {
           ))}
         </div>
         
-        <Button variant="outline" className="w-full mt-6 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold py-3 text-base rounded-xl shadow-sm">
+        <Button 
+          variant="outline" 
+          className="w-full mt-6 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold py-3 text-base rounded-xl shadow-sm"
+          onClick={() => window.location.href = '/annonces'}
+        >
           📢 Voir toutes les alertes
         </Button>
       </CardContent>

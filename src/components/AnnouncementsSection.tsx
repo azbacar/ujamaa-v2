@@ -80,6 +80,8 @@ const announcements: Announcement[] = [
   }
 ];
 
+export { announcements };
+
 const AnnouncementsSection = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
