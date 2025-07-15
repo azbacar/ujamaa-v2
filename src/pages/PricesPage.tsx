@@ -357,7 +357,7 @@ const PricesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-ocean-50 to-magenta-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
       <main className="container mx-auto px-6 py-12">

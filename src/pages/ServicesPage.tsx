@@ -168,7 +168,7 @@ const ServicesPage = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
       <main className="container mx-auto px-6 py-12">

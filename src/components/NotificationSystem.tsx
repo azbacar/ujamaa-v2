@@ -233,7 +233,19 @@ const NotificationSystem = () => {
                   className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
                     !notification.read ? 'bg-blue-50' : ''
                   }`}
-                  onClick={() => markAsRead(notification.id)}
+                  onClick={() => {
+                    markAsRead(notification.id);
+                    // Rediriger vers la page appropriée selon le type de notification
+                    if (notification.title.includes('prix') || notification.title.includes('marché')) {
+                      window.location.href = '/prix';
+                    } else if (notification.title.includes('événement') || notification.title.includes('festival')) {
+                      window.location.href = '/evenements';
+                    } else if (notification.title.includes('service') || notification.title.includes('administratif')) {
+                      window.location.href = '/services';
+                    } else {
+                      window.location.href = '/annonces';
+                    }
+                  }}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3 flex-1">
