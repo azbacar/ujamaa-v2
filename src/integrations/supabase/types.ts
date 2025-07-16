@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_conversations: {
+        Row: {
+          ai_response: string
+          created_at: string
+          id: string
+          user_message: string
+          user_session: string
+        }
+        Insert: {
+          ai_response: string
+          created_at?: string
+          id?: string
+          user_message: string
+          user_session: string
+        }
+        Update: {
+          ai_response?: string
+          created_at?: string
+          id?: string
+          user_message?: string
+          user_session?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           author_id: number

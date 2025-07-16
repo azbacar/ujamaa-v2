@@ -1,10 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, MessageCircle, Sparkles, HelpCircle, Clock } from 'lucide-react';
+import { Bot, Send, MessageCircle, Sparkles, HelpCircle, Clock, Zap } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -26,6 +28,8 @@ const AIAssistantSection = () => {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const { toast } = useToast();
 
   const quickQuestions = [
     "Quels sont les prix du riz aujourd'hui ?",
@@ -36,41 +40,28 @@ const AIAssistantSection = () => {
     "Comment s'inscrire à l'université ?"
   ];
 
-  const generateAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes('prix') || lowerMessage.includes('marché') || lowerMessage.includes('riz') || lowerMessage.includes('coût')) {
-      return `🏪 Pour les prix actuels :\n\n• **Riz blanc importé** : 1,500 FC/kg au marché de Volo-Volo\n• **Bananes locales** : 500 FC/régime à Mutsamudu\n• **Poisson thon** : 2,000 FC/kg à Mohéli\n\nPour des informations détaillées, consultez notre section "Prix & Marchés". Les prix sont mis à jour quotidiennement par nos partenaires locaux.`;
+  const callAIFunction = async (userMessage: string): Promise<string> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: {
+          message: userMessage,
+          sessionId: sessionId,
+        },
+      });
+
+      if (error) {
+        console.error('AI function error:', error);
+        throw error;
+      }
+
+      return data.response;
+    } catch (error) {
+      console.error('Error calling AI function:', error);
+      return "Désolé, je rencontre actuellement des difficultés techniques. Veuillez réessayer dans quelques instants. En attendant, vous pouvez consulter directement les sections du site UJAMAA pour vos recherches.";
     }
-    
-    if (lowerMessage.includes('événement') || lowerMessage.includes('festival') || lowerMessage.includes('spectacle')) {
-      return `🎭 Événements à venir :\n\n• **Festival Culturel de Moroni** - 15 février 2024\n• **Conférence Agriculture Durable** - 20 février 2024 (Anjouan)\n• **Tournoi Football Inter-îles** - 25 février 2024 (Mohéli)\n\nTous les détails sont disponibles dans la section "Événements" avec possibilité de filtrer par île et catégorie.`;
-    }
-    
-    if (lowerMessage.includes('passeport') || lowerMessage.includes('carte') || lowerMessage.includes('identité') || lowerMessage.includes('documents')) {
-      return `📄 Pour obtenir vos documents :\n\n**Passeport :**\n• Rendez-vous à la Préfecture de votre île\n• Horaires : Lun-Ven 7h30-15h30\n• Documents : Acte de naissance + 2 photos + 15,000 FC\n\n**Carte d'identité :**\n• Même lieu, 5,000 FC\n• Délai : 2-3 semaines\n\nPour plus d'infos, consultez la section "Services Publics".`;
-    }
-    
-    if (lowerMessage.includes('appel') || lowerMessage.includes('offre') || lowerMessage.includes('marché public') || lowerMessage.includes('soumission')) {
-      return `📋 Appels d'offres actuels :\n\n• **Centre de Santé à Anjouan** - Budget 2,5M KMF (expire le 15 mars)\n• **Routes Mohéli** - Budget 5,8M KMF (expire bientôt !)\n• **Équipements informatiques** - Budget 3,4M KMF\n\nTous les détails et dossiers sont dans "Appels d'Offres" avec critères et exigences.`;
-    }
-    
-    if (lowerMessage.includes('médecin') || lowerMessage.includes('hôpital') || lowerMessage.includes('santé') || lowerMessage.includes('docteur')) {
-      return `🏥 Services de santé :\n\n**Hôpital National El-Maarouf (Moroni) :**\n• Urgences 24h/24\n• Tél : +269 73 20 45\n• Services : Consultation, hospitalisation, laboratoire\n\n**Centres de santé par île :**\n• Grande Comore : 12 centres\n• Anjouan : 8 centres\n• Mohéli : 4 centres\n\nConsultez "Services Publics" pour la liste complète.`;
-    }
-    
-    if (lowerMessage.includes('université') || lowerMessage.includes('étude') || lowerMessage.includes('inscription') || lowerMessage.includes('formation')) {
-      return `🎓 Éducation et formation :\n\n**Université des Comores :**\n• Inscriptions 2024-2025 ouvertes jusqu'au 31 janvier\n• Candidatures en ligne sur le portail officiel\n• Filières : Droit, Médecine, Gestion, Sciences\n\n**Formation professionnelle :**\n• Centre de Formation Mohéli : Mécanique, électricité, informatique\n\nDétails dans "Services Publics > Éducation".`;
-    }
-    
-    if (lowerMessage.includes('transport') || lowerMessage.includes('bus') || lowerMessage.includes('taxi') || lowerMessage.includes('voyage')) {
-      return `🚌 Transports disponibles :\n\n**Nouvelle ligne Moroni-Mitsamiouli :**\n• 8 rotations quotidiennes\n• Tarif : 300 FC\n• Horaires : 6h00 - 18h00\n\n**Inter-îles :**\n• Liaisons maritimes quotidiennes\n• Vols domestiques 3x/semaine\n\nPlus d'infos dans nos annonces transport.`;
-    }
-    
-    return `🤖 Merci pour votre question ! Je fais de mon mieux pour vous aider avec les informations disponibles sur UJAMAA.\n\nPour cette demande spécifique, je vous recommande de :\n• Consulter les différentes sections du site\n• Contacter directement les services concernés\n• Vérifier les annonces récentes\n\nY a-t-il autre chose sur laquelle je peux vous aider ? Je suis expert en prix des marchés, événements, services publics et appels d'offres des Comores.`;
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
     const userMessage: Message = {
@@ -81,21 +72,48 @@ const AIAssistantSection = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage('');
     setIsLoading(true);
 
-    // Simuler un délai de réponse de l'IA
-    setTimeout(() => {
+    try {
+      const aiResponseText = await callAIFunction(currentMessage);
+      
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: generateAIResponse(inputMessage),
+        content: aiResponseText,
         sender: 'ai',
         timestamp: new Date(),
         type: 'answer'
       };
+      
       setMessages(prev => [...prev, aiResponse]);
+      
+      toast({
+        title: "Réponse reçue",
+        description: "L'assistant IA a répondu à votre question.",
+      });
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Désolé, je rencontre des difficultés techniques. Veuillez réessayer dans quelques instants.",
+        sender: 'ai',
+        timestamp: new Date(),
+        type: 'answer'
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+      
+      toast({
+        title: "Erreur",
+        description: "Impossible de contacter l'assistant IA. Veuillez réessayer.",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleQuickQuestion = (question: string) => {
