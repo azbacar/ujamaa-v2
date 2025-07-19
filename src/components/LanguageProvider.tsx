@@ -206,7 +206,9 @@ interface LanguageProviderProps {
 }
 
 export const LanguageProvider = ({ children }: LanguageProviderProps) => {
-  const [currentLanguage, setCurrentLanguage] = useState('fr');
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    return localStorage.getItem('preferred-language') || 'fr';
+  });
 
   const setLanguage = (lang: string) => {
     setCurrentLanguage(lang);
