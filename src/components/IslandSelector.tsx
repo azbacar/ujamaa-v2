@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/components/LanguageProvider';
 
 interface Island {
   name: string;
@@ -12,9 +13,10 @@ interface Island {
 }
 
 const IslandSelector = () => {
+  const { t } = useLanguage();
   const islands: Island[] = [
     {
-      name: "Grande Comore",
+      name: t('island.grandeComore'),
       nameLocal: "Ngazidja",
       description: "Capitale Moroni, volcans actifs",
       activeCount: 95,
@@ -22,7 +24,7 @@ const IslandSelector = () => {
       gradient: "from-red-400 to-orange-500"
     },
     {
-      name: "Anjouan",
+      name: t('island.anjouan'),
       nameLocal: "Ndzuwani",
       description: "L'île aux parfums",
       activeCount: 47,
@@ -30,7 +32,7 @@ const IslandSelector = () => {
       gradient: "from-pink-400 to-rose-500"
     },
     {
-      name: "Mohéli",
+      name: t('island.moheli'),
       nameLocal: "Mwali",
       description: "Réserve marine nationale",
       activeCount: 18,
@@ -38,7 +40,7 @@ const IslandSelector = () => {
       gradient: "from-emerald-400 to-teal-500"
     },
     {
-      name: "Mayotte",
+      name: t('island.mayotte'),
       nameLocal: "Maore",
       description: "L'île au lagon",
       activeCount: 32,

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Bot, Send, MessageCircle, Sparkles, HelpCircle, Clock, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/components/LanguageProvider';
 
 interface Message {
   id: string;
@@ -17,10 +18,11 @@ interface Message {
 }
 
 const AIAssistantSection = () => {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Bonjour ! Je suis UJAMAA AI, votre assistant intelligent pour les Comores. Je peux vous aider à trouver des informations sur les prix, événements, services publics et bien plus encore. Comment puis-je vous aider aujourd'hui ?",
+      content: t('ai.subtitle'),
       sender: 'ai',
       timestamp: new Date(),
       type: 'info'
@@ -131,11 +133,10 @@ const AIAssistantSection = () => {
     <section className="space-y-8">
       <div className="text-center space-y-4">
         <h2 className="text-4xl md:text-5xl font-black gradient-text">
-          🤖 Assistant IA UJAMAA
+          🤖 {t('ai.title')}
         </h2>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Posez vos questions sur les prix, événements, services et plus encore. 
-          <span className="text-emerald-600 font-semibold"> Notre IA vous répond instantanément</span> avec des informations précises et à jour.
+          {t('ai.subtitle')}
         </p>
       </div>
 
@@ -146,9 +147,9 @@ const AIAssistantSection = () => {
             <CardHeader className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white rounded-t-lg">
               <CardTitle className="flex items-center gap-3">
                 <Bot className="w-6 h-6" />
-                UJAMAA AI Assistant
+                {t('ai.title')}
                 <Badge className="bg-white/20 text-white border-white/30">
-                  En ligne
+                  {t('ai.online')}
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -211,7 +212,7 @@ const AIAssistantSection = () => {
                 <Input
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Posez votre question sur les Comores..."
+                  placeholder={t('ai.placeholder')}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   className="flex-1"
                   disabled={isLoading}
@@ -234,7 +235,7 @@ const AIAssistantSection = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-emerald-600" />
-                Questions populaires
+                {t('ai.popularQuestions')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -257,7 +258,7 @@ const AIAssistantSection = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageCircle className="w-5 h-5 text-emerald-600" />
-                Capacités de l'IA
+                {t('ai.capabilities')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
