@@ -35,11 +35,13 @@ const AIAssistantSection = () => {
 
   const quickQuestions = [
     "Quels sont les prix du riz aujourd'hui ?",
-    "Y a-t-il des événements cette semaine ?",
-    "Comment obtenir un passeport ?",
-    "Quels sont les appels d'offres en cours ?",
+    "Comment obtenir des papiers à Mayotte ?", 
     "Où trouver un médecin à Moroni ?",
-    "Comment s'inscrire à l'université ?"
+    "Quels sont les événements à Anjouan ?",
+    "Comment faire une demande de passeport ?",
+    "Quels sont les horaires des bateaux inter-îles ?",
+    "Comment bénéficier des aides sociales à Mayotte ?",
+    "Où acheter de la vanille de qualité ?"
   ];
 
   const callAIFunction = async (userMessage: string): Promise<string> => {
@@ -269,23 +271,27 @@ const AIAssistantSection = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Événements et activités</span>
+                  <span>Informations sur Mayotte et les Comores</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Services publics et horaires</span>
+                  <span>Services publics et démarches</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Appels d'offres et marchés</span>
+                  <span>Événements et activités culturelles</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Informations par île</span>
+                  <span>Transport inter-îles</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                   <span>Conseils et orientations</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>Aide administrative Mayotte</span>
                 </div>
               </div>
             </CardContent>

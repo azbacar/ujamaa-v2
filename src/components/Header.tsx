@@ -4,15 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
+import { useToast } from '@/hooks/use-toast';
 import NotificationSystem from './NotificationSystem';
 
 interface HeaderProps {
   currentLanguage: string;
   onLanguageChange: (lang: string) => void;
+  onSearch?: (query: string) => void;
 }
 
-const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
+const Header = ({ currentLanguage, onLanguageChange, onSearch }: HeaderProps) => {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -24,6 +27,22 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
     { code: 'sw', name: 'Kiswahili', flag: '🇹🇿' },
     { code: 'zdj', name: 'Shikomori', flag: '🇰🇲' }
   ];
+
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      onSearch?.(searchTerm);
+      toast({
+        title: "Recherche lancée",
+        description: `Recherche pour: "${searchTerm}"`,
+      });
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 glass-effect border-b border-white/20 shadow-lg">
@@ -67,8 +86,16 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               placeholder={`🔍 ${t('hero.search')}`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 pr-6 h-12 bg-white/90 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-2xl shadow-sm text-base placeholder:text-gray-500"
+              onKeyPress={handleKeyPress}
+              className="pl-12 pr-16 h-12 bg-white/90 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-2xl shadow-sm text-base placeholder:text-gray-500"
             />
+            <Button
+              onClick={handleSearch}
+              size="sm"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-emerald-500 to-ocean-500 h-8 px-3"
+            >
+              <Search className="w-4 h-4" />
+            </Button>
           </div>
 
           {/* Actions */}
