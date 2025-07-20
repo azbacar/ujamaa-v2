@@ -201,27 +201,34 @@ const FloatingChatbox = () => {
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
+                     className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
                       message.isUser
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
+                        ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white ml-4'
+                        : 'bg-white text-gray-900 border border-gray-200 mr-4'
+                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-                    {message.links && message.links.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {message.links.map((link, index) => (
-                          <a
-                            key={index}
-                            href={link.url}
-                            className="block p-2 bg-white/20 rounded text-xs hover:bg-white/30 transition-colors"
-                          >
-                            <div className="font-medium">{link.title}</div>
-                            <div className="text-xs opacity-80">{link.description}</div>
-                          </a>
-                        ))}
-                      </div>
-                    )}
+                     <div className="space-y-2">
+                       <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
+                       {message.links && message.links.length > 0 && (
+                         <div className="mt-3 space-y-2">
+                           <p className="text-xs font-medium opacity-70">Liens utiles :</p>
+                           {message.links.map((link, index) => (
+                             <a
+                               key={index}
+                               href={link.url}
+                               className={`block p-3 rounded-lg text-xs transition-all transform hover:scale-105 ${
+                                 message.isUser 
+                                   ? 'bg-white/20 hover:bg-white/30 text-white' 
+                                   : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
+                               }`}
+                             >
+                               <div className="font-semibold">{link.title}</div>
+                               <div className="opacity-80 mt-1">{link.description}</div>
+                             </a>
+                           ))}
+                         </div>
+                       )}
+                     </div>
                     <div className="text-xs opacity-70 mt-1">
                       {message.timestamp.toLocaleTimeString('fr-FR', { 
                         hour: '2-digit', 
@@ -234,11 +241,16 @@ const FloatingChatbox = () => {
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 p-3 rounded-lg">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm mr-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">AI</span>
+                      </div>
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
                     </div>
                   </div>
                 </div>

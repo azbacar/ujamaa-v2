@@ -133,19 +133,35 @@ const AIAssistantSection = () => {
 
   return (
     <section className="space-y-8">
-      <div className="text-center space-y-4">
-        <h2 className="text-4xl md:text-5xl font-black gradient-text">
-          🤖 {t('ai.title')}
-        </h2>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+      <div className="text-center space-y-6">
+        <div className="flex items-center justify-center gap-4">
+          <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-2xl flex items-center justify-center shadow-lg">
+            <Bot className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black gradient-text">
+            {t('ai.title')}
+          </h2>
+        </div>
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
           {t('ai.subtitle')}
         </p>
+        <Button 
+          size="lg"
+          className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          onClick={() => {
+            const chatSection = document.querySelector('#chat-section');
+            chatSection?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          <MessageCircle className="w-5 h-5 mr-2" />
+          Discuter avec l'Assistant IA UJAMAA
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Zone de chat */}
-        <div className="lg:col-span-2">
-          <Card className="h-[600px] flex flex-col glass-effect">
+        <div className="lg:col-span-2" id="chat-section">
+          <Card className="h-[600px] flex flex-col bg-white shadow-2xl border-0 rounded-3xl overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white rounded-t-lg">
               <CardTitle className="flex items-center gap-3">
                 <Bot className="w-6 h-6" />
@@ -165,8 +181,8 @@ const AIAssistantSection = () => {
                   <div
                     className={`max-w-[80%] p-4 rounded-2xl ${
                       message.sender === 'user'
-                        ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white shadow-lg'
+                        : 'bg-white text-gray-900 border border-gray-200 shadow-sm'
                     }`}
                   >
                     {message.sender === 'ai' && (
@@ -194,10 +210,13 @@ const AIAssistantSection = () => {
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 p-4 rounded-2xl max-w-[80%]">
+                  <div className="bg-white border border-gray-200 p-4 rounded-2xl max-w-[80%] shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
-                      <Bot className="w-4 h-4 text-emerald-600" />
+                      <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
+                        <Bot className="w-3 h-3 text-white" />
+                      </div>
                       <span className="text-xs font-semibold text-emerald-600">UJAMAA AI</span>
+                      <span className="text-xs text-gray-500">réfléchit...</span>
                     </div>
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>

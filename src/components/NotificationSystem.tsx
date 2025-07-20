@@ -199,12 +199,13 @@ const NotificationSystem = () => {
 
       {showPanel && (
         <div className="absolute right-0 top-14 w-96 max-h-96 overflow-hidden bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Notifications</h3>
+              <h3 className="font-semibold text-white">Notifications</h3>
               <Button
                 variant="ghost"
                 size="sm"
+                className="text-white hover:bg-white/20"
                 onClick={() => setShowPanel(false)}
               >
                 <X className="w-4 h-4" />
@@ -213,7 +214,7 @@ const NotificationSystem = () => {
             {!permissionGranted && (
               <Button
                 size="sm"
-                className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-ocean-500"
+                className="w-full mt-2 bg-white text-emerald-600 hover:bg-gray-50"
                 onClick={requestNotificationPermission}
               >
                 Activer les notifications
@@ -230,8 +231,8 @@ const NotificationSystem = () => {
               notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                    !notification.read ? 'bg-blue-50' : ''
+                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                    !notification.read ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : ''
                   }`}
                   onClick={() => {
                     markAsRead(notification.id);

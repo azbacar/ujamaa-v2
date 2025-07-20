@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Menu, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,9 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   const languages = [
     { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -27,14 +30,41 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
     { code: 'zdj', name: 'Shikomori', flag: '🇰🇲' }
   ];
 
+  const mockData = [
+    { type: 'prix', title: 'Prix du Riz', description: 'Riz blanc qualité A - 500 FC/kg', url: '/prix', category: 'Alimentation' },
+    { type: 'prix', title: 'Prix de la Vanille', description: 'Vanille premium - 15000 FC/kg', url: '/prix', category: 'Épices' },
+    { type: 'evenement', title: 'Festival de Moroni', description: 'Festival culturel du 15-20 mars', url: '/evenements', category: 'Culture' },
+    { type: 'service', title: 'Préfecture Grande Comore', description: 'Services administratifs', url: '/services', category: 'Administration' },
+    { type: 'service', title: 'Hôpital de Mutsamudu', description: 'Services de santé', url: '/services', category: 'Santé' },
+    { type: 'offre', title: 'Construction École', description: 'Appel d\'offres école primaire', url: '/appels-offres', category: 'BTP' }
+  ];
+
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    setIsSearching(true);
+    
+    // Simulation recherche Ajax intelligente
+    setTimeout(() => {
+      const results = mockData.filter(item => 
+        item.title.toLowerCase().includes(query.toLowerCase()) ||
+        item.description.toLowerCase().includes(query.toLowerCase()) ||
+        item.category.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      setSearchResults(results);
+      setShowSearchResults(true);
+      setIsSearching(false);
+    }, 300);
+  };
+
   const handleSearch = () => {
     if (searchTerm.trim()) {
-      // Logique de recherche améliorée
-      console.log('Recherche pour:', searchTerm);
-      toast({
-        title: "Recherche lancée",
-        description: `Recherche pour: "${searchTerm}"`,
-      });
+      performSearch(searchTerm);
     }
   };
 
@@ -43,6 +73,15 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
       handleSearch();
     }
   };
+
+  // Recherche en temps réel
+  useEffect(() => {
+    if (searchTerm) {
+      performSearch(searchTerm);
+    } else {
+      setShowSearchResults(false);
+    }
+  }, [searchTerm]);
 
   return (
     <header className="sticky top-0 z-50 glass-effect border-b border-white/20 shadow-lg">
@@ -87,6 +126,8 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={handleKeyPress}
+              onFocus={() => searchTerm && setShowSearchResults(true)}
+              onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
               className="pl-12 pr-16 h-12 bg-white/90 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400/20 rounded-2xl shadow-sm text-base placeholder:text-gray-500"
             />
             <Button
@@ -96,6 +137,56 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             >
               <Search className="w-4 h-4" />
             </Button>
+
+            {/* Résultats de recherche Ajax */}
+            {showSearchResults && (
+              <div className="absolute top-14 left-0 right-0 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                {isSearching ? (
+                  <div className="p-4 text-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500 mx-auto"></div>
+                    <p className="text-sm text-gray-500 mt-2">Recherche en cours...</p>
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  <>
+                    <div className="p-3 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-700">
+                        {searchResults.length} résultat{searchResults.length > 1 ? 's' : ''} trouvé{searchResults.length > 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    {searchResults.map((result, index) => (
+                      <a
+                        key={index}
+                        href={result.url}
+                        className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0"
+                        onClick={() => setShowSearchResults(false)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-lg ${
+                            result.type === 'prix' ? 'bg-green-100 text-green-600' :
+                            result.type === 'evenement' ? 'bg-blue-100 text-blue-600' :
+                            result.type === 'service' ? 'bg-purple-100 text-purple-600' :
+                            'bg-orange-100 text-orange-600'
+                          }`}>
+                            {result.type === 'prix' ? '💰' :
+                             result.type === 'evenement' ? '🎭' :
+                             result.type === 'service' ? '🏛️' : '📋'}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{result.title}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{result.description}</p>
+                            <span className="text-xs text-emerald-600 font-medium">{result.category}</span>
+                          </div>
+                        </div>
+                      </a>
+                    ))}
+                  </>
+                ) : (
+                  <div className="p-4 text-center">
+                    <p className="text-sm text-gray-500">Aucun résultat trouvé pour "{searchTerm}"</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Actions */}
