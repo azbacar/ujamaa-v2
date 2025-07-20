@@ -164,6 +164,14 @@ serve(async (req) => {
 
 ${comorosKnowledge}
 
+PAGES DU SITE UJAMAA (à mentionner quand pertinent) :
+- Page d'accueil : / (vue d'ensemble des services)
+- Prix et marchés : /prix (tous les prix des produits)
+- Événements : /evenements (festivals, événements culturels)
+- Services publics : /services (démarches administratives)
+- Appels d'offres : /appels-offres (opportunités d'affaires)
+- Annonces : /annonces (annonces officielles)
+
 INSTRUCTIONS IMPORTANTES:
 - Réponds en français principalement, mais adapte-toi à la langue de l'utilisateur
 - Utilise les informations ci-dessus pour répondre précisément aux questions
@@ -174,7 +182,8 @@ INSTRUCTIONS IMPORTANTES:
 - Si tu n'as pas une information spécifique, propose des contacts ou services appropriés
 - Pour Mayotte, mets l'accent sur le statut français et les démarches spécifiques
 - Aide particulièrement pour les questions administratives, de santé et d'éducation
-- Mentionne les sources officielles quand c'est pertinent`;
+- Mentionne les sources officielles quand c'est pertinent
+- Quand tu mentionnes une information qui peut être trouvée sur une page spécifique du site, indique clairement la page (ex: "Pour plus de détails sur les prix, consultez la page /prix")`;
 
     // Si c'est une recherche, adapter le prompt
     if (searchQuery) {

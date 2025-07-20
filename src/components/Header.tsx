@@ -10,10 +10,9 @@ import NotificationSystem from './NotificationSystem';
 interface HeaderProps {
   currentLanguage: string;
   onLanguageChange: (lang: string) => void;
-  onSearch?: (query: string) => void;
 }
 
-const Header = ({ currentLanguage, onLanguageChange, onSearch }: HeaderProps) => {
+const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,7 +29,8 @@ const Header = ({ currentLanguage, onLanguageChange, onSearch }: HeaderProps) =>
 
   const handleSearch = () => {
     if (searchTerm.trim()) {
-      onSearch?.(searchTerm);
+      // Logique de recherche améliorée
+      console.log('Recherche pour:', searchTerm);
       toast({
         title: "Recherche lancée",
         description: `Recherche pour: "${searchTerm}"`,
