@@ -40,7 +40,7 @@ const IslandSelector = () => {
       gradient: "from-emerald-400 to-teal-500"
     },
     {
-      name: t('island.mayotte'),
+      name: "Mayotte",
       nameLocal: "Maore",
       description: "L'île au lagon",
       activeCount: 32,

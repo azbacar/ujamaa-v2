@@ -198,7 +198,7 @@ const NotificationSystem = () => {
       </Button>
 
       {showPanel && (
-        <div className="absolute right-0 top-14 w-96 max-h-96 overflow-hidden bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
+        <div className="absolute right-0 top-14 w-96 max-h-96 overflow-hidden bg-white rounded-xl shadow-2xl border border-gray-200 z-50 text-gray-900">
           <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-white">Notifications</h3>

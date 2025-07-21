@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageCircle, X, Send, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,17 @@ const FloatingChatbox = () => {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+
+  // Écouter l'événement d'ouverture du chat
+  useEffect(() => {
+    const handleOpenChat = () => {
+      setIsOpen(true);
+      setIsMinimized(false);
+    };
+
+    window.addEventListener('openFloatingChat', handleOpenChat);
+    return () => window.removeEventListener('openFloatingChat', handleOpenChat);
+  }, []);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -201,7 +212,7 @@ const FloatingChatbox = () => {
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                     className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
+                     className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
                       message.isUser
                         ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white ml-4'
                         : 'bg-white text-gray-900 border border-gray-200 mr-4'
