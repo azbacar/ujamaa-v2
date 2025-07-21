@@ -35,7 +35,7 @@ const FloatingChatbox = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Bonjour ! Je suis votre assistant UJAMAA. Comment puis-je vous aider aujourd\'hui ?',
+      text: '🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀',
       isUser: false,
       timestamp: new Date()
     }
@@ -44,6 +44,19 @@ const FloatingChatbox = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const sessionId = `chat_${Date.now()}`;
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    const scrollToBottom = () => {
+      const chatContainer = document.querySelector('[data-radix-scroll-area-viewport]');
+      if (chatContainer) {
+        setTimeout(() => {
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 100);
+      }
+    };
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -107,44 +120,46 @@ const FloatingChatbox = () => {
   const extractLinksFromResponse = (response: string): Array<{ url: string; title: string; description: string }> => {
     const links = [];
     
-    // Rechercher des mentions de pages/sections du site
-    if (response.toLowerCase().includes('prix') || response.toLowerCase().includes('marché')) {
+    // Extraction intelligente des liens basée sur le contenu
+    const lowerResponse = response.toLowerCase();
+    
+    if (lowerResponse.includes('prix') || lowerResponse.includes('marché') || lowerResponse.includes('coût') || lowerResponse.includes('/prix')) {
       links.push({
         url: '/prix',
-        title: 'Page des Prix',
-        description: 'Consultez tous les prix des marchés'
+        title: '💰 Prix et Marchés',
+        description: 'Consultez les prix actuels des marchés locaux'
       });
     }
     
-    if (response.toLowerCase().includes('événement') || response.toLowerCase().includes('festival')) {
+    if (lowerResponse.includes('événement') || lowerResponse.includes('festival') || lowerResponse.includes('culture') || lowerResponse.includes('/evenements')) {
       links.push({
         url: '/evenements',
-        title: 'Page des Événements',
-        description: 'Découvrez tous les événements'
+        title: '🎉 Événements',
+        description: 'Découvrez festivals et événements culturels'
       });
     }
     
-    if (response.toLowerCase().includes('service') || response.toLowerCase().includes('administration')) {
+    if (lowerResponse.includes('service') || lowerResponse.includes('administration') || lowerResponse.includes('démarche') || lowerResponse.includes('/services')) {
       links.push({
         url: '/services',
-        title: 'Page des Services',
-        description: 'Accédez aux services publics'
+        title: '🏛️ Services Publics',
+        description: 'Accédez aux services administratifs'
       });
     }
     
-    if (response.toLowerCase().includes('appel d\'offre') || response.toLowerCase().includes('offre')) {
+    if (lowerResponse.includes('appel') || lowerResponse.includes('offre') || lowerResponse.includes('marché public') || lowerResponse.includes('/appels-offres')) {
       links.push({
         url: '/appels-offres',
-        title: 'Appels d\'Offres',
-        description: 'Consultez les appels d\'offres'
+        title: '📋 Appels d\'Offres',
+        description: 'Opportunités d\'affaires et marchés publics'
       });
     }
     
-    if (response.toLowerCase().includes('annonce')) {
+    if (lowerResponse.includes('annonce') || lowerResponse.includes('actualité') || lowerResponse.includes('nouvelle') || lowerResponse.includes('/annonces')) {
       links.push({
         url: '/annonces',
-        title: 'Annonces',
-        description: 'Voir toutes les annonces'
+        title: '📢 Annonces',
+        description: 'Dernières actualités et annonces officielles'
       });
     }
 
@@ -204,7 +219,15 @@ const FloatingChatbox = () => {
 
       {!isMinimized && (
         <CardContent className="p-0 flex flex-col h-80">
-          <ScrollArea className="flex-1 p-4">
+          <ScrollArea className="flex-1 p-4" ref={(ref) => {
+            if (ref) {
+              // Auto-scroll to bottom when new messages arrive
+              const scrollElement = ref.querySelector('[data-radix-scroll-area-viewport]');
+              if (scrollElement) {
+                scrollElement.scrollTop = scrollElement.scrollHeight;
+              }
+            }
+          }}>
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
