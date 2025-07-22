@@ -4,9 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Calendar, MapPin, DollarSign, FileText, Search, Building } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import TenderSubmissionForm from '@/components/TenderSubmissionForm';
 
 interface Tender {
   id: number;
@@ -27,6 +29,8 @@ const TendersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
+  const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
 
   const tenders: Tender[] = [
     {
@@ -268,9 +272,29 @@ const TendersPage = () => {
                       <FileText className="w-4 h-4 mr-2" />
                       Télécharger le dossier
                     </Button>
-                    <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-ocean-500">
-                      Soumettre une offre
-                    </Button>
+                    <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          size="sm" 
+                          className="bg-gradient-to-r from-emerald-500 to-ocean-500"
+                          onClick={() => setSelectedTender(tender)}
+                        >
+                          Soumettre une offre
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+                        {selectedTender && (
+                          <TenderSubmissionForm
+                            tenderId={selectedTender.id}
+                            tenderTitle={selectedTender.title}
+                            onClose={() => {
+                              setIsSubmissionOpen(false);
+                              setSelectedTender(null);
+                            }}
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </CardContent>

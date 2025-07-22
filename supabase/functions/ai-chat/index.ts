@@ -217,8 +217,8 @@ PAGES DU SITE UJAMAA (à mentionner quand pertinent) :
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }
         ],
-        temperature: 0.7,
-        max_tokens: 1200,
+        temperature: 0.4,
+        max_tokens: 800,
       }),
     });
 

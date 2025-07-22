@@ -61,7 +61,7 @@ const AnnouncementsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
       <main className="container mx-auto px-6 py-12">

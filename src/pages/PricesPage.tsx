@@ -292,18 +292,12 @@ const pricesData: PriceData[] = [
 
 const categories = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.category)))];
 const islands = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.location.island)))];
-const regions = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.location.region)))];
-const cities = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.location.city)))];
-const villages = ["Tous", ...Array.from(new Set(pricesData.map(p => p.location.village)))];
 const vendors = ["Tous", ...Array.from(new Set(pricesData.map(p => p.vendor)))];
 
 const PricesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Toutes');
   const [selectedIsland, setSelectedIsland] = useState('Toutes');
-  const [selectedRegion, setSelectedRegion] = useState('Toutes');
-  const [selectedCity, setSelectedCity] = useState('Toutes');
-  const [selectedVillage, setSelectedVillage] = useState('Tous');
   const [selectedVendor, setSelectedVendor] = useState('Tous');
   const [currentLanguage, setCurrentLanguage] = useState('fr');
 
@@ -315,14 +309,11 @@ const PricesPage = () => {
                            price.market.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'Toutes' || price.category === selectedCategory;
       const matchesIsland = selectedIsland === 'Toutes' || price.location.island === selectedIsland;
-      const matchesRegion = selectedRegion === 'Toutes' || price.location.region === selectedRegion;
-      const matchesCity = selectedCity === 'Toutes' || price.location.city === selectedCity;
-      const matchesVillage = selectedVillage === 'Tous' || price.location.village === selectedVillage;
       const matchesVendor = selectedVendor === 'Tous' || price.vendor === selectedVendor;
 
-      return matchesSearch && matchesCategory && matchesIsland && matchesRegion && matchesCity && matchesVillage && matchesVendor;
+      return matchesSearch && matchesCategory && matchesIsland && matchesVendor;
     });
-  }, [searchTerm, selectedCategory, selectedIsland, selectedRegion, selectedCity, selectedVillage, selectedVendor]);
+  }, [searchTerm, selectedCategory, selectedIsland, selectedVendor]);
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -350,9 +341,6 @@ const PricesPage = () => {
     setSearchTerm('');
     setSelectedCategory('Toutes');
     setSelectedIsland('Toutes');
-    setSelectedRegion('Toutes');
-    setSelectedCity('Toutes');
-    setSelectedVillage('Tous');
     setSelectedVendor('Tous');
   };
 
@@ -393,7 +381,7 @@ const PricesPage = () => {
             </div>
 
             {/* Filtres dropdown */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="h-12 border-emerald-200">
                   <SelectValue placeholder="Catégorie" />
@@ -415,45 +403,6 @@ const PricesPage = () => {
                   {islands.map(island => (
                     <SelectItem key={island} value={island} className="hover:bg-emerald-50">
                       {island}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                <SelectTrigger className="h-12 border-emerald-200">
-                  <SelectValue placeholder="Région" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-emerald-200 shadow-lg z-50">
-                  {regions.map(region => (
-                    <SelectItem key={region} value={region} className="hover:bg-emerald-50">
-                      {region}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="h-12 border-emerald-200">
-                  <SelectValue placeholder="Ville" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-emerald-200 shadow-lg z-50">
-                  {cities.map(city => (
-                    <SelectItem key={city} value={city} className="hover:bg-emerald-50">
-                      {city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedVillage} onValueChange={setSelectedVillage}>
-                <SelectTrigger className="h-12 border-emerald-200">
-                  <SelectValue placeholder="Village" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-emerald-200 shadow-lg z-50">
-                  {villages.map(village => (
-                    <SelectItem key={village} value={village} className="hover:bg-emerald-50">
-                      {village}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -218,7 +218,7 @@ const FloatingChatbox = () => {
       </CardHeader>
 
       {!isMinimized && (
-        <CardContent className="p-0 flex flex-col h-80">
+        <CardContent className="p-0 flex flex-col h-80 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
           <ScrollArea className="flex-1 p-4" ref={(ref) => {
             if (ref) {
               // Auto-scroll to bottom when new messages arrive
@@ -232,13 +232,13 @@ const FloatingChatbox = () => {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-slideIn`}
                 >
                   <div
                      className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
                       message.isUser
                         ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white ml-4'
-                        : 'bg-white text-gray-900 border border-gray-200 mr-4'
+                        : 'bg-white/90 backdrop-blur-sm text-gray-900 border border-blue-200/50 mr-4'
                      }`}
                   >
                      <div className="space-y-2">
@@ -274,8 +274,8 @@ const FloatingChatbox = () => {
               ))}
               
               {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-white border border-gray-200 p-4 rounded-2xl shadow-sm mr-4">
+                <div className="flex justify-start animate-slideIn">
+                  <div className="bg-white/90 backdrop-blur-sm border border-blue-200/50 p-4 rounded-2xl shadow-sm mr-4">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-bold">AI</span>
@@ -292,14 +292,14 @@ const FloatingChatbox = () => {
             </div>
           </ScrollArea>
 
-          <div className="p-4 border-t">
+          <div className="p-4 border-t bg-white/80 backdrop-blur-sm">
             <div className="flex gap-2">
               <Input
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre message..."
-                className="flex-1"
+                className="flex-1 bg-white/90"
                 disabled={isLoading}
               />
               <Button

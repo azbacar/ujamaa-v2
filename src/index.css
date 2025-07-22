@@ -106,6 +106,29 @@
     background-size: 200% 200%;
     animation: gradient-shift 3s ease-in-out infinite;
   }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thumb-emerald-300 {
+    scrollbar-color: hsl(var(--emerald-300)) transparent;
+  }
   
   .card-hover {
     @apply transition-all duration-300 hover:shadow-2xl hover:shadow-blue-200/50 hover:scale-105 cursor-pointer;
