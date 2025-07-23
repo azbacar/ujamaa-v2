@@ -149,9 +149,10 @@ const AIAssistantSection = () => {
           size="lg"
           className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           onClick={() => {
-            // Déclencher l'ouverture du chatbox flottant
-            const event = new CustomEvent('openFloatingChat');
-            window.dispatchEvent(event);
+            // Faire défiler vers la section chat
+            document.getElementById('chat-section')?.scrollIntoView({ 
+              behavior: 'smooth' 
+            });
           }}
         >
           <MessageCircle className="w-5 h-5 mr-2" />

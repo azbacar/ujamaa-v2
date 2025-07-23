@@ -1,7 +1,7 @@
-
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/components/LanguageProvider';
+import { Link } from 'react-router-dom';
 
 interface Island {
   name: string;
@@ -10,83 +10,114 @@ interface Island {
   activeCount: number;
   image: string;
   gradient: string;
+  slug: string;
 }
 
 const IslandSelector = () => {
   const { t } = useLanguage();
+
   const islands: Island[] = [
     {
-      name: t('island.grandeComore'),
-      nameLocal: "Ngazidja",
-      description: "Capitale Moroni, volcans actifs",
-      activeCount: 95,
-      image: "🏔️",
-      gradient: "from-red-400 to-orange-500"
+      name: t('island.grandeComore') || 'Grande Comore',
+      nameLocal: 'Ngazidja',
+      description: 'La plus grande île de l\'archipel, abritant la capitale Moroni et le volcan Karthala.',
+      activeCount: 245,
+      image: 'https://images.unsplash.com/photo-1544966503-7fdb24ac2dca?auto=format&fit=crop&w=400&q=80',
+      gradient: 'from-emerald-500 to-teal-600',
+      slug: 'grande-comore'
     },
     {
-      name: t('island.anjouan'),
-      nameLocal: "Ndzuwani",
-      description: "L'île aux parfums",
-      activeCount: 47,
-      image: "🌺",
-      gradient: "from-pink-400 to-rose-500"
+      name: t('island.anjouan') || 'Anjouan',
+      nameLocal: 'Ndzuwani',
+      description: 'L\'île aux parfums, célèbre pour sa production d\'ylang-ylang et ses paysages montagneux.',
+      activeCount: 186,
+      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=400&q=80',
+      gradient: 'from-blue-500 to-indigo-600',
+      slug: 'anjouan'
     },
     {
-      name: t('island.moheli'),
-      nameLocal: "Mwali",
-      description: "Réserve marine nationale",
-      activeCount: 18,
-      image: "🐢",
-      gradient: "from-emerald-400 to-teal-500"
+      name: t('island.moheli') || 'Mohéli',
+      nameLocal: 'Mwali',
+      description: 'La plus petite île habitée, réputée pour son parc marin national et son écotourisme.',
+      activeCount: 67,
+      image: 'https://images.unsplash.com/photo-1571041804726-53fb982d8c81?auto=format&fit=crop&w=400&q=80',
+      gradient: 'from-purple-500 to-pink-600',
+      slug: 'moheli'
     },
     {
-      name: "Mayotte",
-      nameLocal: "Maore",
-      description: "L'île au lagon",
-      activeCount: 32,
-      image: "🏝️",
-      gradient: "from-blue-400 to-cyan-500"
+      name: t('island.mayotte') || 'Mayotte',
+      nameLocal: 'Maore',
+      description: 'L\'île au lagon, quatrième île des Comores avec un magnifique lagon turquoise.',
+      activeCount: 198,
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80',
+      gradient: 'from-cyan-500 to-blue-600',
+      slug: 'mayotte'
     }
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Informations par île</h2>
-          <p className="text-gray-600">Découvrez les données spécifiques à chaque île</p>
+    <section className="py-16 bg-white">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold gradient-text mb-4">
+            🏝️ Informations par Île
+          </h2>
+          <Badge variant="outline" className="mb-6 bg-white/50 border-emerald-300 text-emerald-700">
+            Archipel des Comores - 4 îles
+          </Badge>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Explorez chaque île de l'archipel des Comores et découvrez leurs spécificités, 
+            prix locaux, événements et services.
+          </p>
         </div>
-        <Badge variant="outline" className="text-emerald-700 border-emerald-300 bg-emerald-50 px-4 py-2 text-base font-semibold">
-          🏝️ 4 îles disponibles
-        </Badge>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {islands.map((island, index) => (
+            <Link key={index} to={`/ile/${island.slug}`}>
+              <Card className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer animate-fade-in">
+                <CardContent className="p-0">
+                  <div className="relative overflow-hidden rounded-t-lg">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${island.gradient} opacity-20 group-hover:opacity-30 transition-opacity`} />
+                    <img 
+                      src={island.image} 
+                      alt={island.name}
+                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute top-4 right-4">
+                      <Badge className="bg-white/90 text-gray-800 hover:bg-white">
+                        {island.activeCount} infos
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-bold text-xl text-gray-900 group-hover:text-emerald-700 transition-colors">
+                        {island.name}
+                      </h3>
+                      <span className="text-sm text-gray-500 font-medium">
+                        {island.nameLocal}
+                      </span>
+                    </div>
+                    
+                    <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-700 transition-colors">
+                      {island.description}
+                    </p>
+                    
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Cliquez pour explorer</span>
+                        <span className="text-emerald-600 group-hover:text-emerald-700 transition-colors">→</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {islands.map((island, index) => (
-          <Card key={index} className="feature-card card-hover group overflow-hidden">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-br ${island.gradient} flex items-center justify-center text-4xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                {island.image}
-              </div>
-              <div className="space-y-2">
-                <h3 className="font-bold text-lg text-gray-900 group-hover:text-emerald-700 transition-colors">
-                  {island.name}
-                </h3>
-                <p className="text-emerald-600 font-semibold text-base">
-                  {island.nameLocal}
-                </p>
-              </div>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {island.description}
-              </p>
-              <Badge variant="secondary" className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 font-medium px-3 py-1">
-                📊 {island.activeCount} informations
-              </Badge>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    </section>
   );
 };
 
