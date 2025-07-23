@@ -8,6 +8,7 @@ import { Calendar, MapPin, Clock, Users, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useLanguage } from '@/components/LanguageProvider';
 
 interface Event {
   id: number;
@@ -24,6 +25,7 @@ interface Event {
 }
 
 const EventsPage = () => {
+  const { t } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');

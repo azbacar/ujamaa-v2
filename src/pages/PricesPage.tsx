@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useLanguage } from '@/components/LanguageProvider';
 
 interface PriceData {
   id: number;
@@ -295,6 +296,7 @@ const islands = ["Toutes", ...Array.from(new Set(pricesData.map(p => p.location.
 const vendors = ["Tous", ...Array.from(new Set(pricesData.map(p => p.vendor)))];
 
 const PricesPage = () => {
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Toutes');
   const [selectedIsland, setSelectedIsland] = useState('Toutes');

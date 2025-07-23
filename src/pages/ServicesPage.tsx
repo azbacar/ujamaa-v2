@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Clock, MapPin, Phone, Mail, Search, Building2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useLanguage } from '@/components/LanguageProvider';
 
 interface Service {
   id: number;
@@ -27,6 +28,7 @@ interface Service {
 }
 
 const ServicesPage = () => {
+  const { t } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');

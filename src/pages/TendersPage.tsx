@@ -9,6 +9,7 @@ import { Calendar, MapPin, DollarSign, FileText, Search, Building } from 'lucide
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import TenderSubmissionForm from '@/components/TenderSubmissionForm';
+import { useLanguage } from '@/components/LanguageProvider';
 
 interface Tender {
   id: number;
@@ -25,6 +26,7 @@ interface Tender {
 }
 
 const TendersPage = () => {
+  const { t } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
