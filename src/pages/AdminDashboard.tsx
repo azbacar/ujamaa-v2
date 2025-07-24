@@ -84,7 +84,7 @@ export default function AdminDashboard() {
     }
 
     fetchData();
-  }, [user, role, roleLoading, isAdmin, isModerator, navigate]);
+  }, [user, roleLoading]); // Simplified dependencies to avoid loops
 
   const fetchData = async () => {
     try {
@@ -318,10 +318,34 @@ export default function AdminDashboard() {
     }
   };
 
-  if (roleLoading || loading) {
+  if (roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">Chargement...</div>
+        <div className="text-center space-y-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div>Chargement de votre profil...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
+        <Header currentLanguage="fr" onLanguageChange={() => {}} />
+        <main className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">
+              Tableau de bord {isAdmin() ? 'Administrateur' : 'Modérateur'}
+            </h1>
+          </div>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center space-y-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <div>Chargement des données...</div>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
