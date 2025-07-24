@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import FloatingChatbox from "@/components/FloatingChatbox";
 import Index from "./pages/Index";
 import PricesPage from "./pages/PricesPage";
@@ -39,7 +40,14 @@ const App = () => (
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/annonces" element={<AnnouncementsPage />} />
               <Route path="/annonces/:id" element={<AnnouncementDetail />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute allowedRoles={['admin', 'moderator']}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/ile/:islandName" element={<IslandDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
