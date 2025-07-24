@@ -271,10 +271,13 @@
   }
 }
 
+@layer base {
   .pulse-ring {
     animation: pulse-ring 2s infinite;
   }
+}
 
+@layer components {
   /* Admin Dashboard Specific Styles */
   .admin-card {
     @apply border-admin-border bg-admin-surface hover:bg-admin-surface-hover transition-all duration-300;
