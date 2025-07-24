@@ -6,19 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import DOMPurify from 'dompurify';
 
 interface Message {
   id: string;
   text: string;
   isUser: boolean;
   timestamp: Date;
-  links?: Array<{ url: string; title: string; description: string }>;
+  links?: Array<{ url: string; title: string; description: string; text?: string }>;
 }
 
 const FloatingChatbox = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
 
@@ -64,31 +67,31 @@ const FloatingChatbox = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      const loginMessage: Message = {
+        id: crypto.randomUUID(),
+        text: 'Vous devez être connecté pour utiliser le chat. Veuillez vous connecter.',
+        isUser: false,
+        timestamp: new Date(),
+        links: [{ text: 'Se connecter', url: '/auth', title: 'Connexion', description: 'Se connecter à votre compte' }]
+      };
+      setMessages(prev => [...prev, loginMessage]);
+      return;
+    }
+
     // Input validation
     const trimmedMessage = inputMessage.trim();
     if (!trimmedMessage || isLoading) return;
     
     // Validate message length (prevent extremely long messages)
     if (trimmedMessage.length > 1000) {
-      toast({
-        title: "Message trop long",
-        description: "Veuillez limiter votre message à 1000 caractères.",
-        variant: "destructive"
-      });
+      console.error('Message trop long');
       return;
     }
     
-    // Basic sanitization - remove potentially harmful characters
-    const sanitizedMessage = trimmedMessage.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-    
-    if (sanitizedMessage !== trimmedMessage) {
-      toast({
-        title: "Message modifié",
-        description: "Certains contenus non autorisés ont été supprimés.",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Use DOMPurify for proper sanitization
+    const sanitizedMessage = DOMPurify.sanitize(trimmedMessage);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -105,7 +108,7 @@ const FloatingChatbox = () => {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: {
           message: sanitizedMessage,
-          sessionId: sessionId,
+          sessionId: user.id, // Use user ID for authenticated users
           context: 'floating_chat'
         }
       });

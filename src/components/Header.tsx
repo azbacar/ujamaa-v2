@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Search, Menu, Globe } from 'lucide-react';
+import { Search, Menu, Globe, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import NotificationSystem from './NotificationSystem';
 
 interface HeaderProps {
@@ -15,12 +17,19 @@ interface HeaderProps {
 const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   const languages = [
     { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -237,6 +246,33 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
 
             {/* Notifications */}
             <NotificationSystem />
+
+            {/* Authentication */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-12 px-4 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50">
+                    <User className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Profil</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="h-12 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-ocean-500"
+                onClick={() => navigate('/auth')}
+              >
+                Connexion
+              </Button>
+            )}
 
             {/* Menu mobile */}
             <div className="lg:hidden relative">
