@@ -4,10 +4,8 @@ import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,17 +13,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Users, 
-  Settings, 
+  Clock,
   FileText, 
   Shield, 
-  CheckCircle, 
-  XCircle, 
-  Clock,
-  Crown,
-  ShieldCheck,
-  User
+  Settings,
+  Database,
+  BarChart3,
+  Users,
+  Zap
 } from 'lucide-react';
+
+// Import new admin components
+import AdminStats from '@/components/admin/AdminStats';
+import PendingModificationsSection from '@/components/admin/PendingModificationsSection';
+import UserManagementSection from '@/components/admin/UserManagementSection';
+import AdminActionsSection from '@/components/admin/AdminActionsSection';
+import SiteControlSection from '@/components/admin/SiteControlSection';
 
 interface PendingModification {
   id: string;
@@ -302,20 +305,15 @@ export default function AdminDashboard() {
     }
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin': return <Crown className="h-4 w-4" />;
-      case 'moderator': return <ShieldCheck className="h-4 w-4" />;
-      default: return <User className="h-4 w-4" />;
-    }
-  };
-
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case 'admin': return 'destructive' as const;
-      case 'moderator': return 'secondary' as const;
-      default: return 'outline' as const;
-    }
+  // Calculate stats for the stats component
+  const getStats = () => {
+    return {
+      userCount: users.length,
+      pendingModifications: pendingMods.filter(mod => mod.status === 'pending').length,
+      approvedModifications: pendingMods.filter(mod => mod.status === 'approved').length,
+      rejectedModifications: pendingMods.filter(mod => mod.status === 'rejected').length,
+      adminActions: adminActions.length
+    };
   };
 
   if (roleLoading) {
@@ -359,251 +357,170 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
+    <div className="min-h-screen bg-gradient-to-br from-admin-background via-slate-50 to-emerald-50/30">
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            Tableau de bord {isAdmin() ? 'Administrateur' : 'Modérateur'}
-          </h1>
-          <p className="text-muted-foreground">
-            Gérez les utilisateurs, les modifications et le contenu du site
-          </p>
+        {/* Enhanced Header Section */}
+        <div className="mb-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-admin-primary to-admin-secondary bg-clip-text text-transparent">
+                Tableau de bord {isAdmin() ? 'Administrateur' : 'Modérateur'}
+              </h1>
+              <p className="text-muted-foreground text-lg mt-2">
+                Contrôle total sur les utilisateurs, le contenu et le système
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="px-4 py-2 bg-admin-surface border border-admin-border rounded-lg">
+                <span className="text-sm text-muted-foreground">Rôle actuel:</span>
+                <span className="ml-2 font-semibold text-admin-primary">
+                  {isAdmin() ? 'Administrateur' : 'Modérateur'}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Stats Section */}
+          {isAdmin() && (
+            <AdminStats {...getStats()} />
+          )}
         </div>
 
-        <Tabs defaultValue="pending" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="pending" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Modifications en attente
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-6 bg-admin-surface border border-admin-border">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+              <BarChart3 className="h-4 w-4" />
+              Vue d'ensemble
             </TabsTrigger>
-            <TabsTrigger value="submit" className="flex items-center gap-2">
+            <TabsTrigger value="pending" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+              <Clock className="h-4 w-4" />
+              Modifications
+            </TabsTrigger>
+            <TabsTrigger value="submit" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
               <FileText className="h-4 w-4" />
-              Soumettre modification
+              Soumettre
             </TabsTrigger>
             {isAdmin() && (
               <>
-                <TabsTrigger value="users" className="flex items-center gap-2">
+                <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
                   <Users className="h-4 w-4" />
-                  Gestion utilisateurs
+                  Utilisateurs
                 </TabsTrigger>
-                <TabsTrigger value="actions" className="flex items-center gap-2">
+                <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+                  <Settings className="h-4 w-4" />
+                  Système
+                </TabsTrigger>
+                <TabsTrigger value="actions" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
                   <Shield className="h-4 w-4" />
-                  Journal d'actions
+                  Journal
                 </TabsTrigger>
               </>
             )}
           </TabsList>
 
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PendingModificationsSection 
+                modifications={pendingMods} 
+                onReview={handleModificationReview}
+              />
+              <AdminActionsSection actions={adminActions.slice(0, 5)} />
+            </div>
+          </TabsContent>
+
           <TabsContent value="pending" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Modifications en attente d'approbation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {pendingMods.filter(mod => mod.status === 'pending').length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
-                    Aucune modification en attente
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    {pendingMods.filter(mod => mod.status === 'pending').map((mod) => (
-                      <Card key={mod.id}>
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="font-semibold">{mod.title}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                Type: {mod.type} • Soumis par: {mod.users?.username}
-                              </p>
-                            </div>
-                            <Badge>{mod.status}</Badge>
-                          </div>
-                          <p className="mb-4">{mod.content.text}</p>
-                          <div className="flex gap-2">
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleModificationReview(mod.id, 'approved')}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Approuver
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="destructive"
-                              onClick={() => handleModificationReview(mod.id, 'rejected')}
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              Rejeter
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <PendingModificationsSection 
+              modifications={pendingMods} 
+              onReview={handleModificationReview}
+            />
           </TabsContent>
 
           <TabsContent value="submit" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Soumettre une nouvelle modification</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="type">Type de modification</Label>
-                  <Select value={newModType} onValueChange={setNewModType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="announcement">Annonce</SelectItem>
-                      <SelectItem value="content_update">Mise à jour contenu</SelectItem>
-                      <SelectItem value="policy_change">Changement politique</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-gradient-to-br from-admin-surface to-admin-surface-hover border border-admin-border rounded-xl p-8 shadow-lg">
+                <div className="text-center mb-6">
+                  <FileText className="h-12 w-12 text-admin-primary mx-auto mb-4" />
+                  <h2 className="text-2xl font-semibold text-admin-primary mb-2">
+                    Soumettre une nouvelle modification
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Proposez des modifications qui seront examinées par l'équipe
+                  </p>
                 </div>
                 
-                <div>
-                  <Label htmlFor="title">Titre</Label>
-                  <Input
-                    id="title"
-                    value={newModTitle}
-                    onChange={(e) => setNewModTitle(e.target.value)}
-                    placeholder="Titre de la modification"
-                  />
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="type" className="text-sm font-medium text-foreground">Type de modification</Label>
+                    <Select value={newModType} onValueChange={setNewModType}>
+                      <SelectTrigger className="border-admin-border bg-admin-surface focus:ring-admin-accent mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="announcement">📢 Annonce</SelectItem>
+                        <SelectItem value="content_update">📝 Mise à jour contenu</SelectItem>
+                        <SelectItem value="policy_change">⚖️ Changement politique</SelectItem>
+                        <SelectItem value="feature_request">✨ Demande de fonctionnalité</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="title" className="text-sm font-medium text-foreground">Titre</Label>
+                    <Input
+                      id="title"
+                      value={newModTitle}
+                      onChange={(e) => setNewModTitle(e.target.value)}
+                      placeholder="Titre de la modification..."
+                      className="border-admin-border bg-admin-surface focus:ring-admin-accent mt-2"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="content" className="text-sm font-medium text-foreground">Contenu détaillé</Label>
+                    <Textarea
+                      id="content"
+                      value={newModContent}
+                      onChange={(e) => setNewModContent(e.target.value)}
+                      placeholder="Décrivez en détail la modification souhaitée..."
+                      rows={8}
+                      className="border-admin-border bg-admin-surface focus:ring-admin-accent mt-2"
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={submitModification}
+                    className="w-full bg-admin-primary hover:bg-admin-primary/90 text-white py-3"
+                    size="lg"
+                  >
+                    <FileText className="h-5 w-5 mr-2" />
+                    Soumettre pour approbation
+                  </Button>
                 </div>
-                
-                <div>
-                  <Label htmlFor="content">Contenu</Label>
-                  <Textarea
-                    id="content"
-                    value={newModContent}
-                    onChange={(e) => setNewModContent(e.target.value)}
-                    placeholder="Décrivez la modification..."
-                    rows={6}
-                  />
-                </div>
-                
-                <Button onClick={submitModification}>
-                  Soumettre pour approbation
-                </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {isAdmin() && (
             <>
               <TabsContent value="users" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Gestion des rôles utilisateurs</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="user">Utilisateur</Label>
-                        <Select value={selectedUser} onValueChange={setSelectedUser}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un utilisateur" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {users.map((user) => (
-                              <SelectItem key={user.id} value={user.id}>
-                                {user.username} ({user.email})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="role">Rôle</Label>
-                        <Select value={selectedRole} onValueChange={setSelectedRole}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Sélectionner un rôle" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Administrateur</SelectItem>
-                            <SelectItem value="moderator">Modérateur</SelectItem>
-                            <SelectItem value="user">Utilisateur</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <Button onClick={handleRoleAssignment}>
-                      Assigner le rôle
-                    </Button>
-                  </CardContent>
-                </Card>
+                <UserManagementSection
+                  users={users}
+                  selectedUser={selectedUser}
+                  selectedRole={selectedRole}
+                  onUserSelect={setSelectedUser}
+                  onRoleSelect={setSelectedRole}
+                  onRoleAssign={handleRoleAssignment}
+                />
+              </TabsContent>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Liste des utilisateurs</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {users.map((user) => (
-                        <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
-                            <p className="font-medium">{user.username}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            {user.user_roles.map((roleData, index) => (
-                              <Badge 
-                                key={index} 
-                                variant={getRoleBadgeVariant(roleData.role)}
-                                className="flex items-center gap-1"
-                              >
-                                {getRoleIcon(roleData.role)}
-                                {roleData.role}
-                              </Badge>
-                            ))}
-                            {user.user_roles.length === 0 && (
-                              <Badge variant="outline" className="flex items-center gap-1">
-                                <User className="h-4 w-4" />
-                                user
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+              <TabsContent value="system" className="space-y-4">
+                <SiteControlSection />
               </TabsContent>
 
               <TabsContent value="actions" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Journal des actions administratives</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {adminActions.map((action) => (
-                        <div key={action.id} className="p-4 border rounded-lg">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <p className="font-medium">{action.action_type}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Par: {action.users.username}
-                              </p>
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(action.created_at).toLocaleString()}
-                            </span>
-                          </div>
-                          <p className="text-sm">{action.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <AdminActionsSection actions={adminActions} />
               </TabsContent>
             </>
           )}

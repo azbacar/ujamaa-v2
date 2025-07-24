@@ -71,6 +71,21 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				admin: {
+					primary: 'hsl(var(--admin-primary))',
+					'primary-foreground': 'hsl(var(--admin-primary-foreground))',
+					secondary: 'hsl(var(--admin-secondary))',
+					'secondary-foreground': 'hsl(var(--admin-secondary-foreground))',
+					background: 'hsl(var(--admin-background))',
+					surface: 'hsl(var(--admin-surface))',
+					'surface-hover': 'hsl(var(--admin-surface-hover))',
+					border: 'hsl(var(--admin-border))',
+					accent: 'hsl(var(--admin-accent))',
+					'accent-light': 'hsl(var(--admin-accent-light))',
+					success: 'hsl(var(--admin-success))',
+					warning: 'hsl(var(--admin-warning))',
+					danger: 'hsl(var(--admin-danger))'
+				},
 				// Couleurs spécifiques aux Comores
 				emerald: {
 					DEFAULT: '#10b981',

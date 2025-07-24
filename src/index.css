@@ -41,6 +41,21 @@
     --info: 14 165 233;
     --info-foreground: 255 255 255;
 
+    /* Admin Dashboard Colors */
+    --admin-primary: 59 130 246;
+    --admin-primary-foreground: 255 255 255;
+    --admin-secondary: 16 185 129;
+    --admin-secondary-foreground: 255 255 255;
+    --admin-background: 248 250 252;
+    --admin-surface: 255 255 255;
+    --admin-surface-hover: 241 245 249;
+    --admin-border: 203 213 225;
+    --admin-accent: 14 165 233;
+    --admin-accent-light: 59 130 246;
+    --admin-success: 34 197 94;
+    --admin-warning: 245 158 11;
+    --admin-danger: 239 68 68;
+
     --sidebar-background: 255 255 255;
     --sidebar-foreground: 51 65 85;
     --sidebar-primary: 14 165 233;
@@ -85,6 +100,21 @@
     
     --info: 59 130 246;
     --info-foreground: 255 255 255;
+
+    /* Admin Dashboard Colors - Dark Mode */
+    --admin-primary: 99 102 241;
+    --admin-primary-foreground: 255 255 255;
+    --admin-secondary: 34 197 94;
+    --admin-secondary-foreground: 255 255 255;
+    --admin-background: 15 23 42;
+    --admin-surface: 30 41 59;
+    --admin-surface-hover: 51 65 85;
+    --admin-border: 71 85 105;
+    --admin-accent: 59 130 246;
+    --admin-accent-light: 99 102 241;
+    --admin-success: 34 197 94;
+    --admin-warning: 251 191 36;
+    --admin-danger: 248 113 113;
   }
 }
 
@@ -241,6 +271,59 @@
   }
 }
 
-.pulse-ring {
-  animation: pulse-ring 2s infinite;
+  .pulse-ring {
+    animation: pulse-ring 2s infinite;
+  }
+
+  /* Admin Dashboard Specific Styles */
+  .admin-card {
+    @apply border-admin-border bg-admin-surface hover:bg-admin-surface-hover transition-all duration-300;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
+  }
+
+  .admin-card:hover {
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .admin-gradient-header {
+    background: linear-gradient(135deg, 
+      hsl(var(--admin-primary)) 0%, 
+      hsl(var(--admin-accent)) 50%, 
+      hsl(var(--admin-secondary)) 100%);
+  }
+
+  .admin-glass-effect {
+    @apply backdrop-blur-md border border-admin-border/30;
+    background: linear-gradient(135deg, 
+      hsl(var(--admin-surface)) 0%, 
+      hsl(var(--admin-surface-hover)) 100%);
+  }
+
+  .admin-stat-card {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, 
+      hsl(var(--admin-surface)) 0%, 
+      hsl(var(--admin-surface-hover)) 100%);
+    border: 1px solid hsl(var(--admin-border));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .admin-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsl(var(--admin-accent) / 0.1), 
+      transparent);
+    transition: left 0.6s;
+  }
+
+  .admin-stat-card:hover::before {
+    left: 100%;
+  }
 }
