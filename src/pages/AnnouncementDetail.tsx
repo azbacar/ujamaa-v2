@@ -6,6 +6,7 @@ import { ArrowLeft, Clock, MapPin, User, Share2, Heart } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 
 interface Announcement {
   id: number;
@@ -311,7 +312,7 @@ const AnnouncementDetail = () => {
 
                 <div 
                   className="prose prose-lg max-w-none"
-                  dangerouslySetInnerHTML={{ __html: announcement.fullContent }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(announcement.fullContent) }}
                 />
 
                 <div className="mt-8 pt-6 border-t">

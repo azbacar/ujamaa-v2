@@ -43,7 +43,12 @@ const FloatingChatbox = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const sessionId = `chat_${Date.now()}`;
+  // Generate cryptographically secure session ID
+  const sessionId = useState(() => {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    return `chat_${Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')}`;
+  })[0];
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -59,11 +64,35 @@ const FloatingChatbox = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+    // Input validation
+    const trimmedMessage = inputMessage.trim();
+    if (!trimmedMessage || isLoading) return;
+    
+    // Validate message length (prevent extremely long messages)
+    if (trimmedMessage.length > 1000) {
+      toast({
+        title: "Message trop long",
+        description: "Veuillez limiter votre message à 1000 caractères.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Basic sanitization - remove potentially harmful characters
+    const sanitizedMessage = trimmedMessage.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    
+    if (sanitizedMessage !== trimmedMessage) {
+      toast({
+        title: "Message modifié",
+        description: "Certains contenus non autorisés ont été supprimés.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: inputMessage,
+      text: sanitizedMessage,
       isUser: true,
       timestamp: new Date()
     };
@@ -75,7 +104,7 @@ const FloatingChatbox = () => {
     try {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: {
-          message: inputMessage,
+          message: sanitizedMessage,
           sessionId: sessionId,
           context: 'floating_chat'
         }

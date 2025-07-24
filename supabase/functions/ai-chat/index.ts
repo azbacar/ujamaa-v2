@@ -156,6 +156,23 @@ serve(async (req) => {
     const { message, sessionId, searchQuery } = await req.json();
     console.log('Received request:', { message, sessionId, searchQuery });
 
+    // Input validation
+    if (!message || typeof message !== 'string') {
+      throw new Error('Message is required and must be a string');
+    }
+
+    if (!sessionId || typeof sessionId !== 'string') {
+      throw new Error('Session ID is required and must be a string');
+    }
+
+    // Rate limiting - basic validation
+    if (message.length > 1000) {
+      throw new Error('Message too long (max 1000 characters)');
+    }
+
+    // Basic sanitization
+    const sanitizedMessage = message.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
@@ -219,7 +236,7 @@ PAGES DU SITE UJAMAA (à mentionner quand pertinent) :
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
+          { role: 'user', content: sanitizedMessage }
         ],
         temperature: 0.4,
         max_tokens: 800,
@@ -240,7 +257,7 @@ PAGES DU SITE UJAMAA (à mentionner quand pertinent) :
         .from('ai_conversations')
         .insert({
           user_session: sessionId,
-          user_message: message,
+          user_message: sanitizedMessage,
           ai_response: aiResponse,
         });
 

@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Clock, MapPin, Users, Share2, Heart, Ticket } from
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useState } from 'react';
+import DOMPurify from 'dompurify';
 
 interface Event {
   id: number;
@@ -178,7 +179,7 @@ const EventDetail = () => {
 
                 <div 
                   className="prose prose-lg max-w-none mb-8"
-                  dangerouslySetInnerHTML={{ __html: event.fullContent }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.fullContent) }}
                 />
 
                 <Card className="bg-gray-50">
