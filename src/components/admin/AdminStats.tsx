@@ -76,35 +76,35 @@ export default function AdminStats({
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card key={index} className="relative overflow-hidden border-admin-border bg-admin-surface hover:bg-admin-surface-hover transition-all duration-300 hover:shadow-lg hover:scale-105">
+          <Card key={index} className="relative overflow-hidden border-blue-200 bg-white hover:bg-blue-50 transition-all duration-300 hover:shadow-lg hover:scale-105">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-slate-600">
                 {stat.title}
               </CardTitle>
-              <Icon className={`h-4 w-4 text-${stat.color}`} />
+              <Icon className={`h-4 w-4 text-blue-600`} />
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-foreground">
+                <div className="text-2xl font-bold text-slate-900">
                   {stat.value}
                 </div>
                 <Badge 
                   variant="outline" 
                   className={`text-xs ${
                     stat.trend.startsWith('+') 
-                      ? 'text-admin-success border-admin-success/20' 
-                      : 'text-admin-danger border-admin-danger/20'
+                      ? 'text-green-600 border-green-200' 
+                      : 'text-red-600 border-red-200'
                   }`}
                 >
                   <TrendingUp className="h-3 w-3 mr-1" />
                   {stat.trend}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 depuis le mois dernier
               </p>
             </CardContent>
-            <div className={`absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-${stat.color}/20 to-${stat.color}/40`} />
+            <div className={`absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-400 to-blue-600`} />
           </Card>
         );
       })}

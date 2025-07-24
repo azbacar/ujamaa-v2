@@ -358,7 +358,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white">
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
       
       <main className="container mx-auto px-4 py-8">
@@ -366,17 +366,17 @@ export default function AdminDashboard() {
         <div className="mb-8 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-admin-primary to-admin-secondary bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
                 Tableau de bord {isAdmin() ? 'Administrateur' : 'Modérateur'}
               </h1>
-              <p className="text-muted-foreground text-lg mt-2">
+              <p className="text-slate-600 text-lg mt-2">
                 Contrôle total sur les utilisateurs, le contenu et le système
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="px-4 py-2 bg-admin-surface border border-admin-border rounded-lg">
-                <span className="text-sm text-muted-foreground">Rôle actuel:</span>
-                <span className="ml-2 font-semibold text-admin-primary">
+              <div className="px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <span className="text-sm text-slate-600">Rôle actuel:</span>
+                <span className="ml-2 font-semibold text-blue-600">
                   {isAdmin() ? 'Administrateur' : 'Modérateur'}
                 </span>
               </div>
