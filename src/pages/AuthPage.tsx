@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ import { useLanguage } from '@/components/LanguageProvider';
 const AuthPage = () => {
   const { signIn, signUp, user, loading } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
+  useAuthRedirect(); // Utilise le hook pour la redirection automatique
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -25,12 +27,7 @@ const AuthPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (!loading && user) {
-      navigate('/');
-    }
-  }, [user, loading, navigate]);
+  // La redirection est maintenant gérée par useAuthRedirect
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
