@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Calendar, MapPin, DollarSign, FileText, Search, Building } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AdSpace from '@/components/AdSpace';
 import TenderSubmissionForm from '@/components/TenderSubmissionForm';
 import { useLanguage } from '@/components/LanguageProvider';
 
@@ -198,6 +199,11 @@ const TendersPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Espace publicitaire */}
+        <div className="flex justify-center mb-8">
+          <AdSpace size="large" position="content" />
+        </div>
 
         {/* Liste des appels d'offres */}
         <div className="space-y-6">

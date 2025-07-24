@@ -51,11 +51,31 @@ const announcements: Announcement[] = [
   {
     id: 4,
     title: "Nouvelle ligne de transport Moroni-Mitsamiouli",
-    category: "Transports",
+    category: "Transports Terrestres",
     description: "Mise en service d'une nouvelle ligne de bus reliant Moroni à Mitsamiouli avec 8 rotations quotidiennes.",
     location: "Grande Comore",
     date: "Il y a 1 jour",
     author: "Société de Transport Comorien",
+    type: "normal"
+  },
+  {
+    id: 7,
+    title: "Nouveau service de ferry Anjouan-Mayotte",
+    category: "Transports Maritimes",
+    description: "Lancement d'une nouvelle liaison maritime quotidienne entre Mutsamudu et Dzaoudzi avec des tarifs préférentiels.",
+    location: "Anjouan - Mayotte",
+    date: "Il y a 3 heures",
+    author: "Compagnie Maritime Comorienne",
+    type: "featured"
+  },
+  {
+    id: 8,
+    title: "Vols supplémentaires Air Austral vers Moroni",
+    category: "Transports Aériens",
+    description: "Air Austral augmente sa fréquence avec 3 vols hebdomadaires supplémentaires vers l'aéroport Prince Said Ibrahim.",
+    location: "Moroni",
+    date: "Il y a 6 heures",
+    author: "Aéroport International Moroni",
     type: "normal"
   },
   {
@@ -159,7 +179,7 @@ const AnnouncementsSection = () => {
                 </div>
               </div>
 
-              <Link to={`/annonce/${announcement.id}`}>
+              <Link to={`/annonces/${announcement.id}`}>
                 <Button 
                   variant="outline" 
                   size="sm" 

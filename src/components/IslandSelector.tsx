@@ -56,58 +56,68 @@ const IslandSelector = () => {
   ];
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-20 bg-gradient-to-br from-white via-gray-50 to-blue-50">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold gradient-text mb-4">
-            🏝️ Informations par Île
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-6">
+            🏝️ Archipel des Comores
           </h2>
-          <Badge variant="outline" className="mb-6 bg-white/50 border-emerald-300 text-emerald-700">
-            Archipel des Comores - 4 îles
-          </Badge>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Explorez chaque île de l'archipel des Comores et découvrez leurs spécificités, 
-            prix locaux, événements et services.
+          <div className="flex justify-center mb-6">
+            <Badge 
+              variant="outline" 
+              className="px-6 py-2 bg-white border-2 border-emerald-500 text-emerald-700 font-semibold text-lg shadow-lg"
+            >
+              4 Îles · Une Nation
+            </Badge>
+          </div>
+          <p className="text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium">
+            Découvrez chaque île de notre archipel : leurs spécificités, prix locaux, 
+            événements culturels et services disponibles.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {islands.map((island, index) => (
             <Link key={index} to={`/ile/${island.slug}`}>
-              <Card className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer animate-fade-in">
+              <Card className="group bg-white border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 cursor-pointer overflow-hidden">
                 <CardContent className="p-0">
-                  <div className="relative overflow-hidden rounded-t-lg">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${island.gradient} opacity-20 group-hover:opacity-30 transition-opacity`} />
+                  <div className="relative overflow-hidden">
                     <img 
                       src={island.image} 
                       alt={island.name}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
+                    
                     <div className="absolute top-4 right-4">
-                      <Badge className="bg-white/90 text-gray-800 hover:bg-white">
+                      <Badge className="bg-white text-gray-800 font-semibold shadow-md">
                         {island.activeCount} infos
                       </Badge>
                     </div>
+                    
+                    <div className="absolute bottom-4 left-4 right-4 text-white">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-black text-2xl group-hover:text-emerald-300 transition-colors">
+                          {island.name}
+                        </h3>
+                        <span className="text-sm font-medium bg-white/20 px-2 py-1 rounded-full">
+                          {island.nameLocal}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-bold text-xl text-gray-900 group-hover:text-emerald-700 transition-colors">
-                        {island.name}
-                      </h3>
-                      <span className="text-sm text-gray-500 font-medium">
-                        {island.nameLocal}
-                      </span>
-                    </div>
-                    
-                    <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-700 transition-colors">
+                  <div className="p-6 bg-white">
+                    <p className="text-gray-700 text-sm leading-relaxed mb-4 group-hover:text-gray-900 transition-colors">
                       {island.description}
                     </p>
                     
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">Cliquez pour explorer</span>
-                        <span className="text-emerald-600 group-hover:text-emerald-700 transition-colors">→</span>
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wide">
+                        Explorer l'île
+                      </span>
+                      <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
+                        <span className="text-white font-bold">→</span>
                       </div>
                     </div>
                   </div>

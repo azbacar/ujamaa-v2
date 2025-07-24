@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AdSpace from '@/components/AdSpace';
 import { useLanguage } from '@/components/LanguageProvider';
 
 interface PriceData {
@@ -360,6 +361,11 @@ const PricesPage = () => {
             Consultez en temps réel les prix des produits dans tous les marchés des Comores. 
             <span className="text-emerald-600 font-semibold"> Filtrez par île, ville, vendeur ou catégorie</span> pour trouver les meilleures offres.
           </p>
+        </div>
+
+        {/* Espace publicitaire */}
+        <div className="flex justify-center mb-8">
+          <AdSpace size="banner" position="header" />
         </div>
 
         {/* Système de filtrage */}

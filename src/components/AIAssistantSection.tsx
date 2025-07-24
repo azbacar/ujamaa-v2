@@ -149,10 +149,14 @@ const AIAssistantSection = () => {
           size="lg"
           className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           onClick={() => {
-            // Faire défiler vers la section chat
-            document.getElementById('chat-section')?.scrollIntoView({ 
-              behavior: 'smooth' 
-            });
+            // Faire défiler vers la section chat avec un ID correct
+            const element = document.getElementById('chat-section');
+            if (element) {
+              element.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }
           }}
         >
           <MessageCircle className="w-5 h-5 mr-2" />
