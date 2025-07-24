@@ -29,6 +29,7 @@ import PendingModificationsSection from '@/components/admin/PendingModifications
 import UserManagementSection from '@/components/admin/UserManagementSection';
 import AdminActionsSection from '@/components/admin/AdminActionsSection';
 import SiteControlSection from '@/components/admin/SiteControlSection';
+import ContentManagementSection from '@/components/admin/ContentManagementSection';
 
 interface PendingModification {
   id: string;
@@ -357,7 +358,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-admin-background via-slate-50 to-emerald-50/30">
+    <div className="min-h-screen bg-slate-50">
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
       
       <main className="container mx-auto px-4 py-8">
@@ -389,17 +390,21 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-6 bg-admin-surface border border-admin-border">
+          <TabsList className="grid w-full grid-cols-7 bg-admin-surface border border-admin-border">
             <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
               <BarChart3 className="h-4 w-4" />
               Vue d'ensemble
+            </TabsTrigger>
+            <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+              <FileText className="h-4 w-4" />
+              Contenu
             </TabsTrigger>
             <TabsTrigger value="pending" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
               <Clock className="h-4 w-4" />
               Modifications
             </TabsTrigger>
             <TabsTrigger value="submit" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
-              <FileText className="h-4 w-4" />
+              <Zap className="h-4 w-4" />
               Soumettre
             </TabsTrigger>
             {isAdmin() && (
@@ -428,6 +433,10 @@ export default function AdminDashboard() {
               />
               <AdminActionsSection actions={adminActions.slice(0, 5)} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="content" className="space-y-4">
+            <ContentManagementSection />
           </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
