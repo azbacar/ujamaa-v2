@@ -62,13 +62,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "comments_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "comments_post_id_fkey"
             columns: ["post_id"]
             isOneToOne: false
@@ -99,33 +92,25 @@ export type Database = {
           id?: never
           title?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "posts_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       users: {
         Row: {
           created_at: string
           email: string
-          id: number
+          id: string
           username: string
         }
         Insert: {
           created_at?: string
           email: string
-          id?: never
+          id: string
           username: string
         }
         Update: {
           created_at?: string
           email?: string
-          id?: never
+          id?: string
           username?: string
         }
         Relationships: []
