@@ -52,9 +52,9 @@ export default function UserManagementSection({
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-admin-danger/10 text-admin-danger border-admin-danger/20';
-      case 'moderator': return 'bg-admin-primary/10 text-admin-primary border-admin-primary/20';
-      default: return 'bg-muted text-muted-foreground border-muted';
+      case 'admin': return 'bg-red-50 text-red-600 border-red-200';
+      case 'moderator': return 'bg-blue-50 text-blue-600 border-blue-200';
+      default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
   };
 
@@ -66,9 +66,9 @@ export default function UserManagementSection({
   return (
     <div className="space-y-6">
       {/* Role Assignment Card */}
-      <Card className="border-admin-border bg-admin-surface">
+      <Card className="border-blue-200 bg-white">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-admin-primary flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
             Gestion des rôles utilisateurs
           </CardTitle>
@@ -78,7 +78,7 @@ export default function UserManagementSection({
             <div>
               <Label htmlFor="user">Utilisateur</Label>
               <Select value={selectedUser} onValueChange={onUserSelect}>
-                <SelectTrigger className="border-admin-border bg-admin-surface focus:ring-admin-accent">
+                <SelectTrigger className="border-blue-200 bg-white focus:ring-blue-500">
                   <SelectValue placeholder="Sélectionner un utilisateur" />
                 </SelectTrigger>
                 <SelectContent>
@@ -97,19 +97,19 @@ export default function UserManagementSection({
             <div>
               <Label htmlFor="role">Rôle</Label>
               <Select value={selectedRole} onValueChange={onRoleSelect}>
-                <SelectTrigger className="border-admin-border bg-admin-surface focus:ring-admin-accent">
+                <SelectTrigger className="border-blue-200 bg-white focus:ring-blue-500">
                   <SelectValue placeholder="Sélectionner un rôle" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">
                     <div className="flex items-center gap-2">
-                      <Crown className="h-4 w-4 text-admin-danger" />
+                      <Crown className="h-4 w-4 text-red-500" />
                       Administrateur
                     </div>
                   </SelectItem>
                   <SelectItem value="moderator">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-admin-primary" />
+                      <ShieldCheck className="h-4 w-4 text-blue-600" />
                       Modérateur
                     </div>
                   </SelectItem>
@@ -126,7 +126,7 @@ export default function UserManagementSection({
           
           <Button 
             onClick={onRoleAssign}
-            className="bg-admin-primary hover:bg-admin-primary/90 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Settings className="h-4 w-4 mr-2" />
             Assigner le rôle
@@ -135,14 +135,14 @@ export default function UserManagementSection({
       </Card>
 
       {/* Users List Card */}
-      <Card className="border-admin-border bg-admin-surface">
+      <Card className="border-blue-200 bg-white">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-semibold text-admin-primary flex items-center gap-2">
+            <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
               <Users className="h-5 w-5" />
               Liste des utilisateurs
             </CardTitle>
-            <Badge variant="outline" className="text-admin-accent border-admin-accent/20">
+            <Badge variant="outline" className="text-purple-600 border-purple-200">
               {users.length} utilisateurs
             </Badge>
           </div>
@@ -152,23 +152,23 @@ export default function UserManagementSection({
               placeholder="Rechercher par nom ou email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-admin-border bg-admin-surface focus:ring-admin-accent"
+              className="pl-10 border-blue-200 bg-white focus:ring-blue-500"
             />
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {filteredUsers.map((user) => (
-              <Card key={user.id} className="border-admin-border/50 bg-gradient-to-r from-admin-surface to-admin-surface-hover hover:shadow-md transition-all duration-200">
+              <Card key={user.id} className="border-blue-100 bg-gradient-to-r from-white to-blue-50 hover:shadow-md transition-all duration-200">
                 <CardContent className="pt-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-admin-accent/10 flex items-center justify-center">
-                        <User className="h-5 w-5 text-admin-accent" />
+                      <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                        <User className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{user.username}</p>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <p className="font-medium text-slate-900">{user.username}</p>
+                        <div className="flex items-center gap-1 text-sm text-slate-600">
                           <Mail className="h-3 w-3" />
                           {user.email}
                         </div>
@@ -185,7 +185,7 @@ export default function UserManagementSection({
                         </Badge>
                       ))}
                       {user.user_roles.length === 0 && (
-                        <Badge className="flex items-center gap-1 bg-muted text-muted-foreground border-muted">
+                        <Badge className="flex items-center gap-1 bg-slate-100 text-slate-600 border-slate-200">
                           <User className="h-4 w-4" />
                           user
                         </Badge>

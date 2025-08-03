@@ -158,44 +158,44 @@ export default function ContentManagementSection() {
 
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'published': return 'bg-admin-success/10 text-admin-success border-admin-success/20';
-      case 'draft': return 'bg-admin-warning/10 text-admin-warning border-admin-warning/20';
-      case 'archived': return 'bg-muted text-muted-foreground border-muted';
-      default: return 'bg-muted text-muted-foreground border-muted';
+      case 'published': return 'bg-green-50 text-green-600 border-green-200';
+      case 'draft': return 'bg-orange-50 text-orange-600 border-orange-200';
+      case 'archived': return 'bg-slate-100 text-slate-600 border-slate-200';
+      default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Header with Quick Stats */}
-      <Card className="border-admin-border bg-admin-surface">
+      <Card className="border-blue-200 bg-white">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-admin-primary flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Gestion du Contenu
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 border border-admin-border rounded-lg bg-admin-surface-hover">
-              <Megaphone className="h-8 w-8 text-admin-primary mx-auto mb-2" />
+            <div className="text-center p-4 border border-blue-200 rounded-lg bg-blue-50">
+              <Megaphone className="h-8 w-8 text-blue-600 mx-auto mb-2" />
               <div className="text-2xl font-bold">{announcements.length}</div>
-              <div className="text-sm text-muted-foreground">Annonces</div>
+              <div className="text-sm text-slate-600">Annonces</div>
             </div>
-            <div className="text-center p-4 border border-admin-border rounded-lg bg-admin-surface-hover">
-              <Calendar className="h-8 w-8 text-admin-secondary mx-auto mb-2" />
+            <div className="text-center p-4 border border-green-200 rounded-lg bg-green-50">
+              <Calendar className="h-8 w-8 text-green-600 mx-auto mb-2" />
               <div className="text-2xl font-bold">{events.length}</div>
-              <div className="text-sm text-muted-foreground">Événements</div>
+              <div className="text-sm text-slate-600">Événements</div>
             </div>
-            <div className="text-center p-4 border border-admin-border rounded-lg bg-admin-surface-hover">
-              <Briefcase className="h-8 w-8 text-admin-accent mx-auto mb-2" />
+            <div className="text-center p-4 border border-purple-200 rounded-lg bg-purple-50">
+              <Briefcase className="h-8 w-8 text-purple-600 mx-auto mb-2" />
               <div className="text-2xl font-bold">{services.length}</div>
-              <div className="text-sm text-muted-foreground">Services</div>
+              <div className="text-sm text-slate-600">Services</div>
             </div>
-            <div className="text-center p-4 border border-admin-border rounded-lg bg-admin-surface-hover">
-              <FileText className="h-8 w-8 text-admin-warning mx-auto mb-2" />
+            <div className="text-center p-4 border border-orange-200 rounded-lg bg-orange-50">
+              <FileText className="h-8 w-8 text-orange-600 mx-auto mb-2" />
               <div className="text-2xl font-bold">{tenders.length}</div>
-              <div className="text-sm text-muted-foreground">Appels d'offres</div>
+              <div className="text-sm text-slate-600">Appels d'offres</div>
             </div>
           </div>
         </CardContent>
@@ -203,24 +203,24 @@ export default function ContentManagementSection() {
 
       {/* Content Management Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-admin-surface border border-admin-border">
-          <TabsTrigger value="announcements" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+        <TabsList className="grid w-full grid-cols-5 bg-white border border-blue-200">
+          <TabsTrigger value="announcements" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Megaphone className="h-4 w-4" />
             Annonces
           </TabsTrigger>
-          <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+          <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Calendar className="h-4 w-4" />
             Événements
           </TabsTrigger>
-          <TabsTrigger value="services" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+          <TabsTrigger value="services" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Briefcase className="h-4 w-4" />
             Services
           </TabsTrigger>
-          <TabsTrigger value="tenders" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+          <TabsTrigger value="tenders" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <FileText className="h-4 w-4" />
             Appels d'offres
           </TabsTrigger>
-          <TabsTrigger value="create" className="flex items-center gap-2 data-[state=active]:bg-admin-secondary data-[state=active]:text-white">
+          <TabsTrigger value="create" className="flex items-center gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white">
             <Plus className="h-4 w-4" />
             Créer
           </TabsTrigger>
@@ -239,7 +239,7 @@ export default function ContentManagementSection() {
               </h3>
               <Button 
                 onClick={() => setSelectedTab('create')}
-                className="bg-admin-secondary hover:bg-admin-secondary/90 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Ajouter
@@ -248,7 +248,7 @@ export default function ContentManagementSection() {
 
             <div className="space-y-4">
               {getContentByType(type).map((item) => (
-                <Card key={item.id} className="border-admin-border bg-admin-surface hover:bg-admin-surface-hover">
+                <Card key={item.id} className="border-blue-200 bg-white hover:bg-blue-50">
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start">
                       <div className="flex-1 space-y-2">
@@ -258,8 +258,8 @@ export default function ContentManagementSection() {
                             {item.status}
                           </Badge>
                         </div>
-                        <p className="text-muted-foreground text-sm">{item.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <p className="text-slate-600 text-sm">{item.description}</p>
+                        <div className="flex items-center gap-4 text-xs text-slate-500">
                           <span className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
                             {item.author}
@@ -286,7 +286,7 @@ export default function ContentManagementSection() {
                           value={item.status} 
                           onValueChange={(status) => handleStatusChange(item.id, status, type)}
                         >
-                          <SelectTrigger className="w-32 border-admin-border">
+                          <SelectTrigger className="w-32 border-blue-200">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -296,14 +296,14 @@ export default function ContentManagementSection() {
                           </SelectContent>
                         </Select>
                         
-                        <Button size="sm" variant="outline" className="border-admin-border">
+                        <Button size="sm" variant="outline" className="border-blue-200">
                           <Edit className="h-4 w-4" />
                         </Button>
                         
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          className="border-admin-danger text-admin-danger hover:bg-admin-danger hover:text-white"
+                          className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                           onClick={() => handleDelete(item.id, type)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -319,9 +319,9 @@ export default function ContentManagementSection() {
 
         {/* Create New Content */}
         <TabsContent value="create" className="space-y-4">
-          <Card className="border-admin-border bg-admin-surface">
+          <Card className="border-blue-200 bg-white">
             <CardHeader>
-              <CardTitle className="text-xl font-semibold text-admin-secondary flex items-center gap-2">
+              <CardTitle className="text-xl font-semibold text-green-600 flex items-center gap-2">
                 <Plus className="h-5 w-5" />
                 Créer un nouveau contenu
               </CardTitle>
@@ -331,7 +331,7 @@ export default function ContentManagementSection() {
                 <div>
                   <Label>Type de contenu</Label>
                   <Select value={newItemForm.type} onValueChange={(value) => setNewItemForm({...newItemForm, type: value})}>
-                    <SelectTrigger className="border-admin-border bg-admin-surface">
+                    <SelectTrigger className="border-blue-200 bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -349,7 +349,7 @@ export default function ContentManagementSection() {
                     value={newItemForm.category}
                     onChange={(e) => setNewItemForm({...newItemForm, category: e.target.value})}
                     placeholder="Ex: Transport, Culture, Administrative..."
-                    className="border-admin-border bg-admin-surface"
+                    className="border-blue-200 bg-white"
                   />
                 </div>
               </div>
@@ -360,7 +360,7 @@ export default function ContentManagementSection() {
                   value={newItemForm.title}
                   onChange={(e) => setNewItemForm({...newItemForm, title: e.target.value})}
                   placeholder="Titre du contenu..."
-                  className="border-admin-border bg-admin-surface"
+                  className="border-blue-200 bg-white"
                 />
               </div>
 
@@ -371,13 +371,13 @@ export default function ContentManagementSection() {
                   onChange={(e) => setNewItemForm({...newItemForm, description: e.target.value})}
                   placeholder="Description détaillée..."
                   rows={6}
-                  className="border-admin-border bg-admin-surface"
+                  className="border-blue-200 bg-white"
                 />
               </div>
 
               <Button 
                 onClick={handleCreateNew}
-                className="bg-admin-secondary hover:bg-admin-secondary/90 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 <Save className="h-4 w-4 mr-2" />
                 Créer et publier

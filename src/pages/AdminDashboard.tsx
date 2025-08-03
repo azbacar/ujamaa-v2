@@ -390,34 +390,34 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 bg-admin-surface border border-admin-border">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-7 bg-white border border-blue-200">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <BarChart3 className="h-4 w-4" />
               Vue d'ensemble
             </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+            <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <FileText className="h-4 w-4" />
               Contenu
             </TabsTrigger>
-            <TabsTrigger value="pending" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+            <TabsTrigger value="pending" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <Clock className="h-4 w-4" />
               Modifications
             </TabsTrigger>
-            <TabsTrigger value="submit" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+            <TabsTrigger value="submit" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <Zap className="h-4 w-4" />
               Soumettre
             </TabsTrigger>
             {isAdmin() && (
               <>
-                <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+                <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Users className="h-4 w-4" />
                   Utilisateurs
                 </TabsTrigger>
-                <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+                <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Settings className="h-4 w-4" />
                   Système
                 </TabsTrigger>
-                <TabsTrigger value="actions" className="flex items-center gap-2 data-[state=active]:bg-admin-primary data-[state=active]:text-white">
+                <TabsTrigger value="actions" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Shield className="h-4 w-4" />
                   Journal
                 </TabsTrigger>
@@ -448,22 +448,22 @@ export default function AdminDashboard() {
 
           <TabsContent value="submit" className="space-y-4">
             <div className="max-w-2xl mx-auto">
-              <div className="bg-gradient-to-br from-admin-surface to-admin-surface-hover border border-admin-border rounded-xl p-8 shadow-lg">
+              <div className="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-xl p-8 shadow-lg">
                 <div className="text-center mb-6">
-                  <FileText className="h-12 w-12 text-admin-primary mx-auto mb-4" />
-                  <h2 className="text-2xl font-semibold text-admin-primary mb-2">
+                  <FileText className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                  <h2 className="text-2xl font-semibold text-blue-600 mb-2">
                     Soumettre une nouvelle modification
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-slate-600">
                     Proposez des modifications qui seront examinées par l'équipe
                   </p>
                 </div>
                 
                 <div className="space-y-6">
                   <div>
-                    <Label htmlFor="type" className="text-sm font-medium text-foreground">Type de modification</Label>
+                    <Label htmlFor="type" className="text-sm font-medium text-slate-700">Type de modification</Label>
                     <Select value={newModType} onValueChange={setNewModType}>
-                      <SelectTrigger className="border-admin-border bg-admin-surface focus:ring-admin-accent mt-2">
+                      <SelectTrigger className="border-blue-200 bg-white focus:ring-blue-500 mt-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -476,31 +476,31 @@ export default function AdminDashboard() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="title" className="text-sm font-medium text-foreground">Titre</Label>
+                    <Label htmlFor="title" className="text-sm font-medium text-slate-700">Titre</Label>
                     <Input
                       id="title"
                       value={newModTitle}
                       onChange={(e) => setNewModTitle(e.target.value)}
                       placeholder="Titre de la modification..."
-                      className="border-admin-border bg-admin-surface focus:ring-admin-accent mt-2"
+                      className="border-blue-200 bg-white focus:ring-blue-500 mt-2"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="content" className="text-sm font-medium text-foreground">Contenu détaillé</Label>
+                    <Label htmlFor="content" className="text-sm font-medium text-slate-700">Contenu détaillé</Label>
                     <Textarea
                       id="content"
                       value={newModContent}
                       onChange={(e) => setNewModContent(e.target.value)}
                       placeholder="Décrivez en détail la modification souhaitée..."
                       rows={8}
-                      className="border-admin-border bg-admin-surface focus:ring-admin-accent mt-2"
+                      className="border-blue-200 bg-white focus:ring-blue-500 mt-2"
                     />
                   </div>
                   
                   <Button 
                     onClick={submitModification}
-                    className="w-full bg-admin-primary hover:bg-admin-primary/90 text-white py-3"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
                     size="lg"
                   >
                     <FileText className="h-5 w-5 mr-2" />

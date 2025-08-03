@@ -35,14 +35,14 @@ export default function PendingModificationsSection({
   const pendingMods = modifications.filter(mod => mod.status === 'pending');
   
   return (
-    <Card className="border-admin-border bg-admin-surface">
+    <Card className="border-blue-200 bg-white">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-semibold text-admin-primary flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Modifications en attente
           </CardTitle>
-          <Badge variant="outline" className="text-admin-warning border-admin-warning/20">
+          <Badge variant="outline" className="text-orange-600 border-orange-200">
             {pendingMods.length} en attente
           </Badge>
         </div>
@@ -61,14 +61,14 @@ export default function PendingModificationsSection({
         ) : (
           <div className="space-y-4">
             {pendingMods.map((mod) => (
-              <Card key={mod.id} className="border-admin-border/50 bg-gradient-to-r from-admin-surface to-admin-surface-hover">
+              <Card key={mod.id} className="border-blue-100 bg-gradient-to-r from-white to-blue-50">
                 <CardContent className="pt-6">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     <div className="flex-1 space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-lg text-admin-primary">{mod.title}</h3>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                          <h3 className="font-semibold text-lg text-blue-600">{mod.title}</h3>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-slate-600">
                             <div className="flex items-center gap-1">
                               <FileText className="h-4 w-4" />
                               <span className="font-medium">{mod.type}</span>
@@ -88,13 +88,13 @@ export default function PendingModificationsSection({
                             </div>
                           </div>
                         </div>
-                        <Badge className="bg-admin-warning/10 text-admin-warning border-admin-warning/20">
+                        <Badge className="bg-orange-50 text-orange-600 border-orange-200">
                           {mod.status}
                         </Badge>
                       </div>
                       
-                      <div className="bg-admin-surface-hover p-4 rounded-lg border border-admin-border/30">
-                        <p className="text-sm text-foreground leading-relaxed">
+                      <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <p className="text-sm text-slate-700 leading-relaxed">
                           {mod.content.text}
                         </p>
                       </div>
@@ -103,7 +103,7 @@ export default function PendingModificationsSection({
                     <div className="flex flex-col sm:flex-row lg:flex-col gap-2 lg:w-48">
                       <Button 
                         size="sm" 
-                        className="bg-admin-success hover:bg-admin-success/90 text-white"
+                        className="bg-green-600 hover:bg-green-700 text-white"
                         onClick={() => onReview(mod.id, 'approved')}
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
@@ -112,7 +112,7 @@ export default function PendingModificationsSection({
                       <Button 
                         size="sm" 
                         variant="outline"
-                        className="border-admin-danger text-admin-danger hover:bg-admin-danger hover:text-white"
+                        className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                         onClick={() => onReview(mod.id, 'rejected')}
                       >
                         <XCircle className="h-4 w-4 mr-2" />
@@ -121,7 +121,7 @@ export default function PendingModificationsSection({
                       <Button 
                         size="sm" 
                         variant="ghost"
-                        className="text-admin-accent hover:bg-admin-accent/10"
+                        className="text-blue-600 hover:bg-blue-50"
                       >
                         <Eye className="h-4 w-4 mr-2" />
                         Détails

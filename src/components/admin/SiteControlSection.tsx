@@ -60,9 +60,9 @@ export default function SiteControlSection() {
   return (
     <div className="space-y-6">
       {/* Site Configuration */}
-      <Card className="border-admin-border bg-admin-surface">
+      <Card className="border-blue-200 bg-white">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-admin-primary flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
             <Settings className="h-5 w-5" />
             Configuration du site
           </CardTitle>
@@ -71,9 +71,9 @@ export default function SiteControlSection() {
           {/* Site Status Controls */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-admin-border rounded-lg bg-admin-surface-hover">
+              <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
                 <div className="flex items-center gap-3">
-                  {maintenanceMode ? <Lock className="h-5 w-5 text-admin-danger" /> : <Unlock className="h-5 w-5 text-admin-success" />}
+                  {maintenanceMode ? <Lock className="h-5 w-5 text-red-500" /> : <Unlock className="h-5 w-5 text-green-600" />}
                   <div>
                     <Label className="text-sm font-medium">Mode maintenance</Label>
                     <p className="text-xs text-muted-foreground">
@@ -87,9 +87,9 @@ export default function SiteControlSection() {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-admin-border rounded-lg bg-admin-surface-hover">
+              <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
                 <div className="flex items-center gap-3">
-                  {newUserRegistration ? <Eye className="h-5 w-5 text-admin-success" /> : <EyeOff className="h-5 w-5 text-admin-warning" />}
+                  {newUserRegistration ? <Eye className="h-5 w-5 text-green-600" /> : <EyeOff className="h-5 w-5 text-orange-500" />}
                   <div>
                     <Label className="text-sm font-medium">Nouvelles inscriptions</Label>
                     <p className="text-xs text-muted-foreground">
@@ -105,9 +105,9 @@ export default function SiteControlSection() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border border-admin-border rounded-lg bg-admin-surface-hover">
+              <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
                 <div className="flex items-center gap-3">
-                  {publicViewAccess ? <Globe className="h-5 w-5 text-admin-primary" /> : <Lock className="h-5 w-5 text-admin-danger" />}
+                  {publicViewAccess ? <Globe className="h-5 w-5 text-blue-600" /> : <Lock className="h-5 w-5 text-red-500" />}
                   <div>
                     <Label className="text-sm font-medium">Accès public</Label>
                     <p className="text-xs text-muted-foreground">
@@ -121,9 +121,9 @@ export default function SiteControlSection() {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-admin-border rounded-lg bg-admin-surface-hover">
+              <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-blue-50">
                 <div className="flex items-center gap-3">
-                  {emailNotifications ? <Mail className="h-5 w-5 text-admin-accent" /> : <Bell className="h-5 w-5 text-muted-foreground" />}
+                  {emailNotifications ? <Mail className="h-5 w-5 text-purple-600" /> : <Bell className="h-5 w-5 text-slate-400" />}
                   <div>
                     <Label className="text-sm font-medium">Notifications email</Label>
                     <p className="text-xs text-muted-foreground">
@@ -141,7 +141,7 @@ export default function SiteControlSection() {
 
           <Button 
             onClick={handleSiteSettings}
-            className="bg-admin-primary hover:bg-admin-primary/90 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Save className="h-4 w-4 mr-2" />
             Sauvegarder les paramètres
@@ -150,9 +150,9 @@ export default function SiteControlSection() {
       </Card>
 
       {/* System Operations */}
-      <Card className="border-admin-border bg-admin-surface">
+      <Card className="border-blue-200 bg-white">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-admin-primary flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
             <Database className="h-5 w-5" />
             Opérations système
           </CardTitle>
@@ -161,7 +161,7 @@ export default function SiteControlSection() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button 
               onClick={handleDatabaseBackup}
-              className="bg-admin-secondary hover:bg-admin-secondary/90 text-white h-auto p-4 flex-col gap-2"
+              className="bg-green-600 hover:bg-green-700 text-white h-auto p-4 flex-col gap-2"
             >
               <Download className="h-6 w-6" />
               <div className="text-center">
@@ -172,7 +172,7 @@ export default function SiteControlSection() {
 
             <Button 
               onClick={handleClearCache}
-              className="bg-admin-warning hover:bg-admin-warning/90 text-white h-auto p-4 flex-col gap-2"
+              className="bg-orange-500 hover:bg-orange-600 text-white h-auto p-4 flex-col gap-2"
             >
               <RefreshCw className="h-6 w-6" />
               <div className="text-center">
@@ -183,7 +183,7 @@ export default function SiteControlSection() {
 
             <Button 
               variant="outline"
-              className="border-admin-danger text-admin-danger hover:bg-admin-danger hover:text-white h-auto p-4 flex-col gap-2"
+              className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-auto p-4 flex-col gap-2"
             >
               <Trash2 className="h-6 w-6" />
               <div className="text-center">
@@ -196,9 +196,9 @@ export default function SiteControlSection() {
       </Card>
 
       {/* Global Announcements */}
-      <Card className="border-admin-border bg-admin-surface">
+      <Card className="border-blue-200 bg-white">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-admin-primary flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
             <Bell className="h-5 w-5" />
             Annonces globales
           </CardTitle>
@@ -212,14 +212,14 @@ export default function SiteControlSection() {
                 value={announcementTitle}
                 onChange={(e) => setAnnouncementTitle(e.target.value)}
                 placeholder="Titre de l'annonce..."
-                className="border-admin-border bg-admin-surface focus:ring-admin-accent"
+                className="border-blue-200 bg-white focus:ring-blue-500"
               />
             </div>
             
             <div>
               <Label htmlFor="announcement-type">Type d'annonce</Label>
               <Select value={announcementType} onValueChange={setAnnouncementType}>
-                <SelectTrigger className="border-admin-border bg-admin-surface focus:ring-admin-accent">
+                <SelectTrigger className="border-blue-200 bg-white focus:ring-blue-500">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -240,13 +240,13 @@ export default function SiteControlSection() {
               onChange={(e) => setAnnouncementContent(e.target.value)}
               placeholder="Contenu de l'annonce..."
               rows={4}
-              className="border-admin-border bg-admin-surface focus:ring-admin-accent"
+              className="border-blue-200 bg-white focus:ring-blue-500"
             />
           </div>
           
           <Button 
             onClick={handleGlobalAnnouncement}
-            className="bg-admin-accent hover:bg-admin-accent/90 text-white"
+            className="bg-purple-600 hover:bg-purple-700 text-white"
           >
             <Bell className="h-4 w-4 mr-2" />
             Publier l'annonce globale
@@ -255,9 +255,9 @@ export default function SiteControlSection() {
       </Card>
 
       {/* Alert Section */}
-      <Card className="border-admin-danger/20 bg-gradient-to-r from-admin-danger/5 to-admin-warning/5">
+      <Card className="border-red-200 bg-gradient-to-r from-red-50 to-orange-50">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold text-admin-danger flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold text-red-600 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Zone de danger
           </CardTitle>
@@ -270,7 +270,7 @@ export default function SiteControlSection() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button 
                 variant="outline"
-                className="border-admin-danger text-admin-danger hover:bg-admin-danger hover:text-white"
+                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Réinitialiser utilisateurs inactifs
@@ -278,7 +278,7 @@ export default function SiteControlSection() {
               
               <Button 
                 variant="outline"
-                className="border-admin-danger text-admin-danger hover:bg-admin-danger hover:text-white"
+                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
               >
                 <Database className="h-4 w-4 mr-2" />
                 Optimiser base de données

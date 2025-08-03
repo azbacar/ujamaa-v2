@@ -34,21 +34,21 @@ export default function AdminActionsSection({ actions }: AdminActionsSectionProp
 
   const getActionColor = (actionType: string) => {
     switch (actionType) {
-      case 'role_assignment': return 'admin-primary';
-      case 'modification_review': return 'admin-secondary';
-      default: return 'admin-accent';
+      case 'role_assignment': return 'blue-600';
+      case 'modification_review': return 'green-600';
+      default: return 'purple-600';
     }
   };
 
   return (
-    <Card className="border-admin-border bg-admin-surface">
+    <Card className="border-blue-200 bg-white">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-semibold text-admin-primary flex items-center gap-2">
+          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
             <Shield className="h-5 w-5" />
             Journal des actions administratives
           </CardTitle>
-          <Badge variant="outline" className="text-admin-accent border-admin-accent/20">
+          <Badge variant="outline" className="text-purple-600 border-purple-200">
             {actions.length} actions récentes
           </Badge>
         </div>
@@ -71,18 +71,18 @@ export default function AdminActionsSection({ actions }: AdminActionsSectionProp
               const color = getActionColor(action.action_type);
               
               return (
-                <Card key={action.id} className="border-admin-border/50 bg-gradient-to-r from-admin-surface to-admin-surface-hover">
+                <Card key={action.id} className="border-blue-100 bg-gradient-to-r from-white to-blue-50">
                   <CardContent className="pt-4">
                     <div className="flex items-start gap-4">
-                      <div className={`w-10 h-10 rounded-full bg-${color}/10 flex items-center justify-center flex-shrink-0`}>
+                      <div className={`w-10 h-10 rounded-full bg-${color === 'blue-600' ? 'blue' : color === 'green-600' ? 'green' : 'purple'}-100 flex items-center justify-center flex-shrink-0`}>
                         <Icon className={`h-5 w-5 text-${color}`} />
                       </div>
                       
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="font-medium text-foreground">{action.action_type.replace('_', ' ')}</p>
-                            <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                            <p className="font-medium text-slate-900">{action.action_type.replace('_', ' ')}</p>
+                            <div className="flex items-center gap-4 mt-1 text-sm text-slate-600">
                               <div className="flex items-center gap-1">
                                 <User className="h-3 w-3" />
                                 <span>{action.users.username}</span>
@@ -98,13 +98,13 @@ export default function AdminActionsSection({ actions }: AdminActionsSectionProp
                               </div>
                             </div>
                           </div>
-                          <Badge className={`bg-${color}/10 text-${color} border-${color}/20`}>
+                          <Badge className={`${color === 'blue-600' ? 'bg-blue-50 text-blue-600 border-blue-200' : color === 'green-600' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-purple-50 text-purple-600 border-purple-200'}`}>
                             {action.target_type || 'système'}
                           </Badge>
                         </div>
                         
-                        <div className="bg-admin-surface-hover p-3 rounded-lg border border-admin-border/30">
-                          <p className="text-sm text-foreground">{action.description}</p>
+                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                          <p className="text-sm text-slate-700">{action.description}</p>
                         </div>
                       </div>
                     </div>
