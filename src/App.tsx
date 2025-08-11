@@ -19,6 +19,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import IslandDetailPage from "./pages/IslandDetailPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordRequest from "./pages/ResetPasswordRequest";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/auth/forgot" element={<ResetPasswordRequest />} />
+              <Route path="/auth/reset" element={<ResetPassword />} />
               <Route path="/prix" element={<PricesPage />} />
               <Route path="/evenements" element={<EventsPage />} />
               <Route path="/evenements/:id" element={<EventDetail />} />

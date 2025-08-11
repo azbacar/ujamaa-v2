@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,6 +121,9 @@ const AuthPage = () => {
                       required
                       placeholder="••••••••"
                     />
+                  </div>
+                  <div className="text-right">
+                    <Link to="/auth/forgot" className="text-sm text-primary hover:underline">Mot de passe oublié ?</Link>
                   </div>
                   <Button 
                     type="submit" 
