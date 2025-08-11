@@ -4,7 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -177,8 +177,28 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Require authenticated user via Supabase JWT
+const authHeader = req.headers.get('Authorization');
+if (!authHeader) {
+  return new Response(JSON.stringify({ error: 'Unauthorized: missing Authorization header' }), {
+    status: 401,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+// Initialize Supabase client with the user's JWT to respect RLS
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  global: { headers: { Authorization: authHeader } },
+});
+
+// Get user from JWT
+const { data: { user }, error: userErr } = await supabase.auth.getUser();
+if (userErr || !user) {
+  return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+    status: 401,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
 
     let systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel pour les Comores et Mayotte. 
 
@@ -253,13 +273,14 @@ PAGES DU SITE UJAMAA (à mentionner quand pertinent) :
 
     // Store conversation in database
     try {
-      const { error: dbError } = await supabase
-        .from('ai_conversations')
-        .insert({
-          user_session: sessionId,
-          user_message: sanitizedMessage,
-          ai_response: aiResponse,
-        });
+const { error: dbError } = await supabase
+  .from('ai_conversations')
+  .insert({
+    user_id: user.id,
+    user_session: sessionId,
+    user_message: sanitizedMessage,
+    ai_response: aiResponse,
+  });
 
       if (dbError) {
         console.error('Database error:', dbError);

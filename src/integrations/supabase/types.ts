@@ -52,6 +52,7 @@ export type Database = {
           ai_response: string
           created_at: string
           id: string
+          user_id: string | null
           user_message: string
           user_session: string
         }
@@ -59,6 +60,7 @@ export type Database = {
           ai_response: string
           created_at?: string
           id?: string
+          user_id?: string | null
           user_message: string
           user_session: string
         }
@@ -66,6 +68,7 @@ export type Database = {
           ai_response?: string
           created_at?: string
           id?: string
+          user_id?: string | null
           user_message?: string
           user_session?: string
         }
