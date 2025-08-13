@@ -23,13 +23,13 @@ import {
   Zap
 } from 'lucide-react';
 
-// Import new admin components
 import AdminStats from '@/components/admin/AdminStats';
 import PendingModificationsSection from '@/components/admin/PendingModificationsSection';
 import UserManagementSection from '@/components/admin/UserManagementSection';
 import AdminActionsSection from '@/components/admin/AdminActionsSection';
 import SiteControlSection from '@/components/admin/SiteControlSection';
 import ContentManagementSection from '@/components/admin/ContentManagementSection';
+import SystemAnalyticsSection from '@/components/admin/SystemAnalyticsSection';
 
 interface PendingModification {
   id: string;
@@ -390,7 +390,7 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 bg-white border border-blue-200">
+          <TabsList className="grid w-full grid-cols-8 bg-white border border-blue-200">
             <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <BarChart3 className="h-4 w-4" />
               Vue d'ensemble
@@ -416,6 +416,10 @@ export default function AdminDashboard() {
                 <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Settings className="h-4 w-4" />
                   Système
+                </TabsTrigger>
+                <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                  <BarChart3 className="h-4 w-4" />
+                  Analyses
                 </TabsTrigger>
                 <TabsTrigger value="actions" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Shield className="h-4 w-4" />
@@ -528,7 +532,12 @@ export default function AdminDashboard() {
                 <SiteControlSection />
               </TabsContent>
 
-              <TabsContent value="actions" className="space-y-4">
+              <TabsContent value="analytics" className="space-y-4">
+                <SystemAnalyticsSection />
+              </TabsContent>
+
+              <TabsContent value="actions" className="space-y-4"
+>
                 <AdminActionsSection actions={adminActions} />
               </TabsContent>
             </>

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +29,8 @@ import {
 import { toast } from 'sonner';
 
 export default function SiteControlSection() {
+  const { user } = useAuth();
+  
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [newUserRegistration, setNewUserRegistration] = useState(true);
   const [publicViewAccess, setPublicViewAccess] = useState(true);
@@ -34,9 +38,79 @@ export default function SiteControlSection() {
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementContent, setAnnouncementContent] = useState('');
   const [announcementType, setAnnouncementType] = useState('info');
+  const [loading, setLoading] = useState(true);
 
-  const handleSiteSettings = () => {
-    toast.success('Paramètres du site mis à jour');
+  useEffect(() => {
+    fetchSiteSettings();
+  }, []);
+
+  const fetchSiteSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching site settings:', error);
+        return;
+      }
+
+      if (data) {
+        setMaintenanceMode(data.maintenance_mode);
+        setNewUserRegistration(data.allow_registration);
+        setPublicViewAccess(data.public_view_access);
+        setEmailNotifications(data.email_notifications);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSiteSettings = async () => {
+    if (!user) {
+      toast.error('Vous devez être connecté');
+      return;
+    }
+
+    try {
+      // Check if settings exist, if not create them
+      const { data: existingSettings } = await supabase
+        .from('site_settings')
+        .select('id')
+        .limit(1);
+
+      const settingsData = {
+        maintenance_mode: maintenanceMode,
+        allow_registration: newUserRegistration,
+        public_view_access: publicViewAccess,
+        email_notifications: emailNotifications,
+        updated_by: user.id
+      };
+
+      if (existingSettings && existingSettings.length > 0) {
+        const { error } = await supabase
+          .from('site_settings')
+          .update(settingsData)
+          .eq('id', existingSettings[0].id);
+        
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('site_settings')
+          .insert(settingsData);
+        
+        if (error) throw error;
+      }
+
+      toast.success('Paramètres du site mis à jour');
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      toast.error('Erreur lors de la mise à jour des paramètres');
+    }
   };
 
   const handleDatabaseBackup = () => {
@@ -47,14 +121,36 @@ export default function SiteControlSection() {
     toast.success('Cache système vidé');
   };
 
-  const handleGlobalAnnouncement = () => {
+  const handleGlobalAnnouncement = async () => {
     if (!announcementTitle || !announcementContent) {
       toast.error('Veuillez remplir tous les champs');
       return;
     }
-    toast.success('Annonce globale publiée');
-    setAnnouncementTitle('');
-    setAnnouncementContent('');
+
+    if (!user) {
+      toast.error('Vous devez être connecté');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('global_announcements')
+        .insert({
+          title: announcementTitle,
+          content: announcementContent,
+          type: announcementType as 'info' | 'warning' | 'urgent' | 'maintenance',
+          created_by: user.id
+        });
+
+      if (error) throw error;
+
+      toast.success('Annonce globale publiée');
+      setAnnouncementTitle('');
+      setAnnouncementContent('');
+    } catch (error) {
+      console.error('Error creating announcement:', error);
+      toast.error('Erreur lors de la publication de l\'annonce');
+    }
   };
 
   return (

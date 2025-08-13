@@ -106,6 +106,75 @@ export type Database = {
           },
         ]
       }
+      content_items: {
+        Row: {
+          author_id: string
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          published_at: string
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          type: Database["public"]["Enums"]["content_type"]
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          author_id: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          published_at?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          type: Database["public"]["Enums"]["content_type"]
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          published_at?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          type?: Database["public"]["Enums"]["content_type"]
+          updated_at?: string
+          views?: number
+        }
+        Relationships: []
+      }
+      global_announcements: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          title: string
+          type: Database["public"]["Enums"]["announcement_kind"]
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          title: string
+          type?: Database["public"]["Enums"]["announcement_kind"]
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["announcement_kind"]
+        }
+        Relationships: []
+      }
       pending_modifications: {
         Row: {
           content: Json
@@ -169,6 +238,39 @@ export type Database = {
           created_at?: string
           id?: never
           title?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          allow_registration: boolean
+          created_at: string
+          email_notifications: boolean
+          id: string
+          maintenance_mode: boolean
+          public_view_access: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          allow_registration?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          maintenance_mode?: boolean
+          public_view_access?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          allow_registration?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          maintenance_mode?: boolean
+          public_view_access?: boolean
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -245,7 +347,10 @@ export type Database = {
       }
     }
     Enums: {
+      announcement_kind: "info" | "warning" | "urgent" | "maintenance"
       app_role: "admin" | "moderator" | "user"
+      content_status: "published" | "draft" | "archived"
+      content_type: "announcement" | "event" | "service" | "tender"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -373,7 +478,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      announcement_kind: ["info", "warning", "urgent", "maintenance"],
       app_role: ["admin", "moderator", "user"],
+      content_status: ["published", "draft", "archived"],
+      content_type: ["announcement", "event", "service", "tender"],
     },
   },
 } as const

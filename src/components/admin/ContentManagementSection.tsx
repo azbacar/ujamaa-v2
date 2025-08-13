@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,19 +29,21 @@ import { toast } from 'sonner';
 interface ContentItem {
   id: string;
   title: string;
-  description: string;
-  category: string;
+  description: string | null;
+  category: string | null;
   status: 'published' | 'draft' | 'archived';
-  author: string;
-  publishedAt: string;
-  views?: number;
+  type: 'announcement' | 'event' | 'service' | 'tender';
+  author_id: string;
+  published_at: string;
+  views: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export default function ContentManagementSection() {
-  const [announcements, setAnnouncements] = useState<ContentItem[]>([]);
-  const [events, setEvents] = useState<ContentItem[]>([]);
-  const [services, setServices] = useState<ContentItem[]>([]);
-  const [tenders, setTenders] = useState<ContentItem[]>([]);
+  const { user } = useAuth();
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [selectedTab, setSelectedTab] = useState('announcements');
   const [editingItem, setEditingItem] = useState<string | null>(null);
@@ -47,103 +51,111 @@ export default function ContentManagementSection() {
     title: '',
     description: '',
     category: '',
-    type: 'announcement'
+    type: 'announcement' as 'announcement' | 'event' | 'service' | 'tender'
   });
 
-  // Mock data - en production, ceci viendrait de la base de données
   useEffect(() => {
-    setAnnouncements([
-      {
-        id: '1',
-        title: 'Nouvelle réglementation sur les visas',
-        description: 'Mise à jour des procédures pour l\'obtention des visas touristiques...',
-        category: 'Immigration',
-        status: 'published',
-        author: 'Admin Comores',
-        publishedAt: '2024-01-15T10:00:00Z',
-        views: 1250
-      },
-      {
-        id: '2',
-        title: 'Fermeture temporaire du port de Moroni',
-        description: 'Travaux de maintenance prévus du 20 au 25 janvier...',
-        category: 'Transport',
-        status: 'published',
-        author: 'Port Authority',
-        publishedAt: '2024-01-10T14:30:00Z',
-        views: 890
-      }
-    ]);
-
-    setEvents([
-      {
-        id: '1',
-        title: 'Festival de la Culture Comorienne',
-        description: 'Célébration annuelle de la culture locale avec spectacles et expositions...',
-        category: 'Culture',
-        status: 'published',
-        author: 'Ministère Culture',
-        publishedAt: '2024-01-12T09:00:00Z',
-        views: 2100
-      }
-    ]);
-
-    setServices([
-      {
-        id: '1',
-        title: 'Service de délivrance de passeports',
-        description: 'Obtenez votre passeport en ligne ou en personne...',
-        category: 'Administrative',
-        status: 'published',
-        author: 'Préfecture',
-        publishedAt: '2024-01-08T11:00:00Z',
-        views: 3200
-      }
-    ]);
-
-    setTenders([
-      {
-        id: '1',
-        title: 'Appel d\'offres - Construction route nationale',
-        description: 'Travaux de réfection de la route nationale N1...',
-        category: 'Infrastructure',
-        status: 'published',
-        author: 'Ministère TP',
-        publishedAt: '2024-01-05T16:00:00Z',
-        views: 450
-      }
-    ]);
+    fetchContentItems();
   }, []);
 
+  const fetchContentItems = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('content_items')
+        .select('*')
+        .order('published_at', { ascending: false });
+
+      if (error) throw error;
+      setContentItems(data || []);
+    } catch (error) {
+      console.error('Error fetching content:', error);
+      toast.error('Erreur lors du chargement du contenu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getContentByType = (type: string) => {
-    switch(type) {
-      case 'announcements': return announcements;
-      case 'events': return events;
-      case 'services': return services;
-      case 'tenders': return tenders;
-      default: return [];
+    const typeMap: Record<string, 'announcement' | 'event' | 'service' | 'tender'> = {
+      'announcements': 'announcement',
+      'events': 'event',
+      'services': 'service',
+      'tenders': 'tender'
+    };
+    
+    const contentType = typeMap[type];
+    return contentType ? contentItems.filter(item => item.type === contentType) : [];
+  };
+
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('content_items')
+        .update({ status: status as 'published' | 'draft' | 'archived' })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast.success(`Statut mis à jour: ${status}`);
+      fetchContentItems();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Erreur lors de la mise à jour du statut');
     }
   };
 
-  const handleStatusChange = (id: string, status: string, type: string) => {
-    toast.success(`Statut mis à jour: ${status}`);
-    // Ici on mettrait à jour la base de données
-  };
+  const handleDelete = async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('content_items')
+        .delete()
+        .eq('id', id);
 
-  const handleDelete = (id: string, type: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cet élément ?')) {
+      if (error) throw error;
+      
       toast.success('Élément supprimé');
-      // Ici on supprimerait de la base de données
+      fetchContentItems();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Erreur lors de la suppression');
     }
   };
 
-  const handleCreateNew = () => {
+  const handleCreateNew = async () => {
     if (!newItemForm.title || !newItemForm.description) {
       toast.error('Veuillez remplir tous les champs');
       return;
     }
-    toast.success('Nouvel élément créé');
-    setNewItemForm({ title: '', description: '', category: '', type: 'announcement' });
+
+    if (!user) {
+      toast.error('Vous devez être connecté');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('content_items')
+        .insert({
+          type: newItemForm.type,
+          title: newItemForm.title,
+          description: newItemForm.description,
+          category: newItemForm.category || null,
+          author_id: user.id,
+          status: 'published'
+        });
+
+      if (error) throw error;
+      
+      toast.success('Nouvel élément créé');
+      setNewItemForm({ title: '', description: '', category: '', type: 'announcement' });
+      fetchContentItems();
+    } catch (error) {
+      console.error('Error creating item:', error);
+      toast.error('Erreur lors de la création');
+    }
   };
 
   const getTypeIcon = (type: string) => {
@@ -179,22 +191,22 @@ export default function ContentManagementSection() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 border border-blue-200 rounded-lg bg-blue-50">
               <Megaphone className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{announcements.length}</div>
+              <div className="text-2xl font-bold">{contentItems.filter(item => item.type === 'announcement').length}</div>
               <div className="text-sm text-slate-600">Annonces</div>
             </div>
             <div className="text-center p-4 border border-green-200 rounded-lg bg-green-50">
               <Calendar className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{events.length}</div>
+              <div className="text-2xl font-bold">{contentItems.filter(item => item.type === 'event').length}</div>
               <div className="text-sm text-slate-600">Événements</div>
             </div>
             <div className="text-center p-4 border border-purple-200 rounded-lg bg-purple-50">
               <Briefcase className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{services.length}</div>
+              <div className="text-2xl font-bold">{contentItems.filter(item => item.type === 'service').length}</div>
               <div className="text-sm text-slate-600">Services</div>
             </div>
             <div className="text-center p-4 border border-orange-200 rounded-lg bg-orange-50">
               <FileText className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{tenders.length}</div>
+              <div className="text-2xl font-bold">{contentItems.filter(item => item.type === 'tender').length}</div>
               <div className="text-sm text-slate-600">Appels d'offres</div>
             </div>
           </div>
@@ -247,72 +259,84 @@ export default function ContentManagementSection() {
             </div>
 
             <div className="space-y-4">
-              {getContentByType(type).map((item) => (
-                <Card key={item.id} className="border-blue-200 bg-white hover:bg-blue-50">
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-lg">{item.title}</h4>
-                          <Badge className={getStatusColor(item.status)}>
-                            {item.status}
-                          </Badge>
-                        </div>
-                          <p className="text-slate-600 text-sm">{item.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-slate-500">
-                          <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            {item.author}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(item.publishedAt).toLocaleDateString('fr-FR')}
-                          </span>
-                          {item.views && (
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-muted-foreground mt-2">Chargement...</p>
+                </div>
+              ) : getContentByType(type).length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Aucun contenu de ce type</p>
+                </div>
+              ) : (
+                getContentByType(type).map((item) => (
+                  <Card key={item.id} className="border-blue-200 bg-white hover:bg-blue-50">
+                    <CardContent className="pt-6">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold text-lg">{item.title}</h4>
+                            <Badge className={getStatusColor(item.status)}>
+                              {item.status}
+                            </Badge>
+                          </div>
+                            <p className="text-slate-600 text-sm">{item.description}</p>
+                          <div className="flex items-center gap-4 text-xs text-slate-500">
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              Auteur #{item.author_id.slice(0, 8)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(item.published_at).toLocaleDateString('fr-FR')}
+                            </span>
                             <span className="flex items-center gap-1">
                               <Eye className="h-3 w-3" />
                               {item.views} vues
                             </span>
-                          )}
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {item.category}
-                          </span>
+                            {item.category && (
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {item.category}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Select 
+                            value={item.status} 
+                            onValueChange={(status) => handleStatusChange(item.id, status)}
+                          >
+                            <SelectTrigger className="w-32 border-blue-200">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="published">Publié</SelectItem>
+                              <SelectItem value="draft">Brouillon</SelectItem>
+                              <SelectItem value="archived">Archivé</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
+                          <Button size="sm" variant="outline" className="border-blue-200">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Select 
-                          value={item.status} 
-                          onValueChange={(status) => handleStatusChange(item.id, status, type)}
-                        >
-                          <SelectTrigger className="w-32 border-blue-200">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="published">Publié</SelectItem>
-                            <SelectItem value="draft">Brouillon</SelectItem>
-                            <SelectItem value="archived">Archivé</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        
-                        <Button size="sm" variant="outline" className="border-blue-200">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                          onClick={() => handleDelete(item.id, type)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
         ))}
@@ -330,7 +354,7 @@ export default function ContentManagementSection() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Type de contenu</Label>
-                  <Select value={newItemForm.type} onValueChange={(value) => setNewItemForm({...newItemForm, type: value})}>
+                  <Select value={newItemForm.type} onValueChange={(value) => setNewItemForm({...newItemForm, type: value as 'announcement' | 'event' | 'service' | 'tender'})}>
                     <SelectTrigger className="border-blue-200 bg-white">
                       <SelectValue />
                     </SelectTrigger>
