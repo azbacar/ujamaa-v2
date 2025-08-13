@@ -28,7 +28,7 @@ const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSp
     },
     {
       id: 2,
-      title: "Air Comores",
+      title: "Air Comores", 
       image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=400&q=80",
       link: "https://aircomores.km",
       description: "Vols inter-îles quotidiens"
@@ -37,7 +37,7 @@ const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSp
       id: 3,
       title: "Hôtel Moroni Prince",
       image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80",
-      link: "https://hotel-moroni.km",
+      link: "https://hotel-moroni.km", 
       description: "Séjour de luxe à Moroni"
     }
   ];
@@ -45,6 +45,41 @@ const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSp
   // Sélection aléatoire d'une publicité
   const currentAd = mockAds[Math.floor(Math.random() * mockAds.length)];
   const config = adConfigs[size];
+
+  if (size === 'banner') {
+    return (
+      <Card className={`ad-space overflow-hidden hover:shadow-lg transition-shadow duration-300 w-full ${className}`}>
+        <CardContent className="p-4 relative group">
+          <Badge 
+            variant="secondary" 
+            className="absolute top-2 right-2 z-10 bg-white/90 text-gray-600 text-xs"
+          >
+            Publicité
+          </Badge>
+          
+          <a 
+            href={currentAd.link} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-4 group"
+          >
+            <div className="w-24 h-16 flex-shrink-0 rounded-lg overflow-hidden">
+              <img 
+                src={currentAd.image} 
+                alt={currentAd.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg text-gray-900 mb-1">{currentAd.title}</h3>
+              <p className="text-sm text-gray-600">{currentAd.description}</p>
+            </div>
+            <ExternalLink className="w-5 h-5 text-gray-400 group-hover:text-emerald-600" />
+          </a>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={`ad-space overflow-hidden hover:shadow-lg transition-shadow duration-300 ${className}`} 
