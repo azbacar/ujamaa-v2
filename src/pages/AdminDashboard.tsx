@@ -97,11 +97,14 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      await Promise.all([
-        fetchPendingModifications(),
-        isAdmin() && fetchUsers(),
-        isAdmin() && fetchAdminActions()
-      ]);
+      const promises = [fetchPendingModifications()];
+      
+      if (isAdmin()) {
+        promises.push(fetchUsers());
+        promises.push(fetchAdminActions());
+      }
+      
+      await Promise.all(promises);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Erreur lors du chargement des données');
@@ -111,92 +114,110 @@ export default function AdminDashboard() {
   };
 
   const fetchPendingModifications = async () => {
-    const { data, error } = await supabase
-      .from('pending_modifications')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('pending_modifications')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching pending modifications:', error);
-      return;
+      if (error) {
+        console.error('Error fetching pending modifications:', error);
+        setPendingMods([]); // Set empty array on error
+        return;
+      }
+      
+      // Fetch user details separately
+      const modsWithUsers = await Promise.all(
+        (data || []).map(async (mod) => {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('username, email')
+            .eq('id', mod.submitted_by)
+            .maybeSingle(); // Use maybeSingle to avoid errors if user not found
+          
+          return {
+            ...mod,
+            users: userData || { username: 'Utilisateur supprimé', email: 'N/A' }
+          };
+        })
+      );
+      
+      setPendingMods(modsWithUsers as any);
+    } catch (error) {
+      console.error('Error in fetchPendingModifications:', error);
+      setPendingMods([]);
     }
-    
-    // Fetch user details separately
-    const modsWithUsers = await Promise.all(
-      (data || []).map(async (mod) => {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('username, email')
-          .eq('id', mod.submitted_by)
-          .single();
-        
-        return {
-          ...mod,
-          users: userData
-        };
-      })
-    );
-    
-    setPendingMods(modsWithUsers as any);
   };
 
   const fetchUsers = async () => {
-    const { data: usersData, error } = await supabase
-      .from('users')
-      .select('*');
+    try {
+      const { data: usersData, error } = await supabase
+        .from('users')
+        .select('*');
 
-    if (error) {
-      console.error('Error fetching users:', error);
-      return;
+      if (error) {
+        console.error('Error fetching users:', error);
+        setUsers([]);
+        return;
+      }
+
+      // Fetch roles separately
+      const usersWithRoles = await Promise.all(
+        (usersData || []).map(async (user) => {
+          const { data: rolesData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id);
+          
+          return {
+            ...user,
+            user_roles: rolesData || []
+          };
+        })
+      );
+      
+      setUsers(usersWithRoles as any);
+    } catch (error) {
+      console.error('Error in fetchUsers:', error);
+      setUsers([]);
     }
-
-    // Fetch roles separately
-    const usersWithRoles = await Promise.all(
-      (usersData || []).map(async (user) => {
-        const { data: rolesData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id);
-        
-        return {
-          ...user,
-          user_roles: rolesData || []
-        };
-      })
-    );
-    
-    setUsers(usersWithRoles as any);
   };
 
   const fetchAdminActions = async () => {
-    const { data, error } = await supabase
-      .from('admin_actions')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50);
+    try {
+      const { data, error } = await supabase
+        .from('admin_actions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-    if (error) {
-      console.error('Error fetching admin actions:', error);
-      return;
+      if (error) {
+        console.error('Error fetching admin actions:', error);
+        setAdminActions([]);
+        return;
+      }
+      
+      // Fetch user details separately
+      const actionsWithUsers = await Promise.all(
+        (data || []).map(async (action) => {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('username, email')
+            .eq('id', action.admin_id)
+            .maybeSingle(); // Use maybeSingle to avoid errors
+          
+          return {
+            ...action,
+            users: userData || { username: 'Utilisateur supprimé', email: 'N/A' }
+          };
+        })
+      );
+      
+      setAdminActions(actionsWithUsers as any);
+    } catch (error) {
+      console.error('Error in fetchAdminActions:', error);
+      setAdminActions([]);
     }
-    
-    // Fetch user details separately
-    const actionsWithUsers = await Promise.all(
-      (data || []).map(async (action) => {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('username, email')
-          .eq('id', action.admin_id)
-          .single();
-        
-        return {
-          ...action,
-          users: userData || { username: 'Unknown', email: 'unknown@example.com' }
-        };
-      })
-    );
-    
-    setAdminActions(actionsWithUsers as any);
   };
 
   const handleRoleAssignment = async () => {
