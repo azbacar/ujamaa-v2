@@ -20,7 +20,9 @@ import {
   Database,
   BarChart3,
   Users,
-  Zap
+  Zap,
+  FolderOpen,
+  Lock
 } from 'lucide-react';
 
 import AdminStats from '@/components/admin/AdminStats';
@@ -30,6 +32,8 @@ import AdminActionsSection from '@/components/admin/AdminActionsSection';
 import SiteControlSection from '@/components/admin/SiteControlSection';
 import ContentManagementSection from '@/components/admin/ContentManagementSection';
 import SystemAnalyticsSection from '@/components/admin/SystemAnalyticsSection';
+import MediaManagementSection from '@/components/admin/MediaManagementSection';
+import SecuritySection from '@/components/admin/SecuritySection';
 
 interface PendingModification {
   id: string;
@@ -390,40 +394,48 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-8 bg-white border border-blue-200">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 bg-white border border-blue-200">
             <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <BarChart3 className="h-4 w-4" />
-              Vue d'ensemble
+              <span className="hidden sm:inline">Vue d'ensemble</span>
             </TabsTrigger>
             <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <FileText className="h-4 w-4" />
-              Contenu
+              <span className="hidden sm:inline">Contenu</span>
+            </TabsTrigger>
+            <TabsTrigger value="media" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <FolderOpen className="h-4 w-4" />
+              <span className="hidden sm:inline">Médias</span>
             </TabsTrigger>
             <TabsTrigger value="pending" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <Clock className="h-4 w-4" />
-              Modifications
+              <span className="hidden sm:inline">Modifications</span>
             </TabsTrigger>
             <TabsTrigger value="submit" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <Zap className="h-4 w-4" />
-              Soumettre
+              <span className="hidden sm:inline">Soumettre</span>
             </TabsTrigger>
             {isAdmin() && (
               <>
                 <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Users className="h-4 w-4" />
-                  Utilisateurs
+                  <span className="hidden sm:inline">Utilisateurs</span>
+                </TabsTrigger>
+                <TabsTrigger value="security" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                  <Lock className="h-4 w-4" />
+                  <span className="hidden sm:inline">Sécurité</span>
                 </TabsTrigger>
                 <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Settings className="h-4 w-4" />
-                  Système
+                  <span className="hidden sm:inline">Système</span>
                 </TabsTrigger>
                 <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <BarChart3 className="h-4 w-4" />
-                  Analyses
+                  <span className="hidden sm:inline">Analyses</span>
                 </TabsTrigger>
                 <TabsTrigger value="actions" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Shield className="h-4 w-4" />
-                  Journal
+                  <span className="hidden sm:inline">Journal</span>
                 </TabsTrigger>
               </>
             )}
@@ -441,6 +453,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="content" className="space-y-4">
             <ContentManagementSection />
+          </TabsContent>
+
+          <TabsContent value="media" className="space-y-4">
+            <MediaManagementSection />
           </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
@@ -528,18 +544,21 @@ export default function AdminDashboard() {
                 />
               </TabsContent>
 
-              <TabsContent value="system" className="space-y-4">
-                <SiteControlSection />
-              </TabsContent>
+            <TabsContent value="system" className="space-y-4">
+              <SiteControlSection />
+            </TabsContent>
 
-              <TabsContent value="analytics" className="space-y-4">
-                <SystemAnalyticsSection />
-              </TabsContent>
+            <TabsContent value="security" className="space-y-4">
+              <SecuritySection />
+            </TabsContent>
 
-              <TabsContent value="actions" className="space-y-4"
->
-                <AdminActionsSection actions={adminActions} />
-              </TabsContent>
+            <TabsContent value="analytics" className="space-y-4">
+              <SystemAnalyticsSection />
+            </TabsContent>
+
+            <TabsContent value="actions" className="space-y-4">
+              <AdminActionsSection actions={adminActions} />
+            </TabsContent>
             </>
           )}
         </Tabs>
