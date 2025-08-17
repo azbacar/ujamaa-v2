@@ -34,6 +34,7 @@ import ContentManagementSection from '@/components/admin/ContentManagementSectio
 import SystemAnalyticsSection from '@/components/admin/SystemAnalyticsSection';
 import MediaManagementSection from '@/components/admin/MediaManagementSection';
 import SecuritySection from '@/components/admin/SecuritySection';
+import { HomepageManagementSection } from '@/components/admin/HomepageManagementSection';
 
 interface PendingModification {
   id: string;
@@ -415,10 +416,14 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 bg-white border border-blue-200">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 bg-white border border-blue-200">
             <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Vue d'ensemble</span>
+            </TabsTrigger>
+            <TabsTrigger value="homepage" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Page d'accueil</span>
             </TabsTrigger>
             <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <FileText className="h-4 w-4" />
@@ -470,6 +475,10 @@ export default function AdminDashboard() {
               />
               <AdminActionsSection actions={adminActions.slice(0, 5)} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="homepage" className="space-y-4">
+            <HomepageManagementSection />
           </TabsContent>
 
           <TabsContent value="content" className="space-y-4">
