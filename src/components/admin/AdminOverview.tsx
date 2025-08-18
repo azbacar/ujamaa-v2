@@ -92,7 +92,7 @@ export default function AdminOverview({
       {/* Welcome Section */}
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
         <h2 className="text-2xl font-bold text-slate-900 mb-2">
-          Bienvenue dans l'interface d'administration
+          Tableau de bord administrateur
         </h2>
         <p className="text-slate-600">
           Gérez efficacement votre site web avec ces outils d'administration avancés.

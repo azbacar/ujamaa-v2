@@ -190,64 +190,94 @@ export const HomepageManagementSection = () => {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header avec statistiques */}
+    <div className="p-8 space-y-8">
+      {/* Header avec aperçu */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+        <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+          <Home className="h-6 w-6 text-blue-600" />
+          Gestion de la page d'accueil
+        </h2>
+        <p className="text-slate-600">
+          Configurez le contenu, les catégories et l'apparence de votre page d'accueil.
+        </p>
+      </div>
+
+      {/* Statistiques rapides */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Users className="h-8 w-8 text-primary mr-4" />
-            <div>
-              <p className="text-2xl font-bold">{stats.totalUsers}</p>
-              <p className="text-sm text-muted-foreground">Utilisateurs</p>
+        <Card className="border-slate-200 bg-white hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-600">Utilisateurs</p>
+                <p className="text-3xl font-bold text-slate-900">{stats.totalUsers}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Users className="h-6 w-6 text-blue-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <FileText className="h-8 w-8 text-emerald-500 mr-4" />
-            <div>
-              <p className="text-2xl font-bold">{stats.totalContent}</p>
-              <p className="text-sm text-muted-foreground">Contenus</p>
+        
+        <Card className="border-slate-200 bg-white hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-600">Contenus</p>
+                <p className="text-3xl font-bold text-slate-900">{stats.totalContent}</p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <FileText className="h-6 w-6 text-green-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <BarChart3 className="h-8 w-8 text-blue-500 mr-4" />
-            <div>
-              <p className="text-2xl font-bold">{stats.todayViews}</p>
-              <p className="text-sm text-muted-foreground">Vues aujourd'hui</p>
+        
+        <Card className="border-slate-200 bg-white hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-600">Vues aujourd'hui</p>
+                <p className="text-3xl font-bold text-slate-900">{stats.todayViews}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <BarChart3 className="h-6 w-6 text-purple-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <Megaphone className="h-8 w-8 text-orange-500 mr-4" />
-            <div>
-              <p className="text-2xl font-bold">{stats.announcements}</p>
-              <p className="text-sm text-muted-foreground">Annonces</p>
+        
+        <Card className="border-slate-200 bg-white hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-slate-600">Annonces</p>
+                <p className="text-3xl font-bold text-slate-900">{stats.announcements}</p>
+              </div>
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <Megaphone className="h-6 w-6 text-orange-600" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="hero" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="hero">Section Héro</TabsTrigger>
-          <TabsTrigger value="categories">Catégories</TabsTrigger>
-          <TabsTrigger value="layout">Mise en Page</TabsTrigger>
-          <TabsTrigger value="settings">Paramètres</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 bg-slate-100 p-1 rounded-xl">
+          <TabsTrigger value="hero" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Section Héro</TabsTrigger>
+          <TabsTrigger value="categories" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Catégories</TabsTrigger>
+          <TabsTrigger value="layout" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Mise en Page</TabsTrigger>
+          <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Paramètres</TabsTrigger>
         </TabsList>
 
         {/* Section Héro */}
         <TabsContent value="hero">
-          <Card>
+          <Card className="border-slate-200 bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Home className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold text-slate-900">
+                <Home className="h-5 w-5 text-blue-600" />
                 Gestion de la Section Héro
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-slate-600">
                 Configurez le contenu principal de votre page d'accueil
               </CardDescription>
             </CardHeader>
@@ -312,11 +342,11 @@ export const HomepageManagementSection = () => {
               </div>
 
               <div className="flex gap-4">
-                <Button onClick={handleSaveHero} className="flex items-center gap-2">
+                <Button onClick={handleSaveHero} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                   <Settings className="h-4 w-4" />
                   Sauvegarder les modifications
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" className="border-slate-300 hover:bg-slate-50">
                   <Eye className="h-4 w-4 mr-2" />
                   Prévisualiser
                 </Button>
@@ -327,13 +357,13 @@ export const HomepageManagementSection = () => {
 
         {/* Gestion des Catégories */}
         <TabsContent value="categories">
-          <Card>
+          <Card className="border-slate-200 bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold text-slate-900">
+                <FileText className="h-5 w-5 text-blue-600" />
                 Gestion des Catégories
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-slate-600">
                 Configurez les catégories affichées sur la page d'accueil
               </CardDescription>
             </CardHeader>
@@ -342,7 +372,7 @@ export const HomepageManagementSection = () => {
                 <p className="text-sm text-muted-foreground">
                   {categories.filter(cat => cat.isActive).length} catégories actives sur {categories.length}
                 </p>
-                <Button onClick={handleAddCategory} className="flex items-center gap-2">
+                <Button onClick={handleAddCategory} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                   <Plus className="h-4 w-4" />
                   Ajouter une catégorie
                 </Button>
@@ -350,7 +380,7 @@ export const HomepageManagementSection = () => {
 
               <div className="grid gap-4">
                 {categories.map((category) => (
-                  <Card key={category.id} className={`${!category.isActive ? 'opacity-60' : ''}`}>
+                  <Card key={category.id} className={`border-slate-200 bg-white hover:shadow-md transition-all duration-200 ${!category.isActive ? 'opacity-60' : ''}`}>
                     <CardContent className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-4">
                         <span className="text-2xl">{category.icon}</span>

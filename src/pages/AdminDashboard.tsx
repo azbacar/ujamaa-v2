@@ -20,6 +20,8 @@ import MediaManagementSection from '@/components/admin/MediaManagementSection';
 import SiteControlSection from '@/components/admin/SiteControlSection';
 import SecuritySection from '@/components/admin/SecuritySection';
 import SystemAnalyticsSection from '@/components/admin/SystemAnalyticsSection';
+import SystemControlSection from '@/components/admin/SystemControlSection';
+import AnalyticsSection from '@/components/admin/AnalyticsSection';
 import { HomepageManagementSection } from '@/components/admin/HomepageManagementSection';
 
 interface PendingModification {
@@ -208,13 +210,13 @@ export default function AdminDashboard() {
         return <MediaManagementSection />;
       
       case 'site-control':
-        return <SiteControlSection />;
+        return <SystemControlSection />;
       
       case 'security':
         return <SecuritySection />;
       
       case 'analytics':
-        return <SystemAnalyticsSection />;
+        return <AnalyticsSection />;
       
       case 'actions':
         return <AdminActionsSection actions={adminActions} />;
