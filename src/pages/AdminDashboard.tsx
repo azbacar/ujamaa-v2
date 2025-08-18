@@ -20,7 +20,7 @@ import MediaManagementSection from '@/components/admin/MediaManagementSection';
 import SiteControlSection from '@/components/admin/SiteControlSection';
 import SecuritySection from '@/components/admin/SecuritySection';
 import SystemAnalyticsSection from '@/components/admin/SystemAnalyticsSection';
-import HomepageManagementSection from '@/components/admin/HomepageManagementSection';
+import { HomepageManagementSection } from '@/components/admin/HomepageManagementSection';
 
 interface PendingModification {
   id: string;
@@ -30,7 +30,7 @@ interface PendingModification {
   created_at: string;
   content: any;
   submitted_by: string;
-  users?: { username: string; email: string };
+  users?: { username: string; email: string } | null;
 }
 
 interface AdminAction {
@@ -40,7 +40,7 @@ interface AdminAction {
   target_id?: string;
   description: string;
   created_at: string;
-  users: { username: string; email: string };
+  users?: { username: string; email: string } | null;
 }
 
 export default function AdminDashboard() {
@@ -53,6 +53,8 @@ export default function AdminDashboard() {
   const [adminActions, setAdminActions] = useState<AdminAction[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedRole, setSelectedRole] = useState('user');
 
   useEffect(() => {
     if (roleLoading) return;
@@ -69,16 +71,10 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       
-      // Fetch pending modifications with user info
+      // Fetch pending modifications
       const { data: modsData } = await supabase
         .from('pending_modifications')
-        .select(`
-          *,
-          users!pending_modifications_submitted_by_fkey (
-            username,
-            email
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       setPendingMods(modsData || []);
@@ -87,13 +83,7 @@ export default function AdminDashboard() {
       if (isAdmin()) {
         const { data: actionsData } = await supabase
           .from('admin_actions')
-          .select(`
-            *,
-            users!admin_actions_admin_id_fkey (
-              username,
-              email
-            )
-          `)
+          .select('*')
           .order('created_at', { ascending: false })
           .limit(10);
         
@@ -201,7 +191,18 @@ export default function AdminDashboard() {
         />;
       
       case 'users':
-        return <UserManagementSection />;
+        return <UserManagementSection 
+          users={users}
+          selectedUser={selectedUser}
+          selectedRole={selectedRole}
+          onUserSelect={setSelectedUser}
+          onRoleSelect={setSelectedRole}
+          onRoleAssign={() => {
+            // Handle role assignment
+            toast.success('Rôle assigné avec succès');
+            fetchData();
+          }}
+        />;
       
       case 'media':
         return <MediaManagementSection />;

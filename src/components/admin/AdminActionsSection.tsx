@@ -16,7 +16,7 @@ interface AdminAction {
   target_id?: string;
   description: string;
   created_at: string;
-  users: { username: string; email: string };
+  users?: { username: string; email: string } | null;
 }
 
 interface AdminActionsSectionProps {
@@ -83,10 +83,10 @@ export default function AdminActionsSection({ actions }: AdminActionsSectionProp
                           <div>
                             <p className="font-medium text-slate-900">{action.action_type.replace('_', ' ')}</p>
                             <div className="flex items-center gap-4 mt-1 text-sm text-slate-600">
-                              <div className="flex items-center gap-1">
-                                <User className="h-3 w-3" />
-                                <span>{action.users.username}</span>
-                              </div>
+                               <div className="flex items-center gap-1">
+                                 <User className="h-3 w-3" />
+                                 <span>{action.users?.username || 'Utilisateur inconnu'}</span>
+                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
                                 <span>
