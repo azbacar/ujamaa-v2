@@ -416,52 +416,32 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 bg-white border border-blue-200">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Vue d'ensemble</span>
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-2 h-auto p-2 bg-slate-50">
+            <TabsTrigger value="overview" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg">
+              <BarChart3 className="h-6 w-6" />
+              <span className="text-sm font-medium">Vue d'ensemble</span>
             </TabsTrigger>
-            <TabsTrigger value="homepage" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Page d'accueil</span>
+            <TabsTrigger value="homepage" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg">
+              <Settings className="h-6 w-6" />
+              <span className="text-sm font-medium">Page d'accueil</span>
             </TabsTrigger>
-            <TabsTrigger value="content" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Contenu</span>
+            <TabsTrigger value="content" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg">
+              <FileText className="h-6 w-6" />
+              <span className="text-sm font-medium">Contenu</span>
             </TabsTrigger>
-            <TabsTrigger value="media" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              <FolderOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Médias</span>
-            </TabsTrigger>
-            <TabsTrigger value="pending" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              <Clock className="h-4 w-4" />
-              <span className="hidden sm:inline">Modifications</span>
-            </TabsTrigger>
-            <TabsTrigger value="submit" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              <Zap className="h-4 w-4" />
-              <span className="hidden sm:inline">Soumettre</span>
+            <TabsTrigger value="pending" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg">
+              <Clock className="h-6 w-6" />
+              <span className="text-sm font-medium">Modifications</span>
             </TabsTrigger>
             {isAdmin() && (
               <>
-                <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Utilisateurs</span>
+                <TabsTrigger value="users" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg">
+                  <Users className="h-6 w-6" />
+                  <span className="text-sm font-medium">Utilisateurs</span>
                 </TabsTrigger>
-                <TabsTrigger value="security" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  <Lock className="h-4 w-4" />
-                  <span className="hidden sm:inline">Sécurité</span>
-                </TabsTrigger>
-                <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  <Settings className="h-4 w-4" />
-                  <span className="hidden sm:inline">Système</span>
-                </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Analyses</span>
-                </TabsTrigger>
-                <TabsTrigger value="actions" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-                  <Shield className="h-4 w-4" />
-                  <span className="hidden sm:inline">Journal</span>
+                <TabsTrigger value="system" className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg">
+                  <Settings className="h-6 w-6" />
+                  <span className="text-sm font-medium">Système</span>
                 </TabsTrigger>
               </>
             )}
