@@ -1,311 +1,402 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  BarChart3, 
   TrendingUp, 
-  Users, 
-  Eye, 
-  Activity,
-  Database,
-  Server,
-  Globe,
+  Users,
+  Eye,
   Clock,
-  Download
+  Activity,
+  Globe,
+  Smartphone,
+  Monitor,
+  BarChart3,
+  PieChart,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
-interface SystemStats {
-  totalUsers: number;
-  totalContent: number;
-  totalViews: number;
-  pendingModifications: number;
-  adminActions: number;
-  databaseSize: string;
-  uptime: string;
-  lastBackup: string;
+interface AnalyticsData {
+  pageViews: { name: string; value: number; change: number }[];
+  userStats: { 
+    total: number; 
+    active: number; 
+    new: number; 
+    retention: number;
+  };
+  deviceStats: { name: string; value: number; percentage: number }[];
+  trafficSources: { name: string; value: number; percentage: number }[];
+  popularPages: { page: string; views: number; uniqueVisitors: number; avgTime: string }[];
+  realTimeStats: {
+    activeUsers: number;
+    sessionsToday: number;
+    bounceRate: number;
+    avgSessionDuration: string;
+  };
 }
 
 export default function SystemAnalyticsSection() {
-  const [stats, setStats] = useState<SystemStats>({
-    totalUsers: 0,
-    totalContent: 0,
-    totalViews: 0,
-    pendingModifications: 0,
-    adminActions: 0,
-    databaseSize: '0 MB',
-    uptime: '99.9%',
-    lastBackup: 'Jamais'
-  });
-  
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>('30d');
 
   useEffect(() => {
-    fetchSystemStats();
-  }, []);
+    fetchAnalytics();
+  }, [selectedPeriod]);
 
-  const fetchSystemStats = async () => {
+  const fetchAnalytics = async () => {
     try {
       setLoading(true);
       
-      // Fetch users count
-      const { count: usersCount } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true });
+      // Mock analytics data - in real app would fetch from analytics service
+      const mockData: AnalyticsData = {
+        pageViews: [
+          { name: 'Accueil', value: 2847, change: 12.5 },
+          { name: 'Annonces', value: 1832, change: -5.2 },
+          { name: 'Événements', value: 1456, change: 8.7 },
+          { name: 'Services', value: 1203, change: 15.3 },
+          { name: 'Prix', value: 987, change: -2.1 },
+          { name: 'Appels d\'offres', value: 756, change: 22.4 }
+        ],
+        userStats: {
+          total: 12847,
+          active: 8234,
+          new: 1456,
+          retention: 76.3
+        },
+        deviceStats: [
+          { name: 'Mobile', value: 6523, percentage: 65.2 },
+          { name: 'Desktop', value: 2891, percentage: 28.9 },
+          { name: 'Tablette', value: 587, percentage: 5.9 }
+        ],
+        trafficSources: [
+          { name: 'Recherche organique', value: 4523, percentage: 42.1 },
+          { name: 'Direct', value: 3456, percentage: 32.2 },
+          { name: 'Réseaux sociaux', value: 1789, percentage: 16.7 },
+          { name: 'Références', value: 967, percentage: 9.0 }
+        ],
+        popularPages: [
+          { page: '/annonces', views: 8945, uniqueVisitors: 6234, avgTime: '3:24' },
+          { page: '/evenements', views: 7123, uniqueVisitors: 5678, avgTime: '4:12' },
+          { page: '/services', views: 5634, uniqueVisitors: 4321, avgTime: '2:56' },
+          { page: '/prix', views: 4567, uniqueVisitors: 3456, avgTime: '2:18' },
+          { page: '/tenders', views: 3456, uniqueVisitors: 2890, avgTime: '5:45' }
+        ],
+        realTimeStats: {
+          activeUsers: 234,
+          sessionsToday: 1847,
+          bounceRate: 24.5,
+          avgSessionDuration: '4:32'
+        }
+      };
 
-      // Fetch content items count
-      const { count: contentCount } = await supabase
-        .from('content_items')
-        .select('*', { count: 'exact', head: true });
-
-      // Fetch total views
-      const { data: viewsData } = await supabase
-        .from('content_items')
-        .select('views');
-      
-      const totalViews = viewsData?.reduce((sum, item) => sum + (item.views || 0), 0) || 0;
-
-      // Fetch pending modifications
-      const { count: pendingCount } = await supabase
-        .from('pending_modifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
-
-      // Fetch admin actions count
-      const { count: actionsCount } = await supabase
-        .from('admin_actions')
-        .select('*', { count: 'exact', head: true });
-
-      setStats({
-        totalUsers: usersCount || 0,
-        totalContent: contentCount || 0,
-        totalViews,
-        pendingModifications: pendingCount || 0,
-        adminActions: actionsCount || 0,
-        databaseSize: '2.4 MB', // Mock data
-        uptime: '99.9%', // Mock data
-        lastBackup: new Date().toLocaleDateString('fr-FR')
-      });
-
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setAnalytics(mockData);
     } catch (error) {
-      console.error('Error fetching system stats:', error);
-      toast.error('Erreur lors du chargement des statistiques');
+      console.error('Error fetching analytics:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExportData = () => {
-    toast.success('Export des données initié');
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
   };
 
-  const analyticsCards = [
-    {
-      title: 'Utilisateurs totaux',
-      value: stats.totalUsers,
-      icon: Users,
-      color: 'blue',
-      change: '+12%'
-    },
-    {
-      title: 'Contenu publié',
-      value: stats.totalContent,
-      icon: Database,
-      color: 'green',
-      change: '+8%'
-    },
-    {
-      title: 'Vues totales',
-      value: stats.totalViews.toLocaleString(),
-      icon: Eye,
-      color: 'purple',
-      change: '+25%'
-    },
-    {
-      title: 'Actions admin',
-      value: stats.adminActions,
-      icon: Activity,
-      color: 'orange',
-      change: '+5%'
-    }
-  ];
+  const getChangeIcon = (change: number) => {
+    return change >= 0 ? (
+      <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+    ) : (
+      <ArrowDownRight className="h-4 w-4 text-red-500" />
+    );
+  };
 
-  const systemHealth = [
-    {
-      label: 'Temps de fonctionnement',
-      value: stats.uptime,
-      status: 'excellent'
-    },
-    {
-      label: 'Taille base de données',
-      value: stats.databaseSize,
-      status: 'good'
-    },
-    {
-      label: 'Dernière sauvegarde',
-      value: stats.lastBackup,
-      status: 'good'
-    },
-    {
-      label: 'Modifications en attente',
-      value: stats.pendingModifications.toString(),
-      status: stats.pendingModifications > 5 ? 'warning' : 'good'
-    }
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'excellent': return 'text-green-600 bg-green-50 border-green-200';
-      case 'good': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'warning': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'error': return 'text-red-600 bg-red-50 border-red-200';
-      default: return 'text-slate-600 bg-slate-50 border-slate-200';
-    }
+  const getChangeColor = (change: number) => {
+    return change >= 0 ? 'text-emerald-600' : 'text-red-600';
   };
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground mt-2">Chargement des analyses...</p>
-        </div>
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
+  if (!analytics) return null;
+
   return (
     <div className="space-y-6">
-      {/* Analytics Overview */}
-      <Card className="border-blue-200 bg-white">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Analyses du système
+      {/* Real-time Overview */}
+      <Card className="admin-card">
+        <CardHeader className="admin-gradient-header text-white">
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Statistiques en temps réel
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {analyticsCards.map((card, index) => {
-              const Icon = card.icon;
-              return (
-                <div key={index} className="text-center p-6 border border-slate-200 rounded-xl bg-gradient-to-br from-white to-slate-50 hover:shadow-lg transition-all duration-300">
-                  <Icon className={`h-8 w-8 mx-auto mb-3 text-${card.color}-600`} />
-                  <div className="text-3xl font-bold text-slate-900 mb-1">{card.value}</div>
-                  <div className="text-sm text-slate-600 mb-2">{card.title}</div>
-                  <Badge className={`text-xs ${card.change.startsWith('+') ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200'}`}>
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    {card.change}
-                  </Badge>
-                </div>
-              );
-            })}
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 border border-emerald-200 rounded-lg bg-emerald-50">
+              <Users className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold">{analytics.realTimeStats.activeUsers}</div>
+              <div className="text-sm text-emerald-600">Utilisateurs actifs</div>
+            </div>
+            <div className="text-center p-4 border border-blue-200 rounded-lg bg-blue-50">
+              <Globe className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold">{formatNumber(analytics.realTimeStats.sessionsToday)}</div>
+              <div className="text-sm text-blue-600">Sessions aujourd'hui</div>
+            </div>
+            <div className="text-center p-4 border border-orange-200 rounded-lg bg-orange-50">
+              <TrendingUp className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold">{analytics.realTimeStats.bounceRate}%</div>
+              <div className="text-sm text-orange-600">Taux de rebond</div>
+            </div>
+            <div className="text-center p-4 border border-purple-200 rounded-lg bg-purple-50">
+              <Clock className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold">{analytics.realTimeStats.avgSessionDuration}</div>
+              <div className="text-sm text-purple-600">Durée moyenne</div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* System Health */}
-      <Card className="border-blue-200 bg-white">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
-            <Server className="h-5 w-5" />
-            État du système
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {systemHealth.map((item, index) => (
-              <div key={index} className="p-4 border border-slate-200 rounded-lg bg-slate-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">{item.label}</p>
-                    <p className="text-lg font-semibold text-slate-700 mt-1">{item.value}</p>
-                  </div>
-                  <Badge className={`${getStatusColor(item.status)}`}>
-                    {item.status === 'excellent' && '✓'}
-                    {item.status === 'good' && '●'}
-                    {item.status === 'warning' && '⚠'}
-                    {item.status === 'error' && '✗'}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Traffic Analytics */}
-      <Card className="border-blue-200 bg-white">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Trafic et utilisation
-            </CardTitle>
-            <Button 
-              onClick={handleExportData}
-              variant="outline" 
-              className="border-blue-200 text-blue-600 hover:bg-blue-50"
+      {/* Period Selector */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Analytiques détaillées</h2>
+        <div className="flex gap-2">
+          {(['7d', '30d', '90d'] as const).map((period) => (
+            <button
+              key={period}
+              onClick={() => setSelectedPeriod(period)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                selectedPeriod === period 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-white border border-blue-200 text-blue-600 hover:bg-blue-50'
+              }`}
             >
-              <Download className="h-4 w-4 mr-2" />
-              Exporter
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Popular Content */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                Contenu populaire
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { title: 'Services passeports', views: 3200, type: 'service' },
-                  { title: 'Festival Culture', views: 2100, type: 'event' },
-                  { title: 'Réglementation visas', views: 1250, type: 'announcement' }
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900">{item.title}</p>
-                      <p className="text-sm text-slate-600">{item.type}</p>
-                    </div>
-                    <Badge variant="outline" className="text-purple-600 border-purple-200">
-                      {item.views} vues
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
+              {period === '7d' && '7 jours'}
+              {period === '30d' && '30 jours'}
+              {period === '90d' && '90 jours'}
+            </button>
+          ))}
+        </div>
+      </div>
 
-            {/* Recent Activity */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Activité récente
-              </h3>
-              <div className="space-y-3">
-                {[
-                  { action: 'Nouvelle inscription utilisateur', time: 'Il y a 5 min' },
-                  { action: 'Contenu publié', time: 'Il y a 12 min' },
-                  { action: 'Modification approuvée', time: 'Il y a 23 min' }
-                ].map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                    <div>
-                      <p className="font-medium text-slate-900">{item.action}</p>
-                      <p className="text-sm text-slate-600">{item.time}</p>
+      <Tabs defaultValue="pages" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 bg-white border border-blue-200">
+          <TabsTrigger value="pages" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <BarChart3 className="h-4 w-4" />
+            Pages
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <Users className="h-4 w-4" />
+            Utilisateurs
+          </TabsTrigger>
+          <TabsTrigger value="devices" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <Monitor className="h-4 w-4" />
+            Appareils
+          </TabsTrigger>
+          <TabsTrigger value="traffic" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <Globe className="h-4 w-4" />
+            Trafic
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Page Analytics */}
+        <TabsContent value="pages" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="admin-card">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Pages populaires</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analytics.popularPages.map((page, index) => (
+                    <div key={page.page} className="flex items-center justify-between p-3 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm">{page.page}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatNumber(page.uniqueVisitors)} visiteurs uniques
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">{formatNumber(page.views)}</div>
+                        <div className="text-xs text-muted-foreground">{page.avgTime}</div>
+                      </div>
                     </div>
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="admin-card">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Évolution des vues</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analytics.pageViews.map((page) => (
+                    <div key={page.name} className="flex items-center justify-between p-3 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Eye className="h-5 w-5 text-blue-600" />
+                        <div>
+                          <div className="font-medium text-sm">{page.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatNumber(page.value)} vues
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getChangeIcon(page.change)}
+                        <span className={`text-sm font-medium ${getChangeColor(page.change)}`}>
+                          {Math.abs(page.change)}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* User Analytics */}
+        <TabsContent value="users" className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="admin-card">
+              <CardContent className="pt-6 text-center">
+                <Users className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                <div className="text-2xl font-bold">{formatNumber(analytics.userStats.total)}</div>
+                <div className="text-sm text-muted-foreground">Total utilisateurs</div>
+              </CardContent>
+            </Card>
+            <Card className="admin-card">
+              <CardContent className="pt-6 text-center">
+                <Activity className="h-12 w-12 text-emerald-600 mx-auto mb-4" />
+                <div className="text-2xl font-bold">{formatNumber(analytics.userStats.active)}</div>
+                <div className="text-sm text-muted-foreground">Utilisateurs actifs</div>
+              </CardContent>
+            </Card>
+            <Card className="admin-card">
+              <CardContent className="pt-6 text-center">
+                <TrendingUp className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                <div className="text-2xl font-bold">{formatNumber(analytics.userStats.new)}</div>
+                <div className="text-sm text-muted-foreground">Nouveaux utilisateurs</div>
+              </CardContent>
+            </Card>
+            <Card className="admin-card">
+              <CardContent className="pt-6 text-center">
+                <Calendar className="h-12 w-12 text-orange-600 mx-auto mb-4" />
+                <div className="text-2xl font-bold">{analytics.userStats.retention}%</div>
+                <div className="text-sm text-muted-foreground">Taux de rétention</div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Device Analytics */}
+        <TabsContent value="devices" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="admin-card">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Répartition par appareil</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {analytics.deviceStats.map((device) => (
+                    <div key={device.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {device.name === 'Mobile' && <Smartphone className="h-5 w-5 text-blue-600" />}
+                        {device.name === 'Desktop' && <Monitor className="h-5 w-5 text-emerald-600" />}
+                        {device.name === 'Tablette' && <Monitor className="h-5 w-5 text-purple-600" />}
+                        <span className="font-medium">{device.name}</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="w-32 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full" 
+                            style={{ width: `${device.percentage}%` }}
+                          ></div>
+                        </div>
+                        <div className="w-16 text-right">
+                          <div className="font-semibold">{formatNumber(device.value)}</div>
+                          <div className="text-xs text-muted-foreground">{device.percentage}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="admin-card">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Tendances d'utilisation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <PieChart className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    Les utilisateurs mobiles représentent la majorité du trafic
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Traffic Sources */}
+        <TabsContent value="traffic" className="space-y-4">
+          <Card className="admin-card">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Sources de trafic</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {analytics.trafficSources.map((source, index) => (
+                  <div key={source.name} className="flex items-center justify-between p-4 border border-blue-200 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-4 h-4 rounded-full ${
+                        index === 0 ? 'bg-blue-500' :
+                        index === 1 ? 'bg-emerald-500' :
+                        index === 2 ? 'bg-purple-500' : 'bg-orange-500'
+                      }`}></div>
+                      <span className="font-medium">{source.name}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="w-32 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            index === 0 ? 'bg-blue-500' :
+                            index === 1 ? 'bg-emerald-500' :
+                            index === 2 ? 'bg-purple-500' : 'bg-orange-500'
+                          }`}
+                          style={{ width: `${source.percentage}%` }}
+                        ></div>
+                      </div>
+                      <div className="w-20 text-right">
+                        <div className="font-semibold">{formatNumber(source.value)}</div>
+                        <div className="text-xs text-muted-foreground">{source.percentage}%</div>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

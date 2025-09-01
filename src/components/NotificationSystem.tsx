@@ -133,10 +133,10 @@ const NotificationSystem = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'warning': return 'text-orange-600 bg-orange-100';
-      case 'success': return 'text-green-600 bg-green-100';
-      case 'error': return 'text-red-600 bg-red-100';
-      default: return 'text-blue-600 bg-blue-100';
+      case 'warning': return 'text-amber-600 bg-amber-50';
+      case 'success': return 'text-emerald-600 bg-emerald-50';
+      case 'error': return 'text-red-600 bg-red-50';
+      default: return 'text-ocean-600 bg-ocean-50';
     }
   };
 
