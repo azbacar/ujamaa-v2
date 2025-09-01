@@ -211,6 +211,72 @@ const announcements: Announcement[] = [
     author: "Université des Comores",
     type: "featured",
     tags: ["éducation", "université", "inscription", "bourse"]
+  },
+  {
+    id: 7,
+    title: "Nouveau service de ferry Anjouan-Mayotte",
+    category: "Transports",
+    description: "Lancement d'une nouvelle liaison maritime entre Anjouan et Mayotte avec 3 rotations hebdomadaires.",
+    fullContent: `
+      <h3>Nouvelle liaison maritime Anjouan-Mayotte</h3>
+      <p>Une excellente nouvelle pour les voyageurs et les professionnels : une nouvelle ligne de ferry va désormais relier Anjouan à Mayotte avec 3 départs par semaine.</p>
+      
+      <h4>Horaires et fréquences</h4>
+      <ul>
+        <li><strong>Départs d'Anjouan :</strong> Mardi, Jeudi et Samedi à 8h00</li>
+        <li><strong>Départs de Mayotte :</strong> Mercredi, Vendredi et Dimanche à 14h00</li>
+        <li><strong>Durée du trajet :</strong> Environ 2h30</li>
+      </ul>
+      
+      <h4>Tarifs attractifs</h4>
+      <p>Tarif unique de <strong>25€</strong> par passager, avec des réductions pour les résidents et les familles nombreuses.</p>
+      
+      <h4>Services à bord</h4>
+      <p>Ferry moderne équipé de sièges confortables, climatisation, bar et espace bagages sécurisé.</p>
+      
+      <h4>Réservations</h4>
+      <p>Les réservations sont ouvertes dès maintenant en ligne ou dans les agences partenaires.</p>
+    `,
+    location: "Anjouan - Mayotte",
+    date: "Il y a 3 heures",
+    author: "Compagnie Maritime Inter-îles",
+    type: "featured",
+    price: "25€",
+    tags: ["transport", "ferry", "Anjouan", "Mayotte", "maritime"]
+  },
+  {
+    id: 8,
+    title: "Vols supplémentaires Air Austral vers Moroni",
+    category: "Transports",
+    description: "Air Austral augmente sa fréquence vers Moroni avec 2 vols hebdomadaires supplémentaires pendant la haute saison.",
+    fullContent: `
+      <h3>Renforcement de la desserte aérienne</h3>
+      <p>Air Austral annonce l'ajout de 2 vols hebdomadaires supplémentaires sur la liaison La Réunion-Moroni pour répondre à la forte demande pendant la période touristique.</p>
+      
+      <h4>Nouveaux horaires</h4>
+      <ul>
+        <li><strong>Vol supplémentaire 1 :</strong> Mercredi - Départ La Réunion 10h30, Arrivée Moroni 13h15</li>
+        <li><strong>Vol supplémentaire 2 :</strong> Vendredi - Départ La Réunion 15h45, Arrivée Moroni 18h30</li>
+      </ul>
+      
+      <h4>Période d'application</h4>
+      <p>Ces vols supplémentaires seront opérationnels du <strong>15 décembre 2024 au 15 mars 2025</strong>.</p>
+      
+      <h4>Avantages pour les passagers</h4>
+      <ul>
+        <li>Plus de flexibilité dans les horaires de voyage</li>
+        <li>Réduction des temps d'attente</li>
+        <li>Tarifs préférentiels pour les réservations anticipées</li>
+      </ul>
+      
+      <h4>Réservations</h4>
+      <p>Les réservations sont ouvertes sur le site web d'Air Austral et dans toutes les agences de voyage partenaires.</p>
+    `,
+    location: "La Réunion - Moroni",
+    date: "Il y a 6 heures",
+    author: "Air Austral",
+    type: "normal",
+    tags: ["transport", "aviation", "Air Austral", "Moroni", "La Réunion"]
   }
 ];
 
