@@ -84,10 +84,10 @@ const AuthPage = () => {
       />
       
       <main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-200px)]">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md bg-card border-border shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle>Connexion</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-foreground">Connexion</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Accédez à votre compte ou créez-en un nouveau
             </CardDescription>
           </CardHeader>
@@ -192,14 +192,14 @@ const AuthPage = () => {
             </Tabs>
 
             {error && (
-              <Alert className="mt-4">
+              <Alert className="mt-4 border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
             {success && (
-              <Alert className="mt-4">
-                <AlertDescription className="text-green-600">{success}</AlertDescription>
+              <Alert className="mt-4 border-success/50 text-success dark:border-success [&>svg]:text-success">
+                <AlertDescription>{success}</AlertDescription>
               </Alert>
             )}
           </CardContent>

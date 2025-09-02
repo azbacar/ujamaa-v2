@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AdSpaceProps {
   size?: 'small' | 'medium' | 'large' | 'banner';
@@ -16,34 +18,109 @@ const adConfigs = {
   banner: { width: '100%', height: '120px' }
 };
 
-const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSpaceProps) => {
-  // En production, ceci serait géré par l'admin via une base de données
-  const mockAds = [
-    {
-      id: 1,
-      title: "Banque Centrale des Comores",
-      image: "https://images.unsplash.com/photo-1560472355-536de3962603?auto=format&fit=crop&w=400&q=80",
-      link: "https://banque-comores.km",
-      description: "Services bancaires pour tous"
-    },
-    {
-      id: 2,
-      title: "Air Comores", 
-      image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=400&q=80",
-      link: "https://aircomores.km",
-      description: "Vols inter-îles quotidiens"
-    },
-    {
-      id: 3,
-      title: "Hôtel Moroni Prince",
-      image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80",
-      link: "https://hotel-moroni.km", 
-      description: "Séjour de luxe à Moroni"
-    }
-  ];
+interface Ad {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  link_url: string | null;
+  position: string;
+  size: string;
+  click_count: number;
+  impression_count: number;
+}
 
-  // Sélection aléatoire d'une publicité
-  const currentAd = mockAds[Math.floor(Math.random() * mockAds.length)];
+const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSpaceProps) => {
+  const [currentAd, setCurrentAd] = useState<Ad | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchAd = async () => {
+      try {
+        // Fetch ads that match position and size, and are currently active
+        const { data: ads, error } = await supabase
+          .from('ads')
+          .select('*')
+          .eq('position', position)
+          .eq('size', size)
+          .eq('is_active', true)
+          .or('start_date.is.null,start_date.lte.' + new Date().toISOString())
+          .or('end_date.is.null,end_date.gte.' + new Date().toISOString());
+
+        if (error) {
+          console.error('Error fetching ads:', error);
+          return;
+        }
+
+        if (ads && ads.length > 0) {
+          // Select random ad from matching ads
+          const randomAd = ads[Math.floor(Math.random() * ads.length)];
+          setCurrentAd(randomAd);
+          
+          // Track impression
+          await supabase
+            .from('site_analytics')
+            .insert([{
+              event_type: 'ad_impression',
+              metadata: { 
+                ad_id: randomAd.id, 
+                position, 
+                size 
+              }
+            }]);
+          
+          // Increment impression count
+          await supabase
+            .from('ads')
+            .update({ impression_count: (randomAd.impression_count || 0) + 1 })
+            .eq('id', randomAd.id);
+        }
+      } catch (error) {
+        console.error('Error in fetchAd:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAd();
+  }, [position, size]);
+
+  const handleClick = async () => {
+    if (currentAd) {
+      // Track click
+      await supabase
+        .from('site_analytics')
+        .insert([{
+          event_type: 'ad_click',
+          metadata: { 
+            ad_id: currentAd.id, 
+            position, 
+            size 
+          }
+        }]);
+      
+      // Increment click count
+      await supabase
+        .from('ads')
+        .update({ click_count: (currentAd.click_count || 0) + 1 })
+        .eq('id', currentAd.id);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card className={`ad-space ${className}`}>
+        <CardContent className="p-4 flex items-center justify-center">
+          <div className="animate-pulse text-muted-foreground">Chargement...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!currentAd) {
+    return null; // Don't show anything if no ads available
+  }
+
   const config = adConfigs[size];
 
   if (size === 'banner') {
@@ -58,23 +135,24 @@ const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSp
           </Badge>
           
           <a 
-            href={currentAd.link} 
+            href={currentAd.link_url || '#'} 
             target="_blank" 
             rel="noopener noreferrer"
+            onClick={handleClick}
             className="flex items-center gap-4 group"
           >
             <div className="w-24 h-16 flex-shrink-0 rounded-lg overflow-hidden">
               <img 
-                src={currentAd.image} 
+                src={currentAd.image_url || 'https://images.unsplash.com/photo-1560472355-536de3962603?auto=format&fit=crop&w=400&q=80'} 
                 alt={currentAd.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-lg text-gray-900 mb-1">{currentAd.title}</h3>
-              <p className="text-sm text-gray-600">{currentAd.description}</p>
+              <h3 className="font-bold text-lg text-foreground mb-1">{currentAd.title}</h3>
+              <p className="text-sm text-muted-foreground">{currentAd.description}</p>
             </div>
-            <ExternalLink className="w-5 h-5 text-gray-400 group-hover:text-emerald-600" />
+            <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
           </a>
         </CardContent>
       </Card>
@@ -93,14 +171,15 @@ const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSp
         </Badge>
         
         <a 
-          href={currentAd.link} 
+          href={currentAd.link_url || '#'} 
           target="_blank" 
           rel="noopener noreferrer"
+          onClick={handleClick}
           className="block"
         >
           <div className="relative" style={{ height: config.height }}>
             <img 
-              src={currentAd.image} 
+              src={currentAd.image_url || 'https://images.unsplash.com/photo-1560472355-536de3962603?auto=format&fit=crop&w=400&q=80'} 
               alt={currentAd.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />

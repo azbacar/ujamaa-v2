@@ -13,56 +13,75 @@ import {
   Bell,
   ChevronRight,
   User,
-  Settings
+  Settings,
+  MousePointer,
+  Eye,
+  BarChart3
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useRealTimeStats } from '@/hooks/useRealTimeStats';
 
 interface AdminOverviewProps {
-  userCount: number;
-  pendingModifications: number;
   recentActions: any[];
-  totalModifications: number;
 }
 
 export default function AdminOverview({ 
-  userCount, 
-  pendingModifications, 
-  recentActions, 
-  totalModifications 
+  recentActions
 }: AdminOverviewProps) {
+  const { 
+    userCount, 
+    contentCount,
+    announcementsCount,
+    pendingModifications, 
+    totalModifications,
+    adsCount,
+    analyticsViews,
+    loading: statsLoading,
+    error: statsError 
+  } = useRealTimeStats();
   const quickStats = [
     {
       title: 'Utilisateurs totaux',
-      value: userCount,
+      value: statsLoading ? '...' : userCount,
       icon: Users,
       color: 'blue',
-      change: '+12%',
       description: 'Comptes actifs'
     },
     {
+      title: 'Contenu publié',
+      value: statsLoading ? '...' : contentCount,
+      icon: FileText,
+      color: 'green',
+      description: 'Articles et pages'
+    },
+    {
       title: 'En attente',
-      value: pendingModifications,
+      value: statsLoading ? '...' : pendingModifications,
       icon: Clock,
       color: 'orange',
-      change: '-5%',
       description: 'Modifications à valider'
     },
     {
-      title: 'Total modifications',
-      value: totalModifications,
-      icon: FileText,
-      color: 'green',
-      change: '+8%',
-      description: 'Toutes modifications'
+      title: 'Annonces',
+      value: statsLoading ? '...' : announcementsCount,
+      icon: Bell,
+      color: 'purple',
+      description: 'Annonces publiques'
     },
     {
-      title: 'Actions récentes',
-      value: recentActions.length,
-      icon: Activity,
-      color: 'purple',
-      change: '+15%',
-      description: 'Actions administratives'
+      title: 'Publicités actives',
+      value: statsLoading ? '...' : adsCount,
+      icon: BarChart3,
+      color: 'emerald',
+      description: 'Espaces publicitaires'
+    },
+    {
+      title: 'Vues analytiques',
+      value: statsLoading ? '...' : analyticsViews,
+      icon: Eye,
+      color: 'cyan',
+      description: 'Pages consultées'
     }
   ];
 
@@ -99,8 +118,17 @@ export default function AdminOverview({
         </p>
       </div>
 
+      {/* Error Display */}
+      {statsError && (
+        <Card className="border-destructive/50">
+          <CardContent className="p-4">
+            <p className="text-destructive text-sm">{statsError}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {quickStats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -111,32 +139,18 @@ export default function AdminOverview({
                     <p className="text-sm font-medium text-slate-600">{stat.title}</p>
                     <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
                     <div className="flex items-center space-x-2">
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          stat.change.startsWith('+') 
-                            ? 'text-green-600 border-green-200 bg-green-50' 
-                            : 'text-red-600 border-red-200 bg-red-50'
-                        }`}
-                      >
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        {stat.change}
-                      </Badge>
-                      <span className="text-xs text-slate-500">{stat.description}</span>
+                      <span className="text-xs text-muted-foreground">{stat.description}</span>
                     </div>
                   </div>
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    stat.color === 'blue' ? 'bg-blue-100' :
-                    stat.color === 'orange' ? 'bg-orange-100' :
-                    stat.color === 'green' ? 'bg-green-100' :
-                    'bg-purple-100'
+                    stat.color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                    stat.color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                    stat.color === 'green' ? 'bg-green-100 text-green-600' :
+                    stat.color === 'purple' ? 'bg-purple-100 text-purple-600' :
+                    stat.color === 'emerald' ? 'bg-emerald-100 text-emerald-600' :
+                    'bg-cyan-100 text-cyan-600'
                   }`}>
-                    <Icon className={`h-6 w-6 ${
-                      stat.color === 'blue' ? 'text-blue-600' :
-                      stat.color === 'orange' ? 'text-orange-600' :
-                      stat.color === 'green' ? 'text-green-600' :
-                      'text-purple-600'
-                    }`} />
+                    <Icon className="h-6 w-6" />
                   </div>
                 </div>
               </CardContent>

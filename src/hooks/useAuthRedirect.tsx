@@ -30,7 +30,7 @@ export const useAuthRedirect = () => {
       duration: 4000,
     });
 
-    // Redirection selon le rôle
+    // Redirection automatique vers le tableau de bord admin pour les admins/modérateurs
     const redirectPath = role === 'admin' || role === 'moderator' ? '/admin' : '/';
     
     // Délai pour permettre à l'utilisateur de voir le message

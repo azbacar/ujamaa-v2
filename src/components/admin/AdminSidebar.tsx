@@ -66,6 +66,14 @@ export default function AdminSidebar({
       category: 'content'
     },
     {
+      id: 'ads',
+      title: 'Publicités',
+      icon: BarChart3,
+      description: 'Gestion des espaces publicitaires',
+      available: isAdmin,
+      category: 'content'
+    },
+    {
       id: 'pending',
       title: 'Modifications',
       icon: Clock,

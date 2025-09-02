@@ -47,6 +47,60 @@ export type Database = {
         }
         Relationships: []
       }
+      ads: {
+        Row: {
+          click_count: number
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string | null
+          id: string
+          image_url: string | null
+          impression_count: number
+          is_active: boolean
+          link_url: string | null
+          position: string
+          size: string
+          start_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          click_count?: number
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          impression_count?: number
+          is_active?: boolean
+          link_url?: string | null
+          position?: string
+          size?: string
+          start_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          click_count?: number
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          impression_count?: number
+          is_active?: boolean
+          link_url?: string | null
+          position?: string
+          size?: string
+          start_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_conversations: {
         Row: {
           ai_response: string
@@ -238,6 +292,36 @@ export type Database = {
           created_at?: string
           id?: never
           title?: string
+        }
+        Relationships: []
+      }
+      site_analytics: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          page_path: string | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          session_id?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

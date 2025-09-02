@@ -22,6 +22,7 @@ import SecuritySection from '@/components/admin/SecuritySection';
 import SystemAnalyticsSection from '@/components/admin/SystemAnalyticsSection';
 import SystemControlSection from '@/components/admin/SystemControlSection';
 import AnalyticsSection from '@/components/admin/AnalyticsSection';
+import AdsManagementSection from '@/components/admin/AdsManagementSection';
 import { HomepageManagementSection } from '@/components/admin/HomepageManagementSection';
 
 interface PendingModification {
@@ -168,11 +169,11 @@ export default function AdminDashboard() {
     switch (activeSection) {
       case 'overview':
         return <AdminOverview 
-          userCount={users.length}
-          pendingModifications={pendingMods.filter(m => m.status === 'pending').length}
           recentActions={adminActions.slice(0, 5)}
-          totalModifications={pendingMods.length}
         />;
+      
+      case 'ads':
+        return <AdsManagementSection />;
       
       case 'stats':
         return <AdminStats 
@@ -247,10 +248,7 @@ export default function AdminDashboard() {
       
       default:
         return <AdminOverview 
-          userCount={users.length}
-          pendingModifications={pendingMods.filter(m => m.status === 'pending').length}
           recentActions={adminActions.slice(0, 5)}
-          totalModifications={pendingMods.length}
         />;
     }
   };
