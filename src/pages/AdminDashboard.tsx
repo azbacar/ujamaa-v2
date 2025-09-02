@@ -91,10 +91,13 @@ export default function AdminDashboard() {
         
         setAdminActions(actionsData || []);
 
-        // Fetch users
+        // Fetch users with their roles
         const { data: usersData } = await supabase
           .from('users')
-          .select('*')
+          .select(`
+            *,
+            user_roles(role)
+          `)
           .order('created_at', { ascending: false });
         
         setUsers(usersData || []);
@@ -199,10 +202,31 @@ export default function AdminDashboard() {
           selectedRole={selectedRole}
           onUserSelect={setSelectedUser}
           onRoleSelect={setSelectedRole}
-          onRoleAssign={() => {
-            // Handle role assignment
-            toast.success('Rôle assigné avec succès');
-            fetchData();
+          onRoleAssign={async () => {
+            if (!selectedUser || !selectedRole) {
+              toast.error('Veuillez sélectionner un utilisateur et un rôle');
+              return;
+            }
+            
+            try {
+              const { error } = await supabase
+                .from('user_roles')
+                .upsert({
+                  user_id: selectedUser,
+                  role: selectedRole as 'user' | 'admin' | 'moderator',
+                  assigned_by: user.id
+                });
+              
+              if (error) throw error;
+              
+              toast.success('Rôle assigné avec succès');
+              fetchData();
+              setSelectedUser('');
+              setSelectedRole('user');
+            } catch (error) {
+              console.error('Error assigning role:', error);
+              toast.error('Erreur lors de l\'assignation du rôle');
+            }
           }}
         />;
       
