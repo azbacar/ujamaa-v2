@@ -8,6 +8,7 @@ import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar } from
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
+import PriceSubmissionForm from '@/components/PriceSubmissionForm';
 import { useLanguage } from '@/components/LanguageProvider';
 
 interface PriceData {
@@ -303,6 +304,7 @@ const PricesPage = () => {
   const [selectedIsland, setSelectedIsland] = useState('Toutes');
   const [selectedVendor, setSelectedVendor] = useState('Tous');
   const [currentLanguage, setCurrentLanguage] = useState('fr');
+  const [showPriceForm, setShowPriceForm] = useState(false);
 
   const filteredPrices = useMemo(() => {
     return pricesData.filter(price => {
@@ -525,13 +527,18 @@ const PricesPage = () => {
             </p>
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-magenta-500/50 transition-all"
+              onClick={() => setShowPriceForm(true)}
+              className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-ocean-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-magenta-500/50 transition-all hover:scale-105"
             >
               ✨ Ajouter mes prix
             </Button>
           </div>
         </div>
       </main>
+
+      {showPriceForm && (
+        <PriceSubmissionForm onClose={() => setShowPriceForm(false)} />
+      )}
 
       <Footer />
     </div>

@@ -13,7 +13,8 @@ import {
   Database,
   ChevronRight,
   Crown,
-  UserCheck
+  UserCheck,
+  DollarSign
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -71,6 +72,14 @@ export default function AdminSidebar({
       icon: BarChart3,
       description: 'Gestion des espaces publicitaires',
       available: isAdmin,
+      category: 'content'
+    },
+    {
+      id: 'prices',
+      title: 'Prix & Marchés',
+      icon: DollarSign,
+      description: 'Gestion des prix soumis',
+      available: isModerator || isAdmin,
       category: 'content'
     },
     {

@@ -77,14 +77,14 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50">
       <Header 
         currentLanguage={currentLanguage} 
         onLanguageChange={setLanguage}
       />
       
       <main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-200px)]">
-        <Card className="w-full max-w-md bg-card border-border shadow-lg">
+        <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm border-slate-200/50 shadow-2xl shadow-blue-500/10">
           <CardHeader className="text-center">
             <CardTitle className="text-foreground">Connexion</CardTitle>
             <CardDescription className="text-muted-foreground">

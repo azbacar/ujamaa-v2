@@ -24,6 +24,7 @@ import SystemControlSection from '@/components/admin/SystemControlSection';
 import AnalyticsSection from '@/components/admin/AnalyticsSection';
 import AdsManagementSection from '@/components/admin/AdsManagementSection';
 import { HomepageManagementSection } from '@/components/admin/HomepageManagementSection';
+import PricesManagementSection from '@/components/admin/PricesManagementSection';
 
 interface PendingModification {
   id: string;
@@ -245,6 +246,9 @@ export default function AdminDashboard() {
       
       case 'actions':
         return <AdminActionsSection actions={adminActions} />;
+      
+      case 'prices':
+        return <PricesManagementSection />;
       
       default:
         return <AdminOverview 
