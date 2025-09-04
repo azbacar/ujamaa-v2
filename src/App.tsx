@@ -21,6 +21,7 @@ import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordRequest from "./pages/ResetPasswordRequest";
 import ResetPassword from "./pages/ResetPassword";
+import ProfilePage from "./pages/ProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,14 @@ const App = () => (
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/annonces" element={<AnnouncementsPage />} />
               <Route path="/annonces/:id" element={<AnnouncementDetail />} />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute allowedRoles={['user', 'moderator', 'admin']}>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                } 
+              />
               <Route 
                 path="/admin" 
                 element={

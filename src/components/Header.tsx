@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Search, Menu, Globe, User, LogOut } from 'lucide-react';
+import { Search, Menu, Globe, User, LogOut, Settings, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useRole } from '@/hooks/useRole';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import NotificationSystem from './NotificationSystem';
 
 interface HeaderProps {
@@ -18,6 +19,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { user, signOut } = useAuth();
+  const { role, isAdmin, isModerator } = useRole();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -256,7 +258,31 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     <span className="hidden sm:inline">Profil</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="text-sm font-medium">{user.email}</p>
+                    <p className="text-xs text-gray-500 capitalize">{role}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  
+                  {/* Section gestion compte pour tous */}
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Mon compte
+                  </DropdownMenuItem>
+                  
+                  {/* Section admin pour admins et modérateurs */}
+                  {(isAdmin || isModerator) && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        {isAdmin ? 'Administration' : 'Modération'}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Déconnexion
