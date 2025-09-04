@@ -129,11 +129,11 @@ const PricesManagementSection = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-green-100 text-green-700 border-green-300">✓ Approuvé</Badge>;
+        return <Badge className="bg-admin-success/10 text-admin-success border-admin-success/30">✓ Approuvé</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300">⏳ En attente</Badge>;
+        return <Badge className="bg-admin-warning/10 text-admin-warning border-admin-warning/30">⏳ En attente</Badge>;
       case 'rejected':
-        return <Badge className="bg-red-100 text-red-700 border-red-300">✗ Rejeté</Badge>;
+        return <Badge className="bg-admin-danger/10 text-admin-danger border-admin-danger/30">✗ Rejeté</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -193,7 +193,7 @@ const PricesManagementSection = () => {
         <Card className="admin-card">
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Eye className="w-8 h-8 text-yellow-600" />
+              <Eye className="w-8 h-8 text-admin-warning" />
               <div>
                 <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
                 <p className="text-sm text-gray-600">En attente</p>

@@ -77,16 +77,19 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
       <Header 
         currentLanguage={currentLanguage} 
         onLanguageChange={setLanguage}
       />
       
       <main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-200px)]">
-        <Card className="w-full max-w-md bg-white/95 backdrop-blur-sm border-slate-200/50 shadow-2xl shadow-blue-500/10">
-          <CardHeader className="text-center">
-            <CardTitle className="text-foreground">Connexion</CardTitle>
+        <Card className="w-full max-w-md bg-white/98 backdrop-blur-sm border-slate-200/60 shadow-2xl shadow-slate-500/20">
+          <CardHeader className="text-center space-y-3 pb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg mx-auto">
+              U
+            </div>
+            <CardTitle className="text-2xl font-bold text-foreground">UJAMAA Call Center</CardTitle>
             <CardDescription className="text-muted-foreground">
               Accédez à votre compte ou créez-en un nouveau
             </CardDescription>
