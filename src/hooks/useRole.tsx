@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -27,13 +28,13 @@ export const useRole = () => {
           .single();
 
         if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching user role:', error);
+          logger.error('Error fetching user role', error);
           setRole('user');
         } else {
           setRole(data?.role || 'user');
         }
       } catch (error) {
-        console.error('Error fetching user role:', error);
+        logger.error('Error fetching user role', error);
         setRole('user');
       } finally {
         setLoading(false);
