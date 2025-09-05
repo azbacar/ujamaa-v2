@@ -117,14 +117,17 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/prix" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               💰 {t('nav.prices')}
             </Link>
-            <Link to="/appels-offres" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              📋 {t('nav.tenders')}
+            <Link to="/annonces" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              📢 {t('nav.announcements')}
             </Link>
             <Link to="/evenements" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🎭 {t('nav.events')}
             </Link>
             <Link to="/services" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🏛️ {t('nav.services')}
+            </Link>
+            <Link to="/pro" className="text-emerald-700 hover:text-emerald-800 font-bold transition-colors bg-emerald-50 px-3 py-1 rounded-lg">
+              ⭐ Pro
             </Link>
           </nav>
 

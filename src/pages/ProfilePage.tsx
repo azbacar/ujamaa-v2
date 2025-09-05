@@ -49,7 +49,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Mon Profil</h1>
@@ -157,8 +157,11 @@ const ProfilePage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/auth/forgot'}>
                   Changer le mot de passe
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/pro'}>
+                  🔥 Passer à UJAMAA Pro
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   Préférences de notification

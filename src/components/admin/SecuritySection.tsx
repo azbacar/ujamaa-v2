@@ -158,7 +158,7 @@ export default function SecuritySection() {
   const getSeverityColor = (severity: string) => {
     switch(severity) {
       case 'low': return 'bg-emerald-50 text-emerald-600 border-emerald-200';
-      case 'medium': return 'bg-amber-50 text-amber-600 border-amber-200';
+      case 'medium': return 'bg-orange-50 text-orange-600 border-orange-200';
       case 'high': return 'bg-orange-50 text-orange-600 border-orange-200';
       case 'critical': return 'bg-red-50 text-red-600 border-red-200';
       default: return 'bg-slate-100 text-slate-600 border-slate-200';

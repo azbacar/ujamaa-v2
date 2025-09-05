@@ -196,7 +196,7 @@ export default function SiteControlSection() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'warning': return 'bg-amber-50 text-amber-600 border-amber-200';
+      case 'warning': return 'bg-orange-50 text-orange-600 border-orange-200';
       case 'success': return 'bg-emerald-50 text-emerald-600 border-emerald-200';
       case 'error': return 'bg-red-50 text-red-600 border-red-200';
       default: return 'bg-ocean-50 text-ocean-600 border-ocean-200';
@@ -337,10 +337,10 @@ export default function SiteControlSection() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border border-amber-200 rounded-lg bg-amber-50">
+                  <div className="flex items-center justify-between p-4 border border-orange-200 rounded-lg bg-orange-50">
                     <div>
                       <Label className="text-sm font-medium">Mode maintenance</Label>
-                      <p className="text-xs text-amber-600">
+                      <p className="text-xs text-orange-600">
                         Désactiver l'accès au site pour maintenance
                       </p>
                     </div>

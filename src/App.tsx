@@ -22,6 +22,7 @@ import AuthPage from "./pages/AuthPage";
 import ResetPasswordRequest from "./pages/ResetPasswordRequest";
 import ResetPassword from "./pages/ResetPassword";
 import ProfilePage from "./pages/ProfilePage";
+import ProPage from "./pages/ProPage";
 import { MaintenanceCheck } from "./components/MaintenanceCheck";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/annonces" element={<AnnouncementsPage />} />
               <Route path="/annonces/:id" element={<AnnouncementDetail />} />
+              <Route path="/pro" element={<ProPage />} />
               <Route 
                 path="/profile" 
                 element={

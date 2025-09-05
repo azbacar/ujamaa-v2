@@ -334,12 +334,12 @@ export default function SystemControlSection() {
             </div>
           </div>
           
-          <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-amber-900">Attention</h4>
-                <p className="text-sm text-amber-700 mt-1">
+                <h4 className="font-medium text-orange-900">Attention</h4>
+                <p className="text-sm text-orange-700 mt-1">
                   Modifier ces paramètres peut affecter le fonctionnement du site. 
                   Assurez-vous de comprendre les implications avant de procéder.
                 </p>

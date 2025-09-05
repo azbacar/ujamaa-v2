@@ -163,7 +163,7 @@ const AnnouncementsPage = () => {
                   </div>
                 </div>
 
-                <Link to={`/annonce/${announcement.id}`}>
+                <Link to={`/annonces/${announcement.id}`}>
                   <Button 
                     variant="outline" 
                     size="sm" 
