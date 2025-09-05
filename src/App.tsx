@@ -22,6 +22,7 @@ import AuthPage from "./pages/AuthPage";
 import ResetPasswordRequest from "./pages/ResetPasswordRequest";
 import ResetPassword from "./pages/ResetPassword";
 import ProfilePage from "./pages/ProfilePage";
+import { MaintenanceCheck } from "./components/MaintenanceCheck";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <FloatingChatbox />
+            <MaintenanceCheck />
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
