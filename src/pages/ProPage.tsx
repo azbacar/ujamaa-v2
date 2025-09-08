@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Crown, 
   Zap, 
@@ -15,7 +16,11 @@ import {
   BarChart3,
   Sparkles,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  Smartphone,
+  Banknote,
+  CreditCard,
+  X
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -25,6 +30,8 @@ import { useRole } from '@/hooks/useRole';
 const ProPage = () => {
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [selectedPlan, setSelectedPlan] = useState('premium');
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [selectedPaymentPlan, setSelectedPaymentPlan] = useState<string | null>(null);
   const { user } = useAuth();
   const { role } = useRole();
 
@@ -106,6 +113,64 @@ const ProPage = () => {
       description: 'Workflows automatisés pour optimiser vos processus métier'
     }
   ];
+
+  const paymentMethods = [
+    {
+      id: 'mobile-money',
+      name: 'Mobile Money',
+      icon: Smartphone,
+      description: 'Paiement via MVola, Orange Money, Airtel Money',
+      instructions: [
+        'Composez *880# pour MVola ou *144# pour Orange Money',
+        'Sélectionnez "Transfert d\'argent"',
+        'Entrez le numéro: +269 77 12 34 56',
+        'Montant: selon votre plan choisi',
+        'Référence: UJAMAA-PRO-[VOTRE_EMAIL]',
+        'Validez avec votre code PIN',
+        'Envoyez une capture d\'écran à support@ujamaa.km'
+      ]
+    },
+    {
+      id: 'bank-transfer',
+      name: 'Virement Bancaire',
+      icon: Banknote,
+      description: 'Virement sur compte bancaire local',
+      instructions: [
+        'Banque: BIC Comores',
+        'Titulaire: UJAMAA SARL',
+        'IBAN: KM46 0001 0000 1234 5678 9012',
+        'BIC/SWIFT: BICCKMKM',
+        'Référence: UJAMAA-PRO-[VOTRE_EMAIL]',
+        'Envoyez le reçu par email à support@ujamaa.km'
+      ]
+    },
+    {
+      id: 'cash-payment',
+      name: 'Paiement Espèces',
+      icon: CreditCard,
+      description: 'Paiement en espèces dans nos points de collecte',
+      instructions: [
+        'Moroni: Marché de Volo Volo, Stand UJAMAA',
+        'Mutsamudu: Près de la Grande Mosquée',
+        'Fomboni: Centre-ville, face à la poste',
+        'Horaires: Lun-Sam 8h-17h',
+        'Apportez une pièce d\'identité',
+        'Demandez un reçu officiel'
+      ]
+    }
+  ];
+
+  const handleSelectPlan = (planId: string) => {
+    if (planId === 'basic') return; // Plan gratuit
+    if (planId === 'enterprise') {
+      // Rediriger vers le formulaire de contact
+      document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    
+    setSelectedPaymentPlan(planId);
+    setShowPaymentDialog(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -191,6 +256,7 @@ const ProPage = () => {
                         ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 hover:from-emerald-600 hover:to-ocean-600' 
                         : 'bg-gray-800 hover:bg-gray-900'
                     }`}
+                    onClick={() => handleSelectPlan(plan.id)}
                   >
                     {plan.id === 'basic' ? 'Gratuit' : plan.id === 'enterprise' ? 'Nous contacter' : 'Choisir ce plan'}
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -223,7 +289,7 @@ const ProPage = () => {
         </div>
 
         {/* Formulaire de contact */}
-        <Card className="glass-effect max-w-2xl mx-auto">
+        <Card id="contact-form" className="glass-effect max-w-2xl mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl text-center">
               <Zap className="w-6 h-6 inline mr-2" />
@@ -279,6 +345,81 @@ const ProPage = () => {
           </CardContent>
         </Card>
       </main>
+
+      {/* Dialog de paiement */}
+      <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Choisir votre méthode de paiement
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPaymentDialog(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <div className="text-center p-4 bg-gradient-to-r from-emerald-50 to-ocean-50 rounded-lg">
+              <h3 className="font-semibold text-lg">
+                {plans.find(p => p.id === selectedPaymentPlan)?.name}
+              </h3>
+              <p className="text-2xl font-bold text-emerald-600">
+                {plans.find(p => p.id === selectedPaymentPlan)?.price}
+                <span className="text-sm text-gray-600">
+                  {plans.find(p => p.id === selectedPaymentPlan)?.period}
+                </span>
+              </p>
+            </div>
+
+            <div className="grid gap-4">
+              {paymentMethods.map((method) => (
+                <Card key={method.id} className="cursor-pointer hover:shadow-md transition-all">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-500 to-ocean-500 flex items-center justify-center flex-shrink-0">
+                        <method.icon className="w-6 h-6 text-white" />
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-lg mb-1">{method.name}</h4>
+                        <p className="text-gray-600 text-sm mb-3">{method.description}</p>
+                        
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <h5 className="font-medium text-sm mb-2">Instructions:</h5>
+                          <ul className="text-sm text-gray-700 space-y-1">
+                            {method.instructions.map((instruction, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="text-emerald-500 font-bold text-xs mt-1">•</span>
+                                <span>{instruction}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <h4 className="font-semibold text-orange-800 mb-2">Important:</h4>
+              <ul className="text-sm text-orange-700 space-y-1">
+                <li>• Votre abonnement sera activé sous 24h après validation du paiement</li>
+                <li>• Conservez votre reçu de paiement</li>
+                <li>• En cas de problème, contactez: support@ujamaa.km ou +269 77 12 34 56</li>
+              </ul>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
