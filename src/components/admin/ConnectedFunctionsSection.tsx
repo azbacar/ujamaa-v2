@@ -119,13 +119,13 @@ const ConnectedFunctionsSection = () => {
   };
 
   const handleToggleFunction = (functionId: string) => {
-    console.log(`Toggling function: ${functionId}`);
     // Ici vous pourriez implémenter la logique pour activer/désactiver une fonction
+    // En production, ceci devrait appeler une API sécurisée
   };
 
   const handleSyncFunction = (functionId: string) => {
-    console.log(`Syncing function: ${functionId}`);
     // Ici vous pourriez implémenter la synchronisation manuelle
+    // En production, ceci devrait déclencher une synchronisation via API
   };
 
   return (

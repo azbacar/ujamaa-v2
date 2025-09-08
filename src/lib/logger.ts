@@ -6,14 +6,14 @@ export const logger = {
     if (isDevelopment) {
       console.log(`[LOG] ${message}`, ...args);
     }
+    // En production, les logs non-critiques sont silencieux
   },
   
   error: (message: string, error?: any) => {
     if (isDevelopment) {
       console.error(`[ERROR] ${message}`, error);
     } else {
-      // In production, send to error tracking service (Sentry, LogRocket, etc.)
-      // For now, we'll just store critical errors locally
+      // En production, stocker les erreurs critiques pour le monitoring
       try {
         const errorData = {
           message,

@@ -68,7 +68,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             <FloatingChatbox />
-            <MaintenanceCheck />
+            {/* Maintenance check seulement en développement */}
+            {import.meta.env.DEV && <MaintenanceCheck />}
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>

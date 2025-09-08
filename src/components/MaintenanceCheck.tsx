@@ -86,9 +86,21 @@ export const MaintenanceCheck = ({ showInProduction = false }: MaintenanceCheckP
     }
   };
 
-  // Don't show in production unless explicitly requested
+  // Ne jamais afficher en production sauf pour le debug explicite
   if (!import.meta.env.DEV && !showInProduction) {
     return null;
+  }
+  
+  // En production, même avec showInProduction=true, limiter l'affichage
+  if (!import.meta.env.DEV && showInProduction) {
+    // Affichage minimal pour la production si nécessaire
+    return (
+      <div className="fixed bottom-4 right-4 z-50 opacity-50">
+        <Badge variant="secondary" className="text-xs">
+          Production Build ✓
+        </Badge>
+      </div>
+    );
   }
 
   const hasIssues = checks.some(check => check.status === 'fail' || check.status === 'warn');
