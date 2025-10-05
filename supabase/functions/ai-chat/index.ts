@@ -177,27 +177,17 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-// Require authenticated user via Supabase JWT
+// Optionally get authenticated user if available
 const authHeader = req.headers.get('Authorization');
-if (!authHeader) {
-  return new Response(JSON.stringify({ error: 'Unauthorized: missing Authorization header' }), {
-    status: 401,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
+let user = null;
 
-// Initialize Supabase client with the user's JWT to respect RLS
-const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  global: { headers: { Authorization: authHeader } },
-});
-
-// Get user from JWT
-const { data: { user }, error: userErr } = await supabase.auth.getUser();
-if (userErr || !user) {
-  return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-    status: 401,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+if (authHeader) {
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
   });
+  
+  const { data: { user: authUser } } = await supabase.auth.getUser();
+  user = authUser;
 }
 
     let systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel pour les Comores et Mayotte. 
@@ -271,22 +261,28 @@ PAGES DU SITE UJAMAA (à mentionner quand pertinent) :
     const aiResponse = data.choices[0].message.content;
     console.log('OpenAI response received');
 
-    // Store conversation in database
-    try {
-const { error: dbError } = await supabase
-  .from('ai_conversations')
-  .insert({
-    user_id: user.id,
-    user_session: sessionId,
-    user_message: sanitizedMessage,
-    ai_response: aiResponse,
-  });
+    // Store conversation in database (only if user is authenticated)
+    if (user && authHeader) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        
+        const { error: dbError } = await supabase
+          .from('ai_conversations')
+          .insert({
+            user_id: user.id,
+            user_session: sessionId,
+            user_message: sanitizedMessage,
+            ai_response: aiResponse,
+          });
 
-      if (dbError) {
-        console.error('Database error:', dbError);
+        if (dbError) {
+          console.error('Database error:', dbError);
+        }
+      } catch (dbErr) {
+        console.error('Failed to store conversation:', dbErr);
       }
-    } catch (dbErr) {
-      console.error('Failed to store conversation:', dbErr);
     }
 
     return new Response(JSON.stringify({ 

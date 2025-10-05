@@ -71,16 +71,6 @@ const AIAssistantSection = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    // Vérifier si l'utilisateur est connecté
-    if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour utiliser l'assistant IA.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputMessage,
@@ -180,15 +170,6 @@ const AIAssistantSection = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Zone de chat */}
         <div className="lg:col-span-2" id="chat-section">
-          {!user && (
-            <Alert className="mb-4 border-yellow-200 bg-yellow-50">
-              <AlertCircle className="h-4 w-4 text-yellow-600" />
-              <AlertDescription className="text-yellow-800">
-                Vous devez être connecté pour utiliser l'assistant IA. 
-                <a href="/auth" className="underline ml-1 font-semibold">Se connecter</a>
-              </AlertDescription>
-            </Alert>
-          )}
           <Card className="h-[600px] flex flex-col bg-white shadow-2xl border-0 rounded-3xl overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white rounded-t-lg">
               <CardTitle className="flex items-center gap-3">
@@ -268,7 +249,7 @@ const AIAssistantSection = () => {
                 />
                 <Button 
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || isLoading || !user}
+                  disabled={!inputMessage.trim() || isLoading}
                   className="bg-gradient-to-r from-emerald-500 to-ocean-500"
                 >
                   <Send className="w-4 h-4" />
