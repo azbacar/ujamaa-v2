@@ -349,11 +349,11 @@ const AnnouncementDetail = () => {
                   </Badge>
                 </div>
                 
-                <CardTitle className="text-3xl font-bold text-gray-900 mb-4">
+                <CardTitle className="text-3xl font-bold text-foreground mb-4">
                   {announcement.title}
                 </CardTitle>
 
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
                     <span>{announcement.location}</span>
