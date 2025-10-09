@@ -275,30 +275,25 @@ const FloatingChatbox = () => {
                   >
                      <div className="space-y-2">
                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
-                        {message.links && message.links.length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            <p className="text-xs font-medium opacity-70">Liens utiles :</p>
-                            {message.links.map((link, index) => (
-                              <Button
-                                key={index}
-                                asChild
-                                variant="outline"
-                                className={`w-full justify-start text-left h-auto p-3 transition-all transform hover:scale-105 ${
-                                  message.isUser 
-                                    ? 'bg-white/20 hover:bg-white/30 text-white border-white/30 hover:border-white/50' 
-                                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200 hover:border-emerald-300'
-                                }`}
-                              >
-                                <a href={link.url}>
-                                  <div className="flex flex-col gap-1">
-                                    <div className="font-semibold text-xs">{link.title}</div>
-                                    <div className="opacity-80 text-xs">{link.description}</div>
-                                  </div>
-                                </a>
-                              </Button>
-                            ))}
-                          </div>
-                        )}
+                       {message.links && message.links.length > 0 && (
+                         <div className="mt-3 space-y-2">
+                           <p className="text-xs font-medium opacity-70">Liens utiles :</p>
+                           {message.links.map((link, index) => (
+                             <a
+                               key={index}
+                               href={link.url}
+                               className={`block p-3 rounded-lg text-xs transition-all transform hover:scale-105 ${
+                                 message.isUser 
+                                   ? 'bg-white/20 hover:bg-white/30 text-white' 
+                                   : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
+                               }`}
+                             >
+                               <div className="font-semibold">{link.title}</div>
+                               <div className="opacity-80 mt-1">{link.description}</div>
+                             </a>
+                           ))}
+                         </div>
+                       )}
                      </div>
                     <div className="text-xs opacity-70 mt-1">
                       {message.timestamp.toLocaleTimeString('fr-FR', { 

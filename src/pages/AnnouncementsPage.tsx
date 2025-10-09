@@ -61,13 +61,13 @@ const AnnouncementsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
       <main className="container mx-auto px-6 py-12">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold gradient-text mb-4">📢 Toutes les Annonces</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Découvrez toutes les dernières informations et annonces officielles des Comores
           </p>
         </div>
@@ -134,11 +134,11 @@ const AnnouncementsPage = () => {
                   </Badge>
                 </div>
 
-                <h3 className="font-bold text-lg text-foreground mb-3 group-hover:text-emerald-700 transition-colors line-clamp-2">
+                <h3 className="font-bold text-lg text-gray-900 mb-3 group-hover:text-emerald-700 transition-colors line-clamp-2">
                   {announcement.title}
                 </h3>
 
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-3 flex-grow">
+                <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
                   {announcement.description}
                 </p>
 
@@ -148,7 +148,7 @@ const AnnouncementsPage = () => {
                   </div>
                 )}
 
-                <div className="space-y-2 text-xs text-muted-foreground">
+                <div className="space-y-2 text-xs text-gray-500">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-3 h-3" />
                     <span>{announcement.location}</span>
@@ -180,7 +180,7 @@ const AnnouncementsPage = () => {
 
         {filteredAnnouncements.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">Aucune annonce trouvée avec ces critères.</p>
+            <p className="text-gray-500 text-lg">Aucune annonce trouvée avec ces critères.</p>
           </div>
         )}
       </main>

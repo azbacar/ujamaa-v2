@@ -17,7 +17,6 @@ interface Message {
   sender: 'user' | 'ai';
   timestamp: Date;
   type?: 'info' | 'suggestion' | 'answer';
-  links?: Array<{ url: string; title: string; description: string }>;
 }
 
 const AIAssistantSection = () => {
@@ -48,29 +47,7 @@ const AIAssistantSection = () => {
     "Où acheter de la vanille de qualité ?"
   ];
 
-  const extractLinksFromResponse = (response: string): Array<{ url: string; title: string; description: string }> => {
-    const links = [];
-    const lowerResponse = response.toLowerCase();
-    
-    if (lowerResponse.includes('prix') || lowerResponse.includes('marché') || lowerResponse.includes('coût') || lowerResponse.includes('/prix')) {
-      links.push({ url: '/prix', title: '💰 Prix et Marchés', description: 'Consultez les prix actuels' });
-    }
-    if (lowerResponse.includes('événement') || lowerResponse.includes('festival') || lowerResponse.includes('/evenements')) {
-      links.push({ url: '/evenements', title: '🎉 Événements', description: 'Découvrez les événements' });
-    }
-    if (lowerResponse.includes('service') || lowerResponse.includes('administration') || lowerResponse.includes('/services')) {
-      links.push({ url: '/services', title: '🏛️ Services Publics', description: 'Services administratifs' });
-    }
-    if (lowerResponse.includes('appel') || lowerResponse.includes('offre') || lowerResponse.includes('/appels-offres')) {
-      links.push({ url: '/appels-offres', title: '📋 Appels d\'Offres', description: 'Marchés publics' });
-    }
-    if (lowerResponse.includes('annonce') || lowerResponse.includes('actualité') || lowerResponse.includes('/annonces')) {
-      links.push({ url: '/annonces', title: '📢 Annonces', description: 'Actualités officielles' });
-    }
-    return links;
-  };
-
-  const callAIFunction = async (userMessage: string): Promise<{ response: string; links: Array<{ url: string; title: string; description: string }> }> => {
+  const callAIFunction = async (userMessage: string): Promise<string> => {
     try {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: {
@@ -84,16 +61,10 @@ const AIAssistantSection = () => {
         throw error;
       }
 
-      const responseText = data.response;
-      const links = extractLinksFromResponse(responseText);
-      
-      return { response: responseText, links };
+      return data.response;
     } catch (error) {
       console.error('Error calling AI function:', error);
-      return { 
-        response: "Désolé, je rencontre actuellement des difficultés techniques. Veuillez réessayer dans quelques instants.",
-        links: []
-      };
+      return "Désolé, je rencontre actuellement des difficultés techniques. Veuillez réessayer dans quelques instants. En attendant, vous pouvez consulter directement les sections du site UJAMAA pour vos recherches.";
     }
   };
 
@@ -113,15 +84,14 @@ const AIAssistantSection = () => {
     setIsLoading(true);
 
     try {
-      const { response: aiResponseText, links } = await callAIFunction(currentMessage);
+      const aiResponseText = await callAIFunction(currentMessage);
       
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         content: aiResponseText,
         sender: 'ai',
         timestamp: new Date(),
-        type: 'answer',
-        links
+        type: 'answer'
       };
       
       setMessages(prev => [...prev, aiResponse]);
@@ -237,29 +207,6 @@ const AIAssistantSection = () => {
                       </div>
                     )}
                     <div className="whitespace-pre-line">{message.content}</div>
-                    
-                    {message.links && message.links.length > 0 && (
-                      <div className="mt-3 space-y-2">
-                        <p className="text-xs font-medium opacity-70">Liens utiles :</p>
-                        {message.links.map((link, index) => (
-                          <Button
-                            key={index}
-                            asChild
-                            variant="outline"
-                            size="sm"
-                            className="w-full justify-start text-left h-auto p-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200 hover:border-emerald-300"
-                          >
-                            <a href={link.url}>
-                              <div className="flex flex-col gap-1">
-                                <div className="font-semibold text-xs">{link.title}</div>
-                                <div className="opacity-80 text-xs">{link.description}</div>
-                              </div>
-                            </a>
-                          </Button>
-                        ))}
-                      </div>
-                    )}
-                    
                     <div className={`text-xs mt-2 ${
                       message.sender === 'user' ? 'text-white/70' : 'text-gray-500'
                     }`}>
