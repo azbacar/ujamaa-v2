@@ -51,6 +51,15 @@ const CategoriesSection = () => {
       lastUpdate: "Il y a 2h",
       featured: true,
       link: "/services"
+    },
+    {
+      title: "Gastronomie & Hébergement",
+      description: "Recettes locales, restaurants, hôtels et chambres à louer",
+      icon: "🍽️",
+      itemCount: 89,
+      lastUpdate: "Aujourd'hui",
+      featured: true,
+      link: "/gastronomie"
     }
   ];
 

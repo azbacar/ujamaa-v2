@@ -202,6 +202,77 @@ export type Database = {
         }
         Relationships: []
       }
+      gastronomy_items: {
+        Row: {
+          author_id: string
+          category: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          contact_whatsapp: string | null
+          created_at: string
+          description: string
+          id: string
+          images: string[] | null
+          location: string | null
+          metadata: Json | null
+          price_max: number | null
+          price_min: number | null
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          type: Database["public"]["Enums"]["gastronomy_type"]
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          author_id: string
+          category?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          metadata?: Json | null
+          price_max?: number | null
+          price_min?: number | null
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          type: Database["public"]["Enums"]["gastronomy_type"]
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          images?: string[] | null
+          location?: string | null
+          metadata?: Json | null
+          price_max?: number | null
+          price_min?: number | null
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          type?: Database["public"]["Enums"]["gastronomy_type"]
+          updated_at?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gastronomy_items_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       global_announcements: {
         Row: {
           content: string
@@ -384,21 +455,27 @@ export type Database = {
       }
       users: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
           created_at: string
           email: string
           id: string
+          pro_features: Json | null
           username: string
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           created_at?: string
           email: string
           id: string
+          pro_features?: Json | null
           username: string
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
           created_at?: string
           email?: string
           id?: string
+          pro_features?: Json | null
           username?: string
         }
         Relationships: []
@@ -419,6 +496,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_pro_user: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       log_admin_action: {
         Args: {
           _action_type: string
@@ -431,10 +512,16 @@ export type Database = {
       }
     }
     Enums: {
+      account_type: "free" | "pro"
       announcement_kind: "info" | "warning" | "urgent" | "maintenance"
       app_role: "admin" | "moderator" | "user"
       content_status: "published" | "draft" | "archived"
       content_type: "announcement" | "event" | "service" | "tender"
+      gastronomy_type:
+        | "recipe"
+        | "restaurant_dish"
+        | "hotel_room"
+        | "private_room"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -562,10 +649,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["free", "pro"],
       announcement_kind: ["info", "warning", "urgent", "maintenance"],
       app_role: ["admin", "moderator", "user"],
       content_status: ["published", "draft", "archived"],
       content_type: ["announcement", "event", "service", "tender"],
+      gastronomy_type: [
+        "recipe",
+        "restaurant_dish",
+        "hotel_room",
+        "private_room",
+      ],
     },
   },
 } as const
