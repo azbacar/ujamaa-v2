@@ -5,116 +5,116 @@
 
 @layer base {
   :root {
-    --background: 248 250 252;
-    --foreground: 15 23 42;
+    --background: 214 100% 99%;
+    --foreground: 222 47% 11%;
 
-    --card: 255 255 255;
-    --card-foreground: 15 23 42;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 255 255 255;
-    --popover-foreground: 15 23 42;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 14 165 233;
-    --primary-foreground: 255 255 255;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 16 185 129;
-    --secondary-foreground: 255 255 255;
+    --secondary: 160 84% 39%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 241 245 249;
-    --muted-foreground: 100 116 139;
+    --muted: 214 32% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 16 185 129;
-    --accent-foreground: 255 255 255;
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 239 68 68;
-    --destructive-foreground: 255 255 255;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 226 232 240;
-    --input: 241 245 249;
-    --ring: 14 165 233;
+    --border: 214 32% 91%;
+    --input: 214 32% 96%;
+    --ring: 199 89% 48%;
 
     --radius: 0.5rem;
 
-    --success: 16 185 129;
-    --success-foreground: 255 255 255;
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
     
-    --info: 14 165 233;
-    --info-foreground: 255 255 255;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
 
     /* Admin Dashboard Colors */
-    --admin-primary: 59 130 246;
-    --admin-primary-foreground: 255 255 255;
-    --admin-secondary: 16 185 129;
-    --admin-secondary-foreground: 255 255 255;
-    --admin-background: 248 250 252;
-    --admin-surface: 255 255 255;
-    --admin-surface-hover: 241 245 249;
-    --admin-border: 203 213 225;
-    --admin-accent: 14 165 233;
-    --admin-accent-light: 59 130 246;
-    --admin-success: 34 197 94;
-    --admin-warning: 251 146 60;
-    --admin-danger: 239 68 68;
+    --admin-primary: 217 91% 60%;
+    --admin-primary-foreground: 0 0% 100%;
+    --admin-secondary: 160 84% 39%;
+    --admin-secondary-foreground: 0 0% 100%;
+    --admin-background: 214 100% 99%;
+    --admin-surface: 0 0% 100%;
+    --admin-surface-hover: 214 32% 96%;
+    --admin-border: 214 32% 84%;
+    --admin-accent: 199 89% 48%;
+    --admin-accent-light: 217 91% 60%;
+    --admin-success: 142 76% 45%;
+    --admin-warning: 25 95% 61%;
+    --admin-danger: 0 84% 60%;
 
-    --sidebar-background: 255 255 255;
-    --sidebar-foreground: 51 65 85;
-    --sidebar-primary: 14 165 233;
-    --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 241 245 249;
-    --sidebar-accent-foreground: 51 65 85;
-    --sidebar-border: 226 232 240;
-    --sidebar-ring: 14 165 233;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 25% 27%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 32% 96%;
+    --sidebar-accent-foreground: 215 25% 27%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 199 89% 48%;
   }
 
   .dark {
-    --background: 15 23 42;
-    --foreground: 248 250 252;
+    --background: 222 47% 11%;
+    --foreground: 214 100% 99%;
 
-    --card: 30 41 59;
-    --card-foreground: 248 250 252;
+    --card: 215 25% 27%;
+    --card-foreground: 214 100% 99%;
 
-    --popover: 30 41 59;
-    --popover-foreground: 248 250 252;
+    --popover: 215 25% 27%;
+    --popover-foreground: 214 100% 99%;
 
-    --primary: 59 130 246;
-    --primary-foreground: 255 255 255;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 34 197 94;
-    --secondary-foreground: 255 255 255;
+    --secondary: 142 76% 45%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 51 65 85;
-    --muted-foreground: 148 163 184;
+    --muted: 215 25% 27%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 34 197 94;
-    --accent-foreground: 255 255 255;
+    --accent: 142 76% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 239 68 68;
-    --destructive-foreground: 248 250 252;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 214 100% 99%;
 
-    --border: 51 65 85;
-    --input: 51 65 85;
-    --ring: 59 130 246;
+    --border: 215 25% 27%;
+    --input: 215 25% 27%;
+    --ring: 217 91% 60%;
 
-    --success: 34 197 94;
-    --success-foreground: 255 255 255;
+    --success: 142 76% 45%;
+    --success-foreground: 0 0% 100%;
     
-    --info: 59 130 246;
-    --info-foreground: 255 255 255;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
 
     /* Admin Dashboard Colors - Dark Mode */
-    --admin-primary: 99 102 241;
-    --admin-primary-foreground: 255 255 255;
-    --admin-secondary: 34 197 94;
-    --admin-secondary-foreground: 255 255 255;
-    --admin-background: 15 23 42;
-    --admin-surface: 30 41 59;
-    --admin-surface-hover: 51 65 85;
-    --admin-border: 71 85 105;
-    --admin-accent: 59 130 246;
-    --admin-accent-light: 99 102 241;
-    --admin-success: 34 197 94;
-    --admin-warning: 251 146 60;
-    --admin-danger: 248 113 113;
+    --admin-primary: 239 84% 67%;
+    --admin-primary-foreground: 0 0% 100%;
+    --admin-secondary: 142 76% 45%;
+    --admin-secondary-foreground: 0 0% 100%;
+    --admin-background: 222 47% 11%;
+    --admin-surface: 215 25% 27%;
+    --admin-surface-hover: 215 25% 27%;
+    --admin-border: 215 20% 47%;
+    --admin-accent: 217 91% 60%;
+    --admin-accent-light: 239 84% 67%;
+    --admin-success: 142 76% 45%;
+    --admin-warning: 25 95% 61%;
+    --admin-danger: 0 91% 71%;
   }
 }
 
