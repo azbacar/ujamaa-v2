@@ -514,7 +514,7 @@ export type Database = {
     Enums: {
       account_type: "free" | "pro"
       announcement_kind: "info" | "warning" | "urgent" | "maintenance"
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "annonceur"
       content_status: "published" | "draft" | "archived"
       content_type: "announcement" | "event" | "service" | "tender"
       gastronomy_type:
@@ -651,7 +651,7 @@ export const Constants = {
     Enums: {
       account_type: ["free", "pro"],
       announcement_kind: ["info", "warning", "urgent", "maintenance"],
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "annonceur"],
       content_status: ["published", "draft", "archived"],
       content_type: ["announcement", "event", "service", "tender"],
       gastronomy_type: [
