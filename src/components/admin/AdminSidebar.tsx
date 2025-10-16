@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Crown,
   UserCheck,
-  DollarSign
+  DollarSign,
+  UtensilsCrossed
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -64,6 +65,14 @@ export default function AdminSidebar({
       icon: FileText,
       description: 'Articles et publications',
       available: true,
+      category: 'content'
+    },
+    {
+      id: 'gastronomy',
+      title: 'Gastronomie',
+      icon: UtensilsCrossed,
+      description: 'Gestion des annonces gastronomie',
+      available: isAdmin || isModerator,
       category: 'content'
     },
     {

@@ -13,7 +13,8 @@ import {
   Search,
   Mail,
   Settings,
-  UserPlus
+  UserPlus,
+  Megaphone
 } from 'lucide-react';
 
 interface UserWithRole {
@@ -46,6 +47,7 @@ export default function UserManagementSection({
     switch (role) {
       case 'admin': return <Crown className="h-4 w-4" />;
       case 'moderator': return <ShieldCheck className="h-4 w-4" />;
+      case 'annonceur': return <Megaphone className="h-4 w-4" />;
       default: return <User className="h-4 w-4" />;
     }
   };
@@ -54,6 +56,7 @@ export default function UserManagementSection({
     switch (role) {
       case 'admin': return 'bg-red-50 text-red-600 border-red-200';
       case 'moderator': return 'bg-blue-50 text-blue-600 border-blue-200';
+      case 'annonceur': return 'bg-green-50 text-green-600 border-green-200';
       default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
   };
@@ -111,6 +114,12 @@ export default function UserManagementSection({
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4 text-blue-600" />
                       Modérateur
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="annonceur">
+                    <div className="flex items-center gap-2">
+                      <Megaphone className="h-4 w-4 text-green-600" />
+                      Annonceur
                     </div>
                   </SelectItem>
                   <SelectItem value="user">

@@ -26,6 +26,7 @@ import AdsManagementSection from '@/components/admin/AdsManagementSection';
 import { HomepageManagementSection } from '@/components/admin/HomepageManagementSection';
 import PricesManagementSection from '@/components/admin/PricesManagementSection';
 import ConnectedFunctionsSection from '@/components/admin/ConnectedFunctionsSection';
+import GastronomyManagementSection from '@/components/admin/GastronomyManagementSection';
 
 interface PendingModification {
   id: string;
@@ -216,7 +217,7 @@ export default function AdminDashboard() {
                 .from('user_roles')
                 .upsert({
                   user_id: selectedUser,
-                  role: selectedRole as 'user' | 'admin' | 'moderator',
+                  role: selectedRole as 'user' | 'admin' | 'moderator' | 'annonceur',
                   assigned_by: user.id
                 });
               
@@ -253,6 +254,9 @@ export default function AdminDashboard() {
       
       case 'functions':
         return <ConnectedFunctionsSection />;
+      
+      case 'gastronomy':
+        return <GastronomyManagementSection />;
       
       default:
         return <AdminOverview 

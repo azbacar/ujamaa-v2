@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export type UserRole = 'admin' | 'moderator' | 'user';
+export type UserRole = 'admin' | 'moderator' | 'user' | 'annonceur';
 
 export const useRole = () => {
   const { user } = useAuth();
@@ -45,12 +45,13 @@ export const useRole = () => {
   }, [user]);
 
   const hasRole = (requiredRole: UserRole): boolean => {
-    const roleHierarchy = { admin: 3, moderator: 2, user: 1 };
+    const roleHierarchy = { admin: 4, moderator: 3, annonceur: 2, user: 1 };
     return roleHierarchy[role] >= roleHierarchy[requiredRole];
   };
 
   const isAdmin = () => role === 'admin';
   const isModerator = () => role === 'moderator' || role === 'admin';
+  const isAnnonceur = () => role === 'annonceur' || role === 'moderator' || role === 'admin';
   const isUser = () => role === 'user';
 
   return {
@@ -59,6 +60,7 @@ export const useRole = () => {
     hasRole,
     isAdmin,
     isModerator,
+    isAnnonceur,
     isUser
   };
 };
