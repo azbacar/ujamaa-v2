@@ -68,10 +68,10 @@ export default function AdminSidebar({
       category: 'content'
     },
     {
-      id: 'gastronomy',
-      title: 'Gastronomie',
+      id: 'tourism',
+      title: 'Tourisme',
       icon: UtensilsCrossed,
-      description: 'Gestion des annonces gastronomie',
+      description: 'Restaurants, hôtels, hébergements',
       available: isAdmin || isModerator,
       category: 'content'
     },

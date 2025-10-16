@@ -53,13 +53,13 @@ const CategoriesSection = () => {
       link: "/services"
     },
     {
-      title: "Gastronomie & Hébergement",
-      description: "Recettes locales, restaurants, hôtels et chambres à louer",
-      icon: "🍽️",
+      title: "Tourisme",
+      description: "Restaurants, hôtels, hébergements et découverte gastronomique locale",
+      icon: "🏨",
       itemCount: 89,
       lastUpdate: "Aujourd'hui",
       featured: true,
-      link: "/gastronomie"
+      link: "/tourisme"
     }
   ];
 

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { UtensilsCrossed, Hotel, Home, ChefHat, Plus, MapPin, Phone, Mail, MessageCircle } from 'lucide-react';
-import GastronomySubmissionForm from '@/components/GastronomySubmissionForm';
+import TourismSubmissionForm from '@/components/TourismSubmissionForm';
 import { toast } from 'sonner';
 
 type GastronomyType = 'recipe' | 'restaurant_dish' | 'hotel_room' | 'private_room';
@@ -36,7 +36,7 @@ interface GastronomyItem {
   };
 }
 
-const GastronomyPage = () => {
+const TourismPage = () => {
   const { user } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
   const [items, setItems] = useState<GastronomyItem[]>([]);
@@ -120,9 +120,9 @@ const GastronomyPage = () => {
       <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
       <main className="container mx-auto px-4 py-8 mt-20">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Section Gastronomie & Hébergement</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">Section Tourisme</h1>
           <p className="text-lg text-muted-foreground mb-6">
-            Découvrez des recettes, restaurants, et hébergements aux Comores
+            Découvrez des restaurants, hôtels et hébergements aux Comores
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
@@ -145,7 +145,7 @@ const GastronomyPage = () => {
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <GastronomySubmissionForm 
+                  <TourismSubmissionForm 
                     onClose={() => {
                       setDialogOpen(false);
                       fetchItems();
@@ -256,4 +256,4 @@ const GastronomyPage = () => {
   );
 };
 
-export default GastronomyPage;
+export default TourismPage;

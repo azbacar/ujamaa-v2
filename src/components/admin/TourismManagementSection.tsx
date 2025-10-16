@@ -199,7 +199,7 @@ export default function GastronomyManagementSection() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Gestion Gastronomie & Hébergement</h2>
+        <h2 className="text-2xl font-bold">Gestion Tourisme</h2>
       </div>
 
       {/* Statistiques */}

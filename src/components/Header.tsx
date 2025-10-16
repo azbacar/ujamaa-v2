@@ -126,8 +126,8 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/services" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🏛️ {t('nav.services')}
             </Link>
-            <Link to="/gastronomie" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              🍽️ Gastronomie
+            <Link to="/tourisme" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              🏨 Tourisme
             </Link>
             <Link to="/pro" className="text-emerald-700 hover:text-emerald-800 font-bold transition-colors bg-emerald-50 px-3 py-1 rounded-lg">
               ⭐ Pro
@@ -320,11 +320,11 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                       📢 {t('nav.announcements')}
                     </Link>
                     <Link 
-                      to="/gastronomie" 
+                      to="/tourisme" 
                       className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                       onClick={() => setShowMobileMenu(false)}
                     >
-                      🍽️ Gastronomie
+                      🏨 Tourisme
                     </Link>
                   </nav>
                 </div>
