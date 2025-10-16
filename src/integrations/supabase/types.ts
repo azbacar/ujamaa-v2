@@ -496,6 +496,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_pro_annonceur: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       is_pro_user: {
         Args: { _user_id: string }
         Returns: boolean
