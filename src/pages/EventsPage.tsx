@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,19 +9,18 @@ import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/components/LanguageProvider';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Event {
-  id: number;
+  id: string;
   title: string;
   description: string;
-  date: string;
-  time: string;
-  location: string;
-  island: string;
+  published_at: string;
   category: string;
-  organizer: string;
-  attendees: number;
-  status: 'upcoming' | 'ongoing' | 'completed';
+  views: number;
+  status: 'draft' | 'published' | 'archived';
+  type: 'event' | 'tender' | 'announcement' | 'service';
 }
 
 const EventsPage = () => {
@@ -30,89 +29,114 @@ const EventsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const events: Event[] = [
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('content_items')
+        .select('*')
+        .eq('type', 'event')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast.error('Erreur lors du chargement des événements');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mockEvents: Event[] = [
     {
-      id: 1,
+      id: "1",
       title: "Festival Culturel de Moroni",
       description: "Célébration de la culture comorienne avec danses traditionnelles, musique et artisanat local",
-      date: "2024-02-15",
-      time: "14:00",
-      location: "Place de l'Indépendance",
-      island: "Grande Comore",
+      published_at: "2024-02-15T14:00:00",
       category: "Culturel",
-      organizer: "Ministère de la Culture",
-      attendees: 2000,
-      status: "upcoming"
+      views: 2000,
+      status: "published",
+      type: "event"
     },
     {
-      id: 2,
+      id: "2",
       title: "Conférence sur l'Agriculture Durable",
       description: "Forum sur les techniques agricoles modernes et durables aux Comores",
-      date: "2024-02-20",
-      time: "09:00",
-      location: "Centre de Conférences",
-      island: "Anjouan",
+      published_at: "2024-02-20T09:00:00",
       category: "Éducation",
-      organizer: "Chambre d'Agriculture",
-      attendees: 150,
-      status: "upcoming"
+      views: 150,
+      status: "published",
+      type: "event"
     },
     {
-      id: 3,
+      id: "3",
       title: "Tournoi de Football Inter-îles",
       description: "Compétition sportive rassemblant les équipes des quatre îles",
-      date: "2024-02-25",
-      time: "15:30",
-      location: "Stade National",
-      island: "Mohéli",
+      published_at: "2024-02-25T15:30:00",
       category: "Sport",
-      organizer: "Fédération Comorienne de Football",
-      attendees: 5000,
-      status: "upcoming"
+      views: 5000,
+      status: "published",
+      type: "event"
     },
     {
-      id: 4,
+      id: "4",
       title: "Salon de l'Artisanat Local",
       description: "Exposition et vente d'objets d'artisanat traditionnel comorien",
-      date: "2024-03-01",
-      time: "10:00",
-      location: "Marché Central",
-      island: "Mayotte",
+      published_at: "2024-03-01T10:00:00",
       category: "Commerce",
-      organizer: "Association des Artisans",
-      attendees: 800,
-      status: "upcoming"
+      views: 800,
+      status: "published",
+      type: "event"
     },
     {
-      id: 5,
+      id: "5",
       title: "Séminaire sur le Tourisme Durable",
       description: "Développement du tourisme respectueux de l'environnement",
-      date: "2024-03-05",
-      time: "08:30",
-      location: "Hôtel des Îles",
-      island: "Grande Comore",
+      published_at: "2024-03-05T08:30:00",
       category: "Business",
-      organizer: "Office National du Tourisme",
-      attendees: 120,
-      status: "upcoming"
+      views: 120,
+      status: "published",
+      type: "event"
     }
   ];
 
-  const filteredEvents = events.filter(event => {
+  const displayEvents = events.length > 0 ? events : mockEvents;
+
+  const filteredEvents = displayEvents.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesIsland = selectedIsland === 'all' || event.island === selectedIsland;
+                         event.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
     
-    return matchesSearch && matchesIsland && matchesCategory;
+    return matchesSearch && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
+        <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
+        <main className="container mx-auto px-6 py-12">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Chargement des événements...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'upcoming': return 'bg-blue-100 text-blue-800';
-      case 'ongoing': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-gray-100 text-gray-800';
+      case 'published': return 'bg-green-100 text-green-800';
+      case 'draft': return 'bg-yellow-100 text-yellow-800';
+      case 'archived': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -198,41 +222,33 @@ const EventsPage = () => {
                     <span className="text-2xl">{getCategoryIcon(event.category)}</span>
                     <div>
                       <CardTitle className="text-lg">{event.title}</CardTitle>
-                      <p className="text-sm text-gray-600 mt-1">{event.organizer}</p>
+                      <p className="text-sm text-gray-600 mt-1">{event.category || 'Général'}</p>
                     </div>
                   </div>
                   <Badge className={getStatusColor(event.status)}>
-                    {event.status === 'upcoming' ? 'À venir' : 
-                     event.status === 'ongoing' ? 'En cours' : 'Terminé'}
+                    {event.status === 'published' ? 'Publié' : 
+                     event.status === 'draft' ? 'Brouillon' : 'Archivé'}
                   </Badge>
                 </div>
               </CardHeader>
               
               <CardContent className="space-y-4">
-                <p className="text-gray-700">{event.description}</p>
+                 <p className="text-gray-700">{event.description}</p>
                 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-emerald-600" />
-                    <span>{new Date(event.date).toLocaleDateString('fr-FR')}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-emerald-600" />
-                    <span>{event.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-emerald-600" />
-                    <span>{event.location}</span>
+                    <span>{new Date(event.published_at || Date.now()).toLocaleDateString('fr-FR')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-emerald-600" />
-                    <span>{event.attendees} participants</span>
+                    <span>{event.views} vues</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center justify-between pt-4">
                   <Badge variant="outline" className="text-emerald-700 border-emerald-300">
-                    📍 {event.island}
+                    📂 {event.category || 'Général'}
                   </Badge>
                   <Link to={`/evenements/${event.id}`}>
                     <Button variant="outline" size="sm">
