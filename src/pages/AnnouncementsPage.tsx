@@ -1,42 +1,84 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Clock, MapPin, User, ArrowRight, Search } from 'lucide-react';
+import { Clock, ArrowRight, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { announcements } from '@/components/AnnouncementsSection';
+import { supabase } from '@/integrations/supabase/client';
 
-interface Announcement {
-  id: number;
+interface ContentItem {
+  id: string;
   title: string;
-  category: string;
-  description: string;
-  location: string;
-  date: string;
-  author: string;
-  type: 'urgent' | 'normal' | 'featured';
-  price?: string;
+  category: string | null;
+  description: string | null;
+  type: 'announcement' | 'event' | 'service' | 'tender';
+  created_at: string;
+  author_id: string;
 }
 
+interface Announcement extends Omit<ContentItem, 'type'> {
+  type: 'urgent' | 'normal' | 'featured';
+}
 
 const AnnouncementsPage = () => {
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content_items')
+          .select('id, title, category, description, created_at, author_id, type')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        // Map content items to announcements with display types
+        const mappedData: Announcement[] = (data || []).map((item: ContentItem, index: number) => ({
+          ...item,
+          type: index === 0 ? 'featured' : index < 5 ? 'urgent' : 'normal'
+        }));
+        
+        setAnnouncements(mappedData);
+      } catch (error) {
+        console.error('Erreur lors du chargement des annonces:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
 
   const filteredAnnouncements = announcements.filter(announcement => {
     const matchesSearch = announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         announcement.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         (announcement.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     const matchesCategory = selectedCategory === 'all' || announcement.category === selectedCategory;
     const matchesType = selectedType === 'all' || announcement.type === selectedType;
     
     return matchesSearch && matchesCategory && matchesType;
   });
+
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Il y a moins d\'une heure';
+    if (diffInHours < 24) return `Il y a ${diffInHours} heure${diffInHours > 1 ? 's' : ''}`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
+  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -121,6 +163,11 @@ const AnnouncementsPage = () => {
         </Card>
 
         {/* Liste des annonces */}
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 text-lg">Chargement des annonces...</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAnnouncements.map((announcement) => (
             <Card key={announcement.id} className="feature-card card-hover group h-full">
@@ -139,27 +186,13 @@ const AnnouncementsPage = () => {
                 </h3>
 
                 <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
-                  {announcement.description}
+                  {announcement.description || 'Aucune description disponible'}
                 </p>
-
-                {announcement.price && (
-                  <div className="bg-gradient-to-r from-magenta-50 to-magenta-100 p-3 rounded-lg mb-4">
-                    <p className="text-magenta-700 font-semibold text-sm">{announcement.price}</p>
-                  </div>
-                )}
 
                 <div className="space-y-2 text-xs text-gray-500">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-3 h-3" />
-                    <span>{announcement.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
                     <Clock className="w-3 h-3" />
-                    <span>{announcement.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User className="w-3 h-3" />
-                    <span>{announcement.author}</span>
+                    <span>{getRelativeTime(announcement.created_at)}</span>
                   </div>
                 </div>
 
@@ -177,8 +210,9 @@ const AnnouncementsPage = () => {
             </Card>
           ))}
         </div>
+        )}
 
-        {filteredAnnouncements.length === 0 && (
+        {!loading && filteredAnnouncements.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">Aucune annonce trouvée avec ces critères.</p>
           </div>

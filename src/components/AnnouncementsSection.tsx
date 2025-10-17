@@ -1,108 +1,57 @@
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Clock, MapPin, User, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
-interface Announcement {
-  id: number;
+interface ContentItem {
+  id: string;
   title: string;
-  category: string;
-  description: string;
-  location: string;
-  date: string;
-  author: string;
-  type: 'urgent' | 'normal' | 'featured';
-  price?: string;
+  category: string | null;
+  description: string | null;
+  type: 'announcement' | 'event' | 'service' | 'tender';
+  created_at: string;
+  author_id: string;
 }
 
-const announcements: Announcement[] = [
-  {
-    id: 1,
-    title: "Prix du riz en baisse au marché de Volo-Volo",
-    category: "Prix & Marchés",
-    description: "Le prix du riz importé a diminué de 15% cette semaine suite à l'arrivée d'un nouveau stock. Prix actuel : 1500 FC/kg.",
-    location: "Moroni, Grande Comore",
-    date: "Il y a 2 heures",
-    author: "Direction du Commerce",
-    type: "featured"
-  },
-  {
-    id: 2,
-    title: "Appel d'offres : Construction d'une école primaire",
-    category: "Appels d'Offres",
-    description: "Le Ministère de l'Éducation lance un appel d'offres pour la construction d'une école primaire de 6 classes à Sima, Anjouan.",
-    location: "Sima, Anjouan",
-    date: "Il y a 5 heures",
-    author: "Ministère de l'Éducation",
-    type: "urgent",
-    price: "Budget : 250M FC"
-  },
-  {
-    id: 3,
-    title: "Festival culturel de Mohéli - Inscriptions ouvertes",
-    category: "Événements",
-    description: "Le festival annuel de Mohéli aura lieu du 15 au 17 décembre. Inscriptions ouvertes pour les artistes et artisans locaux.",
-    location: "Fomboni, Mohéli",
-    date: "Il y a 1 jour",
-    author: "Office du Tourisme Mohéli",
-    type: "normal"
-  },
-  {
-    id: 4,
-    title: "Nouvelle ligne de transport Moroni-Mitsamiouli",
-    category: "Transports Terrestres",
-    description: "Mise en service d'une nouvelle ligne de bus reliant Moroni à Mitsamiouli avec 8 rotations quotidiennes.",
-    location: "Grande Comore",
-    date: "Il y a 1 jour",
-    author: "Société de Transport Comorien",
-    type: "normal"
-  },
-  {
-    id: 7,
-    title: "Nouveau service de ferry Anjouan-Mayotte",
-    category: "Transports Maritimes",
-    description: "Lancement d'une nouvelle liaison maritime quotidienne entre Mutsamudu et Dzaoudzi avec des tarifs préférentiels.",
-    location: "Anjouan - Mayotte",
-    date: "Il y a 3 heures",
-    author: "Compagnie Maritime Comorienne",
-    type: "featured"
-  },
-  {
-    id: 8,
-    title: "Vols supplémentaires Air Austral vers Moroni",
-    category: "Transports Aériens",
-    description: "Air Austral augmente sa fréquence avec 3 vols hebdomadaires supplémentaires vers l'aéroport Prince Said Ibrahim.",
-    location: "Moroni",
-    date: "Il y a 6 heures",
-    author: "Aéroport International Moroni",
-    type: "normal"
-  },
-  {
-    id: 5,
-    title: "Campagne de vaccination contre la rougeole",
-    category: "Santé",
-    description: "Campagne gratuite de vaccination des enfants de 6 mois à 5 ans dans tous les centres de santé des îles.",
-    location: "Toutes les îles",
-    date: "Il y a 2 jours",
-    author: "Ministère de la Santé",
-    type: "urgent"
-  },
-  {
-    id: 6,
-    title: "Ouverture des inscriptions universitaires 2024-2025",
-    category: "Éducation",
-    description: "L'Université des Comores ouvre les pré-inscriptions pour l'année académique 2024-2025. Candidatures en ligne jusqu'au 31 janvier.",
-    location: "Moroni, Grande Comore",
-    date: "Il y a 3 jours",
-    author: "Université des Comores",
-    type: "featured"
-  }
-];
-
-export { announcements };
+interface Announcement extends Omit<ContentItem, 'type'> {
+  type: 'urgent' | 'normal' | 'featured';
+}
 
 const AnnouncementsSection = () => {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content_items')
+          .select('id, title, category, description, created_at, author_id, type')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false })
+          .limit(6);
+
+        if (error) throw error;
+        
+        // Map content items to announcements with display types
+        const mappedData: Announcement[] = (data || []).map((item: ContentItem, index: number) => ({
+          ...item,
+          type: index === 0 ? 'featured' : index < 3 ? 'urgent' : 'normal'
+        }));
+        
+        setAnnouncements(mappedData);
+      } catch (error) {
+        console.error('Erreur lors du chargement des annonces:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'urgent':
@@ -124,6 +73,27 @@ const AnnouncementsSection = () => {
         return '📢 Nouveau';
     }
   };
+
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Il y a moins d\'une heure';
+    if (diffInHours < 24) return `Il y a ${diffInHours} heure${diffInHours > 1 ? 's' : ''}`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
+  };
+
+  if (loading) {
+    return (
+      <section className="space-y-8">
+        <div className="text-center">
+          <p className="text-xl text-gray-600">Chargement des annonces...</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-8">
@@ -155,27 +125,13 @@ const AnnouncementsSection = () => {
               </h3>
 
               <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
-                {announcement.description}
+                {announcement.description || 'Aucune description disponible'}
               </p>
-
-              {announcement.price && (
-                <div className="bg-gradient-to-r from-magenta-50 to-magenta-100 p-3 rounded-lg mb-4">
-                  <p className="text-magenta-700 font-semibold text-sm">{announcement.price}</p>
-                </div>
-              )}
 
               <div className="space-y-2 text-xs text-gray-500">
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-3 h-3" />
-                  <span>{announcement.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
                   <Clock className="w-3 h-3" />
-                  <span>{announcement.date}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <User className="w-3 h-3" />
-                  <span>{announcement.author}</span>
+                  <span>{getRelativeTime(announcement.created_at)}</span>
                 </div>
               </div>
 
