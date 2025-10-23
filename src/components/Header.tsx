@@ -104,7 +104,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               U
             </div>
             <div>
-              <h1 className="text-2xl font-bold gradient-text">UJAMAA</h1>
+              <h1 className="text-2xl font-bold gradient-text">Ujamaan</h1>
               <p className="text-sm text-emerald-600 font-medium">Call Center</p>
             </div>
           </Link>

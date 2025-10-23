@@ -9,7 +9,7 @@ const Footer = () => {
               <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-ocean-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
                 U
               </div>
-              <span className="text-2xl font-bold">UJAMAA</span>
+              <span className="text-2xl font-bold">Ujamaan</span>
             </div>
             <p className="text-gray-300 text-base leading-relaxed">
               <span className="font-semibold text-emerald-400">Centralisé • Actualisé • Accessible</span>
@@ -51,7 +51,7 @@ const Footer = () => {
         
         <div className="border-t border-gray-700 mt-12 pt-8 text-center">
           <p className="text-gray-400 text-base">
-            &copy; 2024 UJAMAA Call Center. Tous droits réservés. 
+            &copy; 2024 Ujamaan Call Center. Tous droits réservés. 
             <span className="ml-2 text-2xl">🇰🇲</span>
           </p>
         </div>

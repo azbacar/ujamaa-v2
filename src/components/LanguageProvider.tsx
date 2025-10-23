@@ -19,7 +19,7 @@ const translations = {
     'nav.announcements': 'Annonces',
     
     // Hero Section
-    'hero.title': 'UJAMAA - Centre d\'Information des Comores',
+    'hero.title': 'Ujamaan - Centre d\'Information des Comores',
     'hero.subtitle': 'Votre plateforme centrale pour tous les prix, événements, services et informations officielles des îles Comores',
     'hero.search': 'Rechercher des informations...',
     
@@ -40,7 +40,7 @@ const translations = {
     'island.mayotte': 'l\'île au lagon',
     
     // AI Assistant
-    'ai.title': 'Assistant IA UJAMAA',
+    'ai.title': 'Assistant IA Ujamaan',
     'ai.subtitle': 'Posez vos questions sur les prix, événements, services et plus encore',
     'ai.placeholder': 'Posez votre question sur les Comores...',
     'ai.online': 'En ligne',
@@ -57,7 +57,7 @@ const translations = {
     'nav.announcements': 'Announcements',
     
     // Hero Section
-    'hero.title': 'UJAMAA - Comoros Information Center',
+    'hero.title': 'Ujamaan - Comoros Information Center',
     'hero.subtitle': 'Your central platform for all prices, events, services and official information of the Comoros Islands',
     'hero.search': 'Search for information...',
     
@@ -78,7 +78,7 @@ const translations = {
     'island.mayotte': 'Lagoon Island',
     
     // AI Assistant
-    'ai.title': 'UJAMAA AI Assistant',
+    'ai.title': 'Ujamaan AI Assistant',
     'ai.subtitle': 'Ask questions about prices, events, services and more',
     'ai.placeholder': 'Ask your question about Comoros...',
     'ai.online': 'Online',
@@ -95,7 +95,7 @@ const translations = {
     'nav.announcements': 'الإعلانات',
     
     // Hero Section
-    'hero.title': 'أوجاماا - مركز معلومات جزر القمر',
+    'hero.title': 'أوجامان - مركز معلومات جزر القمر',
     'hero.subtitle': 'منصتكم المركزية لجميع الأسعار والأحداث والخدمات والمعلومات الرسمية لجزر القمر',
     'hero.search': 'البحث عن المعلومات...',
     
@@ -116,7 +116,7 @@ const translations = {
     'island.mayotte': 'جزيرة البحيرة',
     
     // AI Assistant
-    'ai.title': 'مساعد أوجاماا الذكي',
+    'ai.title': 'مساعد أوجامان الذكي',
     'ai.subtitle': 'اسأل عن الأسعار والأحداث والخدمات والمزيد',
     'ai.placeholder': 'اسأل سؤالك عن جزر القمر...',
     'ai.online': 'متصل',
@@ -133,7 +133,7 @@ const translations = {
     'nav.announcements': 'Matangazo',
     
     // Hero Section
-    'hero.title': 'UJAMAA - Kituo cha Habari za Komoro',
+    'hero.title': 'Ujamaan - Kituo cha Habari za Komoro',
     'hero.subtitle': 'Jukwaa lako kuu la bei zote, matukio, huduma na habari rasmi za Visiwa vya Komoro',
     'hero.search': 'Tafuta habari...',
     
@@ -154,7 +154,7 @@ const translations = {
     'island.mayotte': 'Kisiwa cha Bwawa',
     
     // AI Assistant
-    'ai.title': 'Msaidizi wa UJAMAA AI',
+    'ai.title': 'Msaidizi wa Ujamaan AI',
     'ai.subtitle': 'Uliza maswali kuhusu bei, matukio, huduma na mengine',
     'ai.placeholder': 'Uliza swali lako kuhusu Komoro...',
     'ai.online': 'Mtandaoni',
@@ -171,7 +171,7 @@ const translations = {
     'nav.announcements': 'Matangazo',
     
     // Hero Section
-    'hero.title': 'UJAMAA - Ntsi wa Haɓari za Komori',
+    'hero.title': 'Ujamaan - Ntsi wa Haɓari za Komori',
     'hero.subtitle': 'Yenu jukwa la maha yose, shitru, hidima na haɓari za kimila za Visiwa vya Komori',
     'hero.search': 'Tsaha haɓari...',
     
@@ -192,7 +192,7 @@ const translations = {
     'island.mayotte': 'Maore',
     
     // AI Assistant
-    'ai.title': 'Msaidizi wa UJAMAA AI',
+    'ai.title': 'Msaidizi wa Ujamaan AI',
     'ai.subtitle': 'Uliza maswali ya maha, shitru, hidima na mengine',
     'ai.placeholder': 'Uliza swali lako la Komori...',
     'ai.online': 'Mtandaoni',
