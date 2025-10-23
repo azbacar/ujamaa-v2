@@ -16,7 +16,7 @@ import AnnouncementsPage from "./pages/AnnouncementsPage";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
 import EventDetail from "./pages/EventDetail";
 import AdminDashboard from "./pages/AdminDashboard";
-import TourismPage from "./pages/TourismPage";
+
 import IslandDetailPage from "./pages/IslandDetailPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
@@ -48,7 +48,6 @@ const App = () => (
               <Route path="/evenements/:id" element={<EventDetail />} />
               <Route path="/appels-offres" element={<TendersPage />} />
               <Route path="/services" element={<ServicesPage />} />
-              <Route path="/tourisme" element={<TourismPage />} />
               <Route path="/annonces" element={<AnnouncementsPage />} />
               <Route path="/annonces/:id" element={<AnnouncementDetail />} />
               <Route path="/pro" element={<ProPage />} />

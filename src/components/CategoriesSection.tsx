@@ -53,13 +53,13 @@ const CategoriesSection = () => {
       link: "/services"
     },
     {
-      title: "Tourisme",
+      title: "Tourisme & Gastronomie",
       description: "Restaurants, hôtels, hébergements et découverte gastronomique locale",
       icon: "🏨",
       itemCount: 89,
       lastUpdate: "Aujourd'hui",
       featured: true,
-      link: "/tourisme"
+      link: "/annonces?category=Tourisme%20%26%20Gastronomie"
     }
   ];
 

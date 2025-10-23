@@ -58,6 +58,13 @@ const AnnouncementsPage = () => {
     };
 
     fetchAnnouncements();
+    
+    // Check URL params for category filter
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get('category');
+    if (category) {
+      setSelectedCategory(category);
+    }
   }, []);
 
   const filteredAnnouncements = announcements.filter(announcement => {
@@ -140,6 +147,7 @@ const AnnouncementsPage = () => {
                   <SelectItem value="Transports">Transports</SelectItem>
                   <SelectItem value="Santé">Santé</SelectItem>
                   <SelectItem value="Éducation">Éducation</SelectItem>
+                  <SelectItem value="Tourisme & Gastronomie">Tourisme & Gastronomie</SelectItem>
                 </SelectContent>
               </Select>
 
