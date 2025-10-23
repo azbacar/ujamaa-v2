@@ -111,9 +111,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
 
           {/* Navigation */}
           <nav className="hidden lg:flex items-center space-x-6">
-            <Link to="/" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              🏠 {t('nav.home')}
-            </Link>
             <Link to="/prix" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               💰 {t('nav.prices')}
             </Link>
@@ -123,11 +120,11 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/evenements" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🎭 {t('nav.events')}
             </Link>
+            <Link to="/appels-offres" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              📋 {t('nav.tenders')}
+            </Link>
             <Link to="/services" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🏛️ {t('nav.services')}
-            </Link>
-            <Link to="/tourisme" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              🏨 Tourisme
             </Link>
             <Link to="/pro" className="text-emerald-700 hover:text-emerald-800 font-bold transition-colors bg-emerald-50 px-3 py-1 rounded-lg">
               ⭐ Pro
@@ -278,39 +275,11 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                 <div className="absolute right-0 top-14 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
                   <nav className="py-2">
                     <Link 
-                      to="/" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      🏠 {t('nav.home')}
-                    </Link>
-                    <Link 
                       to="/prix" 
                       className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                       onClick={() => setShowMobileMenu(false)}
                     >
                       💰 {t('nav.prices')}
-                    </Link>
-                    <Link 
-                      to="/appels-offres" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      📋 {t('nav.tenders')}
-                    </Link>
-                    <Link 
-                      to="/evenements" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      🎭 {t('nav.events')}
-                    </Link>
-                    <Link 
-                      to="/services" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      🏛️ {t('nav.services')}
                     </Link>
                     <Link 
                       to="/annonces" 
@@ -320,11 +289,25 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                       📢 {t('nav.announcements')}
                     </Link>
                     <Link 
-                      to="/tourisme" 
+                      to="/evenements" 
                       className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
                       onClick={() => setShowMobileMenu(false)}
                     >
-                      🏨 Tourisme
+                      🎭 {t('nav.events')}
+                    </Link>
+                    <Link 
+                      to="/appels-offres" 
+                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      📋 {t('nav.tenders')}
+                    </Link>
+                    <Link 
+                      to="/services" 
+                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                      onClick={() => setShowMobileMenu(false)}
+                    >
+                      🏛️ {t('nav.services')}
                     </Link>
                   </nav>
                 </div>
