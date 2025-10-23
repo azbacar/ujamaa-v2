@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,19 +11,14 @@ import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
 import TenderSubmissionForm from '@/components/TenderSubmissionForm';
 import { useLanguage } from '@/components/LanguageProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Tender {
-  id: number;
+  id: string;
   title: string;
-  description: string;
-  organization: string;
-  budget: string;
-  deadline: string;
-  location: string;
-  island: string;
-  category: string;
-  status: 'open' | 'closing_soon' | 'closed';
-  requirements: string[];
+  description: string | null;
+  category: string | null;
+  created_at: string;
 }
 
 const TendersPage = () => {
@@ -34,82 +29,37 @@ const TendersPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
+  const [tenders, setTenders] = useState<Tender[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const tenders: Tender[] = [
-    {
-      id: 1,
-      title: "Construction d'un Centre de Santé",
-      description: "Construction et équipement d'un centre de santé communautaire avec 20 lits et équipements médicaux modernes",
-      organization: "Ministère de la Santé",
-      budget: "2,500,000 KMF",
-      deadline: "2024-03-15",
-      location: "Mutsamudu",
-      island: "Anjouan",
-      category: "Santé",
-      status: "open",
-      requirements: ["Licence de construction", "Expérience 5+ ans", "Certification ISO"]
-    },
-    {
-      id: 2,
-      title: "Rénovation Infrastructure Routière",
-      description: "Réhabilitation de 25 km de routes rurales avec revêtement bitumineux et signalisation",
-      organization: "Ministère des Travaux Publics",
-      budget: "5,800,000 KMF",
-      deadline: "2024-02-28",
-      location: "Fomboni - Nioumachoua",
-      island: "Mohéli",
-      category: "Infrastructure",
-      status: "closing_soon",
-      requirements: ["Équipement lourd", "Personnel qualifié", "Assurance RC"]
-    },
-    {
-      id: 3,
-      title: "Système d'Irrigation Agricole",
-      description: "Installation d'un système d'irrigation moderne pour 200 hectares de terres agricoles",
-      organization: "Chambre d'Agriculture",
-      budget: "1,200,000 KMF",
-      deadline: "2024-03-30",
-      location: "Mbéni",
-      island: "Grande Comore",
-      category: "Agriculture",
-      status: "open",
-      requirements: ["Expertise irrigation", "Matériel spécialisé", "Garantie 3 ans"]
-    },
-    {
-      id: 4,
-      title: "Fourniture Équipements Informatiques",
-      description: "Achat et installation de 150 ordinateurs et équipements réseau pour les écoles",
-      organization: "Ministère de l'Éducation",
-      budget: "3,400,000 KMF",
-      deadline: "2024-02-20",
-      location: "Mamoudzou",
-      island: "Mayotte",
-      category: "Éducation",
-      status: "closing_soon",
-      requirements: ["Distributeur agréé", "Support technique", "Formation incluse"]
-    },
-    {
-      id: 5,
-      title: "Aménagement Parc Urbain",
-      description: "Création d'un parc urbain de 5 hectares avec aires de jeux, éclairage et végétation",
-      organization: "Mairie de Moroni",
-      budget: "1,800,000 KMF",
-      deadline: "2024-04-10",
-      location: "Moroni Centre",
-      island: "Grande Comore",
-      category: "Environnement",
-      status: "open",
-      requirements: ["Paysagiste", "Matériaux durables", "Entretien 2 ans"]
-    }
-  ];
+  useEffect(() => {
+    const fetchTenders = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content_items')
+          .select('id, title, description, category, created_at')
+          .eq('type', 'tender')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setTenders(data || []);
+      } catch (error) {
+        console.error('Erreur lors du chargement des appels d\'offres:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTenders();
+  }, []);
 
   const filteredTenders = tenders.filter(tender => {
     const matchesSearch = tender.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         tender.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesIsland = selectedIsland === 'all' || tender.island === selectedIsland;
+                         (tender.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     const matchesCategory = selectedCategory === 'all' || tender.category === selectedCategory;
     
-    return matchesSearch && matchesIsland && matchesCategory;
+    return matchesSearch && matchesCategory;
   });
 
   const getStatusColor = (status: string) => {
@@ -205,117 +155,82 @@ const TendersPage = () => {
           <AdSpace size="large" position="content" />
         </div>
 
-        {/* Liste des appels d'offres */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
+            <p className="text-gray-600 mt-4">Chargement des appels d'offres...</p>
+          </div>
+        ) : (
         <div className="space-y-6">
           {filteredTenders.map((tender) => (
             <Card key={tender.id} className="card-hover">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl">{getCategoryIcon(tender.category)}</span>
+                    <span className="text-2xl">{getCategoryIcon(tender.category || '')}</span>
                     <div className="flex-1">
                       <CardTitle className="text-xl">{tender.title}</CardTitle>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Building className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">{tender.organization}</span>
-                      </div>
+                      {tender.category && (
+                        <Badge variant="outline" className="mt-2">
+                          {tender.category}
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                  <div className="text-right space-y-2">
-                    <Badge className={getStatusColor(tender.status)}>
-                      {tender.status === 'open' ? 'Ouvert' : 
-                       tender.status === 'closing_soon' ? 'Expire bientôt' : 'Fermé'}
-                    </Badge>
-                    <div className="text-sm text-gray-500">
-                      {getDaysRemaining(tender.deadline)} jours restants
-                    </div>
+                  <div className="text-sm text-gray-500">
+                    {new Date(tender.created_at).toLocaleDateString('fr-FR')}
                   </div>
                 </div>
               </CardHeader>
               
               <CardContent className="space-y-4">
-                <p className="text-gray-700">{tender.description}</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-emerald-600" />
-                    <div>
-                      <div className="text-sm text-gray-500">Budget</div>
-                      <div className="font-semibold">{tender.budget}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-emerald-600" />
-                    <div>
-                      <div className="text-sm text-gray-500">Date limite</div>
-                      <div className="font-semibold">{new Date(tender.deadline).toLocaleDateString('fr-FR')}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-emerald-600" />
-                    <div>
-                      <div className="text-sm text-gray-500">Localisation</div>
-                      <div className="font-semibold">{tender.location}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Exigences principales :</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {tender.requirements.map((req, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {req}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+                <p className="text-gray-700">{tender.description || 'Aucune description disponible'}</p>
                 
                 <div className="flex items-center justify-between pt-4 border-t">
-                  <Badge variant="outline" className="text-emerald-700 border-emerald-300">
-                    📍 {tender.island}
-                  </Badge>
                   <div className="space-x-2">
                     <Button variant="outline" size="sm">
                       <FileText className="w-4 h-4 mr-2" />
-                      Télécharger le dossier
+                      Voir les détails
                     </Button>
-                    <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          className="bg-gradient-to-r from-emerald-500 to-ocean-500"
-                          onClick={() => setSelectedTender(tender)}
-                        >
-                          Soumettre une offre
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
-                        {selectedTender && (
-                          <TenderSubmissionForm
-                            tenderId={selectedTender.id}
-                            tenderTitle={selectedTender.title}
-                            onClose={() => {
-                              setIsSubmissionOpen(false);
-                              setSelectedTender(null);
-                            }}
-                          />
-                        )}
-                      </DialogContent>
-                    </Dialog>
+                    <Button 
+                      size="sm" 
+                      className="bg-gradient-to-r from-emerald-500 to-ocean-500"
+                      onClick={() => {
+                        setSelectedTender(tender);
+                        setIsSubmissionOpen(true);
+                      }}
+                    >
+                      Soumettre une offre
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
+        )}
 
-        {filteredTenders.length === 0 && (
+        {!loading && filteredTenders.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">Aucun appel d'offres trouvé avec ces critères.</p>
           </div>
         )}
       </main>
+      
+      <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+          {selectedTender && (
+            <TenderSubmissionForm
+              tenderId={selectedTender.id}
+              tenderTitle={selectedTender.title}
+              onClose={() => {
+                setIsSubmissionOpen(false);
+                setSelectedTender(null);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>

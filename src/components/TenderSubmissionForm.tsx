@@ -11,7 +11,7 @@ import { FileUp, Building, User, Phone, Mail, MapPin, DollarSign, Calendar, File
 import { useToast } from '@/hooks/use-toast';
 
 interface TenderSubmissionFormProps {
-  tenderId: number;
+  tenderId: string;
   tenderTitle: string;
   onClose: () => void;
 }

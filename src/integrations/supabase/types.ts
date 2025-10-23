@@ -366,6 +366,69 @@ export type Database = {
         }
         Relationships: []
       }
+      prices: {
+        Row: {
+          author_id: string
+          category: string
+          city: string
+          created_at: string
+          currency: string
+          id: string
+          island: string
+          market: string
+          price: number
+          product: string
+          region: string | null
+          status: Database["public"]["Enums"]["content_status"]
+          trend: string | null
+          unit: string
+          updated_at: string
+          vendor: string
+          views: number
+          village: string | null
+        }
+        Insert: {
+          author_id: string
+          category: string
+          city: string
+          created_at?: string
+          currency?: string
+          id?: string
+          island: string
+          market: string
+          price: number
+          product: string
+          region?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          trend?: string | null
+          unit: string
+          updated_at?: string
+          vendor: string
+          views?: number
+          village?: string | null
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          city?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          island?: string
+          market?: string
+          price?: number
+          product?: string
+          region?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          trend?: string | null
+          unit?: string
+          updated_at?: string
+          vendor?: string
+          views?: number
+          village?: string | null
+        }
+        Relationships: []
+      }
       site_analytics: {
         Row: {
           created_at: string
@@ -496,14 +559,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_pro_annonceur: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      is_pro_user: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_pro_annonceur: { Args: { _user_id: string }; Returns: boolean }
+      is_pro_user: { Args: { _user_id: string }; Returns: boolean }
       log_admin_action: {
         Args: {
           _action_type: string
