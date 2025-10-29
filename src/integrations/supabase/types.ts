@@ -202,6 +202,140 @@ export type Database = {
         }
         Relationships: []
       }
+      event_registrations: {
+        Row: {
+          additional_info: Json | null
+          created_at: string | null
+          event_id: string
+          id: string
+          payment_amount: number | null
+          payment_status: string | null
+          registration_date: string | null
+          status: string | null
+          ticket_code: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          additional_info?: Json | null
+          created_at?: string | null
+          event_id: string
+          id?: string
+          payment_amount?: number | null
+          payment_status?: string | null
+          registration_date?: string | null
+          status?: string | null
+          ticket_code?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          additional_info?: Json | null
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          payment_amount?: number | null
+          payment_status?: string | null
+          registration_date?: string | null
+          status?: string | null
+          ticket_code?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          author_id: string
+          capacity: number | null
+          category: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          currency: string | null
+          date: string
+          description: string | null
+          end_date: string | null
+          full_content: string | null
+          id: string
+          images: string[] | null
+          island: string
+          location: string
+          metadata: Json | null
+          organizer: string
+          price: number | null
+          registered_count: number | null
+          requires_payment: boolean | null
+          requires_registration: boolean | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          author_id: string
+          capacity?: number | null
+          category: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          currency?: string | null
+          date: string
+          description?: string | null
+          end_date?: string | null
+          full_content?: string | null
+          id?: string
+          images?: string[] | null
+          island: string
+          location: string
+          metadata?: Json | null
+          organizer: string
+          price?: number | null
+          registered_count?: number | null
+          requires_payment?: boolean | null
+          requires_registration?: boolean | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          author_id?: string
+          capacity?: number | null
+          category?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string | null
+          currency?: string | null
+          date?: string
+          description?: string | null
+          end_date?: string | null
+          full_content?: string | null
+          id?: string
+          images?: string[] | null
+          island?: string
+          location?: string
+          metadata?: Json | null
+          organizer?: string
+          price?: number | null
+          registered_count?: number | null
+          requires_payment?: boolean | null
+          requires_registration?: boolean | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
       gastronomy_items: {
         Row: {
           author_id: string
@@ -297,6 +431,42 @@ export type Database = {
           id?: string
           title?: string
           type?: Database["public"]["Enums"]["announcement_kind"]
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          link: string | null
+          message: string
+          metadata: Json | null
+          read: boolean | null
+          title: string
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message: string
+          metadata?: Json | null
+          read?: boolean | null
+          title: string
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          link?: string | null
+          message?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title?: string
+          type?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -548,6 +718,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_ticket_code: { Args: never; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
