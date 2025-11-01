@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import NotificationSystem from './NotificationSystem';
+import NotificationSystemReal from './NotificationSystemReal';
 
 interface HeaderProps {
   currentLanguage: string;
@@ -206,7 +206,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
           {/* Actions */}
           <div className="flex items-center gap-3">
             {/* Notifications */}
-            <NotificationSystem />
+            <NotificationSystemReal />
 
             {/* Authentication */}
             {user ? (

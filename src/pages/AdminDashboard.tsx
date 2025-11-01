@@ -26,7 +26,7 @@ import AdsManagementSection from '@/components/admin/AdsManagementSection';
 import { HomepageManagementSection } from '@/components/admin/HomepageManagementSection';
 import PricesManagementSection from '@/components/admin/PricesManagementSection';
 import ConnectedFunctionsSection from '@/components/admin/ConnectedFunctionsSection';
-import TourismManagementSection from '@/components/admin/TourismManagementSection';
+import EventsManagementSection from '@/components/admin/EventsManagementSection';
 
 interface PendingModification {
   id: string;
@@ -255,8 +255,8 @@ export default function AdminDashboard() {
       case 'functions':
         return <ConnectedFunctionsSection />;
       
-      case 'tourism':
-        return <TourismManagementSection />;
+      case 'events':
+        return <EventsManagementSection />;
       
       default:
         return <AdminOverview 

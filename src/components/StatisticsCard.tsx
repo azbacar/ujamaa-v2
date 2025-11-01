@@ -3,7 +3,7 @@ import { useRealTimeStats } from '@/hooks/useRealTimeStats';
 import { Loader2 } from 'lucide-react';
 
 const StatisticsCard = () => {
-  const { userCount, contentCount, announcementsCount, loading } = useRealTimeStats();
+  const { userCount, contentCount, announcementsCount, eventsCount, upcomingEventsCount, loading } = useRealTimeStats();
 
   if (loading) {
     return (
@@ -33,6 +33,14 @@ const StatisticsCard = () => {
           <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
             <span className="text-base text-gray-700 font-medium">Annonces actives</span>
             <span className="font-bold text-2xl text-magenta-600">{announcementsCount}</span>
+          </div>
+          <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
+            <span className="text-base text-gray-700 font-medium">Événements publiés</span>
+            <span className="font-bold text-2xl text-purple-600">{eventsCount}</span>
+          </div>
+          <div className="flex justify-between items-center p-4 bg-white/50 rounded-xl">
+            <span className="text-base text-gray-700 font-medium">Événements à venir</span>
+            <span className="font-bold text-2xl text-blue-600">{upcomingEventsCount}</span>
           </div>
         </div>
       </CardContent>

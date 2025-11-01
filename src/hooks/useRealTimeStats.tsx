@@ -9,6 +9,9 @@ interface RealTimeStats {
   totalModifications: number;
   adsCount: number;
   analyticsViews: number;
+  eventsCount: number;
+  upcomingEventsCount: number;
+  eventRegistrationsCount: number;
   loading: boolean;
   error: string | null;
 }
@@ -22,6 +25,9 @@ export const useRealTimeStats = () => {
     totalModifications: 0,
     adsCount: 0,
     analyticsViews: 0,
+    eventsCount: 0,
+    upcomingEventsCount: 0,
+    eventRegistrationsCount: 0,
     loading: true,
     error: null
   });
@@ -38,7 +44,10 @@ export const useRealTimeStats = () => {
         pendingModsResult,
         totalModsResult,
         adsResult,
-        analyticsResult
+        analyticsResult,
+        eventsResult,
+        upcomingEventsResult,
+        registrationsResult
       ] = await Promise.all([
         supabase.from('users').select('*', { count: 'exact', head: true }),
         supabase.from('content_items').select('*', { count: 'exact', head: true }),
@@ -46,7 +55,10 @@ export const useRealTimeStats = () => {
         supabase.from('pending_modifications').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('pending_modifications').select('*', { count: 'exact', head: true }),
         supabase.from('ads').select('*', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('site_analytics').select('*', { count: 'exact', head: true }).eq('event_type', 'page_view')
+        supabase.from('site_analytics').select('*', { count: 'exact', head: true }).eq('event_type', 'page_view'),
+        supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+        supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'published').gte('date', new Date().toISOString()),
+        supabase.from('event_registrations').select('*', { count: 'exact', head: true })
       ]);
 
       setStats({
@@ -57,6 +69,9 @@ export const useRealTimeStats = () => {
         totalModifications: totalModsResult.count || 0,
         adsCount: adsResult.count || 0,
         analyticsViews: analyticsResult.count || 0,
+        eventsCount: eventsResult.count || 0,
+        upcomingEventsCount: upcomingEventsResult.count || 0,
+        eventRegistrationsCount: registrationsResult.count || 0,
         loading: false,
         error: null
       });
@@ -106,12 +121,30 @@ export const useRealTimeStats = () => {
       )
       .subscribe();
 
+    const eventsChannel = supabase
+      .channel('events_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'events' }, 
+        () => fetchStats()
+      )
+      .subscribe();
+
+    const registrationsChannel = supabase
+      .channel('registrations_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'event_registrations' }, 
+        () => fetchStats()
+      )
+      .subscribe();
+
     // Cleanup subscriptions
     return () => {
       supabase.removeChannel(usersChannel);
       supabase.removeChannel(contentChannel);
       supabase.removeChannel(modsChannel);
       supabase.removeChannel(adsChannel);
+      supabase.removeChannel(eventsChannel);
+      supabase.removeChannel(registrationsChannel);
     };
   }, []);
 

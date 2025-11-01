@@ -15,7 +15,7 @@ import {
   Crown,
   UserCheck,
   DollarSign,
-  UtensilsCrossed
+  Calendar
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -68,10 +68,10 @@ export default function AdminSidebar({
       category: 'content'
     },
     {
-      id: 'tourism',
-      title: 'Tourisme',
-      icon: UtensilsCrossed,
-      description: 'Restaurants, hôtels, hébergements',
+      id: 'events',
+      title: 'Événements',
+      icon: Calendar,
+      description: 'Gestion des événements et inscriptions',
       available: isAdmin || isModerator,
       category: 'content'
     },
