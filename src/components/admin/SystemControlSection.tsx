@@ -47,7 +47,7 @@ export default function SystemControlSection() {
     autoBackup: true,
     siteName: 'UJAMAA Plateforme',
     siteDescription: 'Plateforme d\'information centralisée pour les Comores',
-    contactEmail: 'admin@ujamaa.com',
+    contactEmail: 'admin@ujamaan.com',
     maxFileSize: 10,
     sessionTimeout: 30
   });

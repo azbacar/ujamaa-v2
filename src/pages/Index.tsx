@@ -9,9 +9,13 @@ import CategoriesSection from '@/components/CategoriesSection';
 import AnnouncementsSection from '@/components/AnnouncementsSection';
 import AdSpace from '@/components/AdSpace';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 
 const Index = () => {
   const { currentLanguage, setLanguage } = useLanguage();
+  const { user } = useAuth();
+  const { isAdmin, isModerator } = useRole();
 
   return (
     <div className="min-h-screen">
@@ -49,7 +53,7 @@ const Index = () => {
             {/* Espace publicitaire sidebar */}
             <AdSpace size="medium" position="sidebar" />
             
-            <StatisticsCard />
+            {user && (isAdmin() || isModerator()) ? <StatisticsCard /> : null}
             
             {/* Autre espace publicitaire sidebar */}
             <AdSpace size="small" position="sidebar" />
