@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { 
   Search, 
   Filter, 
@@ -19,121 +21,118 @@ import {
   User,
   DollarSign
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 
 interface Price {
-  id: number;
+  id: string;
   product: string;
   category: string;
   price: number;
   unit: string;
   vendor: string;
-  location: string;
+  city: string;
   market: string;
-  status: 'pending' | 'approved' | 'rejected';
-  submittedAt: string;
-  lastUpdated: string;
+  status: 'published' | 'draft' | 'archived';
+  created_at: string;
+  updated_at: string;
   trend: 'up' | 'down' | 'stable';
 }
 
-// Données de démonstration
-const mockPrices: Price[] = [
-  {
-    id: 1,
-    product: "Riz blanc importé",
-    category: "Céréales",
-    price: 1500,
-    unit: "kg",
-    vendor: "Mama Hadija",
-    location: "Volo-Volo, Moroni",
-    market: "Marché Central Volo-Volo",
-    status: 'approved',
-    submittedAt: "2024-01-15",
-    lastUpdated: "2024-01-15",
-    trend: 'down'
-  },
-  {
-    id: 2,
-    product: "Bananes locales premium",
-    category: "Fruits",
-    price: 600,
-    unit: "régime",
-    vendor: "Ahmed Soilihi",
-    location: "Bangoi-Madjou, Mutsamudu",
-    market: "Marché de Mutsamudu",
-    status: 'pending',
-    submittedAt: "2024-01-16",
-    lastUpdated: "2024-01-16",
-    trend: 'stable'
-  },
-  {
-    id: 3,
-    product: "Tomates biologiques",
-    category: "Légumes",
-    price: 900,
-    unit: "kg",
-    vendor: "Fatima Abdou",
-    location: "Mramani, Moroni",
-    market: "Marché Mramani",
-    status: 'pending',
-    submittedAt: "2024-01-16",
-    lastUpdated: "2024-01-16",
-    trend: 'up'
-  }
-];
-
 const PricesManagementSection = () => {
-  const [prices, setPrices] = useState<Price[]>(mockPrices);
+  const [prices, setPrices] = useState<Price[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchPrices();
+  }, []);
+
+  const fetchPrices = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('prices')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPrices((data || []).map(p => ({
+        ...p,
+        trend: (p.trend || 'stable') as 'up' | 'down' | 'stable'
+      })));
+    } catch (error) {
+      console.error('Error fetching prices:', error);
+      toast.error('Erreur lors du chargement des prix');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredPrices = prices.filter(price => {
     const matchesSearch = price.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          price.vendor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         price.location.toLowerCase().includes(searchTerm.toLowerCase());
+                         price.city.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || price.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
 
-  const handleApprovePrice = (id: number) => {
-    setPrices(prev => prev.map(price => 
-      price.id === id ? { ...price, status: 'approved' as const } : price
-    ));
-    toast({
-      title: "Prix approuvé",
-      description: "Le prix a été approuvé et est maintenant visible publiquement.",
-    });
+  const handleApprovePrice = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('prices')
+        .update({ status: 'published' })
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Prix approuvé avec succès');
+      fetchPrices();
+    } catch (error) {
+      console.error('Error approving price:', error);
+      toast.error('Erreur lors de l\'approbation');
+    }
   };
 
-  const handleRejectPrice = (id: number) => {
-    setPrices(prev => prev.map(price => 
-      price.id === id ? { ...price, status: 'rejected' as const } : price
-    ));
-    toast({
-      title: "Prix rejeté",
-      description: "Le prix a été rejeté et ne sera pas publié.",
-      variant: "destructive"
-    });
+  const handleRejectPrice = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('prices')
+        .update({ status: 'draft' })
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Prix rejeté');
+      fetchPrices();
+    } catch (error) {
+      console.error('Error rejecting price:', error);
+      toast.error('Erreur lors du rejet');
+    }
   };
 
-  const handleDeletePrice = (id: number) => {
-    setPrices(prev => prev.filter(price => price.id !== id));
-    toast({
-      title: "Prix supprimé",
-      description: "Le prix a été définitivement supprimé.",
-      variant: "destructive"
-    });
+  const handleDeletePrice = async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce prix ?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('prices')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Prix supprimé avec succès');
+      fetchPrices();
+    } catch (error) {
+      console.error('Error deleting price:', error);
+      toast.error('Erreur lors de la suppression');
+    }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <Badge className="bg-admin-success/10 text-admin-success border-admin-success/30">✓ Approuvé</Badge>;
-      case 'pending':
-        return <Badge className="bg-admin-warning/10 text-admin-warning border-admin-warning/30">⏳ En attente</Badge>;
-      case 'rejected':
-        return <Badge className="bg-admin-danger/10 text-admin-danger border-admin-danger/30">✗ Rejeté</Badge>;
+      case 'published':
+        return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-300">✓ Publié</Badge>;
+      case 'draft':
+        return <Badge className="bg-orange-100 text-orange-700 border-orange-300">⏳ Brouillon</Badge>;
+      case 'archived':
+        return <Badge className="bg-gray-100 text-gray-700 border-gray-300">📦 Archivé</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -150,12 +149,20 @@ const PricesManagementSection = () => {
     }
   };
 
-  const pendingCount = prices.filter(p => p.status === 'pending').length;
-  const approvedCount = prices.filter(p => p.status === 'approved').length;
+  const draftCount = prices.filter(p => p.status === 'draft').length;
+  const publishedCount = prices.filter(p => p.status === 'published').length;
   const totalCount = prices.length;
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Gestion des Prix</h2>
         <Button className="bg-emerald-600 hover:bg-emerald-700">
@@ -183,8 +190,8 @@ const PricesManagementSection = () => {
             <div className="flex items-center space-x-2">
               <Check className="w-8 h-8 text-green-600" />
               <div>
-                <p className="text-2xl font-bold text-gray-900">{approvedCount}</p>
-                <p className="text-sm text-gray-600">Approuvés</p>
+                <p className="text-2xl font-bold text-gray-900">{publishedCount}</p>
+                <p className="text-sm text-gray-600">Publiés</p>
               </div>
             </div>
           </CardContent>
@@ -193,10 +200,10 @@ const PricesManagementSection = () => {
         <Card className="admin-card">
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Eye className="w-8 h-8 text-admin-warning" />
+              <Eye className="w-8 h-8 text-orange-600" />
               <div>
-                <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
-                <p className="text-sm text-gray-600">En attente</p>
+                <p className="text-2xl font-bold text-gray-900">{draftCount}</p>
+                <p className="text-sm text-gray-600">Brouillons</p>
               </div>
             </div>
           </CardContent>
@@ -247,25 +254,18 @@ const PricesManagementSection = () => {
                 Tous
               </Button>
               <Button
-                variant={selectedStatus === 'pending' ? 'default' : 'outline'}
-                onClick={() => setSelectedStatus('pending')}
+                variant={selectedStatus === 'draft' ? 'default' : 'outline'}
+                onClick={() => setSelectedStatus('draft')}
                 size="sm"
               >
-                En attente ({pendingCount})
+                Brouillons ({draftCount})
               </Button>
               <Button
-                variant={selectedStatus === 'approved' ? 'default' : 'outline'}
-                onClick={() => setSelectedStatus('approved')}
+                variant={selectedStatus === 'published' ? 'default' : 'outline'}
+                onClick={() => setSelectedStatus('published')}
                 size="sm"
               >
-                Approuvés
-              </Button>
-              <Button
-                variant={selectedStatus === 'rejected' ? 'default' : 'outline'}
-                onClick={() => setSelectedStatus('rejected')}
-                size="sm"
-              >
-                Rejetés
+                Publiés
               </Button>
             </div>
           </div>
@@ -318,7 +318,7 @@ const PricesManagementSection = () => {
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-gray-400" />
                       <div>
-                        <p className="text-sm">{price.location}</p>
+                        <p className="text-sm">{price.city}</p>
                         <p className="text-xs text-gray-500">{price.market}</p>
                       </div>
                     </div>
@@ -333,12 +333,12 @@ const PricesManagementSection = () => {
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-gray-600">
-                      {new Date(price.submittedAt).toLocaleDateString('fr-FR')}
+                      {new Date(price.created_at).toLocaleDateString('fr-FR')}
                     </span>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      {price.status === 'pending' && (
+                      {price.status === 'draft' && (
                         <>
                           <Button
                             size="sm"
@@ -352,7 +352,7 @@ const PricesManagementSection = () => {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleRejectPrice(price.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                           >
                             <X className="w-4 h-4" />
                           </Button>
