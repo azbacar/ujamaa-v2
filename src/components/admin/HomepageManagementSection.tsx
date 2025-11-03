@@ -124,11 +124,38 @@ export const HomepageManagementSection = () => {
   ]);
 
   const [stats, setStats] = useState<HomepageStats>({
-    totalUsers: 1247,
-    totalContent: 523,
-    todayViews: 3456,
-    announcements: 12
+    totalUsers: 0,
+    totalContent: 0,
+    todayViews: 0,
+    announcements: 0
   });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      // Fetch real stats from Supabase
+      const [usersCount, contentCount, announcementsCount, analyticsData] = await Promise.all([
+        supabase.from('users').select('*', { count: 'exact', head: true }),
+        supabase.from('content_items').select('*', { count: 'exact', head: true }),
+        supabase.from('global_announcements').select('*', { count: 'exact', head: true }),
+        supabase.from('site_analytics')
+          .select('*')
+          .gte('created_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
+      ]);
+
+      setStats({
+        totalUsers: usersCount.count || 0,
+        totalContent: contentCount.count || 0,
+        todayViews: analyticsData.data?.length || 0,
+        announcements: announcementsCount.count || 0
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isHeroDialogOpen, setIsHeroDialogOpen] = useState(false);

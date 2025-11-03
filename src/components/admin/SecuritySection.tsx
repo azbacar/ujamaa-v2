@@ -65,49 +65,15 @@ export default function SecuritySection() {
   const fetchSecurityData = async () => {
     try {
       setLoading(true);
-      // Mock data - would fetch from actual security logs
-      const mockLogs: SecurityLog[] = [
-        {
-          id: '1',
-          type: 'login',
-          user_id: user?.id,
-          ip_address: '192.168.1.100',
-          user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-          details: { success: true },
-          created_at: new Date().toISOString(),
-          severity: 'low'
-        },
-        {
-          id: '2',
-          type: 'failed_login',
-          ip_address: '192.168.1.50',
-          user_agent: 'Mozilla/5.0 (Linux; Android 10)',
-          details: { attempts: 3, blocked: false },
-          created_at: new Date(Date.now() - 300000).toISOString(),
-          severity: 'medium'
-        },
-        {
-          id: '3',
-          type: 'suspicious_activity',
-          user_id: user?.id,
-          ip_address: '192.168.1.200',
-          user_agent: 'curl/7.68.0',
-          details: { rapid_requests: true, count: 100 },
-          created_at: new Date(Date.now() - 600000).toISOString(),
-          severity: 'high'
-        }
-      ];
-
-      const mockBannedIPs: BannedIP[] = [
-        {
-          id: '1',
-          ip_address: '192.168.1.999',
-          reason: 'Tentatives de connexion répétées',
-          banned_at: new Date(Date.now() - 86400000).toISOString(),
-          banned_by: user?.id || '',
-          expires_at: new Date(Date.now() + 86400000).toISOString()
-        }
-      ];
+      // TODO: Implement security_logs and banned_ips tables
+      // This section uses mock data because security tables need to be created
+      // To enable real security management:
+      // 1. Create security_logs table in Supabase
+      // 2. Create banned_ips table in Supabase
+      // 3. Set up proper RLS policies
+      // 4. Replace this mock data with actual database calls
+      const mockLogs: SecurityLog[] = [];
+      const mockBannedIPs: BannedIP[] = [];
 
       setSecurityLogs(mockLogs);
       setBannedIPs(mockBannedIPs);

@@ -47,27 +47,13 @@ export default function MediaManagementSection() {
   const fetchMediaFiles = async () => {
     try {
       setLoading(true);
-      // Mock data for now - will implement with Supabase Storage
-      const mockFiles: MediaFile[] = [
-        {
-          id: '1',
-          name: 'hero-image.jpg',
-          type: 'image/jpeg',
-          size: 245760,
-          url: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176',
-          created_at: new Date().toISOString(),
-          uploaded_by: user?.id || ''
-        },
-        {
-          id: '2',
-          name: 'document.pdf',
-          type: 'application/pdf',
-          size: 1024000,
-          url: '#',
-          created_at: new Date().toISOString(),
-          uploaded_by: user?.id || ''
-        }
-      ];
+      // TODO: Implement Supabase Storage integration
+      // This section uses mock data because Supabase Storage buckets need to be configured
+      // To enable real media management:
+      // 1. Create storage buckets in Supabase
+      // 2. Set up RLS policies for the buckets
+      // 3. Replace this mock data with actual storage.from() calls
+      const mockFiles: MediaFile[] = [];
       setMediaFiles(mockFiles);
     } catch (error) {
       console.error('Error fetching media files:', error);

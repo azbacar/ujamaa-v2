@@ -1,12 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   Users, 
   FileText, 
   Clock, 
   CheckCircle,
   XCircle,
-  TrendingUp,
   Activity,
   Shield
 } from 'lucide-react';
@@ -31,43 +29,31 @@ export default function AdminStats({
       title: 'Utilisateurs totaux',
       value: userCount,
       icon: Users,
-      color: 'admin-primary',
-      trend: '+5%'
+      color: 'admin-primary'
     },
     {
       title: 'Modifications en attente',
       value: pendingModifications,
       icon: Clock,
-      color: 'admin-warning',
-      trend: '-2%'
+      color: 'admin-warning'
     },
     {
       title: 'Modifications approuvées',
       value: approvedModifications,
       icon: CheckCircle,
-      color: 'admin-success',
-      trend: '+12%'
+      color: 'admin-success'
     },
     {
       title: 'Modifications rejetées',
       value: rejectedModifications,
       icon: XCircle,
-      color: 'admin-danger',
-      trend: '+3%'
+      color: 'admin-danger'
     },
     {
       title: 'Actions administratives',
       value: adminActions,
       icon: Shield,
-      color: 'admin-accent',
-      trend: '+8%'
-    },
-    {
-      title: 'Activité générale',
-      value: '94%',
-      icon: Activity,
-      color: 'admin-secondary',
-      trend: '+6%'
+      color: 'admin-accent'
     }
   ];
 
@@ -84,25 +70,9 @@ export default function AdminStats({
               <Icon className={`h-4 w-4 text-blue-600`} />
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold text-slate-900">
-                  {stat.value}
-                </div>
-                <Badge 
-                  variant="outline" 
-                  className={`text-xs ${
-                    stat.trend.startsWith('+') 
-                      ? 'text-green-600 border-green-200' 
-                      : 'text-red-600 border-red-200'
-                  }`}
-                >
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  {stat.trend}
-                </Badge>
+              <div className="text-2xl font-bold text-slate-900">
+                {stat.value}
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                depuis le mois dernier
-              </p>
             </CardContent>
             <div className={`absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-blue-400 to-blue-600`} />
           </Card>
