@@ -11,7 +11,59 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Informations détaillées sur l'ARCHIPEL DES COMORES
+// Fonction pour récupérer les données dynamiques du site
+async function getDynamicSiteData(authHeader: string | null) {
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: authHeader ? { headers: { Authorization: authHeader } } : {},
+  });
+
+  try {
+    // Récupérer les prix récents
+    const { data: prices } = await supabase
+      .from('prices')
+      .select('product_name, price, unit, island, category')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    // Récupérer les événements à venir
+    const { data: events } = await supabase
+      .from('events')
+      .select('title, description, start_date, end_date, location, island')
+      .gte('end_date', new Date().toISOString())
+      .order('start_date', { ascending: true })
+      .limit(20);
+
+    // Récupérer les annonces récentes
+    const { data: announcements } = await supabase
+      .from('content_items')
+      .select('title, content, category, island')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(20);
+
+    // Récupérer les appels d'offres actifs
+    const { data: tenders } = await supabase
+      .from('tenders')
+      .select('title, description, deadline, budget_range, category')
+      .gte('deadline', new Date().toISOString())
+      .eq('status', 'active')
+      .order('deadline', { ascending: true })
+      .limit(10);
+
+    return {
+      prices: prices || [],
+      events: events || [],
+      announcements: announcements || [],
+      tenders: tenders || []
+    };
+  } catch (error) {
+    console.error('Error fetching dynamic data:', error);
+    return { prices: [], events: [], announcements: [], tenders: [] };
+  }
+}
+
+// Informations de base sur l'ARCHIPEL DES COMORES
 const comorosKnowledge = `
 INFORMATIONS COMPLÈTES SUR L'ARCHIPEL DES COMORES:
 
@@ -77,27 +129,6 @@ INFORMATIONS COMPLÈTES SUR L'ARCHIPEL DES COMORES:
 - Sécurité sociale (régime spécial)
 - Transport scolaire gratuit
 - Couverture médicale universelle
-
-💰 PRIX ACTUELS (estimations récentes):
-
-COMORES (KMF):
-- Riz importé: 800-1200 KMF/kg
-- Riz local: 1000-1500 KMF/kg  
-- Poisson frais: 1500-3000 KMF/kg
-- Viande de bœuf: 3000-4000 KMF/kg
-- Légumes locaux: 300-800 KMF/kg
-- Pain: 150-200 KMF/unité
-- Essence: 650-750 KMF/litre
-- Transport local: 100-300 KMF/trajet
-
-MAYOTTE (EUR):
-- Riz: 2-3€/kg
-- Poisson frais: 8-15€/kg  
-- Viande de bœuf: 15-20€/kg
-- Légumes: 1-4€/kg
-- Pain: 1-1.5€/baguette
-- Essence: 1.50-1.70€/litre
-- Transport bus: 1€/trajet
 
 🚢 TRANSPORT INTER-ÎLES:
 - Moroni ↔ Anjouan: 15,000-25,000 KMF
@@ -190,54 +221,98 @@ if (authHeader) {
   user = authUser;
 }
 
-    let systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel pour les Comores et Mayotte. 
+    // Récupérer les données dynamiques du site
+    const dynamicData = await getDynamicSiteData(authHeader);
+
+    // Construire la section des données dynamiques
+    let dynamicContent = '\n\n📊 DONNÉES ACTUELLES DU SITE UJAMAAN.COM:\n\n';
+    
+    if (dynamicData.prices.length > 0) {
+      dynamicContent += '💰 PRIX RÉCENTS:\n';
+      dynamicData.prices.slice(0, 15).forEach(price => {
+        dynamicContent += `- ${price.product_name}: ${price.price} ${price.unit} (${price.island})\n`;
+      });
+      dynamicContent += '\n';
+    }
+
+    if (dynamicData.events.length > 0) {
+      dynamicContent += '🎉 ÉVÉNEMENTS À VENIR:\n';
+      dynamicData.events.slice(0, 10).forEach(event => {
+        const date = new Date(event.start_date).toLocaleDateString('fr-FR');
+        dynamicContent += `- ${event.title} - ${date} à ${event.location} (${event.island})\n`;
+      });
+      dynamicContent += '\n';
+    }
+
+    if (dynamicData.announcements.length > 0) {
+      dynamicContent += '📢 ANNONCES RÉCENTES:\n';
+      dynamicData.announcements.slice(0, 8).forEach(announcement => {
+        dynamicContent += `- ${announcement.title} (${announcement.island})\n`;
+      });
+      dynamicContent += '\n';
+    }
+
+    if (dynamicData.tenders.length > 0) {
+      dynamicContent += '📋 APPELS D\'OFFRES ACTIFS:\n';
+      dynamicData.tenders.slice(0, 5).forEach(tender => {
+        const deadline = new Date(tender.deadline).toLocaleDateString('fr-FR');
+        dynamicContent += `- ${tender.title} - Échéance: ${deadline}\n`;
+      });
+      dynamicContent += '\n';
+    }
+
+    let systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel pour les Comores et Mayotte sur le site ujamaan.com. 
 
 ${comorosKnowledge}
+${dynamicContent}
 
-PAGES DU SITE UJAMAA (à mentionner quand pertinent) :
-- Page d'accueil : / (vue d'ensemble des services)
-- Prix et marchés : /prix (tous les prix des produits)
-- Événements : /evenements (festivals, événements culturels)
-- Services publics : /services (démarches administratives)
-- Appels d'offres : /appels-offres (opportunités d'affaires)
-- Annonces : /annonces (annonces officielles)
-- Tourisme : /tourisme (restaurants, hôtels, hébergements, gastronomie)
+PAGES DU SITE UJAMAAN.COM (à mentionner quand pertinent) :
+- Page d'accueil : https://ujamaan.com/ (vue d'ensemble des services)
+- Prix et marchés : https://ujamaan.com/prix (tous les prix des produits actuels)
+- Événements : https://ujamaan.com/evenements (festivals, événements culturels)
+- Services publics : https://ujamaan.com/services (démarches administratives)
+- Appels d'offres : https://ujamaan.com/appels-offres (opportunités d'affaires)
+- Annonces : https://ujamaan.com/annonces (annonces officielles)
+- Tourisme : https://ujamaan.com/tourisme (restaurants, hôtels, hébergements, gastronomie)
 
 🎯 TON RÔLE PRINCIPAL:
 - Tu es UN GUIDE EXPERT de l'ARCHIPEL DES COMORES (4 îles: Ngazidja, Ndzuwani, Mwali, Maore)
 - Tu considères Mayotte (Maore) comme PARTIE INTÉGRANTE de l'archipel des Comores
 - Tu ne sépares JAMAIS Mayotte des autres îles comoriennes - elles forment UN ARCHIPEL UNIFIÉ
-- Tu diriges TOUJOURS vers les pages du site quand pertinent
+- Tu diriges TOUJOURS vers les pages du site ujamaan.com quand pertinent
 - Tu es RÉACTIF et SPONTANÉ dans tes réponses (max 2-3 lignes)
 
 🚨 RÈGLE CRITIQUE - SOURCES D'INFORMATION:
-- Tu te bases UNIQUEMENT sur les informations de la plateforme UJAMAA
-- Si tu n'as pas l'information demandée, dis clairement: "Je n'ai pas cette information pour le moment, mais je te conseille de..."
+- Tu te bases UNIQUEMENT sur les informations de la plateforme UJAMAAN.COM
+- Les données ci-dessus (prix, événements, annonces, appels d'offres) sont extraites EN TEMPS RÉEL de la base de données
+- Si tu n'as pas l'information demandée, dis clairement: "Je n'ai pas cette information pour le moment sur ujamaan.com, mais je te conseille de..."
 - NE JAMAIS inventer ou supposer des informations qui ne sont pas dans le système
-- NE JAMAIS donner d'informations de sources externes sans préciser que ce ne sont pas des données officielles de la plateforme
+- NE JAMAIS donner d'informations de sources externes sans préciser que ce ne sont pas des données officielles de ujamaan.com
 
 💡 STYLE DE RÉPONSE OBLIGATOIRE:
 - Sois DIRECT et CONCIS avec des emojis
-- Propose IMMÉDIATEMENT des liens vers les pages du site
+- Propose IMMÉDIATEMENT des liens vers les pages du site ujamaan.com
 - Pose des questions de suivi pour engager l'utilisateur
 - Utilise UNIQUEMENT les informations vérifiées de la plateforme
+- Mentionne que les données sont mises à jour en temps réel
 
-🔥 RÈGLE D'OR: Pour CHAQUE réponse, suggère au moins UNE page du site et explique pourquoi la visiter.
+🔥 RÈGLE D'OR: Pour CHAQUE réponse, suggère au moins UNE page du site ujamaan.com et explique pourquoi la visiter.
 
 📋 PAGES À PROMOUVOIR ACTIVEMENT:
-- "/prix" → Prix marchés, coûts de la vie 💰
-- "/evenements" → Festivals, culture 🎉  
-- "/services" → Services admin, démarches 🏛️
-- "/appels-offres" → Opportunités business 📋
-- "/annonces" → Actualités officielles 📢
-- "/tourisme" → Restaurants, hôtels, hébergements 🏨
+- "https://ujamaan.com/prix" → Prix marchés actuels, coûts de la vie 💰
+- "https://ujamaan.com/evenements" → Événements à venir, festivals, culture 🎉  
+- "https://ujamaan.com/services" → Services admin, démarches 🏛️
+- "https://ujamaan.com/appels-offres" → Opportunités business actuelles 📋
+- "https://ujamaan.com/annonces" → Actualités et annonces officielles récentes 📢
+- "https://ujamaan.com/tourisme" → Restaurants, hôtels, hébergements 🏨
 
 ⚡ INSTRUCTIONS SPÉCIFIQUES:
 - Réponds en français avec des emojis
-- Utilise UNIQUEMENT les données vérifiées de la plateforme
-- Si tu n'as pas l'info: "Je n'ai pas cette information actuellement sur la plateforme..."
+- Utilise UNIQUEMENT les données vérifiées et actuelles de ujamaan.com
+- Si tu n'as pas l'info: "Je n'ai pas cette information actuellement sur ujamaan.com..."
 - Distingue Comores (KMF) et Mayotte (EUR)
-- Mentionne TOUJOURS quelle page consulter`;
+- Mentionne TOUJOURS quelle page consulter sur ujamaan.com
+- Précise que les informations (prix, événements, etc.) sont mises à jour régulièrement sur la plateforme`;
 
     // Si c'est une recherche, adapter le prompt
     if (searchQuery) {
