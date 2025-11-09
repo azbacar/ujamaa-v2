@@ -22,7 +22,8 @@ import {
   Info,
   Palette,
   Layout,
-  Shield
+  Shield,
+  MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -32,6 +33,9 @@ interface SiteSettings {
   allow_registration: boolean;
   public_view_access: boolean;
   email_notifications: boolean;
+  ai_assistant_name: string;
+  ai_assistant_welcome_message: string;
+  ai_assistant_enabled: boolean;
   updated_by?: string;
   created_at: string;
   updated_at: string;
@@ -87,6 +91,9 @@ export default function SiteControlSection() {
           allow_registration: true,
           public_view_access: true,
           email_notifications: true,
+          ai_assistant_name: 'Assistant UJAMAA',
+          ai_assistant_welcome_message: '🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀',
+          ai_assistant_enabled: true,
           updated_by: user?.id
         };
 
@@ -265,10 +272,14 @@ export default function SiteControlSection() {
       </Card>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-white border border-blue-200">
+        <TabsList className="grid w-full grid-cols-5 bg-white border border-blue-200">
           <TabsTrigger value="general" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Settings className="h-4 w-4" />
             Général
+          </TabsTrigger>
+          <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <MessageCircle className="h-4 w-4" />
+            Assistant IA
           </TabsTrigger>
           <TabsTrigger value="announcements" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <AlertTriangle className="h-4 w-4" />
@@ -349,6 +360,72 @@ export default function SiteControlSection() {
                       onCheckedChange={(checked) => updateSettings({ maintenance_mode: checked })}
                       disabled={saving}
                     />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Assistant IA Settings */}
+        <TabsContent value="assistant" className="space-y-4">
+          <Card className="admin-card">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Paramètres de l'assistant IA</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border border-blue-200 rounded-lg">
+                  <div>
+                    <Label className="text-sm font-medium">Activer l'assistant IA</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Afficher le chatbot flottant sur le site
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={settings?.ai_assistant_enabled || false}
+                    onCheckedChange={(checked) => updateSettings({ ai_assistant_enabled: checked })}
+                    disabled={saving}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ai-name">Nom de l'assistant</Label>
+                  <Input
+                    id="ai-name"
+                    value={settings?.ai_assistant_name || ''}
+                    onChange={(e) => setSettings(prev => prev ? { ...prev, ai_assistant_name: e.target.value } : null)}
+                    onBlur={() => settings && updateSettings({ ai_assistant_name: settings.ai_assistant_name })}
+                    placeholder="Assistant UJAMAA"
+                    className="border-blue-200"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Ce nom apparaîtra dans l'en-tête du chatbot
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ai-welcome">Message de bienvenue</Label>
+                  <Textarea
+                    id="ai-welcome"
+                    value={settings?.ai_assistant_welcome_message || ''}
+                    onChange={(e) => setSettings(prev => prev ? { ...prev, ai_assistant_welcome_message: e.target.value } : null)}
+                    onBlur={() => settings && updateSettings({ ai_assistant_welcome_message: settings.ai_assistant_welcome_message })}
+                    placeholder="Message de bienvenue de l'assistant"
+                    className="border-blue-200 min-h-24"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Premier message que les utilisateurs verront en ouvrant le chat
+                  </p>
+                </div>
+
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                    <div className="text-sm text-blue-900">
+                      <p className="font-medium mb-1">Note importante</p>
+                      <p>Les modifications seront visibles immédiatement pour tous les utilisateurs. L'assistant utilise les données en temps réel du site pour répondre aux questions.</p>
+                    </div>
                   </div>
                 </div>
               </div>

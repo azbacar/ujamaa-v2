@@ -631,6 +631,9 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          ai_assistant_enabled: boolean | null
+          ai_assistant_name: string | null
+          ai_assistant_welcome_message: string | null
           allow_registration: boolean
           created_at: string
           email_notifications: boolean
@@ -641,6 +644,9 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          ai_assistant_enabled?: boolean | null
+          ai_assistant_name?: string | null
+          ai_assistant_welcome_message?: string | null
           allow_registration?: boolean
           created_at?: string
           email_notifications?: boolean
@@ -651,6 +657,9 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          ai_assistant_enabled?: boolean | null
+          ai_assistant_name?: string | null
+          ai_assistant_welcome_message?: string | null
           allow_registration?: boolean
           created_at?: string
           email_notifications?: boolean

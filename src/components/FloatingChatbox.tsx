@@ -24,6 +24,33 @@ const FloatingChatbox = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [assistantName, setAssistantName] = useState('Assistant UJAMAA');
+  const [welcomeMessage, setWelcomeMessage] = useState('🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀');
+  const [assistantEnabled, setAssistantEnabled] = useState(true);
+
+  // Charger les paramètres de l'assistant depuis la base de données
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('ai_assistant_name, ai_assistant_welcome_message, ai_assistant_enabled')
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setAssistantName(data.ai_assistant_name || 'Assistant UJAMAA');
+          setWelcomeMessage(data.ai_assistant_welcome_message || '🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀');
+          setAssistantEnabled(data.ai_assistant_enabled ?? true);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des paramètres:', error);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   // Écouter l'événement d'ouverture du chat
   useEffect(() => {
@@ -35,16 +62,20 @@ const FloatingChatbox = () => {
     window.addEventListener('openFloatingChat', handleOpenChat);
     return () => window.removeEventListener('openFloatingChat', handleOpenChat);
   }, []);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: '🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀',
-      isUser: false,
-      timestamp: new Date()
-    }
-  ]);
+  
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Mettre à jour le message de bienvenue quand il change
+  useEffect(() => {
+    setMessages([{
+      id: '1',
+      text: welcomeMessage,
+      isUser: false,
+      timestamp: new Date()
+    }]);
+  }, [welcomeMessage]);
 
   // Generate cryptographically secure session ID
   const sessionId = useState(() => {
@@ -205,6 +236,11 @@ const FloatingChatbox = () => {
     }
   };
 
+  // Ne pas afficher le chatbot si désactivé
+  if (!assistantEnabled) {
+    return null;
+  }
+
   if (!isOpen) {
     return (
       <Button
@@ -226,7 +262,7 @@ const FloatingChatbox = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />
-            Assistant UJAMAA
+            {assistantName}
           </CardTitle>
           <div className="flex gap-2">
             <Button
