@@ -33,15 +33,9 @@ const AIAssistantSection = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: 'Bonjour ! Je suis UJAMAA IA, votre assistant intelligent pour Mayotte et les Comores. Comment puis-je vous aider aujourd\'hui ?',
-      sender: 'ai',
-      timestamp: new Date(),
-      type: 'info'
-    }
-  ]);
+  const [aiName, setAiName] = useState('UJAMAA IA');
+  const [welcomeMessage, setWelcomeMessage] = useState('Bonjour ! Je suis votre assistant intelligent pour Mayotte et les Comores. Comment puis-je vous aider aujourd\'hui ?');
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
@@ -176,6 +170,31 @@ const AIAssistantSection = () => {
   };
 
   useEffect(() => {
+    const loadSettings = async () => {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('ai_assistant_name, ai_assistant_welcome_message')
+        .single();
+
+      if (!error && data) {
+        setAiName(data.ai_assistant_name || 'UJAMAA IA');
+        const welcome = data.ai_assistant_welcome_message || 'Bonjour ! Je suis votre assistant intelligent pour Mayotte et les Comores. Comment puis-je vous aider aujourd\'hui ?';
+        setWelcomeMessage(welcome);
+        
+        setMessages([{
+          id: '1',
+          content: welcome,
+          sender: 'ai',
+          timestamp: new Date(),
+          type: 'info'
+        }]);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -185,7 +204,7 @@ const AIAssistantSection = () => {
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-emerald-500 to-ocean-500">
           <div className="flex items-center gap-3">
             <Bot className="w-8 h-8 text-white" />
-            <h2 className="text-2xl font-bold text-white">UJAMAA IA</h2>
+            <h2 className="text-2xl font-bold text-white">{aiName}</h2>
             <Badge className="bg-white/20 text-white border-white/30">En ligne</Badge>
           </div>
           <Button
@@ -214,7 +233,7 @@ const AIAssistantSection = () => {
                 {message.sender === 'ai' && (
                   <div className="flex items-center gap-2 mb-2">
                     <Bot className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-semibold text-emerald-600">UJAMAA IA</span>
+                    <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
                     {message.type && (
                       <Badge variant="outline" className="text-xs">
                         {message.type === 'info' ? 'Info' : 
@@ -259,7 +278,7 @@ const AIAssistantSection = () => {
                   <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
                     <Bot className="w-3 h-3 text-white" />
                   </div>
-                  <span className="text-xs font-semibold text-emerald-600">UJAMAA IA</span>
+                  <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
                   <span className="text-xs text-muted-foreground">réfléchit...</span>
                 </div>
                 <div className="flex space-x-1">
@@ -278,7 +297,7 @@ const AIAssistantSection = () => {
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Posez votre question à UJAMAA IA..."
+              placeholder={`Posez votre question à ${aiName}...`}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               className="flex-1"
               disabled={isLoading}
@@ -304,7 +323,7 @@ const AIAssistantSection = () => {
             <Bot className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-4xl md:text-5xl font-black gradient-text">
-            UJAMAA IA
+            {aiName}
           </h2>
         </div>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -316,7 +335,7 @@ const AIAssistantSection = () => {
           onClick={() => setIsFullscreen(true)}
         >
           <Maximize2 className="w-5 h-5 mr-2" />
-          Lancer UJAMAA IA
+          Lancer {aiName}
         </Button>
       </div>
 
@@ -328,7 +347,7 @@ const AIAssistantSection = () => {
               <CardTitle className="flex items-center gap-3 justify-between">
                 <div className="flex items-center gap-3">
                   <Bot className="w-6 h-6" />
-                  UJAMAA IA
+                  {aiName}
                   <Badge className="bg-white/20 text-white border-white/30">
                     En ligne
                   </Badge>
@@ -360,7 +379,7 @@ const AIAssistantSection = () => {
                     {message.sender === 'ai' && (
                       <div className="flex items-center gap-2 mb-2">
                         <Bot className="w-4 h-4 text-emerald-600" />
-                        <span className="text-xs font-semibold text-emerald-600">UJAMAA IA</span>
+                        <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
                         {message.type && (
                           <Badge variant="outline" className="text-xs">
                             {message.type === 'info' ? 'Info' : 
@@ -405,7 +424,7 @@ const AIAssistantSection = () => {
                       <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
                         <Bot className="w-3 h-3 text-white" />
                       </div>
-                      <span className="text-xs font-semibold text-emerald-600">UJAMAA IA</span>
+                      <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
                       <span className="text-xs text-muted-foreground">réfléchit...</span>
                     </div>
                     <div className="flex space-x-1">
@@ -424,7 +443,7 @@ const AIAssistantSection = () => {
                 <Input
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="Posez votre question à UJAMAA IA..."
+                  placeholder={`Posez votre question à ${aiName}...`}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   className="flex-1"
                   disabled={isLoading}
