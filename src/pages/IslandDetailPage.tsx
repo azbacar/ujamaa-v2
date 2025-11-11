@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { ArrowLeft, Search, MapPin, Calendar, DollarSign, Building, Clock, Phone
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/components/LanguageProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 interface IslandData {
   name: string;
@@ -23,26 +24,26 @@ interface IslandData {
 }
 
 interface PriceData {
-  id: number;
+  id: string;
   product: string;
-  category: string;
+  category: string | null;
   price: number;
   currency: string;
-  vendor: string;
-  location: string;
-  market: string;
+  vendor: string | null;
+  location: string | null;
+  market: string | null;
   lastUpdated: string;
   trend: 'up' | 'down' | 'stable';
 }
 
 interface EventData {
-  id: number;
+  id: string;
   title: string;
-  description: string;
+  description: string | null;
   date: string;
-  location: string;
-  category: string;
-  organizer: string;
+  location: string | null;
+  category: string | null;
+  organizer: string | null;
 }
 
 interface ServiceData {
@@ -77,7 +78,7 @@ const IslandDetailPage = () => {
     'grande-comore': {
       name: 'Grande Comore',
       nameLocal: 'Ngazidja',
-      description: 'La plus grande île de l\'archipel des Comores, abritant la capitale Moroni et le volcan actif Karthala.',
+      description: "La plus grande île de l'archipel des Comores, abritant la capitale Moroni et le volcan actif Karthala.",
       population: '400,000 habitants',
       capital: 'Moroni',
       area: '1,148 km²',
@@ -87,7 +88,7 @@ const IslandDetailPage = () => {
     'anjouan': {
       name: 'Anjouan',
       nameLocal: 'Ndzuwani',
-      description: 'L\'île aux parfums, réputée pour sa production d\'ylang-ylang et ses paysages montagneux.',
+      description: "L'île aux parfums, réputée pour sa production d'ylang-ylang et ses paysages montagneux.",
       population: '350,000 habitants',
       capital: 'Mutsamudu',
       area: '424 km²',
@@ -97,7 +98,7 @@ const IslandDetailPage = () => {
     'moheli': {
       name: 'Mohéli',
       nameLocal: 'Mwali',
-      description: 'La plus petite île habitée, connue pour son parc marin national et son écotourisme.',
+      description: "La plus petite île habitée, connue pour son parc marin national et son écotourisme.",
       population: '50,000 habitants',
       capital: 'Fomboni',
       area: '290 km²',
@@ -107,7 +108,7 @@ const IslandDetailPage = () => {
     'mayotte': {
       name: 'Mayotte',
       nameLocal: 'Maore',
-      description: 'L\'île au lagon, quatrième île de l\'archipel des Comores avec un statut administratif spécial.',
+      description: "L'île au lagon, quatrième île de l'archipel des Comores avec un statut administratif spécial.",
       population: '310,000 habitants',
       capital: 'Mamoudzou',
       area: '374 km²',
@@ -116,94 +117,112 @@ const IslandDetailPage = () => {
     }
   };
 
-  // Données de démonstration - à remplacer par des vraies données
-  const mockPrices: PriceData[] = [
-    {
-      id: 1,
-      product: "Riz blanc importé",
-      category: "Céréales",
-      price: 1500,
-      currency: islandName === 'mayotte' ? 'EUR' : 'FC',
-      vendor: "Mama Hadija",
-      location: "Moroni Centre",
-      market: "Marché Central",
-      lastUpdated: "2024-01-15",
-      trend: "down"
-    },
-    {
-      id: 2,
-      product: "Bananes locales",
-      category: "Fruits",
-      price: 500,
-      currency: islandName === 'mayotte' ? 'EUR' : 'FC',
-      vendor: "Ahmed Soilihi",
-      location: "Marché local",
-      market: "Marché quotidien",
-      lastUpdated: "2024-01-15",
-      trend: "stable"
-    }
-  ];
+  // Etats réels (remplacent les données de démonstration)
+  const [prices, setPrices] = useState<PriceData[]>([]);
+  const [events, setEvents] = useState<EventData[]>([]);
 
-  const mockEvents: EventData[] = [
-    {
-      id: 1,
-      title: "Festival Culturel Local",
-      description: "Célébration de la culture locale avec danses et musique traditionnelles",
-      date: "2024-02-15",
-      location: "Centre culturel",
-      category: "Culturel",
-      organizer: "Municipalité"
-    }
-  ];
+  // Variantes d'identifiants d'îles pour correspondre aux données existantes
+  const islandAliases: Record<string, string[]> = {
+    'grande-comore': ['Grande Comore', 'Ngazidja', 'grande-comore', 'NGAZIDJA', 'GRANDE COMORE'],
+    'anjouan': ['Anjouan', 'Ndzuwani', 'anjouan', 'NDZUWANI', 'ANJOUAN'],
+    'moheli': ['Mohéli', 'Moheli', 'Mwali', 'moheli', 'MOHELI', 'MWALI'],
+    'mayotte': ['Mayotte', 'Maore', 'mayotte', 'MAYOTTE', 'MAORE']
+  };
 
-  const mockServices: ServiceData[] = [
-    {
-      id: 1,
-      name: "Préfecture locale",
-      description: "Services administratifs et documents officiels",
-      category: "Administration",
-      address: "Centre-ville",
-      phone: "+269 73 10 89",
-      email: "contact@prefecture.km",
-      hours: "7h30 - 15h30"
-    }
-  ];
+  useEffect(() => {
+    const loadData = async () => {
+      const aliases = islandName ? (islandAliases[islandName] || [islandName]) : [];
 
-  const mockAnnouncements: AnnouncementData[] = [
-    {
-      id: 1,
-      title: "Nouvelle infrastructure routière",
-      excerpt: "Amélioration des routes principales de l'île",
-      date: "2024-01-10",
-      category: "Infrastructure",
-      organization: "Ministère des Travaux Publics"
-    }
-  ];
+      if (aliases.length === 0) {
+        setPrices([]);
+        setEvents([]);
+        return;
+      }
+
+      // Prices publiés pour l'île
+      const { data: pricesData, error: pricesError } = await supabase
+        .from('prices')
+        .select('id, product, category, price, currency, vendor, market, city, village, region, updated_at, trend, island, status')
+        .eq('status', 'published')
+        .in('island', aliases)
+        .order('updated_at', { ascending: false })
+        .limit(50);
+
+      if (!pricesError && pricesData) {
+        setPrices(
+          pricesData.map((p: any) => ({
+            id: p.id,
+            product: p.product,
+            category: p.category ?? null,
+            price: Number(p.price),
+            currency: p.currency ?? 'FC',
+            vendor: p.vendor ?? null,
+            location: p.city ?? p.region ?? null,
+            market: p.market ?? null,
+            lastUpdated: p.updated_at ?? '',
+            trend: (['up', 'down', 'stable'].includes((p.trend || 'stable') as string)
+              ? (p.trend as 'up' | 'down' | 'stable')
+              : 'stable'),
+          }))
+        );
+      } else {
+        setPrices([]);
+      }
+
+      // Evénements publiés pour l'île
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('id, title, description, date, location, category, organizer, island, status')
+        .eq('status', 'published')
+        .in('island', aliases)
+        .order('date', { ascending: true })
+        .limit(50);
+
+      if (!eventsError && eventsData) {
+        setEvents(
+          eventsData.map((e: any) => ({
+            id: e.id,
+            title: e.title,
+            description: e.description ?? null,
+            date: e.date,
+            location: e.location ?? null,
+            category: e.category ?? null,
+            organizer: e.organizer ?? null,
+          }))
+        );
+      } else {
+        setEvents([]);
+      }
+    };
+
+    loadData();
+  }, [islandName]);
+
 
   const currentIsland = islandName ? islandData[islandName] : null;
 
-  const filteredData = useMemo(() => {
-    const filterBySearch = (items: any[], searchFields: string[]) => {
-      if (!searchTerm) return items;
-      return items.filter(item => 
-        searchFields.some(field => 
-          item[field]?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    };
+const filteredData = useMemo(() => {
+  const filterBySearch = (items: any[], searchFields: string[]) => {
+    if (!searchTerm) return items;
+    return items.filter(item =>
+      searchFields.some(field =>
+        item[field]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  };
 
-    const filterByCategory = (items: any[], categoryField: string) => {
-      if (selectedCategory === 'all') return items;
-      return items.filter(item => item[categoryField] === selectedCategory);
-    };
+  const filterByCategory = (items: any[], categoryField: string) => {
+    if (selectedCategory === 'all') return items;
+    return items.filter(item => item[categoryField] === selectedCategory);
+  };
 
-    return {
-      prices: filterByCategory(filterBySearch(mockPrices, ['product', 'vendor']), 'category'),
-      events: filterByCategory(filterBySearch(mockEvents, ['title', 'description']), 'category'),
-      services: filterByCategory(filterBySearch(mockServices, ['name', 'description']), 'category'),
-      announcements: filterByCategory(filterBySearch(mockAnnouncements, ['title', 'excerpt']), 'category')
-    };
-  }, [searchTerm, selectedCategory]);
+  return {
+    prices: filterByCategory(filterBySearch(prices, ['product', 'vendor']), 'category'),
+    events: filterByCategory(filterBySearch(events, ['title', 'description']), 'category'),
+    services: [],
+    announcements: []
+  };
+}, [searchTerm, selectedCategory, prices, events]);
 
   if (!currentIsland) {
     return (

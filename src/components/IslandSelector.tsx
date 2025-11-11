@@ -89,11 +89,6 @@ const IslandSelector = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
                     
-                    <div className="absolute top-4 right-4">
-                      <Badge className="bg-white text-gray-800 font-semibold shadow-md">
-                        {island.activeCount} infos
-                      </Badge>
-                    </div>
                     
                     <div className="absolute bottom-4 left-4 right-4 text-white">
                       <div className="flex items-center justify-between mb-2">
