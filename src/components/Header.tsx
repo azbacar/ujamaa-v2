@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import NotificationSystemReal from './NotificationSystemReal';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface HeaderProps {
   currentLanguage: string;
@@ -21,6 +22,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const { user, signOut } = useAuth();
   const { role, isAdmin, isModerator } = useRole();
   const navigate = useNavigate();
+  const { settings } = useSiteSettings();
   const [searchTerm, setSearchTerm] = useState('');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -100,11 +102,19 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
         <div className="flex items-center justify-between gap-6">
           {/* Logo et Titre */}
           <Link to="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
-            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 via-emerald-600 to-ocean-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-              U
-            </div>
+            {settings?.site_logo_url ? (
+              <img 
+                src={settings.site_logo_url} 
+                alt={settings.site_name || 'Logo'} 
+                className="w-14 h-14 object-contain"
+              />
+            ) : (
+              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 via-emerald-600 to-ocean-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+                U
+              </div>
+            )}
             <div>
-              <h1 className="text-2xl font-bold gradient-text">Ujamaan</h1>
+              <h1 className="text-2xl font-bold gradient-text">{settings?.site_name || 'Ujamaan'}</h1>
               <p className="text-sm text-emerald-600 font-medium">Call Center</p>
             </div>
           </Link>

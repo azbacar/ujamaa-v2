@@ -2,20 +2,29 @@
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const HeroSection = () => {
   const { t } = useLanguage();
+  const { settings } = useSiteSettings();
+  
+  const heroStyle = settings?.hero_image_url ? {
+    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.85)), url(${settings.hero_image_url})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  } : {};
+
   return (
-    <section className="text-center space-y-8 py-16 hero-gradient rounded-3xl">
+    <section className="text-center space-y-8 py-16 hero-gradient rounded-3xl" style={heroStyle}>
       <div className="space-y-6">
         <div className="floating-element">
           <h1 className="text-5xl md:text-7xl font-black gradient-text mb-4">
-            {t('hero.title')}
+            {settings?.hero_title || t('hero.title')}
           </h1>
           <div className="w-32 h-1 bg-gradient-to-r from-emerald-500 to-ocean-500 mx-auto rounded-full"></div>
         </div>
         <p className="text-xl md:text-2xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium">
-          {t('hero.subtitle')}
+          {settings?.hero_subtitle || t('hero.subtitle')}
         </p>
       </div>
       

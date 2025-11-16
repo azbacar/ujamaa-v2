@@ -637,9 +637,15 @@ export type Database = {
           allow_registration: boolean
           created_at: string
           email_notifications: boolean
+          hero_image_url: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
           id: string
           maintenance_mode: boolean
           public_view_access: boolean
+          site_favicon_url: string | null
+          site_logo_url: string | null
+          site_name: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -650,9 +656,15 @@ export type Database = {
           allow_registration?: boolean
           created_at?: string
           email_notifications?: boolean
+          hero_image_url?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
           id?: string
           maintenance_mode?: boolean
           public_view_access?: boolean
+          site_favicon_url?: string | null
+          site_logo_url?: string | null
+          site_name?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -663,9 +675,15 @@ export type Database = {
           allow_registration?: boolean
           created_at?: string
           email_notifications?: boolean
+          hero_image_url?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
           id?: string
           maintenance_mode?: boolean
           public_view_access?: boolean
+          site_favicon_url?: string | null
+          site_logo_url?: string | null
+          site_name?: string | null
           updated_at?: string
           updated_by?: string | null
         }
