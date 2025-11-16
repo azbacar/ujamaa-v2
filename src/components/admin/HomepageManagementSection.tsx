@@ -45,6 +45,8 @@ interface HomepageStats {
 }
 
 export const HomepageManagementSection = () => {
+  const [loading, setLoading] = useState(true);
+  const [settingsId, setSettingsId] = useState<string>('');
   const [heroConfig, setHeroConfig] = useState<HeroConfig>({
     id: '1',
     title: 'UJAMAA Plateforme Unifiée',
@@ -54,6 +56,41 @@ export const HomepageManagementSection = () => {
     secondaryButtonText: '🤖 Assistant IA UJAMAA',
     isActive: true
   });
+
+  useEffect(() => {
+    fetchSettings();
+    fetchStats();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (data) {
+        setSettingsId(data.id);
+        setHeroConfig({
+          id: data.id,
+          title: data.hero_title || heroConfig.title,
+          subtitle: data.hero_subtitle || heroConfig.subtitle,
+          primaryButtonText: heroConfig.primaryButtonText,
+          primaryButtonLink: heroConfig.primaryButtonLink,
+          secondaryButtonText: heroConfig.secondaryButtonText,
+          backgroundImage: data.hero_image_url || undefined,
+          isActive: true
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [categories, setCategories] = useState<Category[]>([
     {
@@ -162,12 +199,32 @@ export const HomepageManagementSection = () => {
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleSaveHero = () => {
-    toast({
-      title: "Héro mis à jour",
-      description: "Les modifications de la section héro ont été sauvegardées.",
-    });
-    setIsHeroDialogOpen(false);
+  const handleSaveHero = async () => {
+    try {
+      const { error } = await supabase
+        .from('site_settings')
+        .update({
+          hero_title: heroConfig.title,
+          hero_subtitle: heroConfig.subtitle,
+          hero_image_url: heroConfig.backgroundImage || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', settingsId);
+
+      if (error) throw error;
+      toast({
+        title: "Héro mis à jour",
+        description: "Les modifications de la section héro ont été sauvegardées.",
+      });
+      setIsHeroDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving hero config:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les modifications.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveCategory = () => {

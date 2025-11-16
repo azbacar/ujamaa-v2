@@ -96,15 +96,30 @@ export default function AdminDashboard() {
         setAdminActions(actionsData || []);
 
         // Fetch users with their roles
-        const { data: usersData } = await supabase
+        const { data: usersData, error: usersError } = await supabase
           .from('users')
-          .select(`
-            *,
-            user_roles(role)
-          `)
-          .order('created_at', { ascending: false });
+          .select('id, email, username, created_at');
         
-        setUsers(usersData || []);
+        if (usersError) {
+          console.error('Error fetching users:', usersError);
+          setUsers([]);
+        } else {
+          // Fetch roles separately for each user
+          const usersWithRoles = await Promise.all(
+            (usersData || []).map(async (user) => {
+              const { data: rolesData } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', user.id);
+              
+              return {
+                ...user,
+                user_roles: rolesData || []
+              };
+            })
+          );
+          setUsers(usersWithRoles);
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
