@@ -119,12 +119,13 @@ const EventsManagementSection = () => {
 
   const handleEdit = (event: Event) => {
     setEditingEvent(event);
+    const eventData = event as any; // Pour accéder à end_date
     setFormData({
       title: event.title,
       description: event.description,
       full_content: '',
-      date: event.date,
-      end_date: '',
+      date: event.date.split('.')[0], // Enlever les millisecondes
+      end_date: eventData.end_date ? eventData.end_date.split('.')[0] : '',
       location: event.location,
       island: event.island,
       category: event.category,
@@ -311,13 +312,23 @@ const EventsManagementSection = () => {
               </div>
 
               <div>
-                <Label htmlFor="date">Date et heure *</Label>
+                <Label htmlFor="date">Date de début *</Label>
                 <Input
                   id="date"
                   type="datetime-local"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="end_date">Date de fin</Label>
+                <Input
+                  id="end_date"
+                  type="datetime-local"
+                  value={formData.end_date}
+                  onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                 />
               </div>
 
