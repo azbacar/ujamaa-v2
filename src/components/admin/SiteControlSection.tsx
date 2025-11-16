@@ -36,6 +36,12 @@ interface SiteSettings {
   ai_assistant_name: string;
   ai_assistant_welcome_message: string;
   ai_assistant_enabled: boolean;
+  site_name: string;
+  site_logo_url?: string;
+  site_favicon_url?: string;
+  hero_title: string;
+  hero_subtitle: string;
+  hero_image_url?: string;
   updated_by?: string;
   created_at: string;
   updated_at: string;
@@ -272,10 +278,14 @@ export default function SiteControlSection() {
       </Card>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-white border border-blue-200">
+        <TabsList className="grid w-full grid-cols-6 bg-white border border-blue-200">
           <TabsTrigger value="general" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Settings className="h-4 w-4" />
             Général
+          </TabsTrigger>
+          <TabsTrigger value="branding" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <Palette className="h-4 w-4" />
+            Personnalisation
           </TabsTrigger>
           <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <MessageCircle className="h-4 w-4" />
@@ -362,6 +372,109 @@ export default function SiteControlSection() {
                     />
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Branding & Customization Settings */}
+        <TabsContent value="branding" className="space-y-4">
+          <Card className="admin-card">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Personnalisation du site</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="site_name">Nom du site</Label>
+                  <Input
+                    id="site_name"
+                    value={settings?.site_name || ''}
+                    onChange={(e) => setSettings(prev => prev ? {...prev, site_name: e.target.value} : null)}
+                    placeholder="Ujamaan"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="site_logo_url">URL du logo</Label>
+                  <Input
+                    id="site_logo_url"
+                    value={settings?.site_logo_url || ''}
+                    onChange={(e) => setSettings(prev => prev ? {...prev, site_logo_url: e.target.value} : null)}
+                    placeholder="https://example.com/logo.png"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    URL de l'image du logo (PNG, JPG, SVG)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="site_favicon_url">URL du favicon</Label>
+                  <Input
+                    id="site_favicon_url"
+                    value={settings?.site_favicon_url || ''}
+                    onChange={(e) => setSettings(prev => prev ? {...prev, site_favicon_url: e.target.value} : null)}
+                    placeholder="https://example.com/favicon.ico"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    URL de l'icône du site (ICO, PNG 32x32)
+                  </p>
+                </div>
+
+                <div className="border-t pt-4 mt-6">
+                  <h3 className="font-semibold mb-4">Section Hero (Page d'accueil)</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="hero_title">Titre Hero</Label>
+                      <Input
+                        id="hero_title"
+                        value={settings?.hero_title || ''}
+                        onChange={(e) => setSettings(prev => prev ? {...prev, hero_title: e.target.value} : null)}
+                        placeholder="Bienvenue sur Ujamaan"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="hero_subtitle">Sous-titre Hero</Label>
+                      <Textarea
+                        id="hero_subtitle"
+                        value={settings?.hero_subtitle || ''}
+                        onChange={(e) => setSettings(prev => prev ? {...prev, hero_subtitle: e.target.value} : null)}
+                        placeholder="Votre plateforme d'information pour les Comores"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="hero_image_url">URL de l'image Hero</Label>
+                      <Input
+                        id="hero_image_url"
+                        value={settings?.hero_image_url || ''}
+                        onChange={(e) => setSettings(prev => prev ? {...prev, hero_image_url: e.target.value} : null)}
+                        placeholder="https://example.com/hero-image.jpg"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Image de fond de la section Hero (optionnel)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={() => updateSettings({
+                    site_name: settings?.site_name,
+                    site_logo_url: settings?.site_logo_url,
+                    site_favicon_url: settings?.site_favicon_url,
+                    hero_title: settings?.hero_title,
+                    hero_subtitle: settings?.hero_subtitle,
+                    hero_image_url: settings?.hero_image_url
+                  })}
+                  disabled={saving}
+                  className="w-full"
+                >
+                  {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
+                </Button>
               </div>
             </CardContent>
           </Card>
