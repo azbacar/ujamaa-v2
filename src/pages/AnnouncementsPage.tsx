@@ -225,8 +225,27 @@ const AnnouncementsPage = () => {
             <p className="text-gray-500 text-lg">Aucune annonce trouvée avec ces critères.</p>
           </div>
         )}
+
+        {/* Section d'action */}
+        <div className="text-center mt-12 space-y-6">
+          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 p-8 rounded-3xl">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">
+              📢 Vous avez une annonce importante ?
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              Partagez vos annonces avec la communauté sur UJAMAA pour toucher un large public aux Comores et à Mayotte.
+            </p>
+            <Button 
+              size="lg" 
+              onClick={() => window.location.href = '/auth'}
+              className="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-blue-500/50 transition-all hover:scale-105"
+            >
+              ✨ Publier une annonce
+            </Button>
+          </div>
+        </div>
       </main>
-      
+
       <Footer />
     </div>
   );
