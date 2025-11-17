@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Home, Edit3, Plus, Trash2, Eye, EyeOff, Settings, Image, Type, Link, BarChart3, Megaphone, Users, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { HeroPreview } from './HeroPreview';
 
 interface HeroConfig {
   id: string;
@@ -362,10 +363,27 @@ export const HomepageManagementSection = () => {
                 Gestion de la Section Héro
               </CardTitle>
               <CardDescription className="text-slate-600">
-                Configurez le contenu principal de votre page d'accueil
+                Configurez le contenu principal de votre page d'accueil avec prévisualisation en temps réel
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Prévisualisation en temps réel */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Aperçu en temps réel
+                </Label>
+                <HeroPreview 
+                  title={heroConfig.title}
+                  subtitle={heroConfig.subtitle}
+                  imageUrl={heroConfig.backgroundImage || ''}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Les modifications apparaissent ici instantanément pendant que vous éditez
+                </p>
+              </div>
+
+              {/* Formulaire d'édition */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <div>
@@ -384,6 +402,15 @@ export const HomepageManagementSection = () => {
                       value={heroConfig.subtitle}
                       onChange={(e) => setHeroConfig(prev => ({ ...prev, subtitle: e.target.value }))}
                       rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="hero-bg-image">Image de fond (URL)</Label>
+                    <Input
+                      id="hero-bg-image"
+                      value={heroConfig.backgroundImage || ''}
+                      onChange={(e) => setHeroConfig(prev => ({ ...prev, backgroundImage: e.target.value }))}
+                      placeholder="https://example.com/image.jpg"
                     />
                   </div>
                 </div>
@@ -429,10 +456,6 @@ export const HomepageManagementSection = () => {
                 <Button onClick={handleSaveHero} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                   <Settings className="h-4 w-4" />
                   Sauvegarder les modifications
-                </Button>
-                <Button variant="outline" className="border-slate-300 hover:bg-slate-50">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Prévisualiser
                 </Button>
               </div>
             </CardContent>
