@@ -215,14 +215,10 @@ export default function ContentManagementSection() {
 
       {/* Content Management Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-white border border-blue-200">
+        <TabsList className="grid w-full grid-cols-4 bg-white border border-blue-200">
           <TabsTrigger value="announcements" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Megaphone className="h-4 w-4" />
             Annonces
-          </TabsTrigger>
-          <TabsTrigger value="events" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-            <Calendar className="h-4 w-4" />
-            Événements
           </TabsTrigger>
           <TabsTrigger value="services" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Briefcase className="h-4 w-4" />
@@ -239,13 +235,12 @@ export default function ContentManagementSection() {
         </TabsList>
 
         {/* Content Lists */}
-        {['announcements', 'events', 'services', 'tenders'].map(type => (
+        {['announcements', 'services', 'tenders'].map(type => (
           <TabsContent key={type} value={type} className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 {getTypeIcon(type)}
                 {type === 'announcements' && 'Gestion des Annonces'}
-                {type === 'events' && 'Gestion des Événements'}
                 {type === 'services' && 'Gestion des Services'}
                 {type === 'tenders' && 'Gestion des Appels d\'offres'}
               </h3>
@@ -354,17 +349,19 @@ export default function ContentManagementSection() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Type de contenu</Label>
-                  <Select value={newItemForm.type} onValueChange={(value) => setNewItemForm({...newItemForm, type: value as 'announcement' | 'event' | 'service' | 'tender'})}>
+                  <Select value={newItemForm.type} onValueChange={(value) => setNewItemForm({...newItemForm, type: value as 'announcement' | 'service' | 'tender'})}>
                     <SelectTrigger className="border-blue-200 bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="announcement">📢 Annonce</SelectItem>
-                      <SelectItem value="event">📅 Événement</SelectItem>
                       <SelectItem value="service">🏛️ Service</SelectItem>
                       <SelectItem value="tender">📋 Appel d'offres</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Note: Les événements se gèrent dans la section "Événements" dédiée
+                  </p>
                 </div>
 
                 <div>
