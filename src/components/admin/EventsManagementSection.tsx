@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { Calendar, Users, Trash2, Edit, Plus, Eye, Ticket } from 'lucide-react';
+import { Calendar, Users, Trash2, Edit, Plus, Eye, Ticket, Upload, X, Image } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -30,6 +30,7 @@ interface Event {
   requires_registration: boolean;
   requires_payment: boolean;
   views: number;
+  images: string[] | null;
 }
 
 const EventsManagementSection = () => {
@@ -38,6 +39,10 @@ const EventsManagementSection = () => {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -55,7 +60,8 @@ const EventsManagementSection = () => {
     capacity: null as number | null,
     status: 'draft',
     requires_registration: true,
-    requires_payment: false
+    requires_payment: false,
+    images: [] as string[]
   });
 
   useEffect(() => {
@@ -79,16 +85,86 @@ const EventsManagementSection = () => {
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('L\'image ne doit pas dépasser 5 Mo');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !user) return null;
+    
+    setUploadingImage(true);
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('event-images')
+        .upload(fileName, imageFile);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage
+        .from('event-images')
+        .getPublicUrl(fileName);
+      
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Erreur lors de l\'upload de l\'image');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const clearNewImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
     try {
+      let images = [...formData.images];
+      
+      // Upload new image if selected
+      if (imageFile) {
+        const uploadedUrl = await uploadImage();
+        if (uploadedUrl) {
+          images.push(uploadedUrl);
+        }
+      }
+
       if (editingEvent) {
         const { error } = await supabase
           .from('events')
           .update({
             ...formData,
+            images,
             capacity: formData.capacity || null
           })
           .eq('id', editingEvent.id);
@@ -100,6 +176,7 @@ const EventsManagementSection = () => {
           .from('events')
           .insert({
             ...formData,
+            images,
             author_id: user.id,
             capacity: formData.capacity || null
           });
@@ -137,8 +214,10 @@ const EventsManagementSection = () => {
       capacity: event.capacity,
       status: event.status,
       requires_registration: event.requires_registration,
-      requires_payment: event.requires_payment
+      requires_payment: event.requires_payment,
+      images: event.images || []
     });
+    clearNewImage();
     setShowDialog(true);
   };
 
@@ -179,8 +258,10 @@ const EventsManagementSection = () => {
       capacity: null,
       status: 'draft',
       requires_registration: true,
-      requires_payment: false
+      requires_payment: false,
+      images: []
     });
+    clearNewImage();
   };
 
   const getStatusBadge = (status: string) => {
@@ -425,6 +506,78 @@ const EventsManagementSection = () => {
                     <SelectItem value="completed">Terminé</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Image Upload Section */}
+              <div className="col-span-2 space-y-3">
+                <Label>Affiche / Image de l'événement</Label>
+                
+                {/* Existing images */}
+                {formData.images.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.images.map((imageUrl, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={imageUrl} 
+                          alt={`Image ${index + 1}`} 
+                          className="w-24 h-24 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* New image preview */}
+                {imagePreview && (
+                  <div className="relative inline-block">
+                    <img 
+                      src={imagePreview} 
+                      alt="Nouvelle image" 
+                      className="w-32 h-32 object-cover rounded-lg border-2 border-primary"
+                    />
+                    <button
+                      type="button"
+                      onClick={clearNewImage}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                    <span className="absolute bottom-1 left-1 bg-primary text-primary-foreground text-xs px-1 rounded">
+                      Nouvelle
+                    </span>
+                  </div>
+                )}
+
+                {/* Upload button */}
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    id="event-image-upload"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {imagePreview ? 'Changer l\'image' : 'Ajouter une image'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Formats acceptés : JPG, PNG, GIF. Max 5 Mo.
+                  </p>
+                </div>
               </div>
 
               <div className="col-span-2 space-y-2">
