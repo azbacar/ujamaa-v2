@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './useAuth';
 import { useRole } from './useRole';
 import { toast } from 'sonner';
@@ -8,9 +8,15 @@ export const useAuthRedirect = () => {
   const { user, session } = useAuth();
   const { role, loading: roleLoading } = useRole();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!user || !session || roleLoading) return;
+
+    // Ne pas rediriger si on est sur une page de reset de mot de passe
+    if (location.pathname.startsWith('/auth/reset')) {
+      return;
+    }
 
     // Message de bienvenue avec le niveau d'accès
     const getRoleDisplayName = (userRole: string) => {
@@ -38,5 +44,5 @@ export const useAuthRedirect = () => {
       navigate(redirectPath);
     }, 1500);
 
-  }, [user, session, role, roleLoading, navigate]);
+  }, [user, session, role, roleLoading, navigate, location.pathname]);
 };
