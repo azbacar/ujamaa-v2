@@ -9,6 +9,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+
+// URL de production pour les redirections
+const PRODUCTION_URL = 'https://ujamaan.com';
 
 const ResetPasswordRequest = () => {
   const { currentLanguage, setLanguage } = useLanguage();
@@ -29,7 +33,12 @@ const ResetPasswordRequest = () => {
     setError('');
     setSuccess('');
     try {
-      const redirectTo = `${window.location.origin}/auth/reset`;
+      // Utiliser le domaine de production si en production, sinon l'origine actuelle
+      const isProduction = window.location.hostname === 'ujamaan.com' || 
+                          window.location.hostname === 'www.ujamaan.com';
+      const baseUrl = isProduction ? PRODUCTION_URL : window.location.origin;
+      const redirectTo = `${baseUrl}/auth/reset`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
       if (error) throw error;
       setSuccess('Si un compte existe pour cet email, un lien de réinitialisation a été envoyé.');
@@ -79,8 +88,11 @@ const ResetPasswordRequest = () => {
               </Alert>
             )}
 
-            <div className="mt-6 text-center">
-              <Link to="/auth" className="text-sm text-primary hover:underline">Retour à la connexion</Link>
+            <div className="mt-6">
+              <Link to="/auth" className="flex items-center justify-center gap-2 text-sm text-primary hover:underline">
+                <ArrowLeft className="h-4 w-4" />
+                Retour à la connexion
+              </Link>
             </div>
           </CardContent>
         </Card>
