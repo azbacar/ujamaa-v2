@@ -39,9 +39,8 @@ const EventsManagementSection = () => {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [newImages, setNewImages] = useState<{ file: File; preview: string }[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -86,46 +85,60 @@ const EventsManagementSection = () => {
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+    const files = e.target.files;
+    if (!files) return;
+
+    const validFiles: { file: File; preview: string }[] = [];
+    
+    Array.from(files).forEach((file) => {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error('L\'image ne doit pas dépasser 5 Mo');
+        toast.error(`L'image ${file.name} dépasse 5 Mo`);
         return;
       }
-      setImageFile(file);
+      
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setNewImages(prev => [...prev, { file, preview: reader.result as string }]);
       };
       reader.readAsDataURL(file);
+    });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
-  const uploadImage = async (): Promise<string | null> => {
-    if (!imageFile || !user) return null;
+  const uploadImages = async (): Promise<string[]> => {
+    if (newImages.length === 0 || !user) return [];
     
-    setUploadingImage(true);
+    setUploadingImages(true);
+    const uploadedUrls: string[] = [];
+    
     try {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      for (const { file } of newImages) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('event-images')
+          .upload(fileName, file);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data } = supabase.storage
+          .from('event-images')
+          .getPublicUrl(fileName);
+        
+        uploadedUrls.push(data.publicUrl);
+      }
       
-      const { error: uploadError } = await supabase.storage
-        .from('event-images')
-        .upload(fileName, imageFile);
-      
-      if (uploadError) throw uploadError;
-      
-      const { data } = supabase.storage
-        .from('event-images')
-        .getPublicUrl(fileName);
-      
-      return data.publicUrl;
+      return uploadedUrls;
     } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Erreur lors de l\'upload de l\'image');
-      return null;
+      console.error('Error uploading images:', error);
+      toast.error('Erreur lors de l\'upload des images');
+      return uploadedUrls;
     } finally {
-      setUploadingImage(false);
+      setUploadingImages(false);
     }
   };
 
@@ -136,9 +149,12 @@ const EventsManagementSection = () => {
     }));
   };
 
-  const clearNewImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+  const removeNewImage = (index: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const clearNewImages = () => {
+    setNewImages([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -151,12 +167,10 @@ const EventsManagementSection = () => {
     try {
       let images = [...formData.images];
       
-      // Upload new image if selected
-      if (imageFile) {
-        const uploadedUrl = await uploadImage();
-        if (uploadedUrl) {
-          images.push(uploadedUrl);
-        }
+      // Upload new images if selected
+      if (newImages.length > 0) {
+        const uploadedUrls = await uploadImages();
+        images = [...images, ...uploadedUrls];
       }
 
       if (editingEvent) {
@@ -217,7 +231,7 @@ const EventsManagementSection = () => {
       requires_payment: event.requires_payment,
       images: event.images || []
     });
-    clearNewImage();
+    clearNewImages();
     setShowDialog(true);
   };
 
@@ -261,7 +275,7 @@ const EventsManagementSection = () => {
       requires_payment: false,
       images: []
     });
-    clearNewImage();
+    clearNewImages();
   };
 
   const getStatusBadge = (status: string) => {
@@ -534,24 +548,28 @@ const EventsManagementSection = () => {
                   </div>
                 )}
 
-                {/* New image preview */}
-                {imagePreview && (
-                  <div className="relative inline-block">
-                    <img 
-                      src={imagePreview} 
-                      alt="Nouvelle image" 
-                      className="w-32 h-32 object-cover rounded-lg border-2 border-primary"
-                    />
-                    <button
-                      type="button"
-                      onClick={clearNewImage}
-                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                    <span className="absolute bottom-1 left-1 bg-primary text-primary-foreground text-xs px-1 rounded">
-                      Nouvelle
-                    </span>
+                {/* New images preview */}
+                {newImages.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {newImages.map((img, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={img.preview} 
+                          alt={`Nouvelle image ${index + 1}`} 
+                          className="w-24 h-24 object-cover rounded-lg border-2 border-primary"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(index)}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                        <span className="absolute bottom-1 left-1 bg-primary text-primary-foreground text-xs px-1 rounded">
+                          Nouvelle
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 )}
 
@@ -561,6 +579,7 @@ const EventsManagementSection = () => {
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleImageSelect}
                     className="hidden"
                     id="event-image-upload"
@@ -569,13 +588,13 @@ const EventsManagementSection = () => {
                     type="button"
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingImage}
+                    disabled={uploadingImages}
                   >
                     <Upload className="w-4 h-4 mr-2" />
-                    {imagePreview ? 'Changer l\'image' : 'Ajouter une image'}
+                    Ajouter des images
                   </Button>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Formats acceptés : JPG, PNG, GIF. Max 5 Mo.
+                    Formats acceptés : JPG, PNG, GIF. Max 5 Mo par image.
                   </p>
                 </div>
               </div>
