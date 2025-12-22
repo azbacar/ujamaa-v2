@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 
 const ResetPassword = () => {
   const { currentLanguage, setLanguage } = useLanguage();
@@ -19,7 +19,7 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
-  const [isValidSession, setIsValidSession] = useState<boolean | null>(null);
+  const [sessionStatus, setSessionStatus] = useState<'loading' | 'valid' | 'invalid'>('loading');
 
   useEffect(() => {
     document.title = 'Réinitialiser le mot de passe | Administration';
@@ -27,29 +27,80 @@ const ResetPassword = () => {
     if (meta) meta.setAttribute('content', "Définissez un nouveau mot de passe après avoir cliqué sur le lien reçu par email.");
   }, []);
 
-  // Vérifier si l'utilisateur vient d'un lien de reset (pas d'une session normale)
   useEffect(() => {
-    const checkResetSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      // Vérifier si c'est une session de récupération (recovery)
+    let mounted = true;
+
+    const handleRecovery = async () => {
+      // Écouter les changements d'état d'authentification
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth event:', event, 'Session:', !!session);
+        
+        if (!mounted) return;
+
+        if (event === 'PASSWORD_RECOVERY') {
+          // L'utilisateur vient d'un lien de récupération valide
+          console.log('PASSWORD_RECOVERY event detected');
+          setSessionStatus('valid');
+        } else if (event === 'SIGNED_IN' && session) {
+          // Vérifier si c'est une session de récupération récente
+          setSessionStatus('valid');
+        }
+      });
+
+      // Vérifier immédiatement l'URL pour les tokens de récupération
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const type = hashParams.get('type');
       const accessToken = hashParams.get('access_token');
-      
+      const type = hashParams.get('type');
+      const refreshToken = hashParams.get('refresh_token');
+
+      console.log('URL params - type:', type, 'has access_token:', !!accessToken);
+
       if (type === 'recovery' && accessToken) {
-        // L'utilisateur vient d'un lien de reset valide
-        setIsValidSession(true);
-      } else if (session) {
-        // Session normale mais pas de recovery - vérifier si c'était un recovery récent
-        // On accepte la session car Supabase a déjà traité le token
-        setIsValidSession(true);
+        try {
+          // Définir la session manuellement avec les tokens de l'URL
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || '',
+          });
+
+          if (error) {
+            console.error('Error setting session:', error);
+            if (mounted) setSessionStatus('invalid');
+          } else if (data.session) {
+            console.log('Session set successfully');
+            if (mounted) setSessionStatus('valid');
+            // Nettoyer l'URL
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        } catch (err) {
+          console.error('Exception setting session:', err);
+          if (mounted) setSessionStatus('invalid');
+        }
       } else {
-        setIsValidSession(false);
+        // Vérifier s'il y a déjà une session active
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          if (mounted) setSessionStatus('valid');
+        } else {
+          // Attendre un peu pour les événements d'auth
+          setTimeout(() => {
+            if (mounted && sessionStatus === 'loading') {
+              setSessionStatus('invalid');
+            }
+          }, 2000);
+        }
       }
+
+      return () => {
+        subscription.unsubscribe();
+      };
     };
-    
-    checkResetSession();
+
+    handleRecovery();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,22 +124,28 @@ const ResetPassword = () => {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       
-      // Déconnecter l'utilisateur après le changement de mot de passe
-      await supabase.auth.signOut();
+      setSuccess('Votre mot de passe a été mis à jour avec succès !');
       
-      setSuccess('Votre mot de passe a été mis à jour. Vous allez être redirigé vers la page de connexion.');
-      setTimeout(() => navigate('/auth'), 2000);
+      // Déconnecter et rediriger après un court délai
+      setTimeout(async () => {
+        await supabase.auth.signOut();
+        navigate('/auth');
+      }, 2000);
     } catch (err: any) {
-      setError(err.message || "Le lien est invalide ou a expiré. Veuillez refaire la procédure.");
+      console.error('Error updating password:', err);
+      setError(err.message || "Une erreur est survenue. Le lien est peut-être invalide ou expiré.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isValidSession === null) {
+  if (sessionStatus === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Vérification du lien...</p>
+        </div>
       </div>
     );
   }
@@ -99,70 +156,96 @@ const ResetPassword = () => {
       <main className="container mx-auto px-6 py-12 flex items-center justify-center min-h-[calc(100vh-200px)]">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle>Réinitialiser le mot de passe</CardTitle>
-            <CardDescription>Choisissez un nouveau mot de passe sécurisé</CardDescription>
+            <CardTitle className="flex items-center justify-center gap-2">
+              {sessionStatus === 'valid' ? (
+                <CheckCircle className="h-5 w-5 text-green-500" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-destructive" />
+              )}
+              Réinitialiser le mot de passe
+            </CardTitle>
+            <CardDescription>
+              {sessionStatus === 'valid' 
+                ? 'Choisissez un nouveau mot de passe sécurisé'
+                : 'Le lien de réinitialisation est invalide ou expiré'
+              }
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {!isValidSession && (
-              <Alert className="mb-4">
-                <AlertDescription>
-                  Le lien de réinitialisation est invalide ou expiré. Veuillez refaire la demande.
-                </AlertDescription>
-              </Alert>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">Nouveau mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  disabled={!isValidSession}
-                />
+            {sessionStatus === 'invalid' ? (
+              <div className="space-y-4">
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Ce lien de réinitialisation n'est plus valide. Il a peut-être expiré ou a déjà été utilisé.
+                  </AlertDescription>
+                </Alert>
+                <div className="flex flex-col gap-3">
+                  <Link to="/auth/forgot">
+                    <Button className="w-full">
+                      Demander un nouveau lien
+                    </Button>
+                  </Link>
+                  <Link to="/auth" className="flex items-center justify-center gap-2 text-sm text-primary hover:underline">
+                    <ArrowLeft className="h-4 w-4" />
+                    Retour à la connexion
+                  </Link>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm">Confirmer le mot de passe</Label>
-                <Input
-                  id="confirm"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  disabled={!isValidSession}
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading || !isValidSession}>
-                {isLoading ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
-              </Button>
-            </form>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Nouveau mot de passe</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="••••••••"
+                      minLength={6}
+                    />
+                    <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm">Confirmer le mot de passe</Label>
+                    <Input
+                      id="confirm"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
+                  </Button>
+                </form>
 
-            {error && (
-              <Alert className="mt-4">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+                {error && (
+                  <Alert variant="destructive" className="mt-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                {success && (
+                  <Alert className="mt-4 border-green-500 bg-green-50 dark:bg-green-950">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-600">{success}</AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="mt-6">
+                  <Link to="/auth" className="flex items-center justify-center gap-2 text-sm text-primary hover:underline">
+                    <ArrowLeft className="h-4 w-4" />
+                    Retour à la connexion
+                  </Link>
+                </div>
+              </>
             )}
-
-            {success && (
-              <Alert className="mt-4">
-                <AlertDescription className="text-green-600">{success}</AlertDescription>
-              </Alert>
-            )}
-
-            <div className="mt-6 flex flex-col gap-3">
-              <Link to="/auth" className="flex items-center justify-center gap-2 text-sm text-primary hover:underline">
-                <ArrowLeft className="h-4 w-4" />
-                Retour à la connexion
-              </Link>
-              {!isValidSession && (
-                <Link to="/auth/forgot" className="text-sm text-muted-foreground hover:underline text-center">
-                  Demander un nouveau lien
-                </Link>
-              )}
-            </div>
           </CardContent>
         </Card>
       </main>
