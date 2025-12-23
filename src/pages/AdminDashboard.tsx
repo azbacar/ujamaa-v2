@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,7 +52,7 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const { role, loading: roleLoading, isAdmin, isModerator } = useRole();
   const navigate = useNavigate();
-  
+
   const [activeSection, setActiveSection] = useState('overview');
   const [pendingMods, setPendingMods] = useState<PendingModification[]>([]);
   const [adminActions, setAdminActions] = useState<AdminAction[]>([]);
@@ -62,27 +61,39 @@ export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedRole, setSelectedRole] = useState('user');
 
+  // Empêche un "rechargement" ressenti (unmount/remount) au retour de focus
+  // quand Supabase rafraîchit silencieusement la session.
+  const didInitialFetchRef = useRef(false);
+  const lastUserIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (roleLoading) return;
-    
+
     if (!user || (!isAdmin() && !isModerator())) {
       navigate('/');
       return;
     }
 
-    fetchData();
-  }, [user, roleLoading, navigate]);
+    const userId = user.id;
+    const shouldFetch = !didInitialFetchRef.current || lastUserIdRef.current !== userId;
 
-  const fetchData = async () => {
+    if (!shouldFetch) return;
+
+    didInitialFetchRef.current = true;
+    lastUserIdRef.current = userId;
+    fetchData({ silent: false });
+  }, [user?.id, role, roleLoading, navigate]);
+
+  const fetchData = async ({ silent = true }: { silent?: boolean } = {}) => {
     try {
-      setLoading(true);
-      
+      if (!silent) setLoading(true);
+
       // Fetch pending modifications
       const { data: modsData } = await supabase
         .from('pending_modifications')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       setPendingMods(modsData || []);
 
       // Fetch admin actions
@@ -92,14 +103,14 @@ export default function AdminDashboard() {
           .select('*')
           .order('created_at', { ascending: false })
           .limit(10);
-        
+
         setAdminActions(actionsData || []);
 
         // Fetch users with their roles
         const { data: usersData, error: usersError } = await supabase
           .from('users')
           .select('id, email, username, created_at');
-        
+
         if (usersError) {
           console.error('Error fetching users:', usersError);
           setUsers([]);
@@ -111,10 +122,10 @@ export default function AdminDashboard() {
                 .from('user_roles')
                 .select('role')
                 .eq('user_id', user.id);
-              
+
               return {
                 ...user,
-                user_roles: rolesData || []
+                user_roles: rolesData || [],
               };
             })
           );
@@ -125,7 +136,7 @@ export default function AdminDashboard() {
       console.error('Error fetching data:', error);
       toast.error('Erreur lors du chargement des données');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -139,7 +150,7 @@ export default function AdminDashboard() {
           status: action,
           reviewed_by: user.id,
           reviewed_at: new Date().toISOString(),
-          review_notes: notes || null
+          review_notes: notes || null,
         })
         .eq('id', modId);
 
@@ -150,11 +161,11 @@ export default function AdminDashboard() {
         _action_type: 'modification_review',
         _target_type: 'pending_modification',
         _target_id: modId,
-        _description: `Modification ${action} par ${user.email}`
+        _description: `Modification ${action} par ${user.email}`,
       });
 
       toast.success(`Modification ${action === 'approved' ? 'approuvée' : 'rejetée'}`);
-      fetchData();
+      fetchData({ silent: true });
     } catch (error) {
       console.error('Error reviewing modification:', error);
       toast.error('Erreur lors de la révision');
@@ -226,25 +237,25 @@ export default function AdminDashboard() {
               toast.error('Veuillez sélectionner un utilisateur et un rôle');
               return;
             }
-            
+
             try {
               const { error } = await supabase
                 .from('user_roles')
                 .upsert({
                   user_id: selectedUser,
                   role: selectedRole as 'user' | 'admin' | 'moderator' | 'annonceur',
-                  assigned_by: user.id
+                  assigned_by: user.id,
                 });
-              
+
               if (error) throw error;
-              
+
               toast.success('Rôle assigné avec succès');
-              fetchData();
+              fetchData({ silent: true });
               setSelectedUser('');
               setSelectedRole('user');
             } catch (error) {
               console.error('Error assigning role:', error);
-              toast.error('Erreur lors de l\'assignation du rôle');
+              toast.error("Erreur lors de l'assignation du rôle");
             }
           }}
         />;
