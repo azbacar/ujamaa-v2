@@ -38,14 +38,13 @@ const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSp
     const fetchAd = async () => {
       try {
         // Fetch ads that match position and size, and are currently active
+        const now = new Date().toISOString();
         const { data: ads, error } = await supabase
           .from('ads')
           .select('*')
           .eq('position', position)
           .eq('size', size)
-          .eq('is_active', true)
-          .or('start_date.is.null,start_date.lte.' + new Date().toISOString())
-          .or('end_date.is.null,end_date.gte.' + new Date().toISOString());
+          .eq('is_active', true);
 
         if (error) {
           console.error('Error fetching ads:', error);
@@ -53,27 +52,36 @@ const AdSpace = ({ size = 'medium', position = 'content', className = '' }: AdSp
         }
 
         if (ads && ads.length > 0) {
-          // Select random ad from matching ads
-          const randomAd = ads[Math.floor(Math.random() * ads.length)];
-          setCurrentAd(randomAd);
-          
-          // Track impression
-          await supabase
-            .from('site_analytics')
-            .insert([{
-              event_type: 'ad_impression',
-              metadata: { 
-                ad_id: randomAd.id, 
-                position, 
-                size 
-              }
-            }]);
-          
-          // Increment impression count
-          await supabase
-            .from('ads')
-            .update({ impression_count: (randomAd.impression_count || 0) + 1 })
-            .eq('id', randomAd.id);
+          // Filter ads by date on client side (more reliable than complex Supabase OR queries)
+          const validAds = ads.filter(ad => {
+            const startValid = !ad.start_date || new Date(ad.start_date) <= new Date(now);
+            const endValid = !ad.end_date || new Date(ad.end_date) >= new Date(now);
+            return startValid && endValid;
+          });
+
+          if (validAds.length > 0) {
+            // Select random ad from matching ads
+            const randomAd = validAds[Math.floor(Math.random() * validAds.length)];
+            setCurrentAd(randomAd);
+            
+            // Track impression
+            await supabase
+              .from('site_analytics')
+              .insert([{
+                event_type: 'ad_impression',
+                metadata: { 
+                  ad_id: randomAd.id, 
+                  position, 
+                  size 
+                }
+              }]);
+            
+            // Increment impression count
+            await supabase
+              .from('ads')
+              .update({ impression_count: (randomAd.impression_count || 0) + 1 })
+              .eq('id', randomAd.id);
+          }
         }
       } catch (error) {
         console.error('Error in fetchAd:', error);
