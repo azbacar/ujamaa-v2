@@ -97,20 +97,10 @@ const FloatingChatbox = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    // Check if user is authenticated
-    if (!user) {
-      const loginMessage: Message = {
-        id: crypto.randomUUID(),
-        text: 'Vous devez être connecté pour utiliser le chat. Veuillez vous connecter.',
-        isUser: false,
-        timestamp: new Date(),
-        links: [{ text: 'Se connecter', url: '/auth', title: 'Connexion', description: 'Se connecter à votre compte' }]
-      };
-      setMessages(prev => [...prev, loginMessage]);
-      return;
-    }
+  // Track message count to show account suggestion
+  const [messageCount, setMessageCount] = useState(0);
 
+  const handleSendMessage = async () => {
     // Input validation
     const trimmedMessage = inputMessage.trim();
     if (!trimmedMessage || isLoading) return;
@@ -139,7 +129,7 @@ const FloatingChatbox = () => {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: {
           message: sanitizedMessage,
-          sessionId: user.id, // Use user ID for authenticated users
+          sessionId: user ? user.id : sessionId, // Use user ID for authenticated users, sessionId for guests
           context: 'floating_chat'
         }
       });
@@ -159,6 +149,24 @@ const FloatingChatbox = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+
+      // Increment message count for guests
+      const newCount = messageCount + 1;
+      setMessageCount(newCount);
+
+      // After 3 exchanges, suggest creating an account to guests
+      if (!user && newCount >= 3 && newCount % 3 === 0) {
+        const suggestionMessage: Message = {
+          id: crypto.randomUUID(),
+          text: '💡 Astuce : Créez un compte gratuit pour sauvegarder vos conversations et accéder à plus de fonctionnalités !',
+          isUser: false,
+          timestamp: new Date(),
+          links: [{ text: 'Créer un compte', url: '/auth', title: 'Inscription', description: 'Créer un compte gratuit' }]
+        };
+        setTimeout(() => {
+          setMessages(prev => [...prev, suggestionMessage]);
+        }, 1000);
+      }
 
     } catch (error) {
       console.error('Erreur chat:', error);
