@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { MessageCircle, X, Send, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useLanguage } from '@/components/LanguageProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,15 +17,43 @@ interface Message {
   links?: Array<{ url: string; title: string; description: string; text?: string }>;
 }
 
+const LOCAL_STORAGE_SESSION_KEY = 'floating_chat_session_id';
+
 const FloatingChatbox = () => {
-  const { t } = useLanguage();
   const { toast } = useToast();
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [assistantName, setAssistantName] = useState('Assistant UJAMAA');
-  const [welcomeMessage, setWelcomeMessage] = useState('🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀');
+  const [welcomeMessage, setWelcomeMessage] = useState(
+    "🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀"
+  );
   const [assistantEnabled, setAssistantEnabled] = useState(true);
+
+  const scrollAreaRootRef = useRef<HTMLDivElement | null>(null);
+
+  // Session ID persistant (pour les visiteurs) afin de garder l'historique après refresh
+  const [guestSessionId] = useState(() => {
+    try {
+      const existing = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
+      if (existing) return existing;
+
+      const array = new Uint8Array(16);
+      crypto.getRandomValues(array);
+      const next = `chat_${Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+      localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, next);
+      return next;
+    } catch {
+      // Fallback (si localStorage indisponible)
+      const array = new Uint8Array(16);
+      crypto.getRandomValues(array);
+      return `chat_${Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+    }
+  });
+
+  const storageKey = useMemo(() => {
+    return `floating_chat_history_${user?.id ?? guestSessionId}`;
+  }, [user?.id, guestSessionId]);
 
   // Charger les paramètres de l'assistant depuis la base de données
   useEffect(() => {
@@ -41,7 +68,10 @@ const FloatingChatbox = () => {
 
         if (data) {
           setAssistantName(data.ai_assistant_name || 'Assistant UJAMAA');
-          setWelcomeMessage(data.ai_assistant_welcome_message || '🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀');
+          setWelcomeMessage(
+            data.ai_assistant_welcome_message ||
+              "🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀"
+          );
           setAssistantEnabled(data.ai_assistant_enabled ?? true);
         }
       } catch (error) {
@@ -62,55 +92,86 @@ const FloatingChatbox = () => {
     window.addEventListener('openFloatingChat', handleOpenChat);
     return () => window.removeEventListener('openFloatingChat', handleOpenChat);
   }, []);
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mettre à jour le message de bienvenue quand il change
-  useEffect(() => {
-    setMessages([{
-      id: '1',
-      text: welcomeMessage,
-      isUser: false,
-      timestamp: new Date()
-    }]);
-  }, [welcomeMessage]);
-
-  // Generate cryptographically secure session ID
-  const sessionId = useState(() => {
-    const array = new Uint8Array(16);
-    crypto.getRandomValues(array);
-    return `chat_${Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')}`;
-  })[0];
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    const scrollToBottom = () => {
-      const chatContainer = document.querySelector('[data-radix-scroll-area-viewport]');
-      if (chatContainer) {
-        setTimeout(() => {
-          chatContainer.scrollTop = chatContainer.scrollHeight;
-        }, 100);
-      }
-    };
-    scrollToBottom();
-  }, [messages]);
-
   // Track message count to show account suggestion
   const [messageCount, setMessageCount] = useState(0);
+
+  // Charger l'historique (localStorage) et, sinon, afficher le message de bienvenue
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Array<Omit<Message, 'timestamp'> & { timestamp: string }>;
+        const restored: Message[] = parsed.map((m) => ({
+          ...m,
+          timestamp: new Date(m.timestamp),
+        }));
+        if (restored.length > 0) {
+          setMessages(restored);
+          const userMessages = restored.filter((m) => m.isUser).length;
+          setMessageCount(userMessages);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Impossible de restaurer l\'historique du chat:', e);
+    }
+
+    // Aucun historique: on initialise avec le message de bienvenue
+    setMessages([
+      {
+        id: '1',
+        text: welcomeMessage,
+        isUser: false,
+        timestamp: new Date(),
+      },
+    ]);
+    setMessageCount(0);
+  }, [storageKey, welcomeMessage]);
+
+  // Persister l'historique
+  useEffect(() => {
+    try {
+      const serializable = messages.map((m) => ({
+        ...m,
+        timestamp: m.timestamp.toISOString(),
+      }));
+      localStorage.setItem(storageKey, JSON.stringify(serializable));
+    } catch {
+      // ignore
+    }
+  }, [messages, storageKey]);
+
+  // Auto-scroll to bottom when messages change (uniquement dans la zone du chat)
+  useEffect(() => {
+    if (!isOpen || isMinimized) return;
+
+    const root = scrollAreaRootRef.current;
+    const viewport = root?.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement | null;
+    if (!viewport) return;
+
+    const id = window.setTimeout(() => {
+      viewport.scrollTop = viewport.scrollHeight;
+    }, 50);
+
+    return () => window.clearTimeout(id);
+  }, [messages, isOpen, isMinimized]);
 
   const handleSendMessage = async () => {
     // Input validation
     const trimmedMessage = inputMessage.trim();
     if (!trimmedMessage || isLoading) return;
-    
+
     // Validate message length (prevent extremely long messages)
     if (trimmedMessage.length > 1000) {
       console.error('Message trop long');
       return;
     }
-    
+
     // Use DOMPurify for proper sanitization
     const sanitizedMessage = DOMPurify.sanitize(trimmedMessage);
 
@@ -118,10 +179,10 @@ const FloatingChatbox = () => {
       id: Date.now().toString(),
       text: sanitizedMessage,
       isUser: true,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
 
@@ -129,15 +190,15 @@ const FloatingChatbox = () => {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: {
           message: sanitizedMessage,
-          sessionId: user ? user.id : sessionId, // Use user ID for authenticated users, sessionId for guests
-          context: 'floating_chat'
-        }
+          sessionId: user ? user.id : guestSessionId, // user: stable id; invité: id persistant
+          context: 'floating_chat',
+        },
       });
 
       if (error) throw error;
 
       // Analyser la réponse pour extraire les liens
-      const responseText = data.response || 'Désolé, je n\'ai pas pu traiter votre demande.';
+      const responseText = data.response || "Désolé, je n'ai pas pu traiter votre demande.";
       const links = extractLinksFromResponse(responseText);
 
       const aiMessage: Message = {
@@ -145,43 +206,42 @@ const FloatingChatbox = () => {
         text: responseText,
         isUser: false,
         timestamp: new Date(),
-        links: links
+        links: links,
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
 
       // Increment message count for guests
       const newCount = messageCount + 1;
       setMessageCount(newCount);
 
-      // After 3 exchanges, suggest creating an account to guests
+      // Après 3 échanges, suggérer de créer un compte (visiteurs uniquement)
       if (!user && newCount >= 3 && newCount % 3 === 0) {
         const suggestionMessage: Message = {
           id: crypto.randomUUID(),
-          text: '💡 Astuce : Créez un compte gratuit pour sauvegarder vos conversations et accéder à plus de fonctionnalités !',
+          text: "Astuce : créez un compte gratuit pour sauvegarder vos conversations.",
           isUser: false,
           timestamp: new Date(),
-          links: [{ text: 'Créer un compte', url: '/auth', title: 'Inscription', description: 'Créer un compte gratuit' }]
+          links: [{ text: 'Créer un compte', url: '/auth', title: 'Inscription', description: 'Créer un compte gratuit' }],
         };
         setTimeout(() => {
-          setMessages(prev => [...prev, suggestionMessage]);
-        }, 1000);
+          setMessages((prev) => [...prev, suggestionMessage]);
+        }, 800);
       }
-
     } catch (error) {
       console.error('Erreur chat:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: 'Désolé, une erreur est survenue. Veuillez réessayer.',
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
-      
+      setMessages((prev) => [...prev, errorMessage]);
+
       toast({
-        title: "Erreur",
+        title: 'Erreur',
         description: "Impossible de communiquer avec l'assistant.",
-        variant: "destructive"
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -190,47 +250,72 @@ const FloatingChatbox = () => {
 
   const extractLinksFromResponse = (response: string): Array<{ url: string; title: string; description: string }> => {
     const links = [];
-    
+
     // Extraction intelligente des liens basée sur le contenu
     const lowerResponse = response.toLowerCase();
-    
-    if (lowerResponse.includes('prix') || lowerResponse.includes('marché') || lowerResponse.includes('coût') || lowerResponse.includes('/prix')) {
+
+    if (
+      lowerResponse.includes('prix') ||
+      lowerResponse.includes('marché') ||
+      lowerResponse.includes('coût') ||
+      lowerResponse.includes('/prix')
+    ) {
       links.push({
         url: '/prix',
         title: '💰 Prix et Marchés',
-        description: 'Consultez les prix actuels des marchés locaux'
+        description: 'Consultez les prix actuels des marchés locaux',
       });
     }
-    
-    if (lowerResponse.includes('événement') || lowerResponse.includes('festival') || lowerResponse.includes('culture') || lowerResponse.includes('/evenements')) {
+
+    if (
+      lowerResponse.includes('événement') ||
+      lowerResponse.includes('festival') ||
+      lowerResponse.includes('culture') ||
+      lowerResponse.includes('/evenements')
+    ) {
       links.push({
         url: '/evenements',
         title: '🎉 Événements',
-        description: 'Découvrez festivals et événements culturels'
+        description: 'Découvrez festivals et événements culturels',
       });
     }
-    
-    if (lowerResponse.includes('service') || lowerResponse.includes('administration') || lowerResponse.includes('démarche') || lowerResponse.includes('/services')) {
+
+    if (
+      lowerResponse.includes('service') ||
+      lowerResponse.includes('administration') ||
+      lowerResponse.includes('démarche') ||
+      lowerResponse.includes('/services')
+    ) {
       links.push({
         url: '/services',
         title: '🏛️ Services Publics',
-        description: 'Accédez aux services administratifs'
+        description: 'Accédez aux services administratifs',
       });
     }
-    
-    if (lowerResponse.includes('appel') || lowerResponse.includes('offre') || lowerResponse.includes('marché public') || lowerResponse.includes('/appels-offres')) {
+
+    if (
+      lowerResponse.includes('appel') ||
+      lowerResponse.includes('offre') ||
+      lowerResponse.includes('marché public') ||
+      lowerResponse.includes('/appels-offres')
+    ) {
       links.push({
         url: '/appels-offres',
-        title: '📋 Appels d\'Offres',
-        description: 'Opportunités d\'affaires et marchés publics'
+        title: "📋 Appels d'Offres",
+        description: "Opportunités d'affaires et marchés publics",
       });
     }
-    
-    if (lowerResponse.includes('annonce') || lowerResponse.includes('actualité') || lowerResponse.includes('nouvelle') || lowerResponse.includes('/annonces')) {
+
+    if (
+      lowerResponse.includes('annonce') ||
+      lowerResponse.includes('actualité') ||
+      lowerResponse.includes('nouvelle') ||
+      lowerResponse.includes('/annonces')
+    ) {
       links.push({
         url: '/annonces',
         title: '📢 Annonces',
-        description: 'Dernières actualités et annonces officielles'
+        description: 'Dernières actualités et annonces officielles',
       });
     }
 
@@ -263,9 +348,11 @@ const FloatingChatbox = () => {
   }
 
   return (
-    <Card className={`fixed bottom-6 right-6 w-96 shadow-2xl z-50 transition-all duration-300 ${
-      isMinimized ? 'h-14' : 'h-96'
-    }`}>
+    <Card
+      className={`fixed bottom-6 right-6 w-96 shadow-2xl z-50 transition-all duration-300 ${
+        isMinimized ? 'h-14' : 'h-96'
+      }`}
+    >
       <CardHeader className="p-4 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white rounded-t-lg">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -295,78 +382,78 @@ const FloatingChatbox = () => {
 
       {!isMinimized && (
         <CardContent className="p-0 flex flex-col h-80 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-          <ScrollArea className="flex-1 p-4" ref={(ref) => {
-            if (ref) {
-              // Auto-scroll to bottom when new messages arrive
-              const scrollElement = ref.querySelector('[data-radix-scroll-area-viewport]');
-              if (scrollElement) {
-                scrollElement.scrollTop = scrollElement.scrollHeight;
-              }
-            }
-          }}>
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-slideIn`}
-                >
+          <div ref={scrollAreaRootRef} className="flex-1">
+            <ScrollArea className="h-full p-4">
+              <div className="space-y-4">
+                {messages.map((message) => (
                   <div
-                     className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
-                      message.isUser
-                        ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white ml-4'
-                        : 'bg-white/90 backdrop-blur-sm text-gray-900 border border-blue-200/50 mr-4'
-                     }`}
+                    key={message.id}
+                    className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-slideIn`}
                   >
-                     <div className="space-y-2">
-                       <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
-                       {message.links && message.links.length > 0 && (
-                         <div className="mt-3 space-y-2">
-                           <p className="text-xs font-medium opacity-70">Liens utiles :</p>
-                           {message.links.map((link, index) => (
-                             <a
-                               key={index}
-                               href={link.url}
-                               className={`block p-3 rounded-lg text-xs transition-all transform hover:scale-105 ${
-                                 message.isUser 
-                                   ? 'bg-white/20 hover:bg-white/30 text-white' 
-                                   : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
-                               }`}
-                             >
-                               <div className="font-semibold">{link.title}</div>
-                               <div className="opacity-80 mt-1">{link.description}</div>
-                             </a>
-                           ))}
-                         </div>
-                       )}
-                     </div>
-                    <div className="text-xs opacity-70 mt-1">
-                      {message.timestamp.toLocaleTimeString('fr-FR', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex justify-start animate-slideIn">
-                  <div className="bg-white/90 backdrop-blur-sm border border-blue-200/50 p-4 rounded-2xl shadow-sm mr-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">AI</span>
+                    <div
+                      className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
+                        message.isUser
+                          ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white ml-4'
+                          : 'bg-white/90 backdrop-blur-sm text-gray-900 border border-blue-200/50 mr-4'
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
+                        {message.links && message.links.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <p className="text-xs font-medium opacity-70">Liens utiles :</p>
+                            {message.links.map((link, index) => (
+                              <a
+                                key={index}
+                                href={link.url}
+                                className={`block p-3 rounded-lg text-xs transition-all transform hover:scale-105 ${
+                                  message.isUser
+                                    ? 'bg-white/20 hover:bg-white/30 text-white'
+                                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                }`}
+                              >
+                                <div className="font-semibold">{link.title}</div>
+                                <div className="opacity-80 mt-1">{link.description}</div>
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="text-xs opacity-70 mt-1">
+                        {message.timestamp.toLocaleTimeString('fr-FR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
+                ))}
+
+                {isLoading && (
+                  <div className="flex justify-start animate-slideIn">
+                    <div className="bg-white/90 backdrop-blur-sm border border-blue-200/50 p-4 rounded-2xl shadow-sm mr-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">AI</span>
+                        </div>
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
+                          <div
+                            className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"
+                            style={{ animationDelay: '0.1s' }}
+                          ></div>
+                          <div
+                            className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"
+                            style={{ animationDelay: '0.2s' }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
 
           <div className="p-4 border-t bg-white/80 backdrop-blur-sm">
             <div className="flex gap-2">

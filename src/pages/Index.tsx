@@ -43,7 +43,7 @@ const Index = () => {
             
             {/* Espace publicitaire dans le contenu */}
             <div className="my-8 flex justify-center">
-              <AdSpace size="large" position="content" />
+              <AdSpace size="medium" position="content" />
             </div>
           </div>
           

@@ -195,8 +195,11 @@ const AIAssistantSection = () => {
   }, []);
 
   useEffect(() => {
+    // Ne pas faire défiler la page d'accueil automatiquement.
+    // On ne scroll que dans le mode plein écran pour garder le focus sur la conversation.
+    if (!isFullscreen) return;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isFullscreen]);
 
   if (isFullscreen) {
     return (
