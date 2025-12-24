@@ -41,6 +41,7 @@ const Footer = () => {
           <div>
             <h4 className="font-bold text-lg mb-6 text-emerald-400">Support</h4>
             <ul className="space-y-3 text-gray-300">
+              <li><a href="/pro" className="hover:text-emerald-400 transition-colors flex items-center gap-2">⭐ Devenir Pro</a></li>
               <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📞 Contact</a></li>
               <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">ℹ️ À propos</a></li>
               <li><a href="#" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🔒 Confidentialité</a></li>
