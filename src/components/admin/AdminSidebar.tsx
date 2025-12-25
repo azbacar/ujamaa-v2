@@ -84,6 +84,14 @@ export default function AdminSidebar({
       category: 'content'
     },
     {
+      id: 'ad-stats',
+      title: 'Stats Publicités',
+      icon: Activity,
+      description: 'Statistiques publicitaires (CTR)',
+      available: isAdmin,
+      category: 'content'
+    },
+    {
       id: 'prices',
       title: 'Prix & Marchés',
       icon: DollarSign,

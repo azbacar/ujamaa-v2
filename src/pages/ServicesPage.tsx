@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Clock, MapPin, Phone, Mail, Search, Building2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AdSpace from '@/components/AdSpace';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -138,6 +139,11 @@ const ServicesPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Espace publicitaire */}
+        <div className="mb-8">
+          <AdSpace size="medium" position="content" className="mx-auto" />
+        </div>
 
         {/* Liste des services */}
         {loading ? (

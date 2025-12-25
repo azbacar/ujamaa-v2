@@ -8,6 +8,7 @@ import { Clock, ArrowRight, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AdSpace from '@/components/AdSpace';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ContentItem {
@@ -169,6 +170,11 @@ const AnnouncementsPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Espace publicitaire */}
+        <div className="mb-8">
+          <AdSpace size="medium" position="content" className="mx-auto" />
+        </div>
 
         {/* Liste des annonces */}
         {loading ? (
