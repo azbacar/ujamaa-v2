@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useRef, useState } from 'react';
+import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import { MessageCircle, X, Send, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,9 +51,11 @@ const FloatingChatbox = () => {
     }
   });
 
+  const sessionId = user?.id ?? guestSessionId;
+
   const storageKey = useMemo(() => {
-    return `floating_chat_history_${user?.id ?? guestSessionId}`;
-  }, [user?.id, guestSessionId]);
+    return `floating_chat_history_${sessionId}`;
+  }, [sessionId]);
 
   // Charger les paramètres de l'assistant depuis la base de données
   useEffect(() => {
@@ -186,11 +188,25 @@ const FloatingChatbox = () => {
     setInputMessage('');
     setIsLoading(true);
 
+    // Sauvegarder le message utilisateur en DB pour les utilisateurs connectés
+    if (user) {
+      try {
+        await supabase.from('chat_messages').insert({
+          user_id: user.id,
+          session_id: sessionId,
+          role: 'user',
+          content: sanitizedMessage,
+        });
+      } catch (e) {
+        console.error('Erreur sauvegarde message user:', e);
+      }
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: {
           message: sanitizedMessage,
-          sessionId: user ? user.id : guestSessionId, // user: stable id; invité: id persistant
+          sessionId: sessionId,
           context: 'floating_chat',
         },
       });
@@ -210,6 +226,20 @@ const FloatingChatbox = () => {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
+
+      // Sauvegarder la réponse AI en DB pour les utilisateurs connectés
+      if (user) {
+        try {
+          await supabase.from('chat_messages').insert({
+            user_id: user.id,
+            session_id: sessionId,
+            role: 'assistant',
+            content: responseText,
+          });
+        } catch (e) {
+          console.error('Erreur sauvegarde réponse AI:', e);
+        }
+      }
 
       // Increment message count for guests
       const newCount = messageCount + 1;

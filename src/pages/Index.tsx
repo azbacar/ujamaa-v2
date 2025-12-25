@@ -8,6 +8,7 @@ import AIAssistantSection from '@/components/AIAssistantSection';
 import CategoriesSection from '@/components/CategoriesSection';
 import AnnouncementsSection from '@/components/AnnouncementsSection';
 import AdSpace from '@/components/AdSpace';
+import LiveUrgentAlerts from '@/components/LiveUrgentAlerts';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -25,6 +26,9 @@ const Index = () => {
       />
       
       <main className="container mx-auto px-6 py-12 space-y-16">
+        {/* Alertes urgentes en temps réel */}
+        <LiveUrgentAlerts />
+        
         <HeroSection />
         
         {/* Espace publicitaire header */}

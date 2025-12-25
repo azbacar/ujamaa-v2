@@ -8,6 +8,7 @@ import { Calendar, MapPin, Users, Search, Ticket } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AdSpace from '@/components/AdSpace';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -160,6 +161,11 @@ const EventsPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Espace publicitaire */}
+        <div className="mb-8">
+          <AdSpace size="medium" position="content" className="mx-auto" />
+        </div>
 
         {/* Liste des événements */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

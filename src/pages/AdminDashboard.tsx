@@ -22,6 +22,7 @@ import SystemAnalyticsSection from '@/components/admin/SystemAnalyticsSection';
 import SystemControlSection from '@/components/admin/SystemControlSection';
 import AnalyticsSection from '@/components/admin/AnalyticsSection';
 import AdsManagementSection from '@/components/admin/AdsManagementSection';
+import AdStatisticsSection from '@/components/admin/AdStatisticsSection';
 import { HomepageManagementSection } from '@/components/admin/HomepageManagementSection';
 import PricesManagementSection from '@/components/admin/PricesManagementSection';
 import ConnectedFunctionsSection from '@/components/admin/ConnectedFunctionsSection';
@@ -203,6 +204,9 @@ export default function AdminDashboard() {
       
       case 'ads':
         return <AdsManagementSection />;
+      
+      case 'ad-stats':
+        return <AdStatisticsSection />;
       
       case 'stats':
         return <AdminStats 
