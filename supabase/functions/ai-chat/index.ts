@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
@@ -21,7 +21,7 @@ async function getDynamicSiteData(authHeader: string | null) {
     // Récupérer les prix récents
     const { data: prices } = await supabase
       .from('prices')
-      .select('product_name, price, unit, island, category')
+      .select('product, price, unit, island, category')
       .eq('status', 'published')
       .order('created_at', { ascending: false })
       .limit(50);
@@ -29,15 +29,15 @@ async function getDynamicSiteData(authHeader: string | null) {
     // Récupérer les événements à venir
     const { data: events } = await supabase
       .from('events')
-      .select('title, description, start_date, end_date, location, island')
+      .select('title, description, date, end_date, location, island')
       .gte('end_date', new Date().toISOString())
-      .order('start_date', { ascending: true })
+      .order('date', { ascending: true })
       .limit(20);
 
     // Récupérer les annonces récentes
     const { data: announcements } = await supabase
       .from('content_items')
-      .select('title, content, category, island')
+      .select('title, description, category')
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(20);
@@ -218,22 +218,22 @@ serve(async (req) => {
     // Basic sanitization
     const sanitizedMessage = message.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
     
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-// Optionally get authenticated user if available
-const authHeader = req.headers.get('Authorization');
-let user = null;
+    // Optionally get authenticated user if available
+    const authHeader = req.headers.get('Authorization');
+    let user = null;
 
-if (authHeader) {
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  
-  const { data: { user: authUser } } = await supabase.auth.getUser();
-  user = authUser;
-}
+    if (authHeader) {
+      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      user = authUser;
+    }
 
     // Récupérer les données dynamiques du site
     const dynamicData = await getDynamicSiteData(authHeader);
@@ -244,7 +244,7 @@ if (authHeader) {
     if (dynamicData.prices.length > 0) {
       dynamicContent += '💰 PRIX RÉCENTS:\n';
       dynamicData.prices.slice(0, 15).forEach(price => {
-        dynamicContent += `- ${price.product_name}: ${price.price} ${price.unit} (${price.island})\n`;
+        dynamicContent += `- ${price.product}: ${price.price} ${price.unit} (${price.island})\n`;
       });
       dynamicContent += '\n';
     }
@@ -252,7 +252,7 @@ if (authHeader) {
     if (dynamicData.events.length > 0) {
       dynamicContent += '🎉 ÉVÉNEMENTS À VENIR:\n';
       dynamicData.events.slice(0, 10).forEach(event => {
-        const date = new Date(event.start_date).toLocaleDateString('fr-FR');
+        const date = new Date(event.date).toLocaleDateString('fr-FR');
         dynamicContent += `- ${event.title} - ${date} à ${event.location} (${event.island})\n`;
       });
       dynamicContent += '\n';
@@ -261,7 +261,7 @@ if (authHeader) {
     if (dynamicData.announcements.length > 0) {
       dynamicContent += '📢 ANNONCES RÉCENTES:\n';
       dynamicData.announcements.slice(0, 8).forEach(announcement => {
-        dynamicContent += `- ${announcement.title} (${announcement.island})\n`;
+        dynamicContent += `- ${announcement.title}\n`;
       });
       dynamicContent += '\n';
     }
@@ -275,7 +275,7 @@ if (authHeader) {
       dynamicContent += '\n';
     }
 
-    let systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel pour les Comores et Mayotte sur le site ujamaan.com. 
+    const systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel pour les Comores et Mayotte sur le site ujamaan.com. 
 
 ${comorosKnowledge}
 ${dynamicContent}
@@ -335,22 +335,18 @@ PAGES DU SITE UJAMAAN.COM (à mentionner quand pertinent) :
 - Si tu n'as pas l'info: "Je n'ai pas cette information actuellement sur ujamaan.com..."
 - Précise la monnaie selon l'île: KMF pour Ngazidja/Ndzuwani/Mwali, EUR pour Maore (Mayotte)
 - Mentionne TOUJOURS quelle page consulter sur ujamaan.com
-- Précise que les informations sont mises à jour régulièrement sur la plateforme`;
+- Précise que les informations sont mises à jour régulièrement sur la plateforme
+${searchQuery ? `\n\nL'utilisateur effectue une recherche pour: "${searchQuery}". Aide-le à trouver des informations pertinentes sur l'archipel des Comores (les 4 îles) en relation avec sa recherche.` : ''}`;
 
-    // Si c'est une recherche, adapter le prompt
-    if (searchQuery) {
-      systemPrompt += `\n\nL'utilisateur effectue une recherche pour: "${searchQuery}". Aide-le à trouver des informations pertinentes sur l'archipel des Comores (les 4 îles) en relation avec sa recherche.`;
-    }
-
-    // Call OpenAI API
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call Lovable AI Gateway instead of OpenAI directly
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: sanitizedMessage }
@@ -360,13 +356,38 @@ PAGES DU SITE UJAMAAN.COM (à mentionner quand pertinent) :
       }),
     });
 
+    // Handle rate limit and payment errors
+    if (response.status === 429) {
+      console.error('Rate limit exceeded');
+      return new Response(JSON.stringify({ 
+        error: 'Le service est temporairement surchargé. Veuillez réessayer dans quelques instants.',
+        code: 'RATE_LIMIT'
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (response.status === 402) {
+      console.error('Payment required');
+      return new Response(JSON.stringify({ 
+        error: 'Crédit insuffisant pour le service IA. Contactez l\'administrateur.',
+        code: 'PAYMENT_REQUIRED'
+      }), {
+        status: 402,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('AI Gateway error:', response.status, errorText);
+      throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
-    console.log('OpenAI response received');
+    console.log('AI response received');
 
     // Store conversation in database (only if user is authenticated)
     if (user && authHeader) {
