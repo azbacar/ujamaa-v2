@@ -1,10 +1,9 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Send, MessageCircle, Sparkles, HelpCircle, Clock, Zap, AlertCircle, Maximize2, X, ExternalLink } from 'lucide-react';
+import { Bot, Send, MessageCircle, Sparkles, HelpCircle, Clock, Zap, AlertCircle, AlertTriangle, RefreshCw, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -24,6 +23,7 @@ interface Message {
   timestamp: Date;
   type?: 'info' | 'suggestion' | 'answer';
   links?: Link[];
+  errorType?: 'rate_limit' | 'payment' | 'generic';
 }
 
 const AIAssistantSection = () => {
@@ -38,6 +38,7 @@ const AIAssistantSection = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
 
   const quickQuestions = [
@@ -55,56 +56,67 @@ const AIAssistantSection = () => {
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const links: Link[] = [];
     let match;
-    
     while ((match = linkRegex.exec(text)) !== null) {
-      links.push({
-        text: match[1],
-        url: match[2]
-      });
+      links.push({ text: match[1], url: match[2] });
     }
-    
     return links;
   };
 
   const callAIFunction = async (userMessage: string): Promise<{ response: string; links: Link[] }> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: {
-          message: userMessage,
-          sessionId: sessionId,
-        },
-      });
+    const { data, error } = await supabase.functions.invoke('ai-chat', {
+      body: { message: userMessage, sessionId },
+    });
 
-      if (error) {
-        console.error('AI function error:', error);
-        throw error;
+    if (error) {
+      const status = (error as any)?.context?.status || (error as any)?.status;
+      if (status === 429 || String(error.message).includes('429')) {
+        throw { code: 'RATE_LIMIT' };
       }
-
-      const links = extractLinksFromResponse(data.response);
-      return { response: data.response, links };
-    } catch (error) {
-      console.error('Error calling AI function:', error);
-      return { 
-        response: "Désolé, je rencontre actuellement des difficultés techniques. Veuillez réessayer dans quelques instants. En attendant, vous pouvez consulter directement les sections du site UJAMAA pour vos recherches.",
-        links: []
-      };
+      if (status === 402 || String(error.message).includes('402')) {
+        throw { code: 'PAYMENT_REQUIRED' };
+      }
+      throw error;
     }
+
+    if (data?.code === 'RATE_LIMIT') throw { code: 'RATE_LIMIT' };
+    if (data?.code === 'PAYMENT_REQUIRED') throw { code: 'PAYMENT_REQUIRED' };
+
+    const links = extractLinksFromResponse(data.response);
+    return { response: data.response, links };
   };
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+  const handleSendMessage = async (retryMsg?: string) => {
+    const msg = retryMsg || inputMessage.trim();
+    if (!msg) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: inputMessage,
-      sender: 'user',
-      timestamp: new Date()
-    };
+    if (!retryMsg) {
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        content: msg,
+        sender: 'user',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, userMessage]);
+    }
 
-    setMessages(prev => [...prev, userMessage]);
-    const currentMessage = inputMessage;
+    const currentMessage = msg;
     setInputMessage('');
     setIsLoading(true);
+    setLastFailedMessage(null);
+
+    // Save user message to DB
+    if (user && !retryMsg) {
+      try {
+        await supabase.from('chat_messages').insert({
+          user_id: user.id,
+          session_id: sessionId,
+          role: 'user',
+          content: currentMessage,
+        });
+      } catch (e) {
+        console.error('Erreur sauvegarde message:', e);
+      }
+    }
 
     try {
       const { response: aiResponseText, links } = await callAIFunction(currentMessage);
@@ -119,31 +131,59 @@ const AIAssistantSection = () => {
       };
       
       setMessages(prev => [...prev, aiResponse]);
-      
-      toast({
-        title: "Réponse reçue",
-        description: "UJAMAA IA a répondu à votre question.",
-      });
-    } catch (error) {
+
+      // Save AI response to DB
+      if (user) {
+        try {
+          await supabase.from('chat_messages').insert({
+            user_id: user.id,
+            session_id: sessionId,
+            role: 'assistant',
+            content: aiResponseText,
+          });
+        } catch (e) {
+          console.error('Erreur sauvegarde réponse AI:', e);
+        }
+      }
+    } catch (error: any) {
       console.error('Error getting AI response:', error);
-      
+
+      let errorType: Message['errorType'] = 'generic';
+      let errorContent = "Désolé, je rencontre des difficultés techniques. Veuillez réessayer dans quelques instants.";
+
+      if (error?.code === 'RATE_LIMIT') {
+        errorType = 'rate_limit';
+        errorContent = "⏳ Le service est temporairement surchargé. Veuillez patienter quelques secondes puis réessayer.";
+      } else if (error?.code === 'PAYMENT_REQUIRED') {
+        errorType = 'payment';
+        errorContent = "💳 Crédit IA insuffisant. Veuillez contacter l'administrateur du site.";
+      }
+
+      setLastFailedMessage(currentMessage);
+
       const errorResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Désolé, je rencontre des difficultés techniques. Veuillez réessayer dans quelques instants.",
+        content: errorContent,
         sender: 'ai',
         timestamp: new Date(),
-        type: 'answer'
+        type: 'answer',
+        errorType,
       };
       
       setMessages(prev => [...prev, errorResponse]);
-      
-      toast({
-        title: "Erreur",
-        description: "Impossible de contacter l'assistant IA. Veuillez réessayer.",
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRetry = () => {
+    if (lastFailedMessage) {
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last && last.sender === 'ai' && last.errorType) return prev.slice(0, -1);
+        return prev;
+      });
+      handleSendMessage(lastFailedMessage);
     }
   };
 
@@ -151,22 +191,69 @@ const AIAssistantSection = () => {
     setInputMessage(question);
   };
 
+  // Instead of fullscreen, open the floating chatbox
+  const handleOpenFloatingChat = () => {
+    window.dispatchEvent(new CustomEvent('openFloatingChat'));
+  };
+
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('fr-FR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
   const handleLinkClick = (url: string) => {
     if (url.startsWith('/')) {
       navigate(url);
-      if (isFullscreen) {
-        setIsFullscreen(false);
+      if (isFullscreen) setIsFullscreen(false);
+    } else if (url.includes('ujamaan.com') || url.includes('ujamaa-v2.lovable.app')) {
+      try {
+        const path = new URL(url).pathname;
+        navigate(path);
+        if (isFullscreen) setIsFullscreen(false);
+      } catch {
+        window.open(url, '_blank', 'noopener,noreferrer');
       }
     } else {
-      window.open(url, '_blank');
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
+  };
+
+  // Render message text with clickable links
+  const renderTextWithLinks = (text: string, isUserMsg: boolean) => {
+    const regex = /\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s<]+)/g;
+    const parts: Array<{ type: 'text' | 'link'; value: string; label?: string }> = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) parts.push({ type: 'text', value: text.slice(lastIndex, match.index) });
+      if (match[1] && match[2]) {
+        parts.push({ type: 'link', value: match[2], label: match[1] });
+      } else if (match[3]) {
+        parts.push({ type: 'link', value: match[3] });
+      }
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < text.length) parts.push({ type: 'text', value: text.slice(lastIndex) });
+
+    return (
+      <span className="whitespace-pre-line">
+        {parts.map((p, i) => {
+          if (p.type === 'text') return <span key={i}>{p.value}</span>;
+          return (
+            <button
+              key={i}
+              onClick={() => handleLinkClick(p.value)}
+              className={`inline-flex items-center gap-1 underline font-medium ${
+                isUserMsg ? 'text-white/90 hover:text-white' : 'text-emerald-600 hover:text-emerald-800'
+              }`}
+            >
+              {p.label || p.value.replace(/https?:\/\/(www\.)?/, '').split('/').slice(0, 2).join('/')}
+              <ExternalLink className="w-3 h-3 inline-block" />
+            </button>
+          );
+        })}
+      </span>
+    );
   };
 
   useEffect(() => {
@@ -180,26 +267,109 @@ const AIAssistantSection = () => {
         setAiName(data.ai_assistant_name || 'UJAMAA IA');
         const welcome = data.ai_assistant_welcome_message || 'Bonjour ! Je suis votre assistant intelligent pour Mayotte et les Comores. Comment puis-je vous aider aujourd\'hui ?';
         setWelcomeMessage(welcome);
-        
-        setMessages([{
-          id: '1',
-          content: welcome,
-          sender: 'ai',
-          timestamp: new Date(),
-          type: 'info'
-        }]);
+        setMessages([{ id: '1', content: welcome, sender: 'ai', timestamp: new Date(), type: 'info' }]);
       }
     };
-
     loadSettings();
   }, []);
 
   useEffect(() => {
-    // Ne pas faire défiler la page d'accueil automatiquement.
-    // On ne scroll que dans le mode plein écran pour garder le focus sur la conversation.
     if (!isFullscreen) return;
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isFullscreen]);
+
+  const renderMessage = (message: Message) => (
+    <div
+      key={message.id}
+      className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+    >
+      <div
+        className={`max-w-[80%] p-4 rounded-2xl ${
+          message.errorType
+            ? 'bg-destructive/10 border border-destructive/30 text-foreground shadow-sm'
+            : message.sender === 'user'
+            ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white shadow-lg'
+            : 'bg-card text-card-foreground border shadow-sm'
+        }`}
+      >
+        {message.sender === 'ai' && !message.errorType && (
+          <div className="flex items-center gap-2 mb-2">
+            <Bot className="w-4 h-4 text-emerald-600" />
+            <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
+            {message.type && (
+              <Badge variant="outline" className="text-xs">
+                {message.type === 'info' ? 'Info' : message.type === 'suggestion' ? 'Suggestion' : 'Réponse'}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {message.errorType && (
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="w-4 h-4 text-destructive" />
+            <span className="text-xs font-semibold text-destructive">
+              {message.errorType === 'rate_limit' ? 'Service surchargé' : message.errorType === 'payment' ? 'Crédit insuffisant' : 'Erreur'}
+            </span>
+          </div>
+        )}
+
+        <div>{renderTextWithLinks(message.content, message.sender === 'user' && !message.errorType)}</div>
+        
+        {message.errorType && lastFailedMessage && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleRetry}
+            className="mt-2 gap-2 text-xs border-destructive/30 hover:bg-destructive/10"
+          >
+            <RefreshCw className="w-3 h-3" />
+            Réessayer
+          </Button>
+        )}
+
+        {message.links && message.links.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {message.links.map((link, idx) => (
+              <Button
+                key={idx}
+                size="sm"
+                variant="secondary"
+                onClick={() => handleLinkClick(link.url)}
+                className="gap-2"
+              >
+                {link.text}
+                <ExternalLink className="w-3 h-3" />
+              </Button>
+            ))}
+          </div>
+        )}
+
+        <div className={`text-xs mt-2 ${message.sender === 'user' && !message.errorType ? 'text-white/70' : 'text-muted-foreground'}`}>
+          <Clock className="w-3 h-3 inline mr-1" />
+          {formatTime(message.timestamp)}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderLoading = () => (
+    <div className="flex justify-start">
+      <div className="bg-card border p-4 rounded-2xl max-w-[80%] shadow-sm">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
+            <Bot className="w-3 h-3 text-white" />
+          </div>
+          <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
+          <span className="text-xs text-muted-foreground">réfléchit...</span>
+        </div>
+        <div className="flex space-x-1">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+        </div>
+      </div>
+    </div>
+  );
 
   if (isFullscreen) {
     return (
@@ -210,88 +380,14 @@ const AIAssistantSection = () => {
             <h2 className="text-2xl font-bold text-white">{aiName}</h2>
             <Badge className="bg-white/20 text-white border-white/30">En ligne</Badge>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsFullscreen(false)}
-            className="text-white hover:bg-white/20"
-          >
-            <X className="w-6 h-6" />
+          <Button variant="ghost" size="icon" onClick={() => setIsFullscreen(false)} className="text-white hover:bg-white/20">
+            <ExternalLink className="w-6 h-6" />
           </Button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] p-4 rounded-2xl ${
-                  message.sender === 'user'
-                    ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white shadow-lg'
-                    : 'bg-card text-card-foreground border shadow-sm'
-                }`}
-              >
-                {message.sender === 'ai' && (
-                  <div className="flex items-center gap-2 mb-2">
-                    <Bot className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
-                    {message.type && (
-                      <Badge variant="outline" className="text-xs">
-                        {message.type === 'info' ? 'Info' : 
-                         message.type === 'suggestion' ? 'Suggestion' : 'Réponse'}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-                <div className="whitespace-pre-line">{message.content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')}</div>
-                
-                {message.links && message.links.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {message.links.map((link, idx) => (
-                      <Button
-                        key={idx}
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleLinkClick(link.url)}
-                        className="gap-2"
-                      >
-                        {link.text}
-                        <ExternalLink className="w-3 h-3" />
-                      </Button>
-                    ))}
-                  </div>
-                )}
-
-                <div className={`text-xs mt-2 ${
-                  message.sender === 'user' ? 'text-white/70' : 'text-muted-foreground'
-                }`}>
-                  <Clock className="w-3 h-3 inline mr-1" />
-                  {formatTime(message.timestamp)}
-                </div>
-              </div>
-            </div>
-          ))}
-          
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-card border p-4 rounded-2xl max-w-[80%] shadow-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
-                    <Bot className="w-3 h-3 text-white" />
-                  </div>
-                  <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
-                  <span className="text-xs text-muted-foreground">réfléchit...</span>
-                </div>
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                </div>
-              </div>
-            </div>
-          )}
+          {messages.map(renderMessage)}
+          {isLoading && renderLoading()}
           <div ref={messagesEndRef} />
         </div>
         
@@ -306,7 +402,7 @@ const AIAssistantSection = () => {
               disabled={isLoading}
             />
             <Button 
-              onClick={handleSendMessage}
+              onClick={() => handleSendMessage()}
               disabled={!inputMessage.trim() || isLoading}
               className="bg-gradient-to-r from-emerald-500 to-ocean-500"
             >
@@ -335,10 +431,10 @@ const AIAssistantSection = () => {
         <Button 
           size="lg"
           className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-          onClick={() => setIsFullscreen(true)}
+          onClick={handleOpenFloatingChat}
         >
-          <Maximize2 className="w-5 h-5 mr-2" />
-          Lancer {aiName}
+          <MessageCircle className="w-5 h-5 mr-2" />
+          Discuter avec {aiName}
         </Button>
       </div>
 
@@ -351,93 +447,17 @@ const AIAssistantSection = () => {
                 <div className="flex items-center gap-3">
                   <Bot className="w-6 h-6" />
                   {aiName}
-                  <Badge className="bg-white/20 text-white border-white/30">
-                    En ligne
-                  </Badge>
+                  <Badge className="bg-white/20 text-white border-white/30">En ligne</Badge>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsFullscreen(true)}
-                  className="text-white hover:bg-white/20"
-                >
-                  <Maximize2 className="w-5 h-5" />
+                <Button variant="ghost" size="icon" onClick={() => setIsFullscreen(true)} className="text-white hover:bg-white/20">
+                  <ExternalLink className="w-5 h-5" />
                 </Button>
               </CardTitle>
             </CardHeader>
             
             <CardContent className="flex-1 overflow-y-auto p-6 space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[80%] p-4 rounded-2xl ${
-                      message.sender === 'user'
-                        ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white shadow-lg'
-                        : 'bg-card text-card-foreground border shadow-sm'
-                    }`}
-                  >
-                    {message.sender === 'ai' && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <Bot className="w-4 h-4 text-emerald-600" />
-                        <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
-                        {message.type && (
-                          <Badge variant="outline" className="text-xs">
-                            {message.type === 'info' ? 'Info' : 
-                             message.type === 'suggestion' ? 'Suggestion' : 'Réponse'}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                    <div className="whitespace-pre-line">{message.content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')}</div>
-                    
-                    {message.links && message.links.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {message.links.map((link, idx) => (
-                          <Button
-                            key={idx}
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => handleLinkClick(link.url)}
-                            className="gap-2"
-                          >
-                            {link.text}
-                            <ExternalLink className="w-3 h-3" />
-                          </Button>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className={`text-xs mt-2 ${
-                      message.sender === 'user' ? 'text-white/70' : 'text-muted-foreground'
-                    }`}>
-                      <Clock className="w-3 h-3 inline mr-1" />
-                      {formatTime(message.timestamp)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-card border p-4 rounded-2xl max-w-[80%] shadow-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
-                        <Bot className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
-                      <span className="text-xs text-muted-foreground">réfléchit...</span>
-                    </div>
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {messages.map(renderMessage)}
+              {isLoading && renderLoading()}
               <div ref={messagesEndRef} />
             </CardContent>
             
@@ -452,7 +472,7 @@ const AIAssistantSection = () => {
                   disabled={isLoading}
                 />
                 <Button 
-                  onClick={handleSendMessage}
+                  onClick={() => handleSendMessage()}
                   disabled={!inputMessage.trim() || isLoading}
                   className="bg-gradient-to-r from-emerald-500 to-ocean-500"
                 >
@@ -497,34 +517,12 @@ const AIAssistantSection = () => {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Prix des marchés en temps réel</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Informations sur Mayotte et les Comores</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Services publics et démarches</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Événements et activités culturelles</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Transport inter-îles</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Conseils et orientations</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span>Aide administrative Mayotte</span>
-                </div>
+                {['Prix des marchés en temps réel', 'Informations sur Mayotte et les Comores', 'Services publics et démarches', 'Événements et activités culturelles', 'Transport inter-îles', 'Conseils et orientations', 'Aide administrative Mayotte'].map((cap, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    <span>{cap}</span>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

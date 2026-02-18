@@ -389,28 +389,25 @@ ${searchQuery ? `\n\nL'utilisateur effectue une recherche pour: "${searchQuery}"
     const aiResponse = data.choices[0].message.content;
     console.log('AI response received');
 
-    // Store conversation in database (only if user is authenticated)
-    if (user && authHeader) {
-      try {
-        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-          global: { headers: { Authorization: authHeader } },
+    // Store ALL conversations (authenticated + guests) for admin analytics/learning
+    try {
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
+      
+      const { error: dbError } = await adminSupabase
+        .from('ai_conversations')
+        .insert({
+          user_id: user?.id || null,
+          user_session: sessionId,
+          user_message: sanitizedMessage,
+          ai_response: aiResponse,
         });
-        
-        const { error: dbError } = await supabase
-          .from('ai_conversations')
-          .insert({
-            user_id: user.id,
-            user_session: sessionId,
-            user_message: sanitizedMessage,
-            ai_response: aiResponse,
-          });
 
-        if (dbError) {
-          console.error('Database error:', dbError);
-        }
-      } catch (dbErr) {
-        console.error('Failed to store conversation:', dbErr);
+      if (dbError) {
+        console.error('Database error:', dbError);
       }
+    } catch (dbErr) {
+      console.error('Failed to store conversation:', dbErr);
     }
 
     return new Response(JSON.stringify({ 
