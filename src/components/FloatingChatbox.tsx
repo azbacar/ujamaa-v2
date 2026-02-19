@@ -406,51 +406,65 @@ const FloatingChatbox = () => {
 
   return (
     <Card
-      className={`fixed bottom-6 right-6 w-96 shadow-2xl z-50 transition-all duration-300 ${
-        isMinimized ? 'h-14' : 'h-96'
+      className={`fixed bottom-6 right-6 w-[360px] sm:w-[400px] shadow-2xl z-50 transition-all duration-300 border-0 rounded-2xl overflow-hidden ${
+        isMinimized ? 'h-[56px]' : 'h-[480px]'
       }`}
     >
-      <CardHeader className="p-4 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white rounded-t-lg">
+      {/* Header */}
+      <CardHeader className="p-3 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
-            {assistantName}
-          </CardTitle>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={() => setIsMinimized(!isMinimized)}>
-              <Minimize2 className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <MessageCircle className="h-4 w-4" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-semibold">{assistantName}</CardTitle>
+              <span className="text-[10px] text-white/70">En ligne</span>
+            </div>
+          </div>
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20" onClick={() => setIsMinimized(!isMinimized)}>
+              <Minimize2 className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20" onClick={() => setIsOpen(false)}>
-              <X className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-white/80 hover:text-white hover:bg-white/20" onClick={() => setIsOpen(false)}>
+              <X className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
       </CardHeader>
 
       {!isMinimized && (
-        <CardContent className="p-0 flex flex-col h-80 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-          <div ref={scrollAreaRootRef} className="flex-1">
-            <ScrollArea className="h-full p-4">
-              <div className="space-y-4">
+        <CardContent className="p-0 flex flex-col" style={{ height: 'calc(480px - 56px)' }}>
+          {/* Messages area */}
+          <div ref={scrollAreaRootRef} className="flex-1 min-h-0">
+            <ScrollArea className="h-full">
+              <div className="p-3 space-y-3">
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-slideIn`}
+                    className={`flex gap-2 ${message.isUser ? 'flex-row-reverse' : 'flex-row'} animate-slideIn`}
                   >
-                    <div
-                      className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
-                        message.errorType
-                          ? 'bg-destructive/10 border border-destructive/30 text-foreground mr-4'
-                          : message.isUser
-                          ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white ml-4'
-                          : 'bg-white/90 backdrop-blur-sm text-gray-900 border border-blue-200/50 mr-4'
-                      }`}
-                    >
-                      <div className="space-y-2">
+                    {/* Avatar */}
+                    {!message.isUser && (
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-ocean-500 flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-[10px] font-bold">IA</span>
+                      </div>
+                    )}
+
+                    <div className="max-w-[78%] space-y-1">
+                      <div
+                        className={`px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                          message.errorType
+                            ? 'bg-destructive/10 border border-destructive/20 text-foreground'
+                            : message.isUser
+                            ? 'bg-gradient-to-br from-emerald-500 to-ocean-500 text-white rounded-br-md'
+                            : 'bg-muted/60 text-foreground rounded-bl-md border border-border/50'
+                        }`}
+                      >
                         {message.errorType && (
-                          <div className="flex items-center gap-2 mb-1">
-                            <AlertTriangle className="h-4 w-4 text-destructive" />
-                            <span className="text-xs font-semibold text-destructive">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                            <span className="text-[11px] font-semibold text-destructive">
                               {message.errorType === 'rate_limit' ? 'Service surchargé' : message.errorType === 'payment' ? 'Crédit insuffisant' : 'Erreur'}
                             </span>
                           </div>
@@ -463,7 +477,7 @@ const FloatingChatbox = () => {
                             size="sm"
                             variant="outline"
                             onClick={handleRetry}
-                            className="mt-2 gap-2 text-xs border-destructive/30 hover:bg-destructive/10"
+                            className="mt-2 gap-1.5 text-[11px] h-7 border-destructive/30 hover:bg-destructive/10"
                           >
                             <RefreshCw className="h-3 w-3" />
                             Réessayer
@@ -471,29 +485,28 @@ const FloatingChatbox = () => {
                         )}
 
                         {message.links && message.links.length > 0 && (
-                          <div className="mt-3 space-y-2">
-                            <p className="text-xs font-medium opacity-70">Liens utiles :</p>
+                          <div className="mt-2 space-y-1.5">
                             {message.links.map((link, index) => (
                               <button
                                 key={index}
                                 onClick={() => handleLinkClick(link.url)}
-                                className={`block w-full text-left p-3 rounded-lg text-xs transition-all transform hover:scale-105 ${
+                                className={`block w-full text-left px-2.5 py-2 rounded-lg text-[11px] transition-colors ${
                                   message.isUser
-                                    ? 'bg-white/20 hover:bg-white/30 text-white'
-                                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                    ? 'bg-white/15 hover:bg-white/25 text-white'
+                                    : 'bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10'
                                 }`}
                               >
                                 <div className="font-semibold flex items-center gap-1">
                                   {link.title}
-                                  <ExternalLink className="h-3 w-3" />
+                                  <ExternalLink className="h-2.5 w-2.5" />
                                 </div>
-                                <div className="opacity-80 mt-1">{link.description}</div>
+                                <div className="opacity-70 mt-0.5">{link.description}</div>
                               </button>
                             ))}
                           </div>
                         )}
                       </div>
-                      <div className="text-xs opacity-70 mt-1">
+                      <div className={`text-[10px] text-muted-foreground px-1 ${message.isUser ? 'text-right' : ''}`}>
                         {message.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
@@ -501,17 +514,15 @@ const FloatingChatbox = () => {
                 ))}
 
                 {isLoading && (
-                  <div className="flex justify-start animate-slideIn">
-                    <div className="bg-white/90 backdrop-blur-sm border border-blue-200/50 p-4 rounded-2xl shadow-sm mr-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">AI</span>
-                        </div>
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
+                  <div className="flex gap-2 animate-slideIn">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-ocean-500 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[10px] font-bold">IA</span>
+                    </div>
+                    <div className="bg-muted/60 border border-border/50 px-4 py-3 rounded-2xl rounded-bl-md">
+                      <div className="flex space-x-1.5">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
                       </div>
                     </div>
                   </div>
@@ -520,23 +531,24 @@ const FloatingChatbox = () => {
             </ScrollArea>
           </div>
 
-          <div className="p-4 border-t bg-white/80 backdrop-blur-sm">
+          {/* Input area */}
+          <div className="p-3 border-t border-border/50 bg-background">
             <div className="flex gap-2">
               <Input
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre message..."
-                className="flex-1 bg-white/90"
+                className="flex-1 text-sm h-9 rounded-xl bg-muted/40 border-border/50 focus-visible:ring-emerald-500/30"
                 disabled={isLoading}
               />
               <Button
                 onClick={() => handleSendMessage()}
                 disabled={!inputMessage.trim() || isLoading}
                 size="icon"
-                className="bg-gradient-to-r from-emerald-500 to-ocean-500"
+                className="h-9 w-9 rounded-xl bg-gradient-to-r from-emerald-500 to-ocean-500 hover:opacity-90"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>

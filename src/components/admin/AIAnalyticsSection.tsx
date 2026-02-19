@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MessageSquare, TrendingUp, Users, Search, RefreshCw, Brain, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageSquare, TrendingUp, Users, Search, RefreshCw, Brain, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,6 +121,34 @@ export default function AIAnalyticsSection() {
       .slice(0, 10);
   }, [conversations]);
 
+  const exportCSV = useCallback(() => {
+    if (conversations.length === 0) {
+      toast.error('Aucune donnée à exporter');
+      return;
+    }
+    const headers = ['Date', 'Thème', 'Message utilisateur', 'Réponse IA', 'Type utilisateur', 'Session'];
+    const rows = conversations.map(c => {
+      const theme = classifyMessage(c.user_message);
+      return [
+        new Date(c.created_at).toLocaleString('fr-FR'),
+        theme,
+        `"${c.user_message.replace(/"/g, '""')}"`,
+        `"${c.ai_response.replace(/"/g, '""').substring(0, 500)}"`,
+        c.user_id ? 'Connecté' : 'Visiteur',
+        c.user_session,
+      ].join(';');
+    });
+    const csv = '\uFEFF' + [headers.join(';'), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `requetes-ia-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${conversations.length} requêtes exportées`);
+  }, [conversations]);
+
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -154,8 +182,12 @@ export default function AIAnalyticsSection() {
               <SelectItem value="365">12 derniers mois</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" onClick={fetchConversations}>
+          <Button variant="outline" size="icon" onClick={fetchConversations} title="Actualiser">
             <RefreshCw className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" onClick={exportCSV} className="gap-2" title="Exporter CSV">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">CSV</span>
           </Button>
         </div>
       </div>
