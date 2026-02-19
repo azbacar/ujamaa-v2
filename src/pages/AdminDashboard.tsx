@@ -27,6 +27,7 @@ import { HomepageManagementSection } from '@/components/admin/HomepageManagement
 import PricesManagementSection from '@/components/admin/PricesManagementSection';
 import ConnectedFunctionsSection from '@/components/admin/ConnectedFunctionsSection';
 import EventsManagementSection from '@/components/admin/EventsManagementSection';
+import AIAnalyticsSection from '@/components/admin/AIAnalyticsSection';
 
 interface PendingModification {
   id: string;
@@ -287,6 +288,9 @@ export default function AdminDashboard() {
       
       case 'events':
         return <EventsManagementSection />;
+      
+      case 'ai-analytics':
+        return <AIAnalyticsSection />;
       
       default:
         return <AdminOverview 
