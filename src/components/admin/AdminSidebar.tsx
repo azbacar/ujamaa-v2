@@ -15,7 +15,8 @@ import {
   Crown,
   UserCheck,
   DollarSign,
-  Calendar
+  Calendar,
+  Brain
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -152,6 +153,14 @@ export default function AdminSidebar({
       title: 'Journal d\'actions',
       icon: Bell,
       description: 'Historique des actions',
+      available: isAdmin,
+      category: 'monitoring'
+    },
+    {
+      id: 'ai-analytics',
+      title: 'Analyse IA',
+      icon: Brain,
+      description: 'Requêtes IA & tendances',
       available: isAdmin,
       category: 'monitoring'
     }
