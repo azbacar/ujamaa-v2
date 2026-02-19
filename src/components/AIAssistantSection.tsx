@@ -281,71 +281,79 @@ const AIAssistantSection = () => {
   const renderMessage = (message: Message) => (
     <div
       key={message.id}
-      className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+      className={`flex gap-2.5 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
     >
-      <div
-        className={`max-w-[80%] p-4 rounded-2xl ${
-          message.errorType
-            ? 'bg-destructive/10 border border-destructive/30 text-foreground shadow-sm'
-            : message.sender === 'user'
-            ? 'bg-gradient-to-r from-emerald-500 to-ocean-500 text-white shadow-lg'
-            : 'bg-card text-card-foreground border shadow-sm'
-        }`}
-      >
-        {message.sender === 'ai' && !message.errorType && (
-          <div className="flex items-center gap-2 mb-2">
-            <Bot className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
-            {message.type && (
-              <Badge variant="outline" className="text-xs">
-                {message.type === 'info' ? 'Info' : message.type === 'suggestion' ? 'Suggestion' : 'Réponse'}
-              </Badge>
-            )}
-          </div>
-        )}
+      {/* Avatar */}
+      {message.sender === 'ai' && (
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-ocean-500 flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
+          <Bot className="w-4 h-4 text-white" />
+        </div>
+      )}
 
-        {message.errorType && (
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-destructive" />
-            <span className="text-xs font-semibold text-destructive">
-              {message.errorType === 'rate_limit' ? 'Service surchargé' : message.errorType === 'payment' ? 'Crédit insuffisant' : 'Erreur'}
-            </span>
-          </div>
-        )}
+      <div className="max-w-[78%] space-y-1">
+        <div
+          className={`px-4 py-3 rounded-2xl ${
+            message.errorType
+              ? 'bg-destructive/10 border border-destructive/20 text-foreground'
+              : message.sender === 'user'
+              ? 'bg-gradient-to-br from-emerald-500 to-ocean-500 text-white rounded-br-md shadow-md'
+              : 'bg-card text-card-foreground rounded-bl-md border border-border/50 shadow-sm'
+          }`}
+        >
+          {message.sender === 'ai' && !message.errorType && (
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
+              {message.type && message.type !== 'answer' && (
+                <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+                  {message.type === 'info' ? 'Info' : 'Suggestion'}
+                </Badge>
+              )}
+            </div>
+          )}
 
-        <div>{renderTextWithLinks(message.content, message.sender === 'user' && !message.errorType)}</div>
-        
-        {message.errorType && lastFailedMessage && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleRetry}
-            className="mt-2 gap-2 text-xs border-destructive/30 hover:bg-destructive/10"
-          >
-            <RefreshCw className="w-3 h-3" />
-            Réessayer
-          </Button>
-        )}
+          {message.errorType && (
+            <div className="flex items-center gap-2 mb-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+              <span className="text-xs font-semibold text-destructive">
+                {message.errorType === 'rate_limit' ? 'Service surchargé' : message.errorType === 'payment' ? 'Crédit insuffisant' : 'Erreur'}
+              </span>
+            </div>
+          )}
 
-        {message.links && message.links.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-3">
-            {message.links.map((link, idx) => (
-              <Button
-                key={idx}
-                size="sm"
-                variant="secondary"
-                onClick={() => handleLinkClick(link.url)}
-                className="gap-2"
-              >
-                {link.text}
-                <ExternalLink className="w-3 h-3" />
-              </Button>
-            ))}
-          </div>
-        )}
+          <div className="text-sm leading-relaxed">{renderTextWithLinks(message.content, message.sender === 'user' && !message.errorType)}</div>
+          
+          {message.errorType && lastFailedMessage && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRetry}
+              className="mt-2 gap-1.5 text-xs h-7 border-destructive/30 hover:bg-destructive/10"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Réessayer
+            </Button>
+          )}
 
-        <div className={`text-xs mt-2 ${message.sender === 'user' && !message.errorType ? 'text-white/70' : 'text-muted-foreground'}`}>
-          <Clock className="w-3 h-3 inline mr-1" />
+          {message.links && message.links.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2.5">
+              {message.links.map((link, idx) => (
+                <Button
+                  key={idx}
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handleLinkClick(link.url)}
+                  className="gap-1.5 h-7 text-xs"
+                >
+                  {link.text}
+                  <ExternalLink className="w-3 h-3" />
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className={`text-[10px] text-muted-foreground px-1 ${message.sender === 'user' ? 'text-right' : ''}`}>
+          <Clock className="w-2.5 h-2.5 inline mr-0.5" />
           {formatTime(message.timestamp)}
         </div>
       </div>
@@ -353,19 +361,19 @@ const AIAssistantSection = () => {
   );
 
   const renderLoading = () => (
-    <div className="flex justify-start">
-      <div className="bg-card border p-4 rounded-2xl max-w-[80%] shadow-sm">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-full flex items-center justify-center">
-            <Bot className="w-3 h-3 text-white" />
-          </div>
+    <div className="flex gap-2.5">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-ocean-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+        <Bot className="w-4 h-4 text-white" />
+      </div>
+      <div className="bg-card border border-border/50 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">
+        <div className="flex items-center gap-2 mb-1.5">
           <span className="text-xs font-semibold text-emerald-600">{aiName}</span>
-          <span className="text-xs text-muted-foreground">réfléchit...</span>
+          <span className="text-[10px] text-muted-foreground">réfléchit...</span>
         </div>
-        <div className="flex space-x-1">
+        <div className="flex space-x-1.5">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.15s'}}></div>
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay: '0.3s'}}></div>
         </div>
       </div>
     </div>
@@ -441,21 +449,25 @@ const AIAssistantSection = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Zone de chat */}
         <div className="lg:col-span-2" id="chat-section">
-          <Card className="h-[600px] flex flex-col bg-white shadow-2xl border-0 rounded-3xl overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white rounded-t-lg">
-              <CardTitle className="flex items-center gap-3 justify-between">
-                <div className="flex items-center gap-3">
-                  <Bot className="w-6 h-6" />
-                  {aiName}
-                  <Badge className="bg-white/20 text-white border-white/30">En ligne</Badge>
+          <Card className="h-[600px] flex flex-col shadow-xl border-0 rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white py-3 px-4">
+              <CardTitle className="flex items-center gap-3 justify-between text-base">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-semibold">{aiName}</span>
+                    <Badge className="ml-2 bg-white/20 text-white border-white/30 text-[10px] h-4">En ligne</Badge>
+                  </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setIsFullscreen(true)} className="text-white hover:bg-white/20">
-                  <ExternalLink className="w-5 h-5" />
+                <Button variant="ghost" size="icon" onClick={() => setIsFullscreen(true)} className="text-white/80 hover:text-white hover:bg-white/20 h-8 w-8">
+                  <ExternalLink className="w-4 h-4" />
                 </Button>
               </CardTitle>
             </CardHeader>
             
-            <CardContent className="flex-1 overflow-y-auto p-6 space-y-4">
+            <CardContent className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/20">
               {messages.map(renderMessage)}
               {isLoading && renderLoading()}
               <div ref={messagesEndRef} />
