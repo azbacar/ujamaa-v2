@@ -1,180 +1,534 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/components/LanguageProvider';
 import { useRole } from '@/hooks/useRole';
-import { Settings, User, Shield, Mail } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { 
+  Settings, User, Shield, Mail, Crown, Megaphone, 
+  BarChart3, Eye, FileText, Calendar, DollarSign,
+  LogOut, Key, Star, Activity, Clock, ChevronRight,
+  Edit3, Save, X, Utensils
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const ProfilePage = () => {
-  const { user } = useAuth();
-  const { role } = useRole();
+  const { user, signOut } = useAuth();
+  const { role, isAdmin, isModerator, isAnnonceur } = useRole();
+  const { currentLanguage, setLanguage } = useLanguage();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [username, setUsername] = useState('');
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [stats, setStats] = useState({ announcements: 0, events: 0, prices: 0, gastronomy: 0 });
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserData();
+    }
+  }, [user]);
+
+  const fetchUserData = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      // Fetch user profile
+      const { data: profile } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) {
+        setUserProfile(profile);
+        setUsername(profile.username);
+      }
+
+      // Fetch stats based on role
+      const [contentRes, eventsRes, pricesRes, gastronomyRes] = await Promise.all([
+        supabase.from('content_items').select('id', { count: 'exact', head: true }).eq('author_id', user.id),
+        supabase.from('events').select('id', { count: 'exact', head: true }).eq('author_id', user.id),
+        supabase.from('prices').select('id', { count: 'exact', head: true }).eq('author_id', user.id),
+        supabase.from('gastronomy_items').select('id', { count: 'exact', head: true }).eq('author_id', user.id),
+      ]);
+
+      setStats({
+        announcements: contentRes.count || 0,
+        events: eventsRes.count || 0,
+        prices: pricesRes.count || 0,
+        gastronomy: gastronomyRes.count || 0,
+      });
+
+      // Fetch recent activity (recent content + events by user)
+      const { data: recentContent } = await supabase
+        .from('content_items')
+        .select('id, title, type, status, created_at')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const { data: recentEvents } = await supabase
+        .from('events')
+        .select('id, title, status, created_at')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const combined = [
+        ...(recentContent || []).map(c => ({ ...c, source: 'content' })),
+        ...(recentEvents || []).map(e => ({ ...e, type: 'event', source: 'event' })),
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 8);
+
+      setRecentActivity(combined);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveUsername = async () => {
+    if (!user || !username.trim()) return;
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ username: username.trim() })
+        .eq('id', user.id);
+      if (error) throw error;
+      toast.success('Nom d\'utilisateur mis à jour');
+      setIsEditing(false);
+      fetchUserData();
+    } catch (error: any) {
+      toast.error('Erreur: ' + error.message);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-96">
-          <CardContent className="p-6 text-center">
-            <p>Vous devez être connecté pour accéder à cette page.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <>
+        <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <Card className="w-96">
+            <CardContent className="p-6 text-center space-y-4">
+              <User className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="text-muted-foreground">Vous devez être connecté pour accéder à cette page.</p>
+              <Button onClick={() => navigate('/auth')}>Se connecter</Button>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </>
     );
   }
 
-  const getRoleDisplayName = (userRole: string) => {
-    switch (userRole) {
+  const getRoleConfig = () => {
+    switch (role) {
       case 'admin':
-        return 'Administrateur';
+        return { label: 'Administrateur', icon: Shield, color: 'bg-red-500', badge: 'destructive' as const };
       case 'moderator':
-        return 'Modérateur';
-      case 'user':
+        return { label: 'Modérateur', icon: Eye, color: 'bg-blue-500', badge: 'secondary' as const };
+      case 'annonceur':
+        return { label: 'Annonceur', icon: Megaphone, color: 'bg-amber-500', badge: 'default' as const };
       default:
-        return 'Utilisateur';
+        return { label: 'Utilisateur', icon: User, color: 'bg-emerald-500', badge: 'outline' as const };
     }
   };
 
-  const getRoleBadgeVariant = (userRole: string) => {
-    switch (userRole) {
-      case 'admin':
-        return 'destructive';
-      case 'moderator':
-        return 'secondary';
-      default:
-        return 'outline';
+  const roleConfig = getRoleConfig();
+  const RoleIcon = roleConfig.icon;
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'published': return <Badge variant="default" className="text-xs">Publié</Badge>;
+      case 'draft': return <Badge variant="secondary" className="text-xs">Brouillon</Badge>;
+      case 'archived': return <Badge variant="outline" className="text-xs">Archivé</Badge>;
+      default: return <Badge variant="outline" className="text-xs">{status}</Badge>;
     }
+  };
+
+  const getTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      announcement: 'Annonce', event: 'Événement', service: 'Service', tender: 'Appel d\'offres'
+    };
+    return labels[type] || type;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mon Profil</h1>
-          <p className="text-gray-600">Gérez vos informations personnelles et préférences</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Informations principales */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Informations personnelles
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                    {user.email?.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold">{user.email}</h3>
-                    <Badge variant={getRoleBadgeVariant(role)}>
-                      {getRoleDisplayName(role)}
+    <>
+      <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 py-8">
+        <div className="container mx-auto px-4 max-w-5xl">
+          {/* Hero profile card */}
+          <Card className="mb-6 overflow-hidden">
+            <div className="h-24 bg-primary opacity-90" />
+            <CardContent className="relative px-6 pb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-10">
+                <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-bold text-3xl shadow-lg border-4 border-background">
+                  {userProfile?.username?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 pt-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-2xl font-bold text-foreground">{userProfile?.username || user.email?.split('@')[0]}</h1>
+                    <Badge variant={roleConfig.badge}>
+                      <RoleIcon className="h-3 w-3 mr-1" />
+                      {roleConfig.label}
                     </Badge>
+                    {userProfile?.account_type === 'pro' && (
+                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+                        <Crown className="h-3 w-3 mr-1" /> PRO
+                      </Badge>
+                    )}
                   </div>
+                  <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Membre depuis {new Date(user.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                  </p>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="email">Adresse email</Label>
-                    <Input
-                      id="email"
-                      value={user.email || ''}
-                      disabled
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="created">Membre depuis</Label>
-                    <Input
-                      id="created"
-                      value={new Date(user.created_at).toLocaleDateString('fr-FR')}
-                      disabled
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button 
-                    variant="outline"
-                    onClick={() => setIsEditing(!isEditing)}
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    {isEditing ? 'Annuler' : 'Modifier'}
+                <div className="flex gap-2">
+                  {(isAdmin() || isModerator()) && (
+                    <Button variant="outline" size="sm" onClick={() => navigate('/admin')}>
+                      <Shield className="h-4 w-4 mr-1" /> Admin
+                    </Button>
+                  )}
+                  <Button variant="destructive" size="sm" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-1" /> Déconnexion
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Informations du compte */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Statut du compte
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Rôle</span>
-                    <Badge variant={getRoleBadgeVariant(role)}>
-                      {getRoleDisplayName(role)}
+          {/* Stats cards */}
+          {(isAnnonceur() || isModerator() || isAdmin()) && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              {[
+                { label: 'Annonces', value: stats.announcements, icon: FileText, color: 'text-blue-500' },
+                { label: 'Événements', value: stats.events, icon: Calendar, color: 'text-emerald-500' },
+                { label: 'Prix soumis', value: stats.prices, icon: DollarSign, color: 'text-amber-500' },
+                { label: 'Gastronomie', value: stats.gastronomy, icon: Utensils, color: 'text-rose-500' },
+              ].map((stat) => (
+                <Card key={stat.label}>
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                    <div>
+                      <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                      <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Tabs */}
+          <Tabs defaultValue="info" className="space-y-4">
+            <TabsList className="w-full justify-start flex-wrap h-auto gap-1">
+              <TabsTrigger value="info"><User className="h-4 w-4 mr-1" /> Profil</TabsTrigger>
+              <TabsTrigger value="security"><Key className="h-4 w-4 mr-1" /> Sécurité</TabsTrigger>
+              {(isAnnonceur() || isModerator() || isAdmin()) && (
+                <TabsTrigger value="content"><FileText className="h-4 w-4 mr-1" /> Mes contenus</TabsTrigger>
+              )}
+              {(isModerator() || isAdmin()) && (
+                <TabsTrigger value="moderation"><Eye className="h-4 w-4 mr-1" /> Modération</TabsTrigger>
+              )}
+              {isAdmin() && (
+                <TabsTrigger value="admin"><Shield className="h-4 w-4 mr-1" /> Administration</TabsTrigger>
+              )}
+            </TabsList>
+
+            {/* Tab: Profil */}
+            <TabsContent value="info">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Informations personnelles</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label>Nom d'utilisateur</Label>
+                      <div className="flex gap-2 mt-1">
+                        <Input
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          disabled={!isEditing}
+                        />
+                        {isEditing ? (
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="default" onClick={handleSaveUsername}><Save className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => { setIsEditing(false); setUsername(userProfile?.username || ''); }}><X className="h-4 w-4" /></Button>
+                          </div>
+                        ) : (
+                          <Button size="icon" variant="outline" onClick={() => setIsEditing(true)}><Edit3 className="h-4 w-4" /></Button>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Email</Label>
+                      <Input value={user.email || ''} disabled className="mt-1" />
+                    </div>
+                    <div>
+                      <Label>Type de compte</Label>
+                      <div className="mt-1 flex items-center gap-2">
+                        <Badge variant={userProfile?.account_type === 'pro' ? 'default' : 'outline'}>
+                          {userProfile?.account_type === 'pro' ? '⭐ PRO' : 'Gratuit'}
+                        </Badge>
+                        {userProfile?.account_type !== 'pro' && (
+                          <Button variant="link" size="sm" className="text-amber-600" onClick={() => navigate('/pro')}>
+                            Passer à PRO <ChevronRight className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Statut du compte</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Rôle</span>
+                      <Badge variant={roleConfig.badge}><RoleIcon className="h-3 w-3 mr-1" />{roleConfig.label}</Badge>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Email vérifié</span>
+                      <Badge variant={user.email_confirmed_at ? 'default' : 'destructive'}>
+                        {user.email_confirmed_at ? '✓ Vérifié' : '✗ Non vérifié'}
+                      </Badge>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Dernière connexion</span>
+                      <span className="text-sm text-foreground">
+                        {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR') : '—'}
+                      </span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Inscrit le</span>
+                      <span className="text-sm text-foreground">
+                        {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Tab: Sécurité */}
+            <TabsContent value="security">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Sécurité & Confidentialité</CardTitle>
+                  <CardDescription>Gérez vos paramètres de sécurité</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-lg border">
+                    <div className="flex items-center gap-3">
+                      <Key className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium text-foreground">Mot de passe</p>
+                        <p className="text-sm text-muted-foreground">Modifiez votre mot de passe</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" onClick={() => navigate('/auth/forgot')}>Changer</Button>
+                  </div>
+                  <div className="flex items-center justify-between p-4 rounded-lg border">
+                    <div className="flex items-center gap-3">
+                      <Mail className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium text-foreground">Email</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                      </div>
+                    </div>
+                    <Badge variant={user.email_confirmed_at ? 'default' : 'destructive'}>
+                      {user.email_confirmed_at ? 'Vérifié' : 'Non vérifié'}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Email vérifié</span>
-                    <Badge variant={user.email_confirmed_at ? 'default' : 'outline'}>
-                      {user.email_confirmed_at ? 'Oui' : 'Non'}
-                    </Badge>
+                  <Separator />
+                  <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5">
+                    <p className="font-medium text-destructive mb-1">Zone dangereuse</p>
+                    <p className="text-sm text-muted-foreground mb-3">La déconnexion supprimera votre session locale.</p>
+                    <Button variant="destructive" size="sm" onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4 mr-1" /> Se déconnecter
+                    </Button>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Dernière connexion</span>
-                    <span className="text-sm">
-                      {user.last_sign_in_at 
-                        ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR')
-                        : 'Jamais'
-                      }
-                    </span>
-                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Tab: Mes contenus (annonceur+) */}
+            {(isAnnonceur() || isModerator() || isAdmin()) && (
+              <TabsContent value="content">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Activity className="h-5 w-5" /> Activité récente
+                    </CardTitle>
+                    <CardDescription>Vos dernières publications et soumissions</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {recentActivity.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <FileText className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                        <p>Aucune activité pour le moment</p>
+                        <p className="text-xs mt-1">Créez du contenu depuis la plateforme</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {recentActivity.map((item) => (
+                          <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="p-2 rounded-md bg-muted">
+                                {item.type === 'event' ? <Calendar className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-medium text-sm text-foreground truncate">{item.title}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-xs text-muted-foreground">{getTypeLabel(item.type)}</span>
+                                  <Clock className="h-3 w-3 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(item.created_at).toLocaleDateString('fr-FR')}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            {getStatusBadge(item.status)}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
+
+            {/* Tab: Modération (moderator+) */}
+            {(isModerator() || isAdmin()) && (
+              <TabsContent value="moderation">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Outils de modération</CardTitle>
+                      <CardDescription>Accès rapide aux fonctions de modération</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {[
+                        { label: 'Modifications en attente', icon: FileText, path: '/admin' },
+                        { label: 'Gestion des événements', icon: Calendar, path: '/admin' },
+                        { label: 'Gestion des prix', icon: DollarSign, path: '/admin' },
+                        { label: 'Gestion du contenu', icon: Eye, path: '/admin' },
+                      ].map((item) => (
+                        <Button
+                          key={item.label}
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => navigate(item.path)}
+                        >
+                          <item.icon className="h-4 w-4 mr-2" />
+                          {item.label}
+                          <ChevronRight className="h-4 w-4 ml-auto" />
+                        </Button>
+                      ))}
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Permissions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {[
+                        { label: 'Voir tous les contenus', granted: true },
+                        { label: 'Approuver les modifications', granted: true },
+                        { label: 'Gérer les événements', granted: true },
+                        { label: 'Gérer les utilisateurs', granted: isAdmin() },
+                        { label: 'Paramètres du site', granted: isAdmin() },
+                        { label: 'Supprimer le contenu', granted: isAdmin() },
+                      ].map((p) => (
+                        <div key={p.label} className="flex justify-between items-center py-1.5">
+                          <span className="text-sm text-foreground">{p.label}</span>
+                          <Badge variant={p.granted ? 'default' : 'outline'} className="text-xs">
+                            {p.granted ? '✓' : '✗'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
+              </TabsContent>
+            )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="h-5 w-5" />
-                  Actions rapides
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/auth/forgot'}>
-                  Changer le mot de passe
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => window.location.href = '/pro'}>
-                  🔥 Passer à UJAMAA Pro
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Préférences de notification
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  Historique d'activité
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+            {/* Tab: Administration (admin only) */}
+            {isAdmin() && (
+              <TabsContent value="admin">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Administration</CardTitle>
+                      <CardDescription>Accès complet au tableau de bord</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {[
+                        { label: 'Tableau de bord admin', icon: BarChart3 },
+                        { label: 'Gestion des utilisateurs', icon: User },
+                        { label: 'Paramètres du site', icon: Settings },
+                        { label: 'Analyse IA', icon: Star },
+                        { label: 'Sécurité', icon: Shield },
+                      ].map((item) => (
+                        <Button
+                          key={item.label}
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => navigate('/admin')}
+                        >
+                          <item.icon className="h-4 w-4 mr-2" />
+                          {item.label}
+                          <ChevronRight className="h-4 w-4 ml-auto" />
+                        </Button>
+                      ))}
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Accès super-admin</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Vous avez un accès complet à toutes les fonctionnalités de la plateforme.
+                      </p>
+                      <div className="p-3 rounded-lg bg-muted text-sm space-y-1">
+                        <p><strong>Rôle :</strong> Administrateur</p>
+                        <p><strong>Compte :</strong> {userProfile?.account_type === 'pro' ? 'PRO' : 'Standard'}</p>
+                        <p><strong>ID :</strong> <code className="text-xs">{user.id.slice(0, 12)}...</code></p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 };
 
