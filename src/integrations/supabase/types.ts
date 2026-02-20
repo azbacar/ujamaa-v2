@@ -746,6 +746,7 @@ export type Database = {
       users: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
+          avatar_url: string | null
           created_at: string
           email: string
           id: string
@@ -754,6 +755,7 @@ export type Database = {
         }
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
+          avatar_url?: string | null
           created_at?: string
           email: string
           id: string
@@ -762,6 +764,7 @@ export type Database = {
         }
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
+          avatar_url?: string | null
           created_at?: string
           email?: string
           id?: string

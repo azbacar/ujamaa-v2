@@ -12,7 +12,7 @@ import {
   Settings, User, Shield, Mail, Crown, Megaphone, 
   BarChart3, Eye, FileText, Calendar, DollarSign,
   LogOut, Key, Star, Activity, Clock, ChevronRight,
-  Edit3, Save, X, Utensils
+  Edit3, Save, X, Utensils, Camera, Loader2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -32,6 +32,7 @@ const ProfilePage = () => {
   const [stats, setStats] = useState({ announcements: 0, events: 0, prices: 0, gastronomy: 0 });
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -119,6 +120,48 @@ const ProfilePage = () => {
     navigate('/');
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    
+    if (!file.type.startsWith('image/')) {
+      toast.error('Veuillez sélectionner une image');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('L\'image ne doit pas dépasser 2 Mo');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const filePath = `${user.id}/avatar.${ext}`;
+
+      // Delete old avatar files
+      const { data: existingFiles } = await supabase.storage.from('avatars').list(user.id);
+      if (existingFiles?.length) {
+        await supabase.storage.from('avatars').remove(existingFiles.map(f => `${user.id}/${f.name}`));
+      }
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+
+      const { error: updateError } = await supabase.from('users').update({ avatar_url: avatarUrl }).eq('id', user.id);
+      if (updateError) throw updateError;
+
+      toast.success('Avatar mis à jour !');
+      fetchUserData();
+    } catch (error: any) {
+      toast.error('Erreur: ' + error.message);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   if (!user) {
     return (
       <>
@@ -179,8 +222,26 @@ const ProfilePage = () => {
             <div className="h-24 bg-primary opacity-90" />
             <CardContent className="relative px-6 pb-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-10">
-                <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-bold text-3xl shadow-lg border-4 border-background">
-                  {userProfile?.username?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                <div className="relative group">
+                  {userProfile?.avatar_url ? (
+                    <img 
+                      src={userProfile.avatar_url} 
+                      alt="Avatar" 
+                      className="w-20 h-20 rounded-2xl object-cover shadow-lg border-4 border-background"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-bold text-3xl shadow-lg border-4 border-background">
+                      {userProfile?.username?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <label className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center">
+                    {uploadingAvatar ? (
+                      <Loader2 className="h-6 w-6 text-white animate-spin" />
+                    ) : (
+                      <Camera className="h-6 w-6 text-white" />
+                    )}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                  </label>
                 </div>
                 <div className="flex-1 pt-2">
                   <div className="flex items-center gap-2 flex-wrap">
