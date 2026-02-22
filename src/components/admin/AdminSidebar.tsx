@@ -163,6 +163,14 @@ export default function AdminSidebar({
       description: 'Requêtes IA & tendances',
       available: isAdmin,
       category: 'monitoring'
+    },
+    {
+      id: 'static-pages',
+      title: 'Pages statiques',
+      icon: FileText,
+      description: 'Contact, À propos, CGU...',
+      available: isAdmin,
+      category: 'content'
     }
   ];
 

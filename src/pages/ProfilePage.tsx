@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AvatarCropDialog from '@/components/AvatarCropDialog';
 
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
@@ -33,6 +34,8 @@ const ProfilePage = () => {
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -120,7 +123,7 @@ const ProfilePage = () => {
     navigate('/');
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     
@@ -128,15 +131,24 @@ const ProfilePage = () => {
       toast.error('Veuillez sélectionner une image');
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('L\'image ne doit pas dépasser 2 Mo');
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('L\'image ne doit pas dépasser 5 Mo');
       return;
     }
 
+    const reader = new FileReader();
+    reader.onload = () => setCropImageSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+  };
+
+  const handleCroppedUpload = async (blob: Blob) => {
+    if (!user) return;
+    setCropImageSrc(null);
     setUploadingAvatar(true);
     try {
-      const ext = file.name.split('.').pop();
-      const filePath = `${user.id}/avatar.${ext}`;
+      const filePath = `${user.id}/avatar.jpg`;
 
       // Delete old avatar files
       const { data: existingFiles } = await supabase.storage.from('avatars').list(user.id);
@@ -144,7 +156,7 @@ const ProfilePage = () => {
         await supabase.storage.from('avatars').remove(existingFiles.map(f => `${user.id}/${f.name}`));
       }
 
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, blob, { upsert: true, contentType: 'image/jpeg' });
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
@@ -240,9 +252,17 @@ const ProfilePage = () => {
                     ) : (
                       <Camera className="h-6 w-6 text-white" />
                     )}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} disabled={uploadingAvatar} />
                   </label>
                 </div>
+                {cropImageSrc && (
+                  <AvatarCropDialog
+                    open={!!cropImageSrc}
+                    imageSrc={cropImageSrc}
+                    onClose={() => setCropImageSrc(null)}
+                    onCropComplete={handleCroppedUpload}
+                  />
+                )}
                 <div className="flex-1 pt-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h1 className="text-2xl font-bold text-foreground">{userProfile?.username || user.email?.split('@')[0]}</h1>
