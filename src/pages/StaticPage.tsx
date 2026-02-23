@@ -43,6 +43,7 @@ const StaticPage = () => {
 
   const formatInline = (text: string) => {
     return text
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:text-primary/80">$1</a>')
       .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground">$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>');
   };
