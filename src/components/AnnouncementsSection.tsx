@@ -96,18 +96,18 @@ const AnnouncementsSection = () => {
   }
 
   return (
-    <section className="space-y-8">
-      <div className="text-center space-y-4">
-        <h2 className="text-4xl md:text-5xl font-black gradient-text">
+    <section className="space-y-6 sm:space-y-8">
+      <div className="text-center space-y-3 sm:space-y-4">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black gradient-text">
           🤖 Annonces Alimentées par l'IA
         </h2>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto">
           UJAMAA IA analyse et organise automatiquement les dernières informations pour vous offrir 
           <span className="text-emerald-600 font-semibold"> les annonces les plus pertinentes</span> en temps réel.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {announcements.map((announcement) => (
           <Card key={announcement.id} className="feature-card card-hover group h-full">
             <CardContent className="p-6 h-full flex flex-col">

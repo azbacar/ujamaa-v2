@@ -105,10 +105,10 @@ const EventsPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
-      <main className="container mx-auto px-6 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold gradient-text mb-4">🎭 Événements</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-5xl font-bold gradient-text mb-3 sm:mb-4">🎭 Événements</h1>
+          <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto">
             Découvrez tous les événements culturels, sportifs et sociaux des Comores
           </p>
         </div>

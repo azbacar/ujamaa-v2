@@ -66,24 +66,15 @@ export default function AdminDashboard() {
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedRole, setSelectedRole] = useState('user');
 
-  // Empêche un "rechargement" ressenti (unmount/remount) au retour de focus
-  // quand Supabase rafraîchit silencieusement la session.
   const didInitialFetchRef = useRef(false);
   const lastUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (roleLoading) return;
-
-    if (!user || (!isAdmin() && !isModerator())) {
-      navigate('/');
-      return;
-    }
-
+    if (!user || (!isAdmin() && !isModerator())) { navigate('/'); return; }
     const userId = user.id;
     const shouldFetch = !didInitialFetchRef.current || lastUserIdRef.current !== userId;
-
     if (!shouldFetch) return;
-
     didInitialFetchRef.current = true;
     lastUserIdRef.current = userId;
     fetchData({ silent: false });
@@ -92,53 +83,23 @@ export default function AdminDashboard() {
   const fetchData = async ({ silent = true }: { silent?: boolean } = {}) => {
     try {
       if (!silent) setLoading(true);
-
-      // Fetch pending modifications
-      const { data: modsData } = await supabase
-        .from('pending_modifications')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const { data: modsData } = await supabase.from('pending_modifications').select('*').order('created_at', { ascending: false });
       setPendingMods(modsData || []);
-
-      // Fetch admin actions
       if (isAdmin()) {
-        const { data: actionsData } = await supabase
-          .from('admin_actions')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(10);
-
+        const { data: actionsData } = await supabase.from('admin_actions').select('*').order('created_at', { ascending: false }).limit(10);
         setAdminActions(actionsData || []);
-
-        // Fetch users with their roles
-        const { data: usersData, error: usersError } = await supabase
-          .from('users')
-          .select('id, email, username, created_at');
-
-        if (usersError) {
-          console.error('Error fetching users:', usersError);
-          setUsers([]);
-        } else {
-          // Fetch roles separately for each user
+        const { data: usersData, error: usersError } = await supabase.from('users').select('id, email, username, created_at');
+        if (usersError) { setUsers([]); } else {
           const usersWithRoles = await Promise.all(
             (usersData || []).map(async (user) => {
-              const { data: rolesData } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', user.id);
-
-              return {
-                ...user,
-                user_roles: rolesData || [],
-              };
+              const { data: rolesData } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
+              return { ...user, user_roles: rolesData || [] };
             })
           );
           setUsers(usersWithRoles);
         }
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
       toast.error('Erreur lors du chargement des données');
     } finally {
       if (!silent) setLoading(false);
@@ -147,34 +108,18 @@ export default function AdminDashboard() {
 
   const handleModificationReview = async (modId: string, action: 'approved' | 'rejected', notes?: string) => {
     if (!user) return;
-
     try {
-      const { error } = await supabase
-        .from('pending_modifications')
-        .update({
-          status: action,
-          reviewed_by: user.id,
-          reviewed_at: new Date().toISOString(),
-          review_notes: notes || null,
-        })
-        .eq('id', modId);
-
+      const { error } = await supabase.from('pending_modifications').update({
+        status: action, reviewed_by: user.id, reviewed_at: new Date().toISOString(), review_notes: notes || null,
+      }).eq('id', modId);
       if (error) throw error;
-
-      // Log admin action
       await supabase.rpc('log_admin_action', {
-        _action_type: 'modification_review',
-        _target_type: 'pending_modification',
-        _target_id: modId,
+        _action_type: 'modification_review', _target_type: 'pending_modification', _target_id: modId,
         _description: `Modification ${action} par ${user.email}`,
       });
-
       toast.success(`Modification ${action === 'approved' ? 'approuvée' : 'rejetée'}`);
       fetchData({ silent: true });
-    } catch (error) {
-      console.error('Error reviewing modification:', error);
-      toast.error('Erreur lors de la révision');
-    }
+    } catch (error) { toast.error('Erreur lors de la révision'); }
   };
 
   if (roleLoading) {
@@ -182,7 +127,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <div className="text-lg font-medium text-slate-700">Chargement de votre profil...</div>
+          <div className="text-lg font-medium text-slate-700">Chargement...</div>
         </div>
       </div>
     );
@@ -193,7 +138,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center space-y-4">
           <div className="text-xl font-semibold text-red-600">Accès non autorisé</div>
-          <p className="text-slate-600">Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+          <p className="text-slate-600">Vous n'avez pas les permissions nécessaires.</p>
         </div>
       </div>
     );
@@ -201,113 +146,34 @@ export default function AdminDashboard() {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'overview':
-        return <AdminOverview 
-          recentActions={adminActions.slice(0, 5)}
-        />;
-      
-      case 'ads':
-        return <AdsManagementSection />;
-      
-      case 'ad-stats':
-        return <AdStatisticsSection />;
-      
-      case 'stats':
-        return <AdminStats 
-          userCount={users.length}
-          pendingModifications={pendingMods.filter(m => m.status === 'pending').length}
-          approvedModifications={pendingMods.filter(m => m.status === 'approved').length}
-          rejectedModifications={pendingMods.filter(m => m.status === 'rejected').length}
-          adminActions={adminActions.length}
-        />;
-      
-      case 'homepage':
-        return <HomepageManagementSection />;
-      
-      case 'content':
-        return <ContentManagementSection />;
-      
-      case 'pending':
-        return <PendingModificationsSection 
-          modifications={pendingMods}
-          onReview={handleModificationReview}
-        />;
-      
-      case 'users':
-        return <UserManagementSection 
-          users={users}
-          selectedUser={selectedUser}
-          selectedRole={selectedRole}
-          onUserSelect={setSelectedUser}
-          onRoleSelect={setSelectedRole}
-          onRoleAssign={async () => {
-            if (!selectedUser || !selectedRole) {
-              toast.error('Veuillez sélectionner un utilisateur et un rôle');
-              return;
-            }
-
-            try {
-              const { error } = await supabase
-                .from('user_roles')
-                .upsert({
-                  user_id: selectedUser,
-                  role: selectedRole as 'user' | 'admin' | 'moderator' | 'annonceur',
-                  assigned_by: user.id,
-                });
-
-              if (error) throw error;
-
-              toast.success('Rôle assigné avec succès');
-              fetchData({ silent: true });
-              setSelectedUser('');
-              setSelectedRole('user');
-            } catch (error) {
-              console.error('Error assigning role:', error);
-              toast.error("Erreur lors de l'assignation du rôle");
-            }
-          }}
-        />;
-      
-      case 'media':
-        return <MediaManagementSection />;
-      
-      case 'site-control':
-        return <SystemControlSection />;
-      
-      case 'security':
-        return <SecuritySection />;
-      
-      case 'analytics':
-        return <AnalyticsSection />;
-      
-      case 'actions':
-        return <AdminActionsSection actions={adminActions} />;
-      
-      case 'prices':
-        return <PricesManagementSection />;
-      
-      case 'functions':
-        return <ConnectedFunctionsSection />;
-      
-      case 'events':
-        return <EventsManagementSection />;
-      
-      case 'ai-analytics':
-        return <AIAnalyticsSection />;
-      
-      case 'static-pages':
-        return <StaticPagesManagementSection />;
-      
-      case 'moderation':
-        return <ModerationQueueSection />;
-      
-      case 'ai-knowledge':
-        return <AIKnowledgeManagementSection />;
-      
-      default:
-        return <AdminOverview 
-          recentActions={adminActions.slice(0, 5)}
-        />;
+      case 'overview': return <AdminOverview recentActions={adminActions.slice(0, 5)} />;
+      case 'ads': return <AdsManagementSection />;
+      case 'ad-stats': return <AdStatisticsSection />;
+      case 'stats': return <AdminStats userCount={users.length} pendingModifications={pendingMods.filter(m => m.status === 'pending').length} approvedModifications={pendingMods.filter(m => m.status === 'approved').length} rejectedModifications={pendingMods.filter(m => m.status === 'rejected').length} adminActions={adminActions.length} />;
+      case 'homepage': return <HomepageManagementSection />;
+      case 'content': return <ContentManagementSection />;
+      case 'pending': return <PendingModificationsSection modifications={pendingMods} onReview={handleModificationReview} />;
+      case 'users': return <UserManagementSection users={users} selectedUser={selectedUser} selectedRole={selectedRole} onUserSelect={setSelectedUser} onRoleSelect={setSelectedRole} onRoleAssign={async () => {
+        if (!selectedUser || !selectedRole) { toast.error('Sélectionnez un utilisateur et un rôle'); return; }
+        try {
+          const { error } = await supabase.from('user_roles').upsert({ user_id: selectedUser, role: selectedRole as any, assigned_by: user.id });
+          if (error) throw error;
+          toast.success('Rôle assigné'); fetchData({ silent: true }); setSelectedUser(''); setSelectedRole('user');
+        } catch (error) { toast.error("Erreur lors de l'assignation"); }
+      }} />;
+      case 'media': return <MediaManagementSection />;
+      case 'site-control': return <SystemControlSection />;
+      case 'security': return <SecuritySection />;
+      case 'analytics': return <AnalyticsSection />;
+      case 'actions': return <AdminActionsSection actions={adminActions} />;
+      case 'prices': return <PricesManagementSection />;
+      case 'functions': return <ConnectedFunctionsSection />;
+      case 'events': return <EventsManagementSection />;
+      case 'ai-analytics': return <AIAnalyticsSection />;
+      case 'static-pages': return <StaticPagesManagementSection />;
+      case 'moderation': return <ModerationQueueSection />;
+      case 'ai-knowledge': return <AIKnowledgeManagementSection />;
+      default: return <AdminOverview recentActions={adminActions.slice(0, 5)} />;
     }
   };
 
@@ -317,10 +183,7 @@ export default function AdminDashboard() {
         <Header currentLanguage="fr" onLanguageChange={() => {}} />
         <main className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center py-12">
-            <div className="text-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <div className="text-lg font-medium text-slate-700">Chargement des données...</div>
-            </div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           </div>
         </main>
       </div>
@@ -331,7 +194,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-slate-50">
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
       
-      <div className="flex min-h-screen">
+      <div className="flex min-h-[calc(100vh-80px)]">
         <AdminSidebar 
           activeSection={activeSection}
           onSectionChange={setActiveSection}
@@ -340,21 +203,21 @@ export default function AdminDashboard() {
           userRole={role}
         />
         
-        <main className="flex-1 p-8">
-          <div className="max-w-7xl mx-auto space-y-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+          <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
             {/* Header */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-slate-900">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                     Tableau de bord {isAdmin() ? 'Administrateur' : 'Modérateur'}
                   </h1>
-                  <p className="text-slate-600 mt-2">
-                    Gérez votre site web et ses utilisateurs depuis cette interface
+                  <p className="text-slate-600 mt-1 sm:mt-2 text-sm sm:text-base">
+                    Gérez votre site et ses utilisateurs
                   </p>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <div className="text-right">
+                  <div className="text-right hidden sm:block">
                     <p className="text-sm font-medium text-slate-900">{user.email}</p>
                     <p className="text-xs text-slate-500 capitalize">{role}</p>
                   </div>

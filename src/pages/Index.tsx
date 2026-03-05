@@ -52,31 +52,24 @@ const Index = () => {
 
   const renderSection = (section: HomepageSection) => {
     if (!section.is_visible) return null;
-
-    // Ad sections
     if (section.section_key === 'ads_header') {
       return <div key={section.id} className="flex justify-center"><AdSpace size="banner" position="header" /></div>;
     }
     if (section.section_key === 'ads_content') {
       return <div key={section.id} className="my-8 flex justify-center"><AdSpace size="medium" position="content" /></div>;
     }
-    if (section.section_key === 'ads_sidebar' || section.section_key === 'ads_sidebar_2') {
-      return null; // rendered inside sidebar grid
-    }
+    if (section.section_key === 'ads_sidebar' || section.section_key === 'ads_sidebar_2') return null;
     if (section.section_key === 'statistics') {
       return user && (isAdmin() || isModerator()) ? <StatisticsCard key={section.id} /> : null;
     }
-
     const Component = SECTION_COMPONENTS[section.section_key];
     if (Component) return <Component key={section.id} />;
     return null;
   };
 
-  // Split sections into main flow and sidebar items
   const mainSections = sections.filter(s => 
     !['categories', 'quick_actions', 'ads_sidebar', 'statistics', 'ads_sidebar_2', 'ads_content'].includes(s.section_key)
   );
-  const sidebarVisible = sections.some(s => ['quick_actions', 'statistics'].includes(s.section_key) && s.is_visible);
   const categoriesSection = sections.find(s => s.section_key === 'categories');
   const adsContentSection = sections.find(s => s.section_key === 'ads_content');
   const quickActionsSection = sections.find(s => s.section_key === 'quick_actions');
@@ -89,13 +82,13 @@ const Index = () => {
     return (
       <div className="min-h-screen">
         <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
-        <main className="container mx-auto px-6 py-12 space-y-16">
+        <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10 sm:space-y-16">
           <LiveUrgentAlerts />
           <HeroSection />
           <div className="flex justify-center"><AdSpace size="banner" position="header" /></div>
           <IslandSelector />
           <AnnouncementsSection />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
             <div className="lg:col-span-2">
               <CategoriesSection />
               <div className="my-8 flex justify-center"><AdSpace size="medium" position="content" /></div>
@@ -117,10 +110,10 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
-      <main className="container mx-auto px-6 py-12 space-y-16">
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10 sm:space-y-16">
         {mainSections.map(s => renderSection(s))}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
           <div className="lg:col-span-2">
             {categoriesSection?.is_visible && <CategoriesSection />}
             {adsContentSection?.is_visible && (

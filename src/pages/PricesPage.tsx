@@ -145,13 +145,13 @@ const PricesPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50">
       <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
       
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* En-tête */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-black gradient-text mb-6">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black gradient-text mb-4 sm:mb-6">
             💰 Prix & Marchés des Comores
           </h1>
-          <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
             Consultez en temps réel les prix des produits dans tous les marchés des Comores. 
             <span className="text-emerald-600 font-semibold"> Filtrez par île, ville, vendeur ou catégorie</span> pour trouver les meilleures offres.
           </p>
