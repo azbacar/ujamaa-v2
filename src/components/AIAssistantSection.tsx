@@ -10,6 +10,7 @@ import { useLanguage } from '@/components/LanguageProvider';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 
 interface Link {
   url: string;
@@ -217,45 +218,88 @@ const AIAssistantSection = () => {
     }
   };
 
-  // Render message text with clickable links
-  const renderTextWithLinks = (text: string, isUserMsg: boolean) => {
-    const regex = /\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s<]+)/g;
-    const parts: Array<{ type: 'text' | 'link'; value: string; label?: string }> = [];
-    let lastIndex = 0;
-    let match: RegExpExecArray | null;
+  const INTERNAL_LABELS: Record<string, string> = {
+    '/prix': '💰 Prix et Marchés', '/evenements': '🎉 Événements', '/services': '🏛️ Services',
+    '/appels-offres': '📋 Appels d\'offres', '/annonces': '📢 Annonces', '/tourisme': '🏨 Tourisme'
+  };
 
-    while ((match = regex.exec(text)) !== null) {
-      if (match.index > lastIndex) parts.push({ type: 'text', value: text.slice(lastIndex, match.index) });
-      if (match[1] && match[2]) {
-        parts.push({ type: 'link', value: match[2], label: match[1] });
-      } else if (match[3]) {
-        parts.push({ type: 'link', value: match[3] });
-      }
-      lastIndex = regex.lastIndex;
+  const resolveInternalPath = (url: string): string | null => {
+    if (url.startsWith('/')) return url;
+    if (url.includes('ujamaan.com') || url.includes('ujamaa-v2.lovable.app')) {
+      try { return new URL(url).pathname; } catch { return null; }
     }
-    if (lastIndex < text.length) parts.push({ type: 'text', value: text.slice(lastIndex) });
+    return null;
+  };
+
+  // Render message with markdown formatting and deduplicated link buttons
+  const renderTextWithLinks = (text: string, isUserMsg: boolean) => {
+    if (isUserMsg) {
+      // Strip links from user messages
+      const clean = text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/https?:\/\/[^\s<]+/g, '').trim();
+      return <span className="whitespace-pre-line">{clean}</span>;
+    }
+
+    // Extract unique links
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s<]+)/g;
+    const seen = new Set<string>();
+    const uniqueLinks: Array<{ url: string; label: string }> = [];
+    let match: RegExpExecArray | null;
+    while ((match = linkRegex.exec(text)) !== null) {
+      const url = match[2] || match[3];
+      const path = resolveInternalPath(url);
+      const key = path || url;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueLinks.push({ url, label: match[1] || INTERNAL_LABELS[path || ''] || key.replace(/^\//, '').replace(/-/g, ' ') });
+      }
+    }
+
+    // Clean text: remove links, collapse whitespace
+    const cleanText = text
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/https?:\/\/[^\s<]+/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
 
     return (
-      <span className="whitespace-pre-line">
-        {parts.map((p, i) => {
-          if (p.type === 'text') return <span key={i}>{p.value}</span>;
-          return (
-            <button
-              key={i}
-              onClick={() => handleLinkClick(p.value)}
-              className={`inline-flex items-center gap-1 underline font-medium ${
-                isUserMsg ? 'text-white/90 hover:text-white' : 'text-emerald-600 hover:text-emerald-800'
-              }`}
-            >
-              {p.label || (() => {
-                const path = p.value.startsWith('/') ? p.value : (() => { try { return new URL(p.value).pathname; } catch { return p.value; } })();
-                const labels: Record<string, string> = { '/prix': '💰 Prix et Marchés', '/evenements': '🎉 Événements', '/services': '🏛️ Services', '/appels-offres': '📋 Appels d\'offres', '/annonces': '📢 Annonces', '/tourisme': '🏨 Tourisme' };
-                return labels[path] || path.replace(/^\//, '').replace(/-/g, ' ');
-              })()}
-            </button>
-          );
-        })}
-      </span>
+      <div className="space-y-2">
+        <div className="text-sm leading-relaxed">
+          <ReactMarkdown
+            components={{
+              p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
+              strong: ({ children }) => <span className="font-semibold">{children}</span>,
+              em: ({ children }) => <span className="italic">{children}</span>,
+              ul: ({ children }) => <ul className="list-disc list-inside space-y-0.5 my-1">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal list-inside space-y-0.5 my-1">{children}</ol>,
+              li: ({ children }) => <li className="text-sm">{children}</li>,
+              a: ({ href, children }) => (
+                <button onClick={() => href && handleLinkClick(href)} className="text-emerald-600 hover:text-emerald-800 font-medium hover:underline">
+                  {children}
+                </button>
+              ),
+              h1: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+              h2: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+              h3: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+            }}
+          >
+            {cleanText}
+          </ReactMarkdown>
+        </div>
+        {uniqueLinks.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {uniqueLinks.map((link, i) => (
+              <button
+                key={i}
+                onClick={() => handleLinkClick(link.url)}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 transition-colors"
+              >
+                {INTERNAL_LABELS[resolveInternalPath(link.url) || ''] || link.label}
+                <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -323,7 +367,7 @@ const AIAssistantSection = () => {
             </div>
           )}
 
-          <div className="text-sm leading-relaxed">{renderTextWithLinks(message.content, message.sender === 'user' && !message.errorType)}</div>
+          <div className="leading-relaxed">{renderTextWithLinks(message.content, message.sender === 'user' && !message.errorType)}</div>
           
           {message.errorType && lastFailedMessage && (
             <Button
@@ -335,23 +379,6 @@ const AIAssistantSection = () => {
               <RefreshCw className="w-3 h-3" />
               Réessayer
             </Button>
-          )}
-
-          {message.links && message.links.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2.5">
-              {message.links.map((link, idx) => (
-                <Button
-                  key={idx}
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleLinkClick(link.url)}
-                  className="gap-1.5 h-7 text-xs"
-                >
-                  {link.text}
-                  <ExternalLink className="w-3 h-3" />
-                </Button>
-              ))}
-            </div>
           )}
         </div>
 

@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatLink {
   url: string;
@@ -28,74 +29,113 @@ interface Message {
 
 const LOCAL_STORAGE_SESSION_KEY = 'floating_chat_session_id';
 
-// Render message text with clickable links (markdown + raw URLs)
+const INTERNAL_LINK_LABELS: Record<string, string> = {
+  '/prix': '💰 Prix et Marchés',
+  '/evenements': '🎉 Événements',
+  '/services': '🏛️ Services',
+  '/appels-offres': '📋 Appels d\'offres',
+  '/annonces': '📢 Annonces',
+  '/tourisme': '🏨 Tourisme',
+  '/auth': '🔐 Inscription',
+};
+
+const resolveInternalPath = (url: string): string | null => {
+  if (url.startsWith('/')) return url;
+  if (url.includes('ujamaan.com') || url.includes('ujamaa-v2.lovable.app')) {
+    try { return new URL(url).pathname; } catch { return null; }
+  }
+  return null;
+};
+
+// Render AI message with proper markdown formatting and clean link buttons
 const RenderMessageText = ({ text, isUser }: { text: string; isUser: boolean }) => {
   const navigate = useNavigate();
 
-  const parts = useMemo(() => {
-    const result: Array<{ type: 'text' | 'md_link' | 'url'; value: string; label?: string }> = [];
-    // Match markdown links [text](url) and raw URLs
-    const regex = /\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s<]+)/g;
-    let lastIndex = 0;
+  // Collect unique links from the text to render as buttons at the end
+  const uniqueLinks = useMemo(() => {
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s<]+)/g;
+    const seen = new Set<string>();
+    const links: Array<{ url: string; label: string }> = [];
     let match: RegExpExecArray | null;
+    while ((match = linkRegex.exec(text)) !== null) {
+      const url = match[2] || match[3];
+      const resolvedPath = resolveInternalPath(url);
+      const key = resolvedPath || url;
+      if (!seen.has(key)) {
+        seen.add(key);
+        const label = match[1] || INTERNAL_LINK_LABELS[resolvedPath || ''] || (resolvedPath ? resolvedPath.replace(/^\//, '').replace(/-/g, ' ') : url);
+        links.push({ url, label });
+      }
+    }
+    return links;
+  }, [text]);
 
-    while ((match = regex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        result.push({ type: 'text', value: text.slice(lastIndex, match.index) });
-      }
-      if (match[1] && match[2]) {
-        result.push({ type: 'md_link', value: match[2], label: match[1] });
-      } else if (match[3]) {
-        result.push({ type: 'url', value: match[3] });
-      }
-      lastIndex = regex.lastIndex;
-    }
-    if (lastIndex < text.length) {
-      result.push({ type: 'text', value: text.slice(lastIndex) });
-    }
-    return result;
+  // Strip markdown links and raw URLs from text for clean display
+  const cleanText = useMemo(() => {
+    return text
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](url) → text
+      .replace(/https?:\/\/[^\s<]+/g, '')        // remove raw URLs
+      .replace(/\n{3,}/g, '\n\n')                // collapse excessive newlines
+      .trim();
   }, [text]);
 
   const handleClick = (url: string) => {
-    // Internal links (/prix, /evenements, etc.)
-    if (url.startsWith('/')) {
-      navigate(url);
-    } else if (url.includes('ujamaan.com') || url.includes('ujamaa-v2.lovable.app')) {
-      try {
-        const path = new URL(url).pathname;
-        navigate(path);
-      } catch {
-        window.open(url, '_blank', 'noopener,noreferrer');
-      }
+    const path = resolveInternalPath(url);
+    if (path) {
+      navigate(path);
     } else {
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
 
+  if (isUser) {
+    return <p className="text-sm whitespace-pre-wrap leading-relaxed">{cleanText}</p>;
+  }
+
   return (
-    <p className="text-sm whitespace-pre-wrap leading-relaxed">
-      {parts.map((part, i) => {
-        if (part.type === 'text') return <span key={i}>{part.value}</span>;
-        return (
-          <button
-            key={i}
-            onClick={() => handleClick(part.value)}
-            className={`inline-flex items-center gap-1 underline font-medium transition-colors ${
-              isUser
-                ? 'text-white/90 hover:text-white'
-                : 'text-emerald-600 hover:text-emerald-800'
-            }`}
-          >
-            {part.label || (() => {
-              // For internal links, show a friendly label
-              const path = part.value.startsWith('/') ? part.value : (() => { try { return new URL(part.value).pathname; } catch { return part.value; } })();
-              const labels: Record<string, string> = { '/prix': '💰 Prix et Marchés', '/evenements': '🎉 Événements', '/services': '🏛️ Services', '/appels-offres': '📋 Appels d\'offres', '/annonces': '📢 Annonces', '/tourisme': '🏨 Tourisme', '/auth': '🔐 Inscription' };
-              return labels[path] || path.replace(/^\//, '').replace(/-/g, ' ');
-            })()}
-          </button>
-        );
-      })}
-    </p>
+    <div className="space-y-2">
+      <div className="text-sm leading-relaxed prose-chat">
+        <ReactMarkdown
+          components={{
+            p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
+            strong: ({ children }) => <span className="font-semibold">{children}</span>,
+            em: ({ children }) => <span className="italic">{children}</span>,
+            ul: ({ children }) => <ul className="list-disc list-inside space-y-0.5 my-1">{children}</ul>,
+            ol: ({ children }) => <ol className="list-decimal list-inside space-y-0.5 my-1">{children}</ol>,
+            li: ({ children }) => <li className="text-sm">{children}</li>,
+            a: ({ href, children }) => (
+              <button
+                onClick={() => href && handleClick(href)}
+                className="text-emerald-600 hover:text-emerald-800 font-medium underline-offset-2 hover:underline transition-colors"
+              >
+                {children}
+              </button>
+            ),
+            h1: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+            h2: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+            h3: ({ children }) => <p className="font-semibold text-sm mb-1">{children}</p>,
+          }}
+        >
+          {cleanText}
+        </ReactMarkdown>
+      </div>
+
+      {/* Deduplicated link buttons */}
+      {uniqueLinks.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {uniqueLinks.map((link, i) => (
+            <button
+              key={i}
+              onClick={() => handleClick(link.url)}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 transition-colors"
+            >
+              {INTERNAL_LINK_LABELS[resolveInternalPath(link.url) || ''] || link.label}
+              <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -487,28 +527,6 @@ const FloatingChatbox = () => {
                             <RefreshCw className="h-3 w-3" />
                             Réessayer
                           </Button>
-                        )}
-
-                        {message.links && message.links.length > 0 && (
-                          <div className="mt-2 space-y-1.5">
-                            {message.links.map((link, index) => (
-                              <button
-                                key={index}
-                                onClick={() => handleLinkClick(link.url)}
-                                className={`block w-full text-left px-2.5 py-2 rounded-lg text-[11px] transition-colors ${
-                                  message.isUser
-                                    ? 'bg-white/15 hover:bg-white/25 text-white'
-                                    : 'bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10'
-                                }`}
-                              >
-                                <div className="font-semibold flex items-center gap-1">
-                                  {link.title}
-                                  <ExternalLink className="h-2.5 w-2.5" />
-                                </div>
-                                <div className="opacity-70 mt-0.5">{link.description}</div>
-                              </button>
-                            ))}
-                          </div>
                         )}
                       </div>
                       <div className={`text-[10px] text-muted-foreground px-1 ${message.isUser ? 'text-right' : ''}`}>
