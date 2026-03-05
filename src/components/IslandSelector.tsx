@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/components/LanguageProvider';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Island {
   name: string;
@@ -13,14 +15,34 @@ interface Island {
   slug: string;
 }
 
+const DEFAULT_IMAGES: Record<string, string> = {
+  'grande-comore': 'https://images.unsplash.com/photo-1544966503-7fdb24ac2dca?auto=format&fit=crop&w=400&q=80',
+  'anjouan': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=400&q=80',
+  'moheli': 'https://images.unsplash.com/photo-1571041804726-53fb982d8c81?auto=format&fit=crop&w=400&q=80',
+  'mayotte': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80',
+};
+
 const IslandSelector = () => {
   const { t } = useLanguage();
+  const [customImages, setCustomImages] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const { data } = await supabase.from('site_settings').select('island_images').limit(1).maybeSingle();
+      if (data?.island_images && typeof data.island_images === 'object') {
+        setCustomImages(data.island_images as Record<string, string>);
+      }
+    };
+    fetchImages();
+  }, []);
+
+  const getImage = (slug: string) => customImages[slug] || DEFAULT_IMAGES[slug];
 
   const islands: Island[] = [
-    { name: t('island.grandeComore') || 'Grande Comore', nameLocal: 'Ngazidja', description: 'La plus grande île de l\'archipel, abritant la capitale Moroni et le volcan Karthala.', activeCount: 245, image: 'https://images.unsplash.com/photo-1544966503-7fdb24ac2dca?auto=format&fit=crop&w=400&q=80', gradient: 'from-emerald-500 to-teal-600', slug: 'grande-comore' },
-    { name: t('island.anjouan') || 'Anjouan', nameLocal: 'Ndzuwani', description: 'L\'île aux parfums, célèbre pour sa production d\'ylang-ylang et ses paysages montagneux.', activeCount: 186, image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=400&q=80', gradient: 'from-blue-500 to-indigo-600', slug: 'anjouan' },
-    { name: t('island.moheli') || 'Mohéli', nameLocal: 'Mwali', description: 'La plus petite île habitée, réputée pour son parc marin national et son écotourisme.', activeCount: 67, image: 'https://images.unsplash.com/photo-1571041804726-53fb982d8c81?auto=format&fit=crop&w=400&q=80', gradient: 'from-purple-500 to-pink-600', slug: 'moheli' },
-    { name: t('island.mayotte') || 'Mayotte', nameLocal: 'Maore', description: 'L\'île au lagon, quatrième île des Comores avec un magnifique lagon turquoise.', activeCount: 198, image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80', gradient: 'from-cyan-500 to-blue-600', slug: 'mayotte' }
+    { name: t('island.grandeComore') || 'Grande Comore', nameLocal: 'Ngazidja', description: 'La plus grande île de l\'archipel, abritant la capitale Moroni et le volcan Karthala.', activeCount: 245, image: getImage('grande-comore'), gradient: 'from-emerald-500 to-teal-600', slug: 'grande-comore' },
+    { name: t('island.anjouan') || 'Anjouan', nameLocal: 'Ndzuwani', description: 'L\'île aux parfums, célèbre pour sa production d\'ylang-ylang et ses paysages montagneux.', activeCount: 186, image: getImage('anjouan'), gradient: 'from-blue-500 to-indigo-600', slug: 'anjouan' },
+    { name: t('island.moheli') || 'Mohéli', nameLocal: 'Mwali', description: 'La plus petite île habitée, réputée pour son parc marin national et son écotourisme.', activeCount: 67, image: getImage('moheli'), gradient: 'from-purple-500 to-pink-600', slug: 'moheli' },
+    { name: t('island.mayotte') || 'Mayotte', nameLocal: 'Maore', description: 'L\'île au lagon, quatrième île des Comores avec un magnifique lagon turquoise.', activeCount: 198, image: getImage('mayotte'), gradient: 'from-cyan-500 to-blue-600', slug: 'mayotte' }
   ];
 
   return (

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Home, Edit3, Plus, Trash2, Eye, EyeOff, Settings, Image, Type, Link, BarChart3, Megaphone, Users, FileText, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Home, Edit3, Plus, Trash2, Eye, EyeOff, Settings, Image, Type, Link, BarChart3, Megaphone, Users, FileText, GripVertical, ArrowUp, ArrowDown, Upload, MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { HeroPreview } from './HeroPreview';
@@ -44,6 +44,136 @@ interface HomepageStats {
   todayViews: number;
   announcements: number;
 }
+
+// Island images manager sub-component
+const ISLANDS = [
+  { slug: 'grande-comore', name: 'Grande Comore', nameLocal: 'Ngazidja' },
+  { slug: 'anjouan', name: 'Anjouan', nameLocal: 'Ndzuwani' },
+  { slug: 'moheli', name: 'Mohéli', nameLocal: 'Mwali' },
+  { slug: 'mayotte', name: 'Mayotte', nameLocal: 'Maore' },
+];
+
+const IslandImagesManager = () => {
+  const [images, setImages] = useState<Record<string, string>>({});
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const { toast: toastFn } = useToast();
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase.from('site_settings').select('island_images').limit(1).maybeSingle();
+      if (data?.island_images && typeof data.island_images === 'object') {
+        setImages(data.island_images as Record<string, string>);
+      }
+    };
+    fetch();
+  }, []);
+
+  const handleUpload = async (slug: string, file: File) => {
+    if (!file) return;
+    setUploading(slug);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `${slug}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from('island-images').upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from('island-images').getPublicUrl(path);
+      const newImages = { ...images, [slug]: urlData.publicUrl };
+      setImages(newImages);
+      // Save immediately
+      const { error } = await supabase.from('site_settings').update({ island_images: newImages, updated_at: new Date().toISOString() }).neq('id', '');
+      if (error) throw error;
+      toastFn({ title: 'Image mise à jour', description: `Photo de ${ISLANDS.find(i => i.slug === slug)?.name} sauvegardée.` });
+    } catch (err: any) {
+      toastFn({ title: 'Erreur', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  const handleUrlChange = (slug: string, url: string) => {
+    setImages(prev => ({ ...prev, [slug]: url }));
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase.from('site_settings').update({ island_images: images, updated_at: new Date().toISOString() }).neq('id', '');
+      if (error) throw error;
+      toastFn({ title: 'Images sauvegardées', description: 'Toutes les photos des îles ont été mises à jour.' });
+    } catch {
+      toastFn({ title: 'Erreur', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-emerald-600" />
+          Photos des Îles
+        </CardTitle>
+        <CardDescription>Remplacez les photos qui représentent chaque île sur la page d'accueil</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {ISLANDS.map((island) => (
+            <div key={island.slug} className="border rounded-lg overflow-hidden">
+              <div className="relative h-40 bg-muted">
+                {images[island.slug] ? (
+                  <img src={images[island.slug]} alt={island.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    <Image className="h-8 w-8" />
+                  </div>
+                )}
+                {uploading === island.slug && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 text-white animate-spin" />
+                  </div>
+                )}
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold">{island.name}</h4>
+                    <p className="text-xs text-muted-foreground">{island.nameLocal}</p>
+                  </div>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleUpload(island.slug, file);
+                      }}
+                    />
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-emerald-50 text-emerald-700 rounded-md hover:bg-emerald-100 transition-colors">
+                      <Upload className="h-3.5 w-3.5" />
+                      Charger
+                    </div>
+                  </label>
+                </div>
+                <Input
+                  placeholder="Ou collez une URL d'image..."
+                  value={images[island.slug] || ''}
+                  onChange={(e) => handleUrlChange(island.slug, e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        <Button onClick={handleSaveAll} disabled={saving} className="w-full">
+          {saving ? 'Sauvegarde...' : 'Sauvegarder toutes les photos'}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
 
 // LayoutManager sub-component for the "Mise en Page" tab
 const LayoutManager = () => {
@@ -405,9 +535,10 @@ export const HomepageManagementSection = () => {
       </div>
 
       <Tabs defaultValue="hero" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-100 p-1 rounded-xl">
+        <TabsList className="grid w-full grid-cols-5 bg-slate-100 p-1 rounded-xl">
           <TabsTrigger value="hero" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Section Héro</TabsTrigger>
           <TabsTrigger value="categories" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Catégories</TabsTrigger>
+          <TabsTrigger value="islands" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Îles</TabsTrigger>
           <TabsTrigger value="layout" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Mise en Page</TabsTrigger>
           <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:shadow-sm">Paramètres</TabsTrigger>
         </TabsList>
@@ -607,6 +738,11 @@ export const HomepageManagementSection = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Photos des Îles */}
+        <TabsContent value="islands">
+          <IslandImagesManager />
         </TabsContent>
 
         {/* Mise en Page */}
