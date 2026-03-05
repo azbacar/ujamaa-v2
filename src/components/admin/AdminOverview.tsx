@@ -7,14 +7,12 @@ import {
   FileText, 
   Clock, 
   CheckCircle,
-  TrendingUp,
   Activity,
   Calendar,
   Bell,
   ChevronRight,
   User,
   Settings,
-  MousePointer,
   Eye,
   BarChart3
 } from 'lucide-react';
@@ -24,10 +22,12 @@ import { useRealTimeStats } from '@/hooks/useRealTimeStats';
 
 interface AdminOverviewProps {
   recentActions: any[];
+  onNavigate?: (section: string) => void;
 }
 
 export default function AdminOverview({ 
-  recentActions
+  recentActions,
+  onNavigate
 }: AdminOverviewProps) {
   const { 
     userCount, 
@@ -225,7 +225,11 @@ export default function AdminOverview({
               {quickActions.map((action, index) => {
                 const Icon = action.icon;
                 return (
-                  <div key={index} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
+                  <div 
+                    key={index} 
+                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer"
+                    onClick={() => onNavigate?.(action.action)}
+                  >
                     <div className="flex items-center space-x-4">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                         <Icon className="h-5 w-5 text-white" />

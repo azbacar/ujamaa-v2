@@ -165,9 +165,9 @@ const PricesManagementSection = () => {
     <div className="space-y-6 p-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-900">Gestion des Prix</h2>
-        <Button className="bg-emerald-600 hover:bg-emerald-700">
+        <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => window.open('/prix', '_blank')}>
           <Plus className="w-4 h-4 mr-2" />
-          Ajouter un prix
+          Voir la page des prix
         </Button>
       </div>
 

@@ -7,17 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
-  Upload, 
-  Image, 
-  FileText, 
-  Film,
-  Music,
-  Download,
-  Trash2,
-  Search,
-  FolderOpen,
-  Grid,
-  List
+  Upload, Image, FileText, Film, Music, Download, Trash2, Search, FolderOpen, Grid, List
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,8 +18,10 @@ interface MediaFile {
   size: number;
   url: string;
   created_at: string;
-  uploaded_by: string;
+  bucket: string;
 }
+
+const BUCKETS = ['event-images', 'avatars', 'Logo & icon'];
 
 export default function MediaManagementSection() {
   const { user } = useAuth();
@@ -38,23 +30,42 @@ export default function MediaManagementSection() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [selectedBucket, setSelectedBucket] = useState('event-images');
 
   useEffect(() => {
     fetchMediaFiles();
-  }, []);
+  }, [selectedBucket]);
 
   const fetchMediaFiles = async () => {
     try {
       setLoading(true);
-      // TODO: Implement Supabase Storage integration
-      // This section uses mock data because Supabase Storage buckets need to be configured
-      // To enable real media management:
-      // 1. Create storage buckets in Supabase
-      // 2. Set up RLS policies for the buckets
-      // 3. Replace this mock data with actual storage.from() calls
-      const mockFiles: MediaFile[] = [];
-      setMediaFiles(mockFiles);
+      const allFiles: MediaFile[] = [];
+
+      for (const bucket of BUCKETS) {
+        const { data, error } = await supabase.storage.from(bucket).list('', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+        if (error) {
+          console.error(`Error listing ${bucket}:`, error);
+          continue;
+        }
+        if (data) {
+          for (const file of data) {
+            if (file.id) {
+              const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.name);
+              allFiles.push({
+                id: file.id,
+                name: file.name,
+                type: file.metadata?.mimetype || 'application/octet-stream',
+                size: file.metadata?.size || 0,
+                url: urlData.publicUrl,
+                created_at: file.created_at || new Date().toISOString(),
+                bucket
+              });
+            }
+          }
+        }
+      }
+
+      setMediaFiles(allFiles);
     } catch (error) {
       console.error('Error fetching media files:', error);
       toast.error('Erreur lors du chargement des fichiers');
@@ -68,58 +79,38 @@ export default function MediaManagementSection() {
     if (!files || files.length === 0) return;
 
     try {
-      setUploadProgress(0);
+      setUploadProgress(10);
       for (const file of files) {
-        // Simulate upload progress
-        for (let i = 0; i <= 100; i += 10) {
-          setUploadProgress(i);
-          await new Promise(resolve => setTimeout(resolve, 100));
+        const filePath = `${Date.now()}-${file.name}`;
+        const { error } = await supabase.storage.from(selectedBucket).upload(filePath, file);
+        if (error) {
+          toast.error(`Erreur: ${error.message}`);
+          continue;
         }
-        
-        // Mock file addition
-        const newFile: MediaFile = {
-          id: Date.now().toString(),
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: URL.createObjectURL(file),
-          created_at: new Date().toISOString(),
-          uploaded_by: user?.id || ''
-        };
-        
-        setMediaFiles(prev => [newFile, ...prev]);
+        setUploadProgress(80);
       }
-      
+      setUploadProgress(100);
       toast.success(`${files.length} fichier(s) téléchargé(s) avec succès`);
+      await fetchMediaFiles();
       setUploadProgress(0);
     } catch (error) {
       console.error('Error uploading files:', error);
       toast.error('Erreur lors du téléchargement');
       setUploadProgress(0);
     }
+    // Reset input
+    event.target.value = '';
   };
 
-  const handleDelete = async (fileId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?')) return;
-    
+  const handleDelete = async (file: MediaFile) => {
+    if (!confirm(`Supprimer ${file.name} ?`)) return;
     try {
-      setMediaFiles(prev => prev.filter(file => file.id !== fileId));
+      const { error } = await supabase.storage.from(file.bucket).remove([file.name]);
+      if (error) throw error;
+      setMediaFiles(prev => prev.filter(f => f.id !== file.id));
       toast.success('Fichier supprimé');
     } catch (error) {
       console.error('Error deleting file:', error);
-      toast.error('Erreur lors de la suppression');
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedFiles.length === 0 || !confirm(`Supprimer ${selectedFiles.length} fichier(s) ?`)) return;
-    
-    try {
-      setMediaFiles(prev => prev.filter(file => !selectedFiles.includes(file.id)));
-      setSelectedFiles([]);
-      toast.success(`${selectedFiles.length} fichier(s) supprimé(s)`);
-    } catch (error) {
-      console.error('Error deleting files:', error);
       toast.error('Erreur lors de la suppression');
     }
   };
@@ -146,8 +137,7 @@ export default function MediaManagementSection() {
   const totalSize = mediaFiles.reduce((acc, file) => acc + file.size, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header with Stats */}
+    <div className="space-y-6 p-6">
       <Card className="border-blue-200 bg-white">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-blue-600 flex items-center gap-2">
@@ -164,17 +154,13 @@ export default function MediaManagementSection() {
             </div>
             <div className="text-center p-4 border border-green-200 rounded-lg bg-green-50">
               <Image className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">
-                {mediaFiles.filter(f => f.type.startsWith('image/')).length}
-              </div>
+              <div className="text-2xl font-bold">{mediaFiles.filter(f => f.type.startsWith('image/')).length}</div>
               <div className="text-sm text-slate-600">Images</div>
             </div>
             <div className="text-center p-4 border border-purple-200 rounded-lg bg-purple-50">
-              <Film className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">
-                {mediaFiles.filter(f => f.type.startsWith('video/')).length}
-              </div>
-              <div className="text-sm text-slate-600">Vidéos</div>
+              <FolderOpen className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+              <div className="text-2xl font-bold">{BUCKETS.length}</div>
+              <div className="text-sm text-slate-600">Buckets</div>
             </div>
             <div className="text-center p-4 border border-orange-200 rounded-lg bg-orange-50">
               <FileText className="h-8 w-8 text-orange-600 mx-auto mb-2" />
@@ -195,32 +181,29 @@ export default function MediaManagementSection() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              {BUCKETS.map(bucket => (
+                <Button
+                  key={bucket}
+                  variant={selectedBucket === bucket ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedBucket(bucket)}
+                >
+                  {bucket}
+                </Button>
+              ))}
+            </div>
             <div className="border-2 border-dashed border-blue-200 rounded-lg p-8 text-center">
               <Upload className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-              <div className="space-y-2">
-                <Label htmlFor="file-upload" className="text-lg font-medium cursor-pointer text-blue-600 hover:text-blue-700">
-                  Cliquez pour télécharger ou glissez-déposez
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  PNG, JPG, PDF, MP4 jusqu'à 10MB
-                </p>
-              </div>
-              <Input
-                id="file-upload"
-                type="file"
-                multiple
-                className="hidden"
-                onChange={handleFileUpload}
-                accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
-              />
+              <Label htmlFor="file-upload" className="text-lg font-medium cursor-pointer text-blue-600 hover:text-blue-700">
+                Cliquez pour télécharger dans "{selectedBucket}"
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">PNG, JPG, PDF, MP4 jusqu'à 10MB</p>
+              <Input id="file-upload" type="file" multiple className="hidden" onChange={handleFileUpload} accept="image/*,video/*,audio/*,.pdf,.doc,.docx" />
             </div>
-            
             {uploadProgress > 0 && (
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
+                <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
               </div>
             )}
           </div>
@@ -231,45 +214,13 @@ export default function MediaManagementSection() {
       <Card className="border-blue-200 bg-white">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Rechercher des fichiers..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
-              </div>
-              
-              {selectedFiles.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                  className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Supprimer ({selectedFiles.length})
-                </Button>
-              )}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input placeholder="Rechercher des fichiers..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
-            
             <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
+              <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('grid')}><Grid className="h-4 w-4" /></Button>
+              <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="sm" onClick={() => setViewMode('list')}><List className="h-4 w-4" /></Button>
             </div>
           </div>
         </CardContent>
@@ -289,40 +240,17 @@ export default function MediaManagementSection() {
               <p className="text-muted-foreground">Aucun fichier trouvé</p>
             </div>
           ) : (
-            <div className={viewMode === 'grid' ? 
-              'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' : 
-              'space-y-2'
-            }>
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' : 'space-y-2'}>
               {filteredFiles.map((file) => (
-                <div
-                  key={file.id}
-                  className={`border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors ${
-                    selectedFiles.includes(file.id) ? 'bg-blue-100 border-blue-400' : 'bg-white'
-                  } ${viewMode === 'list' ? 'flex items-center gap-4' : ''}`}
-                >
+                <div key={file.id} className={`border border-blue-200 rounded-lg p-4 hover:bg-blue-50 transition-colors bg-white ${viewMode === 'list' ? 'flex items-center gap-4' : ''}`}>
                   <div className="flex items-center gap-3 mb-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedFiles.includes(file.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedFiles(prev => [...prev, file.id]);
-                        } else {
-                          setSelectedFiles(prev => prev.filter(id => id !== file.id));
-                        }
-                      }}
-                      className="rounded border-gray-300"
-                    />
                     {getFileIcon(file.type)}
+                    <Badge variant="outline" className="text-xs">{file.bucket}</Badge>
                   </div>
                   
                   {file.type.startsWith('image/') && viewMode === 'grid' && (
                     <div className="aspect-square mb-3 rounded-lg overflow-hidden">
-                      <img 
-                        src={file.url} 
-                        alt={file.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={file.url} alt={file.name} className="w-full h-full object-cover" />
                     </div>
                   )}
                   
@@ -335,15 +263,10 @@ export default function MediaManagementSection() {
                   </div>
                   
                   <div className={`flex gap-2 ${viewMode === 'list' ? '' : 'mt-3'}`}>
-                    <Button size="sm" variant="outline" className="p-2">
-                      <Download className="h-3 w-3" />
+                    <Button size="sm" variant="outline" className="p-2" asChild>
+                      <a href={file.url} target="_blank" rel="noopener noreferrer"><Download className="h-3 w-3" /></a>
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="p-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                      onClick={() => handleDelete(file.id)}
-                    >
+                    <Button size="sm" variant="outline" className="p-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white" onClick={() => handleDelete(file)}>
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>

@@ -147,7 +147,7 @@ export default function AdminDashboard() {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'overview': return <AdminOverview recentActions={adminActions.slice(0, 5)} />;
+      case 'overview': return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
       case 'ads': return <AdsManagementSection />;
       case 'ad-stats': return <AdStatisticsSection />;
       case 'stats': return <AdminStats userCount={users.length} pendingModifications={pendingMods.filter(m => m.status === 'pending').length} approvedModifications={pendingMods.filter(m => m.status === 'approved').length} rejectedModifications={pendingMods.filter(m => m.status === 'rejected').length} adminActions={adminActions.length} />;
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
       case 'moderation': return <ModerationQueueSection />;
       case 'ai-knowledge': return <AIKnowledgeManagementSection />;
       case 'seo': return <SEOManagementSection />;
-      default: return <AdminOverview recentActions={adminActions.slice(0, 5)} />;
+      default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
 

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { X, Plus, DollarSign, MapPin, User, Package, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PriceSubmissionFormProps {
   onClose: () => void;
@@ -16,31 +18,23 @@ interface PriceSubmissionFormProps {
 const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const [formData, setFormData] = useState({
-    // Produit
     productName: '',
     category: '',
     unit: '',
     description: '',
-    
-    // Prix et localisation
     price: '',
     currency: 'FC',
     vendorName: '',
     shopName: '',
-    
-    // Localisation
     village: '',
     city: '',
     island: '',
     market: '',
-    
-    // Contact
     phone: '',
     email: '',
-    
-    // Images (simulation)
     hasImage: false
   });
 
@@ -51,7 +45,6 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
   ];
 
   const islands = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
-
   const units = ['kg', 'litre', 'pièce', 'régime', 'boîte', 'sac', 'paquet', 'gramme'];
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -60,24 +53,60 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour soumettre un prix.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
-    // Simulation d'envoi à la base de données
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast({
-      title: "✅ Prix ajouté avec succès!",
-      description: `${formData.productName} a été ajouté aux prix de ${formData.market}. Il sera visible après modération.`,
-    });
-    
-    setIsSubmitting(false);
-    onClose();
+    try {
+      const { error } = await supabase.from('prices').insert({
+        product: formData.productName,
+        category: formData.category,
+        price: parseFloat(formData.price),
+        currency: formData.currency,
+        unit: formData.unit,
+        vendor: formData.vendorName,
+        market: formData.market || formData.shopName || 'Non spécifié',
+        village: formData.village,
+        city: formData.city,
+        island: formData.island,
+        region: null,
+        author_id: user.id,
+        status: 'published',
+        trend: 'stable'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Prix ajouté avec succès!",
+        description: `${formData.productName} a été ajouté aux prix de ${formData.market || formData.city}.`,
+      });
+      
+      onClose();
+    } catch (error: any) {
+      console.error('Error submitting price:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'ajouter le prix. Réessayez.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid = () => {
     return formData.productName && formData.category && formData.price && 
-           formData.vendorName && formData.village && formData.city && 
-           formData.island && formData.unit;
+           formData.vendorName && formData.city && 
+           formData.island && formData.unit && formData.market;
   };
 
   return (
@@ -113,75 +142,26 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="productName">Nom du produit *</Label>
-                  <Input
-                    id="productName"
-                    value={formData.productName}
-                    onChange={(e) => handleInputChange('productName', e.target.value)}
-                    placeholder="Ex: Riz blanc importé, Bananes locales..."
-                    className="mt-1"
-                    required
-                  />
+                  <Input id="productName" value={formData.productName} onChange={(e) => handleInputChange('productName', e.target.value)} placeholder="Ex: Riz blanc importé" className="mt-1" required />
                 </div>
-                
                 <div>
                   <Label htmlFor="category">Catégorie *</Label>
                   <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Sélectionnez..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                    <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                
                 <div>
                   <Label htmlFor="unit">Unité de mesure *</Label>
                   <Select value={formData.unit} onValueChange={(value) => handleInputChange('unit', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Sélectionnez..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {units.map(unit => (
-                        <SelectItem key={unit} value={unit}>
-                          {unit}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                    <SelectContent>{units.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                
                 <div>
-                  <Label htmlFor="price" className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    Prix (FC) *
-                  </Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => handleInputChange('price', e.target.value)}
-                    placeholder="1500"
-                    className="mt-1"
-                    required
-                  />
+                  <Label htmlFor="price" className="flex items-center gap-2"><DollarSign className="w-4 h-4" /> Prix (FC) *</Label>
+                  <Input id="price" type="number" value={formData.price} onChange={(e) => handleInputChange('price', e.target.value)} placeholder="1500" className="mt-1" required />
                 </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="description">Description (optionnel)</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="Qualité, origine, informations supplémentaires..."
-                  className="mt-1"
-                  rows={2}
-                />
               </div>
             </div>
 
@@ -191,52 +171,14 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
                 <User className="w-5 h-5" />
                 Informations vendeur
               </h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="vendorName">Nom du vendeur *</Label>
-                  <Input
-                    id="vendorName"
-                    value={formData.vendorName}
-                    onChange={(e) => handleInputChange('vendorName', e.target.value)}
-                    placeholder="Mama Hadija, Ahmed Soilihi..."
-                    className="mt-1"
-                    required
-                  />
+                  <Input id="vendorName" value={formData.vendorName} onChange={(e) => handleInputChange('vendorName', e.target.value)} placeholder="Mama Hadija, Ahmed Soilihi..." className="mt-1" required />
                 </div>
-                
                 <div>
-                  <Label htmlFor="shopName">Nom du magasin/stand</Label>
-                  <Input
-                    id="shopName"
-                    value={formData.shopName}
-                    onChange={(e) => handleInputChange('shopName', e.target.value)}
-                    placeholder="Épicerie Centrale, Stand 15..."
-                    className="mt-1"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="phone">Téléphone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    placeholder="+269 XXX XX XX"
-                    className="mt-1"
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="contact@exemple.com"
-                    className="mt-1"
-                  />
+                  <Label htmlFor="market">Marché/Lieu de vente *</Label>
+                  <Input id="market" value={formData.market} onChange={(e) => handleInputChange('market', e.target.value)} placeholder="Marché Central, Port de pêche..." className="mt-1" required />
                 </div>
               </div>
             </div>
@@ -247,112 +189,40 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
                 <MapPin className="w-5 h-5" />
                 Localisation
               </h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="island">Île *</Label>
                   <Select value={formData.island} onValueChange={(value) => handleInputChange('island', value)}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Sélectionnez..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {islands.map(island => (
-                        <SelectItem key={island} value={island}>
-                          {island}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
+                    <SelectContent>{islands.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                
                 <div>
                   <Label htmlFor="city">Ville *</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    placeholder="Moroni, Mutsamudu, Fomboni..."
-                    className="mt-1"
-                    required
-                  />
+                  <Input id="city" value={formData.city} onChange={(e) => handleInputChange('city', e.target.value)} placeholder="Moroni, Mutsamudu..." className="mt-1" required />
                 </div>
-                
                 <div>
-                  <Label htmlFor="village">Village/Quartier *</Label>
-                  <Input
-                    id="village"
-                    value={formData.village}
-                    onChange={(e) => handleInputChange('village', e.target.value)}
-                    placeholder="Volo-Volo, Bangoi-Madjou..."
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="market">Marché/Lieu de vente</Label>
-                  <Input
-                    id="market"
-                    value={formData.market}
-                    onChange={(e) => handleInputChange('market', e.target.value)}
-                    placeholder="Marché Central, Port de pêche..."
-                    className="mt-1"
-                  />
+                  <Label htmlFor="village">Village/Quartier</Label>
+                  <Input id="village" value={formData.village} onChange={(e) => handleInputChange('village', e.target.value)} placeholder="Volo-Volo, Bangoi..." className="mt-1" />
                 </div>
               </div>
             </div>
 
-            {/* Photo du produit */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg flex items-center gap-2 text-emerald-700">
-                <Camera className="w-5 h-5" />
-                Photo du produit (optionnel)
-              </h3>
-              
-              <div className="border-2 border-dashed border-emerald-300 rounded-lg p-6 text-center bg-emerald-50/50">
-                <Camera className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                <p className="text-sm text-gray-600 mb-2">
-                  Ajoutez une photo pour attirer plus d'acheteurs
-                </p>
-                <Button type="button" variant="outline" className="border-emerald-300 text-emerald-700">
-                  Choisir une photo
-                </Button>
-              </div>
-            </div>
-
-            {/* Informations légales */}
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-sm text-gray-700">
-                ℹ️ <strong>Information :</strong> Votre prix sera vérifié par notre équipe avant publication. 
-                Les fausses informations peuvent entraîner la suspension du compte.
+                ℹ️ <strong>Information :</strong> Votre prix sera visible immédiatement. Les informations frauduleuses entraîneront la suspension du compte.
               </p>
             </div>
 
-            {/* Boutons d'action */}
             <div className="flex gap-4 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-              
-              <Button
-                type="submit"
-                disabled={!isFormValid() || isSubmitting}
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-ocean-500"
-              >
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting} className="flex-1">Annuler</Button>
+              <Button type="submit" disabled={!isFormValid() || isSubmitting} className="flex-1 bg-gradient-to-r from-emerald-500 to-ocean-500">
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
                     Envoi...
                   </div>
-                ) : (
-                  '✨ Publier le prix'
-                )}
+                ) : '✨ Publier le prix'}
               </Button>
             </div>
           </form>

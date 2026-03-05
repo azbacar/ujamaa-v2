@@ -58,16 +58,19 @@ export default function ContentManagementSection() {
     fetchContentItems();
   }, []);
 
+  const [eventsCount, setEventsCount] = useState(0);
+
   const fetchContentItems = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('content_items')
-        .select('*')
-        .order('published_at', { ascending: false });
+      const [contentResult, eventsResult] = await Promise.all([
+        supabase.from('content_items').select('*').order('published_at', { ascending: false }),
+        supabase.from('events').select('*', { count: 'exact', head: true })
+      ]);
 
-      if (error) throw error;
-      setContentItems(data || []);
+      if (contentResult.error) throw contentResult.error;
+      setContentItems(contentResult.data || []);
+      setEventsCount(eventsResult.count || 0);
     } catch (error) {
       console.error('Error fetching content:', error);
       toast.error('Erreur lors du chargement du contenu');
@@ -196,8 +199,8 @@ export default function ContentManagementSection() {
             </div>
             <div className="text-center p-4 border border-green-200 rounded-lg bg-green-50">
               <Calendar className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{contentItems.filter(item => item.type === 'event').length}</div>
-              <div className="text-sm text-slate-600">Événements</div>
+              <div className="text-2xl font-bold">{eventsCount}</div>
+              <div className="text-sm text-slate-600">Événements (table dédiée)</div>
             </div>
             <div className="text-center p-4 border border-purple-200 rounded-lg bg-purple-50">
               <Briefcase className="h-8 w-8 text-purple-600 mx-auto mb-2" />
