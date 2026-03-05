@@ -11,6 +11,12 @@ interface SiteSettings {
   ai_assistant_enabled: boolean;
   ai_assistant_name: string;
   ai_assistant_welcome_message: string;
+  og_title?: string;
+  og_description?: string;
+  og_image_url?: string;
+  twitter_card?: string;
+  twitter_site?: string;
+  seo_keywords?: string;
 }
 
 export const useSiteSettings = () => {
@@ -45,7 +51,7 @@ export const useSiteSettings = () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('site_name, site_logo_url, site_favicon_url, hero_title, hero_subtitle, hero_image_url, ai_assistant_enabled, ai_assistant_name, ai_assistant_welcome_message')
+        .select('site_name, site_logo_url, site_favicon_url, hero_title, hero_subtitle, hero_image_url, ai_assistant_enabled, ai_assistant_name, ai_assistant_welcome_message, og_title, og_description, og_image_url, twitter_card, twitter_site, seo_keywords')
         .single();
 
       if (error && error.code !== 'PGRST116') {
