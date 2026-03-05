@@ -23,6 +23,93 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AvatarCropDialog from '@/components/AvatarCropDialog';
 
+const PasswordChangeSection = () => {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Les mots de passe ne correspondent pas');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success('Mot de passe mis à jour avec succès !');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowForm(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors du changement de mot de passe');
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  return (
+    <div className="p-4 rounded-lg border space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Key className="h-5 w-5 text-muted-foreground" />
+          <div>
+            <p className="font-medium text-foreground">Mot de passe</p>
+            <p className="text-sm text-muted-foreground">Modifiez votre mot de passe directement</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'Annuler' : 'Modifier'}
+        </Button>
+      </div>
+      {showForm && (
+        <div className="space-y-3 pt-2 border-t">
+          <div>
+            <Label htmlFor="new-password">Nouveau mot de passe</Label>
+            <Input
+              id="new-password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Minimum 6 caractères"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+            <Input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Retapez le mot de passe"
+              className="mt-1"
+            />
+          </div>
+          <Button
+            onClick={handleChangePassword}
+            disabled={changingPassword || !newPassword || !confirmPassword}
+            className="w-full"
+          >
+            {changingPassword ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Modification...</>
+            ) : (
+              <><Save className="h-4 w-4 mr-2" /> Enregistrer le nouveau mot de passe</>
+            )}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
   const { role, isAdmin, isModerator, isAnnonceur } = useRole();
@@ -443,16 +530,8 @@ const ProfilePage = () => {
                   <CardDescription>Gérez vos paramètres de sécurité</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <Key className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium text-foreground">Mot de passe</p>
-                        <p className="text-sm text-muted-foreground">Modifiez votre mot de passe</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" onClick={() => navigate('/auth/forgot')}>Changer</Button>
-                  </div>
+                  {/* Password change inline */}
+                  <PasswordChangeSection />
                   <div className="flex items-center justify-between p-4 rounded-lg border">
                     <div className="flex items-center gap-3">
                       <Mail className="h-5 w-5 text-muted-foreground" />

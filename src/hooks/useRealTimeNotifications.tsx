@@ -18,53 +18,87 @@ export const useRealTimeNotifications = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      setNotifications([]);
-      setLoading(false);
-      return;
-    }
-
     fetchNotifications();
 
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('notifications_changes')
+    // Subscribe to real-time updates for notifications
+    const channels: any[] = [];
+    
+    if (user) {
+      const notifChannel = supabase
+        .channel('notifications_changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+          () => fetchNotifications()
+        )
+        .subscribe();
+      channels.push(notifChannel);
+    }
+
+    // Subscribe to global announcements (for all users)
+    const globalChannel = supabase
+      .channel('global_announcements_changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        { event: '*', schema: 'public', table: 'global_announcements' },
         () => fetchNotifications()
       )
       .subscribe();
+    channels.push(globalChannel);
 
     return () => {
-      supabase.removeChannel(channel);
+      channels.forEach(ch => supabase.removeChannel(ch));
     };
   }, [user]);
 
   const fetchNotifications = async () => {
-    if (!user) return;
-    
     try {
-      const { data, error } = await supabase
-        .from('notifications')
+      const results: Notification[] = [];
+
+      // Fetch global announcements (available to everyone)
+      const { data: globalData } = await supabase
+        .from('global_announcements')
         .select('*')
-        .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(20);
 
-      if (error) throw error;
+      if (globalData) {
+        results.push(...globalData.map(g => ({
+          id: `global-${g.id}`,
+          title: g.title,
+          message: g.content,
+          type: (g.type === 'urgent' ? 'error' : g.type === 'warning' ? 'warning' : g.type === 'maintenance' ? 'warning' : 'info') as Notification['type'],
+          timestamp: new Date(g.created_at),
+          read: false,
+          link: undefined,
+        })));
+      }
 
-      setNotifications(
-        (data || []).map(n => ({
-          id: n.id,
-          title: n.title,
-          message: n.message,
-          type: n.type as 'info' | 'warning' | 'success' | 'error',
-          timestamp: new Date(n.created_at),
-          read: n.read,
-          link: n.link
-        }))
-      );
+      // Fetch user-specific notifications if logged in
+      if (user) {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .or(`user_id.eq.${user.id},user_id.is.null`)
+          .order('created_at', { ascending: false })
+          .limit(30);
+
+        if (!error && data) {
+          results.push(...data.map(n => ({
+            id: n.id,
+            title: n.title,
+            message: n.message,
+            type: n.type as Notification['type'],
+            timestamp: new Date(n.created_at),
+            read: n.read ?? false,
+            link: n.link ?? undefined,
+          })));
+        }
+      }
+
+      // Sort by timestamp desc and deduplicate
+      results.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      setNotifications(results);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -73,6 +107,11 @@ export const useRealTimeNotifications = () => {
   };
 
   const markAsRead = async (id: string) => {
+    // Global announcements can't be marked as read in DB
+    if (id.startsWith('global-')) {
+      setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
+      return;
+    }
     try {
       const { error } = await supabase
         .from('notifications')
@@ -90,6 +129,11 @@ export const useRealTimeNotifications = () => {
   };
 
   const deleteNotification = async (id: string) => {
+    // Global announcements: just remove from local state
+    if (id.startsWith('global-')) {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      return;
+    }
     try {
       const { error } = await supabase
         .from('notifications')

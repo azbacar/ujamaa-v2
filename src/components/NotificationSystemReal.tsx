@@ -109,81 +109,91 @@ const NotificationSystemReal = () => {
       </Button>
 
       {showPanel && (
-        <div className="absolute right-0 top-14 w-96 max-h-96 overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl shadow-2xl border border-blue-200 z-50 text-foreground">
-          <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-white">Notifications</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20"
-                onClick={() => setShowPanel(false)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            {!permissionGranted && (
-              <Button
-                size="sm"
-                className="w-full mt-2 bg-white text-emerald-600 hover:bg-gray-50"
-                onClick={requestNotificationPermission}
-              >
-                Activer les notifications
-              </Button>
-            )}
-          </div>
-          
-          <div className="max-h-80 overflow-y-auto">
-            {loading ? (
-              <div className="p-6 text-center text-muted-foreground">
-                Chargement...
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="p-6 text-center text-muted-foreground">
-                Aucune notification
-              </div>
-            ) : (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    !notification.read ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : ''
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
+        <>
+          {/* Backdrop mobile */}
+          <div 
+            className="fixed inset-0 bg-black/20 z-40 sm:hidden" 
+            onClick={() => setShowPanel(false)} 
+          />
+          <div className="fixed inset-x-3 top-20 bottom-auto sm:absolute sm:inset-auto sm:right-0 sm:top-14 sm:w-96 max-h-[70vh] sm:max-h-96 overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl shadow-2xl border border-blue-200 z-50 text-foreground">
+            <div className="p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-white text-sm sm:text-base">
+                  Notifications {unreadCount > 0 && `(${unreadCount})`}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 h-8 w-8 p-0"
+                  onClick={() => setShowPanel(false)}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className={`p-1 rounded-full ${getTypeColor(notification.type)}`}>
-                        {getIcon(notification.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm">
-                          {notification.title}
-                        </h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {formatTime(notification.timestamp)}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteNotification(notification.id);
-                      }}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              {!permissionGranted && (
+                <Button
+                  size="sm"
+                  className="w-full mt-2 bg-white text-emerald-600 hover:bg-gray-50 text-xs sm:text-sm"
+                  onClick={requestNotificationPermission}
+                >
+                  Activer les notifications
+                </Button>
+              )}
+            </div>
+            
+            <div className="max-h-[55vh] sm:max-h-80 overflow-y-auto">
+              {loading ? (
+                <div className="p-6 text-center text-muted-foreground">
+                  Chargement...
                 </div>
-              ))
-            )}
+              ) : notifications.length === 0 ? (
+                <div className="p-6 text-center text-muted-foreground">
+                  Aucune notification
+                </div>
+              ) : (
+                notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`p-3 sm:p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                      !notification.read ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : ''
+                    }`}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                        <div className={`p-1 rounded-full flex-shrink-0 ${getTypeColor(notification.type)}`}>
+                          {getIcon(notification.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-xs sm:text-sm truncate">
+                            {notification.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1 line-clamp-2">
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {formatTime(notification.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification.id);
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
