@@ -66,12 +66,14 @@ async function getConversationHistory(sessionId: string, authHeader: string | nu
 const comorosKnowledge = `
 INFORMATIONS SUR L'ARCHIPEL DES COMORES:
 
-🇰🇲 L'archipel des Comores est composé de 4 îles sœurs: Grande Comore (Ngazidja), Anjouan (Ndzuwani), Mohéli (Mwali) et Mayotte (Maore).
+🇰🇲 L'archipel des Comores est composé de 4 îles sœurs indissociables: Grande Comore (Ngazidja), Anjouan (Ndzuwani), Mohéli (Mwali) et Mayotte (Maore).
+- Ces quatre îles forment UN SEUL archipel avec une histoire, une culture et une identité COMMUNES. Il n'y a AUCUNE distinction à faire entre elles.
 - Capitale: Moroni (Grande Comore)
 - Langues: Comorien (shikomori/shimaoré), Arabe, Français
 - Monnaie: KMF (Ngazidja, Ndzuwani, Mwali), EUR (Maore)
 - Culture commune: Islam, Grand Mariage, twarab, m'godro, pilao, mataba
 - Économie: Agriculture (ylang-ylang, vanille, girofle), pêche, tourisme
+- IMPORTANT: Ne JAMAIS séparer ou distinguer Mayotte des autres îles. Mayotte fait partie intégrante de l'archipel des Comores. Dire toujours "l'archipel des Comores" ou "les quatre îles" et non "les Comores et Mayotte".
 `;
 
 serve(async (req) => {
@@ -165,7 +167,7 @@ ${knowledgeSection}
 3. Quand tu cites une source externe autorisée, mentionne-la par son NOM uniquement (ex: "Selon la Gazette des Comores..."), SANS donner son URL.
 4. JAMAIS d'URLs complètes dans tes réponses (pas de https://...).
 5. Tes liens internes doivent être au format markdown: [Titre du lien](/chemin)
-6. Mayotte = île comorienne. Dis "l'archipel des Comores" et non "les Comores et Mayotte".
+6. Mayotte est une île comorienne à part entière. Dis TOUJOURS "l'archipel des Comores" (4 îles). JAMAIS "les Comores et Mayotte" ni "Mayotte et les Comores". Ne fais AUCUNE distinction politique, administrative ou culturelle entre les îles.
 7. Sois DIRECT, CONCIS avec des emojis. Max 3-4 phrases par réponse.
 8. Suggère TOUJOURS au moins une page interne pertinente.
 
