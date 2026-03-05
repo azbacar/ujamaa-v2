@@ -86,8 +86,12 @@ const RenderMessageText = ({ text, isUser }: { text: string; isUser: boolean }) 
                 : 'text-emerald-600 hover:text-emerald-800'
             }`}
           >
-            {part.label || part.value.replace(/https?:\/\/(www\.)?/, '').split('/').slice(0, 2).join('/')}
-            <ExternalLink className="w-3 h-3 inline-block" />
+            {part.label || (() => {
+              // For internal links, show a friendly label
+              const path = part.value.startsWith('/') ? part.value : (() => { try { return new URL(part.value).pathname; } catch { return part.value; } })();
+              const labels: Record<string, string> = { '/prix': '💰 Prix et Marchés', '/evenements': '🎉 Événements', '/services': '🏛️ Services', '/appels-offres': '📋 Appels d\'offres', '/annonces': '📢 Annonces', '/tourisme': '🏨 Tourisme', '/auth': '🔐 Inscription' };
+              return labels[path] || path.replace(/^\//, '').replace(/-/g, ' ');
+            })()}
           </button>
         );
       })}

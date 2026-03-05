@@ -128,6 +128,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_knowledge_sources: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       announcer_privileges: {
         Row: {
           created_at: string

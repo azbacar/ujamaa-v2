@@ -173,6 +173,14 @@ export default function AdminSidebar({
       category: 'monitoring'
     },
     {
+      id: 'ai-knowledge',
+      title: 'Sources IA',
+      icon: Brain,
+      description: 'Liens et sources de l\'IA',
+      available: isAdmin,
+      category: 'monitoring'
+    },
+    {
       id: 'static-pages',
       title: 'Pages statiques',
       icon: FileText,

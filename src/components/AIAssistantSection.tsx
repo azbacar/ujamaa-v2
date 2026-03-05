@@ -247,8 +247,11 @@ const AIAssistantSection = () => {
                 isUserMsg ? 'text-white/90 hover:text-white' : 'text-emerald-600 hover:text-emerald-800'
               }`}
             >
-              {p.label || p.value.replace(/https?:\/\/(www\.)?/, '').split('/').slice(0, 2).join('/')}
-              <ExternalLink className="w-3 h-3 inline-block" />
+              {p.label || (() => {
+                const path = p.value.startsWith('/') ? p.value : (() => { try { return new URL(p.value).pathname; } catch { return p.value; } })();
+                const labels: Record<string, string> = { '/prix': '💰 Prix et Marchés', '/evenements': '🎉 Événements', '/services': '🏛️ Services', '/appels-offres': '📋 Appels d\'offres', '/annonces': '📢 Annonces', '/tourisme': '🏨 Tourisme' };
+                return labels[path] || path.replace(/^\//, '').replace(/-/g, ' ');
+              })()}
             </button>
           );
         })}
