@@ -12,6 +12,7 @@ import PricesPage from "./pages/PricesPage";
 import EventsPage from "./pages/EventsPage";
 import TendersPage from "./pages/TendersPage";
 import ServicesPage from "./pages/ServicesPage";
+import ContentDetailPage from "./pages/ContentDetailPage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
 import EventDetail from "./pages/EventDetail";
@@ -58,7 +59,9 @@ const App = () => (
               <Route path="/evenements" element={<EventsPage />} />
               <Route path="/evenements/:id" element={<EventDetail />} />
               <Route path="/appels-offres" element={<TendersPage />} />
+              <Route path="/appels-offres/:id" element={<ContentDetailPage contentType="tender" label="Appel d'offres" icon="📋" backPath="/appels-offres" />} />
               <Route path="/services" element={<ServicesPage />} />
+              <Route path="/services/:id" element={<ContentDetailPage contentType="service" label="Service" icon="🏛️" backPath="/services" />} />
               <Route path="/annonces" element={<AnnouncementsPage />} />
               <Route path="/annonces/:id" element={<AnnouncementDetail />} />
               <Route path="/pro" element={<ProPage />} />

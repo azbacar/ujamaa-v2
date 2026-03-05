@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ interface Tender {
 
 const TendersPage = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
@@ -188,7 +190,7 @@ const TendersPage = () => {
                 
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div className="space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/appels-offres/${tender.id}`)}>
                       <FileText className="w-4 h-4 mr-2" />
                       Voir les détails
                     </Button>

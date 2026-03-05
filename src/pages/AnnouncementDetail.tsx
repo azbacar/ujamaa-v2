@@ -5,461 +5,211 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock, MapPin, User, Share2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import FavoriteButton from '@/components/FavoriteButton';
 import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
+import { supabase } from '@/integrations/supabase/client';
 
-interface Announcement {
-  id: number;
-  title: string;
-  category: string;
-  description: string;
-  fullContent: string;
-  location: string;
-  date: string;
-  author: string;
-  type: 'urgent' | 'normal' | 'featured';
-  price?: string;
-  tags: string[];
-  relatedLinks?: string[];
-}
-
-const announcements: Announcement[] = [
+// Hardcoded fallback announcements for legacy numeric IDs
+const legacyAnnouncements = [
   {
     id: 1,
     title: "Prix du riz en baisse au marché de Volo-Volo",
     category: "Prix & Marchés",
-    description: "Le prix du riz importé a diminué de 15% cette semaine suite à l'arrivée d'un nouveau stock. Prix actuel : 1500 FC/kg.",
-    fullContent: `
-      <h3>Détails de la baisse des prix</h3>
-      <p>Une excellente nouvelle pour les consommateurs comoriens : le prix du riz importé a connu une baisse significative de 15% cette semaine au marché de Volo-Volo à Moroni.</p>
-      
-      <h4>Nouveau prix en vigueur</h4>
-      <p>Le kilogramme de riz importé de qualité supérieure est désormais vendu à <strong>1500 FC</strong>, contre 1750 FC la semaine dernière.</p>
-      
-      <h4>Causes de cette baisse</h4>
-      <ul>
-        <li>Arrivée d'un nouveau stock important de riz en provenance de Madagascar</li>
-        <li>Amélioration des conditions de transport maritime</li>
-        <li>Négociations favorables avec les fournisseurs</li>
-      </ul>
-      
-      <h4>Impact sur les autres produits</h4>
-      <p>Cette baisse pourrait également influencer positivement les prix d'autres denrées de base dans les prochaines semaines.</p>
-      
-      <h4>Recommandations</h4>
-      <p>Les autorités recommandent aux commerçants de répercuter cette baisse sur les prix de vente au détail pour le bénéfice de tous les consommateurs.</p>
-    `,
+    description: "Le prix du riz importé a diminué de 15% cette semaine.",
+    fullContent: `<h3>Détails de la baisse des prix</h3><p>Le kilogramme de riz importé est désormais vendu à <strong>1500 FC</strong>.</p>`,
     location: "Moroni, Grande Comore",
     date: "Il y a 2 heures",
     author: "Direction du Commerce",
-    type: "featured",
-    tags: ["prix", "marché", "alimentation", "économie"],
-    relatedLinks: [
-      "Évolution des prix des denrées de base",
-      "Marchés locaux - Guide complet",
-      "Politique commerciale nationale"
-    ]
+    type: "featured" as const,
+    tags: ["prix", "marché", "alimentation"],
   },
-  {
-    id: 2,
-    title: "Appel d'offres : Construction d'une école primaire",
-    category: "Appels d'Offres",
-    description: "Le Ministère de l'Éducation lance un appel d'offres pour la construction d'une école primaire de 6 classes à Sima, Anjouan.",
-    fullContent: `
-      <h3>Projet de construction d'école primaire</h3>
-      <p>Le Ministère de l'Éducation Nationale lance un appel d'offres public pour la construction d'une école primaire moderne de 6 classes à Sima, sur l'île d'Anjouan.</p>
-      
-      <h4>Caractéristiques du projet</h4>
-      <ul>
-        <li><strong>Nombre de classes :</strong> 6 salles de classe spacieuses</li>
-        <li><strong>Capacité :</strong> 240 élèves (40 par classe)</li>
-        <li><strong>Surface totale :</strong> 800 m² de construction</li>
-        <li><strong>Équipements :</strong> Bibliothèque, salle informatique, cantine</li>
-      </ul>
-      
-      <h4>Budget alloué</h4>
-      <p>Le budget total du projet s'élève à <strong>250 millions de francs comoriens</strong>, financé par le gouvernement avec l'appui de partenaires internationaux.</p>
-      
-      <h4>Critères de sélection</h4>
-      <ul>
-        <li>Expérience minimale de 5 ans dans la construction scolaire</li>
-        <li>Certification en construction durable</li>
-        <li>Équipe technique qualifiée</li>
-        <li>Respect des délais de livraison</li>
-      </ul>
-      
-      <h4>Calendrier</h4>
-      <p>Les travaux devront commencer en avril 2024 et se terminer avant la rentrée scolaire de septembre 2024.</p>
-    `,
-    location: "Sima, Anjouan",
-    date: "Il y a 5 heures",
-    author: "Ministère de l'Éducation",
-    type: "urgent",
-    price: "Budget : 250M FC",
-    tags: ["éducation", "construction", "appel d'offres", "Anjouan"],
-    relatedLinks: [
-      "Autres appels d'offres en cours",
-      "Programmes éducatifs nationaux",
-      "Développement rural d'Anjouan"
-    ]
-  },
-  {
-    id: 3,
-    title: "Festival culturel de Mohéli - Inscriptions ouvertes",
-    category: "Événements",
-    description: "Le festival annuel de Mohéli aura lieu du 15 au 17 décembre. Inscriptions ouvertes pour les artistes et artisans locaux.",
-    fullContent: `
-      <h3>Festival Culturel Traditionnel de Mohéli</h3>
-      <p>Le festival culturel annuel de Mohéli revient pour sa 10ème édition ! Cet événement emblématique met à l'honneur les traditions et la culture locale de l'île préservée de Mohéli.</p>
-      
-      <h4>Programme des festivités</h4>
-      <ul>
-        <li><strong>Vendredi 15 décembre :</strong> Ouverture avec défilé traditionnel</li>
-        <li><strong>Samedi 16 décembre :</strong> Concours d'artisanat et danses folkloriques</li>
-        <li><strong>Dimanche 17 décembre :</strong> Grand marché culturel et spectacle de clôture</li>
-      </ul>
-      
-      <h4>Appel aux artistes</h4>
-      <p>Les inscriptions sont ouvertes pour tous les artistes, artisans, musiciens et danseurs souhaitant participer. Une belle opportunité de promouvoir les talents locaux !</p>
-    `,
-    location: "Fomboni, Mohéli",
-    date: "Il y a 1 jour",
-    author: "Office du Tourisme Mohéli",
-    type: "normal",
-    tags: ["culture", "festival", "artisanat", "Mohéli"]
-  },
-  {
-    id: 4,
-    title: "Nouvelle ligne de transport Moroni-Mitsamiouli",
-    category: "Transports",
-    description: "Mise en service d'une nouvelle ligne de bus reliant Moroni à Mitsamiouli avec 8 rotations quotidiennes.",
-    fullContent: `
-      <h3>Amélioration du Transport Public</h3>
-      <p>La Société de Transport Comorien annonce la mise en service d'une nouvelle ligne de bus moderne reliant la capitale Moroni à Mitsamiouli, au nord de la Grande Comore.</p>
-      
-      <h4>Horaires et fréquence</h4>
-      <ul>
-        <li>8 rotations quotidiennes dans chaque sens</li>
-        <li>Premier départ : 6h00 de Moroni</li>
-        <li>Dernier départ : 19h00 de Mitsamiouli</li>
-        <li>Durée du trajet : 45 minutes</li>
-      </ul>
-      
-      <h4>Tarifs attractifs</h4>
-      <p>Tarif unique : <strong>500 FC</strong> par trajet, avec réductions pour les étudiants et personnes âgées.</p>
-    `,
-    location: "Grande Comore",
-    date: "Il y a 1 jour",
-    author: "Société de Transport Comorien",
-    type: "normal",
-    tags: ["transport", "bus", "Grande Comore", "service public"]
-  },
-  {
-    id: 5,
-    title: "Campagne de vaccination contre la rougeole",
-    category: "Santé",
-    description: "Campagne gratuite de vaccination des enfants de 6 mois à 5 ans dans tous les centres de santé des îles.",
-    fullContent: `
-      <h3>Campagne Nationale de Vaccination</h3>
-      <p>Le Ministère de la Santé lance une campagne de vaccination gratuite contre la rougeole pour tous les enfants âgés de 6 mois à 5 ans sur l'ensemble du territoire comorien.</p>
-      
-      <h4>Objectifs de la campagne</h4>
-      <ul>
-        <li>Vacciner 95% des enfants cibles</li>
-        <li>Prévenir les épidémies de rougeole</li>
-        <li>Renforcer l'immunité collective</li>
-      </ul>
-      
-      <h4>Centres de vaccination</h4>
-      <p>La vaccination est disponible dans tous les centres de santé publics et privés des quatre îles, ainsi que dans les écoles et centres communautaires.</p>
-      
-      <h4>Documents nécessaires</h4>
-      <p>Apportez le carnet de vaccination de votre enfant et une pièce d'identité.</p>
-    `,
-    location: "Toutes les îles",
-    date: "Il y a 2 jours",
-    author: "Ministère de la Santé",
-    type: "urgent",
-    tags: ["santé", "vaccination", "enfants", "prévention"]
-  },
-  {
-    id: 6,
-    title: "Ouverture des inscriptions universitaires 2024-2025",
-    category: "Éducation",
-    description: "L'Université des Comores ouvre les pré-inscriptions pour l'année académique 2024-2025. Candidatures en ligne jusqu'au 31 janvier.",
-    fullContent: `
-      <h3>Rentrée Universitaire 2024-2025</h3>
-      <p>L'Université des Comores ouvre officiellement ses pré-inscriptions pour l'année académique 2024-2025. Une opportunité unique pour poursuivre ses études supérieures dans l'archipel.</p>
-      
-      <h4>Filières disponibles</h4>
-      <ul>
-        <li>Sciences Économiques et Gestion</li>
-        <li>Droit et Sciences Politiques</li>
-        <li>Lettres et Sciences Humaines</li>
-        <li>Sciences et Technologies</li>
-        <li>Médecine (nouveau !)</li>
-      </ul>
-      
-      <h4>Processus d'inscription</h4>
-      <p>Les candidatures se font exclusivement en ligne sur le portail étudiant. Les dossiers complets doivent être déposés avant le 31 janvier 2024.</p>
-      
-      <h4>Bourses disponibles</h4>
-      <p>Des bourses d'excellence sont disponibles pour les meilleurs étudiants de chaque filière.</p>
-    `,
-    location: "Moroni, Grande Comore",
-    date: "Il y a 3 jours",
-    author: "Université des Comores",
-    type: "featured",
-    tags: ["éducation", "université", "inscription", "bourse"]
-  },
-  {
-    id: 7,
-    title: "Nouveau service de ferry Anjouan-Mayotte",
-    category: "Transports",
-    description: "Lancement d'une nouvelle liaison maritime entre Anjouan et Mayotte avec 3 rotations hebdomadaires.",
-    fullContent: `
-      <h3>Nouvelle liaison maritime Anjouan-Mayotte</h3>
-      <p>Une excellente nouvelle pour les voyageurs et les professionnels : une nouvelle ligne de ferry va désormais relier Anjouan à Mayotte avec 3 départs par semaine.</p>
-      
-      <h4>Horaires et fréquences</h4>
-      <ul>
-        <li><strong>Départs d'Anjouan :</strong> Mardi, Jeudi et Samedi à 8h00</li>
-        <li><strong>Départs de Mayotte :</strong> Mercredi, Vendredi et Dimanche à 14h00</li>
-        <li><strong>Durée du trajet :</strong> Environ 2h30</li>
-      </ul>
-      
-      <h4>Tarifs attractifs</h4>
-      <p>Tarif unique de <strong>25€</strong> par passager, avec des réductions pour les résidents et les familles nombreuses.</p>
-      
-      <h4>Services à bord</h4>
-      <p>Ferry moderne équipé de sièges confortables, climatisation, bar et espace bagages sécurisé.</p>
-      
-      <h4>Réservations</h4>
-      <p>Les réservations sont ouvertes dès maintenant en ligne ou dans les agences partenaires.</p>
-    `,
-    location: "Anjouan - Mayotte",
-    date: "Il y a 3 heures",
-    author: "Compagnie Maritime Inter-îles",
-    type: "featured",
-    price: "25€",
-    tags: ["transport", "ferry", "Anjouan", "Mayotte", "maritime"]
-  },
-  {
-    id: 8,
-    title: "Vols supplémentaires Air Austral vers Moroni",
-    category: "Transports",
-    description: "Air Austral augmente sa fréquence vers Moroni avec 2 vols hebdomadaires supplémentaires pendant la haute saison.",
-    fullContent: `
-      <h3>Renforcement de la desserte aérienne</h3>
-      <p>Air Austral annonce l'ajout de 2 vols hebdomadaires supplémentaires sur la liaison La Réunion-Moroni pour répondre à la forte demande pendant la période touristique.</p>
-      
-      <h4>Nouveaux horaires</h4>
-      <ul>
-        <li><strong>Vol supplémentaire 1 :</strong> Mercredi - Départ La Réunion 10h30, Arrivée Moroni 13h15</li>
-        <li><strong>Vol supplémentaire 2 :</strong> Vendredi - Départ La Réunion 15h45, Arrivée Moroni 18h30</li>
-      </ul>
-      
-      <h4>Période d'application</h4>
-      <p>Ces vols supplémentaires seront opérationnels du <strong>15 décembre 2024 au 15 mars 2025</strong>.</p>
-      
-      <h4>Avantages pour les passagers</h4>
-      <ul>
-        <li>Plus de flexibilité dans les horaires de voyage</li>
-        <li>Réduction des temps d'attente</li>
-        <li>Tarifs préférentiels pour les réservations anticipées</li>
-      </ul>
-      
-      <h4>Réservations</h4>
-      <p>Les réservations sont ouvertes sur le site web d'Air Austral et dans toutes les agences de voyage partenaires.</p>
-    `,
-    location: "La Réunion - Moroni",
-    date: "Il y a 6 heures",
-    author: "Air Austral",
-    type: "normal",
-    tags: ["transport", "aviation", "Air Austral", "Moroni", "La Réunion"]
-  }
 ];
+
+interface DbAnnouncement {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  created_at: string;
+  type: string;
+}
 
 const AnnouncementDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
-  
-  const announcement = announcements.find(a => a.id === parseInt(id || '0'));
+  const [dbItem, setDbItem] = useState<DbAnnouncement | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!announcement) {
+  // Check if ID looks like a UUID
+  const isUuid = id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+  useEffect(() => {
+    if (!isUuid) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchItem = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('content_items')
+          .select('id, title, description, category, created_at, type')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (error) throw error;
+        setDbItem(data);
+      } catch (error) {
+        console.error('Erreur:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchItem();
+  }, [id, isUuid]);
+
+  // Legacy numeric ID lookup
+  const legacyItem = !isUuid ? legacyAnnouncements.find(a => a.id === parseInt(id || '0')) : null;
+
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    if (diffInHours < 1) return "Il y a moins d'une heure";
+    if (diffInHours < 24) return `Il y a ${diffInHours} heure${diffInHours > 1 ? 's' : ''}`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Annonce non trouvée</h1>
-          <Button onClick={() => navigate('/')}>Retour à l'accueil</Button>
+      <div className="min-h-screen bg-background">
+        <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
+        <div className="flex items-center justify-center py-24">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
         </div>
+        <Footer />
       </div>
     );
   }
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'urgent':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'featured':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'urgent':
-        return '🚨 Urgent';
-      case 'featured':
-        return '⭐ À la une';
-      default:
-        return '📢 Nouveau';
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-background">
-      <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
-      
-      <main className="container mx-auto px-6 py-12">
-        <div className="mb-6">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate(-1)}
-            className="mb-4"
-          >
+  // Render DB item
+  if (dbItem) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
+        <main className="container mx-auto px-6 py-12">
+          <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour
           </Button>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <Card className="mb-6">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <Badge variant="secondary" className={`${getTypeColor(announcement.type)} px-3 py-1`}>
-                    {getTypeLabel(announcement.type)}
-                  </Badge>
-                  <Badge variant="outline" className="bg-white/50">
-                    {announcement.category}
-                  </Badge>
-                </div>
-                
-                <CardTitle className="text-3xl font-bold text-gray-900 mb-4">
-                  {announcement.title}
-                </CardTitle>
-
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    <span>{announcement.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span>{announcement.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <span>{announcement.author}</span>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                {announcement.price && (
-                  <div className="bg-gradient-to-r from-magenta-50 to-magenta-100 p-4 rounded-lg mb-6">
-                    <p className="text-magenta-700 font-semibold">{announcement.price}</p>
-                  </div>
-                )}
-
-                <div 
-                  className="prose prose-lg max-w-none"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(announcement.fullContent) }}
-                />
-
-                <div className="mt-8 pt-6 border-t">
-                  <h4 className="font-semibold mb-3">Mots-clés :</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {announcement.tags.map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-emerald-700 border-emerald-300">
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full" variant="outline" onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({ title: announcement.title, url: window.location.href });
-                  } else {
-                    navigator.clipboard.writeText(window.location.href);
-                  }
-                }}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Partager
-                </Button>
-                <FavoriteButton contentType="announcement" contentId={String(announcement.id)} />
-                <ReportButton contentType="announcement" contentId={String(announcement.id)} />
-              </CardContent>
-            </Card>
-
-            {announcement.relatedLinks && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Liens connexes</CardTitle>
+                  <div className="flex items-start justify-between mb-4">
+                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 px-3 py-1">
+                      📢 Annonce
+                    </Badge>
+                    {dbItem.category && (
+                      <Badge variant="outline">{dbItem.category}</Badge>
+                    )}
+                  </div>
+                  <CardTitle className="text-3xl font-bold text-foreground mb-4">
+                    {dbItem.title}
+                  </CardTitle>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="w-4 h-4" />
+                    <span>{getRelativeTime(dbItem.created_at)}</span>
+                    <span className="mx-2">•</span>
+                    <span>{new Date(dbItem.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    {announcement.relatedLinks.map((link, index) => (
-                      <Button 
-                        key={index} 
-                        variant="ghost" 
-                        className="w-full justify-start text-left h-auto p-2"
-                      >
-                        {link}
-                      </Button>
-                    ))}
+                  <div className="prose prose-lg max-w-none">
+                    <p className="text-foreground whitespace-pre-line">
+                      {dbItem.description || 'Aucune description disponible.'}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
-            )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Contact</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <p><strong>Publié par :</strong> {announcement.author}</p>
-                  <Button size="sm" className="w-full bg-gradient-to-r from-emerald-500 to-ocean-500">
-                    Contacter l'auteur
+              <div className="mt-8">
+                <CommentSection contentType="announcement" contentId={dbItem.id} />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button className="w-full" variant="outline" onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({ title: dbItem.title, url: window.location.href });
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                    }
+                  }}>
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Partager
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  <FavoriteButton contentType="announcement" contentId={dbItem.id} />
+                  <ReportButton contentType="announcement" contentId={dbItem.id} />
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
-        {/* Comments */}
-        <CommentSection contentType="announcement" contentId={String(announcement.id)} />
-      </main>
-      
+  // Legacy hardcoded item
+  if (legacyItem) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
+        <main className="container mx-auto px-6 py-12">
+          <Button variant="outline" onClick={() => navigate(-1)} className="mb-6">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour
+          </Button>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-3xl font-bold">{legacyItem.title}</CardTitle>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                <div className="flex items-center gap-1"><MapPin className="w-4 h-4" />{legacyItem.location}</div>
+                <div className="flex items-center gap-1"><User className="w-4 h-4" />{legacyItem.author}</div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(legacyItem.fullContent) }} />
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Not found
+  return (
+    <div className="min-h-screen bg-background">
+      <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
+      <div className="flex items-center justify-center py-24">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Annonce non trouvée</h1>
+          <Button onClick={() => navigate('/annonces')}>Retour aux annonces</Button>
+        </div>
+      </div>
       <Footer />
     </div>
   );
