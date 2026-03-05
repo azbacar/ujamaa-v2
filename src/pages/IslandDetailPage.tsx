@@ -73,6 +73,26 @@ const IslandDetailPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [customImages, setCustomImages] = useState<Record<string, string>>({});
+
+  const DEFAULT_IMAGES: Record<string, string> = {
+    'grande-comore': 'https://images.unsplash.com/photo-1544966503-7fdb24ac2dca?auto=format&fit=crop&w=800&q=80',
+    'anjouan': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=80',
+    'moheli': 'https://images.unsplash.com/photo-1571041804726-53fb982d8c81?auto=format&fit=crop&w=800&q=80',
+    'mayotte': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80',
+  };
+
+  useEffect(() => {
+    const fetchCustomImages = async () => {
+      const { data } = await supabase.from('site_settings').select('island_images').limit(1).maybeSingle();
+      if (data?.island_images && typeof data.island_images === 'object') {
+        setCustomImages(data.island_images as Record<string, string>);
+      }
+    };
+    fetchCustomImages();
+  }, []);
+
+  const getImage = (slug: string) => customImages[slug] || DEFAULT_IMAGES[slug];
 
   const islandData: Record<string, IslandData> = {
     'grande-comore': {
@@ -83,7 +103,7 @@ const IslandDetailPage = () => {
       capital: 'Moroni',
       area: '1,148 km²',
       specialties: ['Ylang-ylang', 'Vanille', 'Pêche', 'Administration'],
-      image: 'https://images.unsplash.com/photo-1544966503-7fdb24ac2dca?auto=format&fit=crop&w=800&q=80'
+      image: getImage('grande-comore')
     },
     'anjouan': {
       name: 'Anjouan',
@@ -93,7 +113,7 @@ const IslandDetailPage = () => {
       capital: 'Mutsamudu',
       area: '424 km²',
       specialties: ['Ylang-ylang', 'Girofle', 'Vanille', 'Agriculture'],
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=80'
+      image: getImage('anjouan')
     },
     'moheli': {
       name: 'Mohéli',
@@ -103,7 +123,7 @@ const IslandDetailPage = () => {
       capital: 'Fomboni',
       area: '290 km²',
       specialties: ['Écotourisme', 'Pêche durable', 'Agriculture biologique', 'Conservation'],
-      image: 'https://images.unsplash.com/photo-1571041804726-53fb982d8c81?auto=format&fit=crop&w=800&q=80'
+      image: getImage('moheli')
     },
     'mayotte': {
       name: 'Mayotte',
@@ -113,7 +133,7 @@ const IslandDetailPage = () => {
       capital: 'Mamoudzou',
       area: '374 km²',
       specialties: ['Lagon', 'Tourisme', 'Pêche', 'Services'],
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80'
+      image: getImage('mayotte')
     }
   };
 
