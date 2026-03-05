@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Share2, Heart, Ticket } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Share2, Ticket } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useState, useEffect } from 'react';
@@ -11,6 +11,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import EventRegistrationDialog from '@/components/EventRegistrationDialog';
 import { useAuth } from '@/hooks/useAuth';
+import FavoriteButton from '@/components/FavoriteButton';
+import ReportButton from '@/components/ReportButton';
+import CommentSection from '@/components/CommentSection';
 
 interface Event {
   id: string;
@@ -263,6 +266,8 @@ const EventDetail = () => {
                   <Share2 className="w-4 h-4 mr-2" />
                   Partager
                 </Button>
+                <FavoriteButton contentType="event" contentId={event.id} />
+                <ReportButton contentType="event" contentId={event.id} />
               </CardContent>
             </Card>
 
@@ -293,6 +298,9 @@ const EventDetail = () => {
             </Card>
           </div>
         </div>
+
+        {/* Comments */}
+        <CommentSection contentType="event" contentId={event.id} />
       </main>
       
       <EventRegistrationDialog

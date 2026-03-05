@@ -101,6 +101,14 @@ export default function AdminSidebar({
       category: 'content'
     },
     {
+      id: 'moderation',
+      title: 'Modération',
+      icon: Shield,
+      description: 'Signalements et contenus en attente',
+      available: isModerator || isAdmin,
+      category: 'content'
+    },
+    {
       id: 'pending',
       title: 'Modifications',
       icon: Clock,
