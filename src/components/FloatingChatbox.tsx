@@ -478,10 +478,10 @@ const FloatingChatbox = () => {
       </CardHeader>
 
       {!isMinimized && (
-        <CardContent className="p-0 flex flex-col" style={{ height: 'calc(85vh - 56px)' }}>
+        <CardContent className="p-0 flex flex-col floating-chat-content" style={{ height: 'calc(85vh - 56px)' }}>
           <style>{`@media (min-width: 640px) { .floating-chat-content { height: calc(480px - 56px) !important; } }`}</style>
           {/* Messages area */}
-          <div ref={scrollAreaRootRef} className="flex-1 min-h-0">
+          <div ref={scrollAreaRootRef} className="flex-1 overflow-hidden min-h-0">
             <ScrollArea className="h-full">
               <div className="p-3 space-y-3">
                 {messages.map((message) => (
@@ -554,8 +554,8 @@ const FloatingChatbox = () => {
             </ScrollArea>
           </div>
 
-          {/* Input area */}
-          <div className="p-3 border-t border-border/50 bg-background">
+          {/* Input area - always visible at bottom */}
+          <div className="shrink-0 p-3 border-t border-border/50 bg-background">
             <div className="flex gap-2">
               <Input
                 value={inputMessage}
