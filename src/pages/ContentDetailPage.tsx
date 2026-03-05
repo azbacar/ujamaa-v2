@@ -2,14 +2,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, Share2 } from 'lucide-react';
+import { ArrowLeft, Clock, Share2, Phone, MessageCircle, Lock } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FavoriteButton from '@/components/FavoriteButton';
 import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
+import TenderSubmissionForm from '@/components/TenderSubmissionForm';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ContentItem {
   id: string;
@@ -18,6 +21,13 @@ interface ContentItem {
   category: string | null;
   created_at: string;
   type: string;
+  author_id: string;
+  contact_phone: string | null;
+  contact_whatsapp: string | null;
+}
+
+interface AuthorInfo {
+  account_type: string;
 }
 
 interface ContentDetailPageProps {
@@ -30,9 +40,12 @@ interface ContentDetailPageProps {
 const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetailPageProps) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [item, setItem] = useState<ContentItem | null>(null);
+  const [authorInfo, setAuthorInfo] = useState<AuthorInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -40,13 +53,23 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
       try {
         const { data, error } = await supabase
           .from('content_items')
-          .select('id, title, description, category, created_at, type')
+          .select('id, title, description, category, created_at, type, author_id, contact_phone, contact_whatsapp')
           .eq('id', id)
           .eq('type', contentType)
           .maybeSingle();
 
         if (error) throw error;
         setItem(data);
+
+        // Fetch author account type to check Pro status
+        if (data?.author_id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('account_type')
+            .eq('id', data.author_id)
+            .maybeSingle();
+          setAuthorInfo(userData);
+        }
       } catch (error) {
         console.error('Erreur lors du chargement:', error);
       } finally {
@@ -55,6 +78,8 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
     };
     fetchItem();
   }, [id, contentType]);
+
+  const isAuthorPro = authorInfo?.account_type === 'pro';
 
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -65,6 +90,8 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
     const diffInDays = Math.floor(diffInHours / 24);
     return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
   };
+
+  const formatPhone = (phone: string) => phone.replace(/\s+/g, '');
 
   if (loading) {
     return (
@@ -140,6 +167,119 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
           </div>
 
           <div className="space-y-6">
+            {/* Action principale selon le type */}
+            {contentType === 'tender' && (
+              <Card className="border-emerald-200 bg-emerald-50/50">
+                <CardHeader>
+                  <CardTitle className="text-lg">📋 Soumettre une offre</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Intéressé par cet appel d'offres ? Soumettez votre proposition dès maintenant.
+                  </p>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
+                    onClick={() => setIsSubmissionOpen(true)}
+                  >
+                    Soumettre une offre
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {contentType === 'service' && (
+              <Card className="border-blue-200 bg-blue-50/50">
+                <CardHeader>
+                  <CardTitle className="text-lg">🏛️ Contacter le service</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isAuthorPro && item.contact_phone ? (
+                    <div className="space-y-3">
+                      {isMobile ? (
+                        <Button 
+                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                          onClick={() => window.open(`tel:${formatPhone(item.contact_phone!)}`, '_self')}
+                        >
+                          <Phone className="w-4 h-4 mr-2" />
+                          Appeler le service
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2 p-3 bg-background rounded-lg border">
+                          <Phone className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium text-foreground">{item.contact_phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-2">
+                      <Lock className="w-8 h-8 text-muted-foreground mx-auto" />
+                      <p className="text-sm text-muted-foreground">
+                        Les coordonnées de contact sont disponibles uniquement pour les annonceurs Pro.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Contact WhatsApp - visible uniquement si Pro */}
+            {isAuthorPro && item.contact_whatsapp && (
+              <Card className="border-green-200 bg-green-50/50">
+                <CardContent className="pt-6">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+                    onClick={() => window.open(`https://wa.me/${formatPhone(item.contact_whatsapp!)}`, '_blank')}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Contacter via WhatsApp
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Contact téléphone pour les appels d'offres Pro */}
+            {contentType === 'tender' && isAuthorPro && item.contact_phone && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">📞 Contact</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isMobile ? (
+                    <Button 
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => window.open(`tel:${formatPhone(item.contact_phone!)}`, '_self')}
+                    >
+                      <Phone className="w-4 h-4 mr-2" />
+                      Appeler
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium text-foreground">{item.contact_phone}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Contact non-Pro pour tenders */}
+            {contentType === 'tender' && !isAuthorPro && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">📞 Contact</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center space-y-2">
+                    <Lock className="w-8 h-8 text-muted-foreground mx-auto" />
+                    <p className="text-sm text-muted-foreground">
+                      Les coordonnées directes sont réservées aux annonceurs Pro.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Actions</CardTitle>
@@ -162,6 +302,19 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
           </div>
         </div>
       </main>
+
+      {/* Dialog de soumission d'offre */}
+      {contentType === 'tender' && (
+        <Dialog open={isSubmissionOpen} onOpenChange={setIsSubmissionOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+            <TenderSubmissionForm
+              tenderId={item.id}
+              tenderTitle={item.title}
+              onClose={() => setIsSubmissionOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Footer />
     </div>
