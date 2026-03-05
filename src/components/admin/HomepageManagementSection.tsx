@@ -55,19 +55,32 @@ const ISLANDS = [
 
 const IslandImagesManager = () => {
   const [images, setImages] = useState<Record<string, string>>({});
+  const [settingsId, setSettingsId] = useState<string | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const { toast: toastFn } = useToast();
 
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from('site_settings').select('island_images').limit(1).maybeSingle();
-      if (data?.island_images && typeof data.island_images === 'object') {
-        setImages(data.island_images as Record<string, string>);
+    const fetchData = async () => {
+      const { data } = await supabase.from('site_settings').select('id, island_images').limit(1).maybeSingle();
+      if (data) {
+        setSettingsId(data.id);
+        if (data.island_images && typeof data.island_images === 'object') {
+          setImages(data.island_images as Record<string, string>);
+        }
       }
     };
-    fetch();
+    fetchData();
   }, []);
+
+  const saveImages = async (newImages: Record<string, string>) => {
+    if (!settingsId) {
+      toastFn({ title: 'Erreur', description: 'Paramètres du site non trouvés. Veuillez recharger.', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase.from('site_settings').update({ island_images: newImages, updated_at: new Date().toISOString() }).eq('id', settingsId);
+    if (error) throw error;
+  };
 
   const handleUpload = async (slug: string, file: File) => {
     if (!file) return;
@@ -80,9 +93,7 @@ const IslandImagesManager = () => {
       const { data: urlData } = supabase.storage.from('island-images').getPublicUrl(path);
       const newImages = { ...images, [slug]: urlData.publicUrl };
       setImages(newImages);
-      // Save immediately
-      const { error } = await supabase.from('site_settings').update({ island_images: newImages, updated_at: new Date().toISOString() }).neq('id', '');
-      if (error) throw error;
+      await saveImages(newImages);
       toastFn({ title: 'Image mise à jour', description: `Photo de ${ISLANDS.find(i => i.slug === slug)?.name} sauvegardée.` });
     } catch (err: any) {
       toastFn({ title: 'Erreur', description: err.message, variant: 'destructive' });
@@ -98,8 +109,7 @@ const IslandImagesManager = () => {
   const handleSaveAll = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase.from('site_settings').update({ island_images: images, updated_at: new Date().toISOString() }).neq('id', '');
-      if (error) throw error;
+      await saveImages(images);
       toastFn({ title: 'Images sauvegardées', description: 'Toutes les photos des îles ont été mises à jour.' });
     } catch {
       toastFn({ title: 'Erreur', variant: 'destructive' });
