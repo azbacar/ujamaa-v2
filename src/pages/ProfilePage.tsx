@@ -12,7 +12,8 @@ import {
   Settings, User, Shield, Mail, Crown, Megaphone, 
   BarChart3, Eye, FileText, Calendar, DollarSign,
   LogOut, Key, Star, Activity, Clock, ChevronRight,
-  Edit3, Save, X, Utensils, Camera, Loader2
+  Edit3, Save, X, Utensils, Camera, Loader2,
+  Heart, Flag
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -32,6 +33,8 @@ const ProfilePage = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [stats, setStats] = useState({ announcements: 0, events: 0, prices: 0, gastronomy: 0 });
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
@@ -95,6 +98,22 @@ const ProfilePage = () => {
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 8);
 
       setRecentActivity(combined);
+
+      // Fetch favorites
+      const { data: favData } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      setFavorites(favData || []);
+
+      // Fetch reports
+      const { data: repData } = await supabase
+        .from('reports')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      setReports(repData || []);
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -322,6 +341,8 @@ const ProfilePage = () => {
             <TabsList className="w-full justify-start flex-wrap h-auto gap-1">
               <TabsTrigger value="info"><User className="h-4 w-4 mr-1" /> Profil</TabsTrigger>
               <TabsTrigger value="security"><Key className="h-4 w-4 mr-1" /> Sécurité</TabsTrigger>
+              <TabsTrigger value="favorites"><Heart className="h-4 w-4 mr-1" /> Favoris</TabsTrigger>
+              <TabsTrigger value="reports"><Flag className="h-4 w-4 mr-1" /> Signalements</TabsTrigger>
               {(isAnnonceur() || isModerator() || isAdmin()) && (
                 <TabsTrigger value="content"><FileText className="h-4 w-4 mr-1" /> Mes contenus</TabsTrigger>
               )}
@@ -452,6 +473,76 @@ const ProfilePage = () => {
                       <LogOut className="h-4 w-4 mr-1" /> Se déconnecter
                     </Button>
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Tab: Favoris */}
+            <TabsContent value="favorites">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Heart className="h-5 w-5" /> Mes Favoris
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {favorites.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Heart className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                      <p>Aucun favori pour le moment</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {favorites.map(fav => (
+                        <div key={fav.id} className="flex items-center justify-between p-3 rounded-lg border">
+                          <div>
+                            <Badge variant="outline" className="text-xs">{fav.content_type}</Badge>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Ajouté le {new Date(fav.created_at).toLocaleDateString('fr-FR')}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Tab: Signalements */}
+            <TabsContent value="reports">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Flag className="h-5 w-5" /> Mes Signalements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {reports.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Flag className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                      <p>Aucun signalement</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {reports.map(rep => (
+                        <div key={rep.id} className="flex items-center justify-between p-3 rounded-lg border">
+                          <div>
+                            <p className="font-medium text-sm">{rep.reason}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">{rep.content_type}</Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(rep.created_at).toLocaleDateString('fr-FR')}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge variant={rep.status === 'pending' ? 'secondary' : rep.status === 'reviewed' ? 'default' : 'outline'}>
+                            {rep.status === 'pending' ? 'En attente' : rep.status === 'reviewed' ? 'Traité' : 'Rejeté'}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

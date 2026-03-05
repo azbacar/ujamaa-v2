@@ -29,6 +29,7 @@ import ConnectedFunctionsSection from '@/components/admin/ConnectedFunctionsSect
 import EventsManagementSection from '@/components/admin/EventsManagementSection';
 import AIAnalyticsSection from '@/components/admin/AIAnalyticsSection';
 import StaticPagesManagementSection from '@/components/admin/StaticPagesManagementSection';
+import ModerationQueueSection from '@/components/admin/ModerationQueueSection';
 
 interface PendingModification {
   id: string;
@@ -295,6 +296,9 @@ export default function AdminDashboard() {
       
       case 'static-pages':
         return <StaticPagesManagementSection />;
+      
+      case 'moderation':
+        return <ModerationQueueSection />;
       
       default:
         return <AdminOverview 

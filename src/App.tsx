@@ -18,6 +18,7 @@ import EventDetail from "./pages/EventDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 
 import IslandDetailPage from "./pages/IslandDetailPage";
+import AnnouncerDashboard from "./pages/AnnouncerDashboard";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordRequest from "./pages/ResetPasswordRequest";
@@ -75,6 +76,14 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={['admin', 'moderator']}>
                     <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/annonceur" 
+                element={
+                  <ProtectedRoute allowedRoles={['annonceur', 'moderator', 'admin']}>
+                    <AnnouncerDashboard />
                   </ProtectedRoute>
                 } 
               />

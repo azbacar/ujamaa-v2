@@ -128,6 +128,36 @@ export type Database = {
         }
         Relationships: []
       }
+      announcer_privileges: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_by: string | null
+          id: string
+          is_active: boolean
+          privilege: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          privilege: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          privilege?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -189,6 +219,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      content_comments: {
+        Row: {
+          body: string
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       content_items: {
         Row: {
@@ -366,6 +426,30 @@ export type Database = {
         }
         Relationships: []
       }
+      favorites: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gastronomy_items: {
         Row: {
           author_id: string
@@ -461,6 +545,39 @@ export type Database = {
           id?: string
           title?: string
           type?: Database["public"]["Enums"]["announcement_kind"]
+        }
+        Relationships: []
+      }
+      homepage_sections: {
+        Row: {
+          config: Json | null
+          id: string
+          is_visible: boolean
+          section_key: string
+          sort_order: number
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          config?: Json | null
+          id?: string
+          is_visible?: boolean
+          section_key: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          config?: Json | null
+          id?: string
+          is_visible?: boolean
+          section_key?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -626,6 +743,42 @@ export type Database = {
           vendor?: string
           views?: number
           village?: string | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }

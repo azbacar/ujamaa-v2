@@ -2,11 +2,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, MapPin, User, Share2, Heart } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, User, Share2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useState } from 'react';
 import DOMPurify from 'dompurify';
+import FavoriteButton from '@/components/FavoriteButton';
+import ReportButton from '@/components/ReportButton';
+import CommentSection from '@/components/CommentSection';
 
 interface Announcement {
   id: number;
@@ -401,14 +404,18 @@ const AnnouncementDetail = () => {
                 <CardTitle className="text-lg">Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="outline" onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({ title: announcement.title, url: window.location.href });
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                  }
+                }}>
                   <Share2 className="w-4 h-4 mr-2" />
                   Partager
                 </Button>
-                <Button className="w-full" variant="outline">
-                  <Heart className="w-4 h-4 mr-2" />
-                  Sauvegarder
-                </Button>
+                <FavoriteButton contentType="announcement" contentId={String(announcement.id)} />
+                <ReportButton contentType="announcement" contentId={String(announcement.id)} />
               </CardContent>
             </Card>
 
@@ -448,6 +455,9 @@ const AnnouncementDetail = () => {
             </Card>
           </div>
         </div>
+
+        {/* Comments */}
+        <CommentSection contentType="announcement" contentId={String(announcement.id)} />
       </main>
       
       <Footer />

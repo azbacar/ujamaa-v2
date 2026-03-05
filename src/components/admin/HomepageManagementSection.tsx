@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Home, Edit3, Plus, Trash2, Eye, EyeOff, Settings, Image, Type, Link, BarChart3, Megaphone, Users, FileText } from 'lucide-react';
+import { Home, Edit3, Plus, Trash2, Eye, EyeOff, Settings, Image, Type, Link, BarChart3, Megaphone, Users, FileText, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { HeroPreview } from './HeroPreview';
@@ -44,6 +44,86 @@ interface HomepageStats {
   todayViews: number;
   announcements: number;
 }
+
+// LayoutManager sub-component for the "Mise en Page" tab
+const LayoutManager = () => {
+  const [sections, setSections] = useState<{ id: string; section_key: string; title: string; is_visible: boolean; sort_order: number }[]>([]);
+  const [saving, setSaving] = useState(false);
+  const { toast: toastFn } = useToast();
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase.from('homepage_sections').select('*').order('sort_order', { ascending: true });
+      if (data) setSections(data);
+    };
+    fetch();
+  }, []);
+
+  const toggleVisibility = (id: string) => {
+    setSections(prev => prev.map(s => s.id === id ? { ...s, is_visible: !s.is_visible } : s));
+  };
+
+  const moveSection = (index: number, direction: 'up' | 'down') => {
+    const newSections = [...sections];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    if (swapIndex < 0 || swapIndex >= newSections.length) return;
+    const tmpOrder = newSections[index].sort_order;
+    newSections[index].sort_order = newSections[swapIndex].sort_order;
+    newSections[swapIndex].sort_order = tmpOrder;
+    [newSections[index], newSections[swapIndex]] = [newSections[swapIndex], newSections[index]];
+    setSections(newSections);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      for (const s of sections) {
+        await supabase.from('homepage_sections').update({ is_visible: s.is_visible, sort_order: s.sort_order }).eq('id', s.id);
+      }
+      toastFn({ title: 'Mise en page sauvegardée', description: 'Les modifications sont appliquées.' });
+    } catch {
+      toastFn({ title: 'Erreur', variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Configuration de la Mise en Page</CardTitle>
+        <CardDescription>Réordonnez et activez/désactivez les sections de la page d'accueil</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {sections.map((section, index) => (
+          <div key={section.id} className={`flex items-center justify-between p-3 rounded-lg border ${section.is_visible ? 'bg-white' : 'bg-muted/50 opacity-60'}`}>
+            <div className="flex items-center gap-3">
+              <GripVertical className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium text-sm">{section.title || section.section_key}</span>
+              <Badge variant={section.is_visible ? 'default' : 'outline'} className="text-xs">
+                {section.is_visible ? 'Visible' : 'Masqué'}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => moveSection(index, 'up')} disabled={index === 0}>
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => moveSection(index, 'down')} disabled={index === sections.length - 1}>
+                <ArrowDown className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleVisibility(section.id)}>
+                {section.is_visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        ))}
+        <Button onClick={handleSave} disabled={saving} className="w-full mt-4">
+          {saving ? 'Sauvegarde...' : 'Sauvegarder la configuration'}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
 
 export const HomepageManagementSection = () => {
   const [loading, setLoading] = useState(true);
@@ -553,55 +633,7 @@ export const HomepageManagementSection = () => {
 
         {/* Mise en Page */}
         <TabsContent value="layout">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuration de la Mise en Page</CardTitle>
-              <CardDescription>
-                Organisez l'ordre et l'affichage des sections
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label>Sections actives</Label>
-                  <div className="space-y-2 mt-2">
-                    {['Hero Section', 'Catégories', 'Annonces', 'Statistiques', 'Assistant IA'].map((section) => (
-                      <div key={section} className="flex items-center space-x-2">
-                        <Switch defaultChecked />
-                        <Label>{section}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <Label>Paramètres d'affichage</Label>
-                  <div className="space-y-4 mt-2">
-                    <div>
-                      <Label htmlFor="categories-per-row">Catégories par ligne</Label>
-                      <Select defaultValue="2">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1 colonne</SelectItem>
-                          <SelectItem value="2">2 colonnes</SelectItem>
-                          <SelectItem value="3">3 colonnes</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Switch />
-                      <Label>Afficher la sidebar</Label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <Button className="w-full">
-                Sauvegarder la configuration
-              </Button>
-            </CardContent>
-          </Card>
+          <LayoutManager />
         </TabsContent>
 
         {/* Paramètres */}
