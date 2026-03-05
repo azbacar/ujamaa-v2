@@ -944,6 +944,7 @@ export type Database = {
           hero_subtitle: string | null
           hero_title: string | null
           id: string
+          island_images: Json | null
           maintenance_mode: boolean
           og_description: string | null
           og_image_url: string | null
@@ -970,6 +971,7 @@ export type Database = {
           hero_subtitle?: string | null
           hero_title?: string | null
           id?: string
+          island_images?: Json | null
           maintenance_mode?: boolean
           og_description?: string | null
           og_image_url?: string | null
@@ -996,6 +998,7 @@ export type Database = {
           hero_subtitle?: string | null
           hero_title?: string | null
           id?: string
+          island_images?: Json | null
           maintenance_mode?: boolean
           og_description?: string | null
           og_image_url?: string | null
