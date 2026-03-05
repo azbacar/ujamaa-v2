@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ interface Service {
 
 const ServicesPage = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
@@ -178,7 +180,7 @@ const ServicesPage = () => {
                 <p className="text-gray-700">{service.description || 'Aucune description disponible'}</p>
                 
                 <div className="flex items-center justify-between pt-4 border-t">
-                  <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-ocean-500">
+                  <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-ocean-500" onClick={() => navigate(`/services/${service.id}`)}>
                     Voir les détails
                   </Button>
                 </div>
