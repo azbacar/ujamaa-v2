@@ -1,24 +1,12 @@
-
+import { useState } from 'react';
 import { 
-  BarChart3,
-  Home,
-  FileText,
-  Clock,
-  Users,
-  Image,
-  Settings,
-  Shield,
-  Activity,
-  Bell,
-  Database,
-  ChevronRight,
-  Crown,
-  UserCheck,
-  DollarSign,
-  Calendar,
-  Brain
+  BarChart3, Home, FileText, Clock, Users, Image, Settings,
+  Shield, Activity, Bell, Database, ChevronRight, Crown,
+  UserCheck, DollarSign, Calendar, Brain, Menu, X
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface AdminSidebarProps {
   activeSection: string;
@@ -29,165 +17,30 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ 
-  activeSection, 
-  onSectionChange, 
-  isAdmin, 
-  isModerator, 
-  userRole 
+  activeSection, onSectionChange, isAdmin, isModerator, userRole 
 }: AdminSidebarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const menuItems = [
-    {
-      id: 'overview',
-      title: 'Vue d\'ensemble',
-      icon: BarChart3,
-      description: 'Tableau de bord principal',
-      available: true,
-      category: 'dashboard'
-    },
-    {
-      id: 'stats',
-      title: 'Statistiques',
-      icon: Activity,
-      description: 'Métriques détaillées',
-      available: true,
-      category: 'dashboard'
-    },
-    {
-      id: 'homepage',
-      title: 'Page d\'accueil',
-      icon: Home,
-      description: 'Gestion du contenu principal',
-      available: true,
-      category: 'content'
-    },
-    {
-      id: 'content',
-      title: 'Contenu',
-      icon: FileText,
-      description: 'Articles et publications',
-      available: true,
-      category: 'content'
-    },
-    {
-      id: 'events',
-      title: 'Événements',
-      icon: Calendar,
-      description: 'Gestion des événements et inscriptions',
-      available: isAdmin || isModerator,
-      category: 'content'
-    },
-    {
-      id: 'ads',
-      title: 'Publicités',
-      icon: BarChart3,
-      description: 'Gestion des espaces publicitaires',
-      available: isAdmin,
-      category: 'content'
-    },
-    {
-      id: 'ad-stats',
-      title: 'Stats Publicités',
-      icon: Activity,
-      description: 'Statistiques publicitaires (CTR)',
-      available: isAdmin,
-      category: 'content'
-    },
-    {
-      id: 'prices',
-      title: 'Prix & Marchés',
-      icon: DollarSign,
-      description: 'Gestion des prix soumis',
-      available: isModerator || isAdmin,
-      category: 'content'
-    },
-    {
-      id: 'moderation',
-      title: 'Modération',
-      icon: Shield,
-      description: 'Signalements et contenus en attente',
-      available: isModerator || isAdmin,
-      category: 'content'
-    },
-    {
-      id: 'pending',
-      title: 'Modifications',
-      icon: Clock,
-      description: 'En attente de validation',
-      available: true,
-      category: 'content'
-    },
-    {
-      id: 'media',
-      title: 'Médias',
-      icon: Image,
-      description: 'Images et fichiers',
-      available: isModerator || isAdmin,
-      category: 'content'
-    },
-    {
-      id: 'users',
-      title: 'Utilisateurs',
-      icon: Users,
-      description: 'Gestion des comptes',
-      available: isAdmin,
-      category: 'management'
-    },
-    {
-      id: 'site-control',
-      title: 'Contrôle du site',
-      icon: Database,
-      description: 'Paramètres globaux',
-      available: isAdmin,
-      category: 'management'
-    },
-    {
-      id: 'security',
-      title: 'Sécurité',
-      icon: Shield,
-      description: 'Logs et permissions',
-      available: isAdmin,
-      category: 'management'
-    },
-    {
-      id: 'analytics',
-      title: 'Analytiques',
-      icon: BarChart3,
-      description: 'Statistiques avancées',
-      available: isAdmin,
-      category: 'management'
-    },
-    {
-      id: 'actions',
-      title: 'Journal d\'actions',
-      icon: Bell,
-      description: 'Historique des actions',
-      available: isAdmin,
-      category: 'monitoring'
-    },
-    {
-      id: 'ai-analytics',
-      title: 'Analyse IA',
-      icon: Brain,
-      description: 'Requêtes IA & tendances',
-      available: isAdmin,
-      category: 'monitoring'
-    },
-    {
-      id: 'ai-knowledge',
-      title: 'Sources IA',
-      icon: Brain,
-      description: 'Liens et sources de l\'IA',
-      available: isAdmin,
-      category: 'monitoring'
-    },
-    {
-      id: 'static-pages',
-      title: 'Pages statiques',
-      icon: FileText,
-      description: 'Contact, À propos, CGU...',
-      available: isAdmin,
-      category: 'content'
-    }
+    { id: 'overview', title: 'Vue d\'ensemble', icon: BarChart3, description: 'Tableau de bord principal', available: true, category: 'dashboard' },
+    { id: 'stats', title: 'Statistiques', icon: Activity, description: 'Métriques détaillées', available: true, category: 'dashboard' },
+    { id: 'homepage', title: 'Page d\'accueil', icon: Home, description: 'Gestion du contenu principal', available: true, category: 'content' },
+    { id: 'content', title: 'Contenu', icon: FileText, description: 'Articles et publications', available: true, category: 'content' },
+    { id: 'events', title: 'Événements', icon: Calendar, description: 'Gestion des événements', available: isAdmin || isModerator, category: 'content' },
+    { id: 'ads', title: 'Publicités', icon: BarChart3, description: 'Espaces publicitaires', available: isAdmin, category: 'content' },
+    { id: 'ad-stats', title: 'Stats Publicités', icon: Activity, description: 'Statistiques CTR', available: isAdmin, category: 'content' },
+    { id: 'prices', title: 'Prix & Marchés', icon: DollarSign, description: 'Gestion des prix', available: isModerator || isAdmin, category: 'content' },
+    { id: 'moderation', title: 'Modération', icon: Shield, description: 'Signalements et attente', available: isModerator || isAdmin, category: 'content' },
+    { id: 'pending', title: 'Modifications', icon: Clock, description: 'En attente de validation', available: true, category: 'content' },
+    { id: 'media', title: 'Médias', icon: Image, description: 'Images et fichiers', available: isModerator || isAdmin, category: 'content' },
+    { id: 'users', title: 'Utilisateurs', icon: Users, description: 'Gestion des comptes', available: isAdmin, category: 'management' },
+    { id: 'site-control', title: 'Contrôle du site', icon: Database, description: 'Paramètres globaux', available: isAdmin, category: 'management' },
+    { id: 'security', title: 'Sécurité', icon: Shield, description: 'Logs et permissions', available: isAdmin, category: 'management' },
+    { id: 'analytics', title: 'Analytiques', icon: BarChart3, description: 'Statistiques avancées', available: isAdmin, category: 'management' },
+    { id: 'actions', title: 'Journal d\'actions', icon: Bell, description: 'Historique des actions', available: isAdmin, category: 'monitoring' },
+    { id: 'ai-analytics', title: 'Analyse IA', icon: Brain, description: 'Requêtes IA & tendances', available: isAdmin, category: 'monitoring' },
+    { id: 'ai-knowledge', title: 'Sources IA', icon: Brain, description: 'Liens et sources de l\'IA', available: isAdmin, category: 'monitoring' },
+    { id: 'static-pages', title: 'Pages statiques', icon: FileText, description: 'Contact, À propos...', available: isAdmin, category: 'content' },
   ];
 
   const getCategory = (category: string) => {
@@ -202,10 +55,15 @@ export default function AdminSidebar({
 
   const categories = ['dashboard', 'content', 'management', 'monitoring'];
 
-  return (
-    <div className="w-80 bg-white border-r border-slate-200 shadow-sm">
+  const handleSectionChange = (id: string) => {
+    onSectionChange(id);
+    setMobileOpen(false);
+  };
+
+  const sidebarContent = (
+    <>
       {/* Header */}
-      <div className="p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
+      <div className="p-4 sm:p-6 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-purple-50">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
             {isAdmin ? <Crown className="h-5 w-5 text-white" /> : <UserCheck className="h-5 w-5 text-white" />}
@@ -223,14 +81,14 @@ export default function AdminSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+      <nav className="p-3 sm:p-4 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
         {categories.map((category) => {
           const categoryItems = menuItems.filter(item => item.category === category && item.available);
           if (categoryItems.length === 0) return null;
 
           return (
             <div key={category}>
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-2">
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 sm:mb-3 px-2">
                 {getCategory(category)}
               </h3>
               <div className="space-y-1">
@@ -241,25 +99,25 @@ export default function AdminSidebar({
                   return (
                     <button
                       key={item.id}
-                      onClick={() => onSectionChange(item.id)}
-                      className={`w-full flex items-center justify-between p-3 rounded-lg transition-all duration-200 group ${
+                      onClick={() => handleSectionChange(item.id)}
+                      className={`w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg transition-all duration-200 group ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/25'
                           : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
                       }`}
                     >
-                      <div className="flex items-center space-x-3">
-                        <Icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}`} />
-                        <div className="text-left">
-                          <div className={`font-medium ${isActive ? 'text-white' : 'text-slate-900'}`}>
+                      <div className="flex items-center space-x-3 min-w-0">
+                        <Icon className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}`} />
+                        <div className="text-left min-w-0">
+                          <div className={`font-medium text-sm sm:text-base truncate ${isActive ? 'text-white' : 'text-slate-900'}`}>
                             {item.title}
                           </div>
-                          <div className={`text-xs ${isActive ? 'text-blue-100' : 'text-slate-500'}`}>
+                          <div className={`text-xs truncate hidden sm:block ${isActive ? 'text-blue-100' : 'text-slate-500'}`}>
                             {item.description}
                           </div>
                         </div>
                       </div>
-                      <ChevronRight className={`h-4 w-4 transition-transform ${
+                      <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform ${
                         isActive ? 'text-white rotate-90' : 'text-slate-400 group-hover:text-slate-600'
                       }`} />
                     </button>
@@ -270,7 +128,29 @@ export default function AdminSidebar({
           );
         })}
       </nav>
+    </>
+  );
 
-    </div>
+  return (
+    <>
+      {/* Mobile toggle button */}
+      <div className="lg:hidden fixed bottom-4 left-4 z-40">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button size="icon" className="h-12 w-12 rounded-full shadow-lg bg-gradient-to-r from-blue-500 to-purple-600">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-[280px] sm:w-[320px] flex flex-col">
+            {sidebarContent}
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex lg:w-80 bg-white border-r border-slate-200 shadow-sm flex-col">
+        {sidebarContent}
+      </div>
+    </>
   );
 }

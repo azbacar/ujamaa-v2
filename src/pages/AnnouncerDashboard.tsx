@@ -107,17 +107,17 @@ export default function AnnouncerDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
-      <main className="container mx-auto px-4 py-8 max-w-5xl space-y-6">
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Megaphone className="h-8 w-8 text-primary" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-3">
+              <Megaphone className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               Espace Annonceur
             </h1>
-            <p className="text-muted-foreground mt-1">Gérez vos annonces et privilèges</p>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Gérez vos annonces et privilèges</p>
           </div>
-          <Button variant="outline" onClick={() => navigate('/pro')}>
+          <Button variant="outline" size="sm" onClick={() => navigate('/pro')}>
             <Crown className="h-4 w-4 mr-2" /> Upgrade PRO
           </Button>
         </div>
@@ -158,7 +158,7 @@ export default function AnnouncerDashboard() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-bold">{items.length}</p>
@@ -224,7 +224,7 @@ export default function AnnouncerDashboard() {
                 <CardDescription>Votre annonce sera soumise à modération avant publication</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Type</Label>
                     <Select value={newForm.type} onValueChange={v => setNewForm({ ...newForm, type: v })}>

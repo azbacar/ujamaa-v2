@@ -33,28 +33,28 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
 
   return (
     <header className="sticky top-0 z-50 glass-effect border-b border-white/20 shadow-lg">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between gap-6">
+      <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-6">
           {/* Logo et Titre */}
-          <Link to="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
+          <Link to="/" className="flex items-center gap-2 sm:gap-4 hover:opacity-80 transition-opacity flex-shrink-0">
             {settings?.site_logo_url ? (
               <img 
                 src={settings.site_logo_url} 
                 alt={settings.site_name || 'Logo'} 
-                className="w-14 h-14 object-contain"
+                className="w-10 h-10 sm:w-14 sm:h-14 object-contain"
               />
             ) : (
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 via-emerald-600 to-ocean-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 bg-gradient-to-br from-emerald-500 via-emerald-600 to-ocean-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-bold text-lg sm:text-2xl shadow-lg">
                 U
               </div>
             )}
-            <div>
-              <h1 className="text-2xl font-bold gradient-text">{settings?.site_name || 'Ujamaan'}</h1>
-              <p className="text-sm text-emerald-600 font-medium">Call Center</p>
+            <div className="hidden sm:block">
+              <h1 className="text-xl sm:text-2xl font-bold gradient-text">{settings?.site_name || 'Ujamaan'}</h1>
+              <p className="text-xs sm:text-sm text-emerald-600 font-medium">Call Center</p>
             </div>
           </Link>
 
-          {/* Navigation */}
+          {/* Navigation desktop */}
           <nav className="hidden lg:flex items-center space-x-6">
             <Link to="/prix" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               💰 {t('nav.prices')}
@@ -73,8 +73,8 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             </Link>
           </nav>
 
-          {/* Bouton de recherche plein écran */}
-          <div className="flex-1 max-w-xl">
+          {/* Bouton de recherche - desktop */}
+          <div className="hidden md:block flex-1 max-w-xl">
             <Button
               variant="outline"
               onClick={() => setShowFullScreenSearch(true)}
@@ -86,7 +86,17 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-3">
+            {/* Search mobile */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowFullScreenSearch(true)}
+              className="md:hidden h-10 w-10 rounded-xl text-emerald-600"
+            >
+              <Search className="w-5 h-5" />
+            </Button>
+
             {/* Notifications */}
             <NotificationSystemReal />
 
@@ -94,8 +104,8 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-12 px-4 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50">
-                    <User className="w-4 h-4 mr-2" />
+                  <Button variant="outline" size="sm" className="h-10 sm:h-12 px-2 sm:px-4 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50">
+                    <User className="w-4 h-4 sm:mr-2" />
                     <span className="hidden sm:inline">Profil</span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -105,14 +115,10 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     <p className="text-xs text-gray-500 capitalize">{role}</p>
                   </div>
                   <DropdownMenuSeparator />
-                  
-                  {/* Section gestion compte pour tous */}
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <Settings className="h-4 w-4 mr-2" />
                     Mon compte
                   </DropdownMenuItem>
-                  
-                  {/* Section admin pour admins et modérateurs */}
                   {(isAdmin || isModerator) && (
                     <>
                       <DropdownMenuSeparator />
@@ -122,7 +128,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                       </DropdownMenuItem>
                     </>
                   )}
-                  
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
@@ -134,7 +139,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               <Button 
                 variant="default" 
                 size="sm" 
-                className="h-12 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-ocean-500"
+                className="h-10 sm:h-12 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-ocean-500 text-xs sm:text-sm"
                 onClick={() => navigate('/auth')}
               >
                 Connexion
@@ -146,7 +151,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-12 w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50"
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50"
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
               >
                 <Menu className="w-5 h-5 text-emerald-600" />
@@ -156,39 +161,19 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               {showMobileMenu && (
                 <div className="absolute right-0 top-14 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
                   <nav className="py-2">
-                    <Link 
-                      to="/prix" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
+                    <Link to="/prix" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       💰 {t('nav.prices')}
                     </Link>
-                    <Link 
-                      to="/annonces" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
+                    <Link to="/annonces" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       📢 {t('nav.announcements')}
                     </Link>
-                    <Link 
-                      to="/evenements" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
+                    <Link to="/evenements" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🎭 {t('nav.events')}
                     </Link>
-                    <Link 
-                      to="/appels-offres" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
+                    <Link to="/appels-offres" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       📋 {t('nav.tenders')}
                     </Link>
-                    <Link 
-                      to="/services" 
-                      className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
+                    <Link to="/services" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🏛️ {t('nav.services')}
                     </Link>
                   </nav>
@@ -199,7 +184,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
         </div>
       </div>
       
-      {/* Full Screen Search Modal */}
       <FullScreenSearch 
         isOpen={showFullScreenSearch} 
         onClose={() => setShowFullScreenSearch(false)} 

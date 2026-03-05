@@ -399,7 +399,7 @@ const FloatingChatbox = () => {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-gradient-to-r from-emerald-500 to-ocean-500 shadow-lg hover:shadow-xl transition-all duration-300 z-50"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-gradient-to-r from-emerald-500 to-ocean-500 shadow-lg hover:shadow-xl transition-all duration-300 z-50"
         size="icon"
       >
         <MessageCircle className="h-6 w-6" />
@@ -410,8 +410,8 @@ const FloatingChatbox = () => {
 
   return (
     <Card
-      className={`fixed bottom-6 right-6 w-[360px] sm:w-[400px] shadow-2xl z-50 transition-all duration-300 border-0 rounded-2xl overflow-hidden ${
-        isMinimized ? 'h-[56px]' : 'h-[480px]'
+      className={`fixed bottom-0 right-0 sm:bottom-6 sm:right-6 w-full sm:w-[360px] md:w-[400px] shadow-2xl z-50 transition-all duration-300 border-0 sm:rounded-2xl overflow-hidden ${
+        isMinimized ? 'h-[56px]' : 'h-[85vh] sm:h-[480px]'
       }`}
     >
       {/* Header */}
@@ -438,7 +438,8 @@ const FloatingChatbox = () => {
       </CardHeader>
 
       {!isMinimized && (
-        <CardContent className="p-0 flex flex-col" style={{ height: 'calc(480px - 56px)' }}>
+        <CardContent className="p-0 flex flex-col" style={{ height: 'calc(85vh - 56px)' }}>
+          <style>{`@media (min-width: 640px) { .floating-chat-content { height: calc(480px - 56px) !important; } }`}</style>
           {/* Messages area */}
           <div ref={scrollAreaRootRef} className="flex-1 min-h-0">
             <ScrollArea className="h-full">

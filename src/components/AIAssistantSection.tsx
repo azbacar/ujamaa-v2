@@ -426,22 +426,22 @@ const AIAssistantSection = () => {
   }
 
   return (
-    <section id="assistant-ia" className="space-y-8">
-      <div className="text-center space-y-6">
-        <div className="flex items-center justify-center gap-4">
-          <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <Bot className="w-8 h-8 text-white" />
+    <section id="assistant-ia" className="space-y-6 sm:space-y-8">
+      <div className="text-center space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-center gap-3 sm:gap-4">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-emerald-500 to-ocean-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
+            <Bot className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-black gradient-text">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black gradient-text">
             {aiName}
           </h2>
         </div>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+        <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
           Votre assistant intelligent pour Mayotte et les Comores
         </p>
         <Button 
           size="lg"
-          className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-ocean-500 text-white px-6 sm:px-8 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           onClick={handleOpenFloatingChat}
         >
           <MessageCircle className="w-5 h-5 mr-2" />
@@ -449,10 +449,10 @@ const AIAssistantSection = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Zone de chat */}
         <div className="lg:col-span-2" id="chat-section">
-          <Card className="h-[600px] flex flex-col shadow-xl border-0 rounded-2xl overflow-hidden">
+          <Card className="h-[400px] sm:h-[600px] flex flex-col shadow-xl border-0 rounded-2xl overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white py-3 px-4">
               <CardTitle className="flex items-center gap-3 justify-between text-base">
                 <div className="flex items-center gap-2.5">
