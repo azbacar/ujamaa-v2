@@ -173,73 +173,31 @@ export const HomepageManagementSection = () => {
     }
   };
 
-  const [categories, setCategories] = useState<Category[]>([
-    {
-      id: '1',
-      title: 'Prix & Marchés',
-      description: 'Prix actualisés des produits alimentaires et biens de consommation dans tous les marchés',
-      icon: '💰',
-      itemCount: 156,
-      link: '/prix',
-      featured: true,
-      isActive: true,
-      order: 1
-    },
-    {
-      id: '2',
-      title: 'Appels d\'Offres',
-      description: 'Marchés publics, appels à projets et opportunités d\'affaires',
-      icon: '📋',
-      itemCount: 23,
-      link: '/appels-offres',
-      featured: false,
-      isActive: true,
-      order: 2
-    },
-    {
-      id: '3',
-      title: 'Événements',
-      description: 'Manifestations culturelles, cérémonies officielles et événements communautaires',
-      icon: '🎭',
-      itemCount: 45,
-      link: '/evenements',
-      featured: false,
-      isActive: true,
-      order: 3
-    },
-    {
-      id: '4',
-      title: 'Services Publics',
-      description: 'Horaires, contacts et informations sur les administrations et services',
-      icon: '🏛️',
-      itemCount: 78,
-      link: '/services',
-      featured: false,
-      isActive: true,
-      order: 4
-    },
-    {
-      id: '5',
-      title: 'Transport',
-      description: 'Horaires des liaisons, tarifs et informations de transport inter-îles',
-      icon: '🚢',
-      itemCount: 34,
-      featured: false,
-      isActive: true,
-      order: 5
-    },
-    {
-      id: '6',
-      title: 'Santé',
-      description: 'Services de santé, pharmacies de garde et informations médicales',
-      icon: '🏥',
-      itemCount: 67,
-      link: '/services',
-      featured: true,
-      isActive: true,
-      order: 6
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('homepage_categories')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (data) {
+      setCategories(data.map(c => ({
+        id: c.id,
+        title: c.title,
+        description: c.description,
+        icon: c.icon,
+        itemCount: 0,
+        link: c.link || undefined,
+        featured: c.featured,
+        isActive: c.is_active,
+        order: c.sort_order
+      })));
     }
-  ]);
+  };
 
   const [stats, setStats] = useState<HomepageStats>({
     totalUsers: 0,
@@ -308,15 +266,35 @@ export const HomepageManagementSection = () => {
     }
   };
 
-  const handleSaveCategory = () => {
-    if (editingCategory) {
-      setCategories(prev => 
-        prev.map(cat => cat.id === editingCategory.id ? editingCategory : cat)
-      );
-      toast({
-        title: "Catégorie mise à jour",
-        description: `La catégorie "${editingCategory.title}" a été mise à jour.`,
-      });
+  const handleSaveCategory = async () => {
+    if (!editingCategory) return;
+    try {
+      const payload = {
+        title: editingCategory.title,
+        description: editingCategory.description,
+        icon: editingCategory.icon,
+        link: editingCategory.link || null,
+        featured: editingCategory.featured,
+        is_active: editingCategory.isActive,
+        sort_order: editingCategory.order,
+        updated_at: new Date().toISOString()
+      };
+      // Check if it's a new category (temp id) or existing
+      const existing = categories.find(c => c.id === editingCategory.id);
+      if (existing && editingCategory.id.length > 10) {
+        // existing DB record
+        const { error } = await supabase.from('homepage_categories').update(payload).eq('id', editingCategory.id);
+        if (error) throw error;
+      } else {
+        // new record
+        const { error } = await supabase.from('homepage_categories').insert(payload);
+        if (error) throw error;
+      }
+      toast({ title: "Catégorie sauvegardée", description: `"${editingCategory.title}" a été sauvegardée.` });
+      fetchCategories();
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Erreur", variant: "destructive" });
     }
     setEditingCategory(null);
     setIsCategoryDialogOpen(false);
@@ -324,7 +302,7 @@ export const HomepageManagementSection = () => {
 
   const handleAddCategory = () => {
     const newCategory: Category = {
-      id: Date.now().toString(),
+      id: 'new',
       title: 'Nouvelle Catégorie',
       description: 'Description de la nouvelle catégorie',
       icon: '📁',
@@ -333,25 +311,25 @@ export const HomepageManagementSection = () => {
       isActive: true,
       order: categories.length + 1
     };
-    setCategories(prev => [...prev, newCategory]);
     setEditingCategory(newCategory);
     setIsCategoryDialogOpen(true);
   };
 
-  const handleDeleteCategory = (categoryId: string) => {
-    setCategories(prev => prev.filter(cat => cat.id !== categoryId));
-    toast({
-      title: "Catégorie supprimée",
-      description: "La catégorie a été supprimée avec succès.",
-    });
+  const handleDeleteCategory = async (categoryId: string) => {
+    const { error } = await supabase.from('homepage_categories').delete().eq('id', categoryId);
+    if (error) {
+      toast({ title: "Erreur", variant: "destructive" });
+      return;
+    }
+    fetchCategories();
+    toast({ title: "Catégorie supprimée" });
   };
 
-  const toggleCategoryStatus = (categoryId: string) => {
-    setCategories(prev => 
-      prev.map(cat => 
-        cat.id === categoryId ? { ...cat, isActive: !cat.isActive } : cat
-      )
-    );
+  const toggleCategoryStatus = async (categoryId: string) => {
+    const cat = categories.find(c => c.id === categoryId);
+    if (!cat) return;
+    await supabase.from('homepage_categories').update({ is_active: !cat.isActive }).eq('id', categoryId);
+    fetchCategories();
   };
 
   return (
