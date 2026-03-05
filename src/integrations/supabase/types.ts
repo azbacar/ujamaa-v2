@@ -858,10 +858,17 @@ export type Database = {
           hero_title: string | null
           id: string
           maintenance_mode: boolean
+          og_description: string | null
+          og_image_url: string | null
+          og_title: string | null
           public_view_access: boolean
+          robots_txt: string | null
+          seo_keywords: string | null
           site_favicon_url: string | null
           site_logo_url: string | null
           site_name: string | null
+          twitter_card: string | null
+          twitter_site: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -877,10 +884,17 @@ export type Database = {
           hero_title?: string | null
           id?: string
           maintenance_mode?: boolean
+          og_description?: string | null
+          og_image_url?: string | null
+          og_title?: string | null
           public_view_access?: boolean
+          robots_txt?: string | null
+          seo_keywords?: string | null
           site_favicon_url?: string | null
           site_logo_url?: string | null
           site_name?: string | null
+          twitter_card?: string | null
+          twitter_site?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -896,10 +910,17 @@ export type Database = {
           hero_title?: string | null
           id?: string
           maintenance_mode?: boolean
+          og_description?: string | null
+          og_image_url?: string | null
+          og_title?: string | null
           public_view_access?: boolean
+          robots_txt?: string | null
+          seo_keywords?: string | null
           site_favicon_url?: string | null
           site_logo_url?: string | null
           site_name?: string | null
+          twitter_card?: string | null
+          twitter_site?: string | null
           updated_at?: string
           updated_by?: string | null
         }

@@ -31,6 +31,7 @@ import AIAnalyticsSection from '@/components/admin/AIAnalyticsSection';
 import StaticPagesManagementSection from '@/components/admin/StaticPagesManagementSection';
 import ModerationQueueSection from '@/components/admin/ModerationQueueSection';
 import AIKnowledgeManagementSection from '@/components/admin/AIKnowledgeManagementSection';
+import SEOManagementSection from '@/components/admin/SEOManagementSection';
 
 interface PendingModification {
   id: string;
@@ -173,6 +174,7 @@ export default function AdminDashboard() {
       case 'static-pages': return <StaticPagesManagementSection />;
       case 'moderation': return <ModerationQueueSection />;
       case 'ai-knowledge': return <AIKnowledgeManagementSection />;
+      case 'seo': return <SEOManagementSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} />;
     }
   };
