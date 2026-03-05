@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Megaphone, Plus, FileText, Eye, BarChart3, Crown, 
-  CheckCircle, Zap, Phone, Save, Trash2, ChevronRight 
+  CheckCircle, Zap, Phone, Save, Trash2, ChevronRight, MessageCircle 
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,7 +50,7 @@ export default function AnnouncerDashboard() {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [privileges, setPrivileges] = useState<Privilege[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newForm, setNewForm] = useState({ title: '', description: '', type: 'announcement', category: '' });
+  const [newForm, setNewForm] = useState({ title: '', description: '', type: 'announcement', category: '', contact_phone: '', contact_whatsapp: '' });
 
   useEffect(() => {
     if (user) fetchData();
@@ -81,10 +81,12 @@ export default function AnnouncerDashboard() {
         category: newForm.category || null,
         author_id: user.id,
         status: 'draft',
+        contact_phone: newForm.contact_phone || null,
+        contact_whatsapp: newForm.contact_whatsapp || null,
       });
       if (error) throw error;
       toast.success('Annonce soumise pour modération');
-      setNewForm({ title: '', description: '', type: 'announcement', category: '' });
+      setNewForm({ title: '', description: '', type: 'announcement', category: '', contact_phone: '', contact_whatsapp: '' });
       fetchData();
     } catch (e: any) {
       toast.error(e.message || 'Erreur');
@@ -249,6 +251,20 @@ export default function AnnouncerDashboard() {
                   <Label>Description</Label>
                   <Textarea value={newForm.description} onChange={e => setNewForm({ ...newForm, description: e.target.value })} rows={5} placeholder="Description détaillée..." />
                 </div>
+                {(newForm.type === 'service' || newForm.type === 'tender') && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                    <div>
+                      <Label className="flex items-center gap-2"><Phone className="h-4 w-4" /> Numéro de contact</Label>
+                      <Input value={newForm.contact_phone} onChange={e => setNewForm({ ...newForm, contact_phone: e.target.value })} placeholder="+269 XXX XX XX" />
+                      <p className="text-xs text-muted-foreground mt-1">Visible uniquement avec un compte Pro</p>
+                    </div>
+                    <div>
+                      <Label className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> WhatsApp</Label>
+                      <Input value={newForm.contact_whatsapp} onChange={e => setNewForm({ ...newForm, contact_whatsapp: e.target.value })} placeholder="269XXXXXXX" />
+                      <p className="text-xs text-muted-foreground mt-1">Numéro WhatsApp sans + ni espaces</p>
+                    </div>
+                  </div>
+                )}
                 <Button onClick={handleCreate}>
                   <Save className="h-4 w-4 mr-2" /> Soumettre pour modération
                 </Button>

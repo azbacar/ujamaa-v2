@@ -287,6 +287,8 @@ export type Database = {
         Row: {
           author_id: string
           category: string | null
+          contact_phone: string | null
+          contact_whatsapp: string | null
           created_at: string
           description: string | null
           id: string
@@ -300,6 +302,8 @@ export type Database = {
         Insert: {
           author_id: string
           category?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -313,6 +317,8 @@ export type Database = {
         Update: {
           author_id?: string
           category?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
           created_at?: string
           description?: string | null
           id?: string
