@@ -152,9 +152,9 @@ const TendersPage = () => {
           </CardContent>
         </Card>
 
-        {/* Espace publicitaire */}
+        {/* Espace publicitaire - banner */}
         <div className="flex justify-center mb-8">
-          <AdSpace size="large" position="content" />
+          <AdSpace size="banner" position="header" />
         </div>
 
         {loading ? (
@@ -235,6 +235,11 @@ const TendersPage = () => {
               ✨ Publier un appel d'offres
             </Button>
           </div>
+        </div>
+
+        {/* Footer ad */}
+        <div className="mt-8 flex justify-center">
+          <AdSpace size="banner" position="footer" lazy />
         </div>
       </main>
       

@@ -332,6 +332,11 @@ const PricesPage = () => {
             </Button>
           </div>
         </div>
+
+        {/* Footer ad */}
+        <div className="mt-8 flex justify-center">
+          <AdSpace size="banner" position="footer" lazy />
+        </div>
       </main>
 
       {showPriceForm && (
