@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AdSpace from '@/components/AdSpace';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Clock, MapPin, User, Share2 } from 'lucide-react';
@@ -164,8 +165,15 @@ const AnnouncementDetail = () => {
                   <ReportButton contentType="announcement" contentId={dbItem.id} />
                 </CardContent>
               </Card>
+
+              {/* Sidebar ad */}
+              <AdSpace size="small" position="sidebar" lazy />
             </div>
           </div>
+        {/* Banner ad before footer */}
+        <div className="mt-8 flex justify-center">
+          <AdSpace size="banner" position="footer" lazy />
+        </div>
         </main>
         <Footer />
       </div>

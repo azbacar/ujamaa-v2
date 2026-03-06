@@ -162,9 +162,9 @@ const EventsPage = () => {
           </CardContent>
         </Card>
 
-        {/* Espace publicitaire */}
+        {/* Espace publicitaire - banner */}
         <div className="mb-8">
-          <AdSpace size="medium" position="content" className="mx-auto" />
+          <AdSpace size="banner" position="header" className="mx-auto" />
         </div>
 
         {/* Liste des événements */}
@@ -251,6 +251,11 @@ const EventsPage = () => {
               ✨ Ajouter mon événement
             </Button>
           </div>
+        </div>
+
+        {/* Footer ad */}
+        <div className="mt-8 flex justify-center">
+          <AdSpace size="banner" position="footer" lazy />
         </div>
       </main>
 
