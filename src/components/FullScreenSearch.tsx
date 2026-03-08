@@ -59,25 +59,11 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   }, [onClose]);
 
   useEffect(() => {
-    const normalized = searchTerm.trim();
+    const normalized = normalizeSearchTerm(searchTerm);
 
     if (!normalized) {
       setResults([]);
-      setHasSearched(false);
-      return;
-    }
-
-    const sanitizeForPostgrestOr = (value: string) =>
-      value
-        .toLowerCase()
-        .replace(/[,*()]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-    const query = sanitizeForPostgrestOr(normalized);
-
-    if (!query) {
-      setResults([]);
+      setSearchErrors([]);
       setHasSearched(false);
       return;
     }
@@ -86,92 +72,152 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
       setIsSearching(true);
       setHasSearched(true);
 
-      try {
-        const pattern = `*${query}*`;
+      const pattern = `%${normalized}%`;
+      const sourceLabels: Record<string, string> = {
+        events: 'Événements',
+        content_items: 'Annonces/Services/Appels d\'offres',
+        prices: 'Prix',
+        gastronomy_items: 'Gastronomie',
+        global_announcements: 'Alertes',
+      };
 
-        const [eventsRes, contentRes, pricesRes, gastronomyRes, alertsRes] = await Promise.all([
-          supabase
-            .from('events')
-            .select('id, title, description, category')
-            .eq('status', 'published')
-            .or(`title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern}`)
-            .limit(5),
-          supabase
-            .from('content_items')
-            .select('id, title, description, type, category')
-            .eq('status', 'published')
-            .or(`title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern}`)
-            .limit(10),
-          supabase
-            .from('prices')
-            .select('id, product, category, market, island')
-            .eq('status', 'published')
-            .or(`product.ilike.${pattern},category.ilike.${pattern},market.ilike.${pattern}`)
-            .limit(5),
-          supabase
-            .from('gastronomy_items')
-            .select('id, title, description, category, type')
-            .eq('status', 'published')
-            .or(`title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern}`)
-            .limit(5),
-          supabase
-            .from('global_announcements')
-            .select('id, title, content, type')
-            .or(`title.ilike.${pattern},content.ilike.${pattern}`)
-            .limit(5),
-        ]);
+      const tasks: Array<Promise<{ source: string; items: SearchResult[] }>> = [
+        (async () => {
+          const [byTitle, byDescription, byCategory] = await Promise.all([
+            supabase.from('events').select('id, title, description, category').eq('status', 'published').ilike('title', pattern).limit(5),
+            supabase.from('events').select('id, title, description, category').eq('status', 'published').ilike('description', pattern).limit(5),
+            supabase.from('events').select('id, title, description, category').eq('status', 'published').ilike('category', pattern).limit(5),
+          ]);
 
-        const sourceLabels: Record<string, string> = {
-          events: 'Événements', content_items: 'Annonces/Services',
-          prices: 'Prix', gastronomy_items: 'Gastronomie', global_announcements: 'Alertes',
-        };
-        const failedSources = [
-          ['events', eventsRes.error],
-          ['content_items', contentRes.error],
-          ['prices', pricesRes.error],
-          ['gastronomy_items', gastronomyRes.error],
-          ['global_announcements', alertsRes.error],
-        ]
-          .filter(([, error]) => Boolean(error))
-          .map(([name]) => sourceLabels[name as string] || name);
-
-        setSearchErrors(failedSources as string[]);
-
-        const searchResults: SearchResult[] = [];
-
-        eventsRes.data?.forEach((e) => {
-          searchResults.push({ id: e.id, type: 'event', title: e.title, description: e.description || '', url: `/evenements/${e.id}`, category: e.category });
-        });
-
-        contentRes.data?.forEach((c) => {
-          const typeMap: Record<string, { type: SearchResult['type']; url: string }> = {
-            announcement: { type: 'announcement', url: `/annonces/${c.id}` },
-            service: { type: 'service', url: `/services/${c.id}` },
-            tender: { type: 'tender', url: `/appels-offres/${c.id}` },
+          const rows = [...(byTitle.data || []), ...(byDescription.data || []), ...(byCategory.data || [])];
+          return {
+            source: 'events',
+            items: dedupeResults(rows).slice(0, 5).map((e) => ({
+              id: e.id,
+              type: 'event',
+              title: e.title,
+              description: e.description || '',
+              url: `/evenements/${e.id}`,
+              category: e.category || undefined,
+            })),
           };
-          const mapped = typeMap[c.type] || { type: 'announcement', url: `/annonces/${c.id}` };
-          searchResults.push({ id: c.id, type: mapped.type, title: c.title, description: c.description || '', url: mapped.url, category: c.category || undefined });
+        })(),
+        (async () => {
+          const [byTitle, byDescription, byCategory] = await Promise.all([
+            supabase.from('content_items').select('id, title, description, type, category').eq('status', 'published').ilike('title', pattern).limit(10),
+            supabase.from('content_items').select('id, title, description, type, category').eq('status', 'published').ilike('description', pattern).limit(10),
+            supabase.from('content_items').select('id, title, description, type, category').eq('status', 'published').ilike('category', pattern).limit(10),
+          ]);
+
+          const rows = [...(byTitle.data || []), ...(byDescription.data || []), ...(byCategory.data || [])];
+          const typeMap: Record<string, { type: SearchResult['type']; url: (id: string) => string }> = {
+            announcement: { type: 'announcement', url: (id) => `/annonces/${id}` },
+            service: { type: 'service', url: (id) => `/services/${id}` },
+            tender: { type: 'tender', url: (id) => `/appels-offres/${id}` },
+          };
+
+          return {
+            source: 'content_items',
+            items: dedupeResults(rows)
+              .slice(0, 10)
+              .map((c) => {
+                const mapped = typeMap[c.type] || { type: 'announcement' as SearchResult['type'], url: (id: string) => `/annonces/${id}` };
+                return {
+                  id: c.id,
+                  type: mapped.type,
+                  title: c.title,
+                  description: c.description || '',
+                  url: mapped.url(c.id),
+                  category: c.category || undefined,
+                };
+              }),
+          };
+        })(),
+        (async () => {
+          const [byProduct, byCategory, byMarket] = await Promise.all([
+            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('product', pattern).limit(5),
+            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('category', pattern).limit(5),
+            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('market', pattern).limit(5),
+          ]);
+
+          const rows = [...(byProduct.data || []), ...(byCategory.data || []), ...(byMarket.data || [])];
+          return {
+            source: 'prices',
+            items: dedupeResults(rows).slice(0, 5).map((p) => ({
+              id: p.id,
+              type: 'price',
+              title: p.product,
+              description: `${p.market} - ${p.island}`,
+              url: '/prix',
+              category: p.category,
+            })),
+          };
+        })(),
+        (async () => {
+          const [byTitle, byDescription, byCategory] = await Promise.all([
+            supabase.from('gastronomy_items').select('id, title, description, category').eq('status', 'published').ilike('title', pattern).limit(5),
+            supabase.from('gastronomy_items').select('id, title, description, category').eq('status', 'published').ilike('description', pattern).limit(5),
+            supabase.from('gastronomy_items').select('id, title, description, category').eq('status', 'published').ilike('category', pattern).limit(5),
+          ]);
+
+          const rows = [...(byTitle.data || []), ...(byDescription.data || []), ...(byCategory.data || [])];
+          return {
+            source: 'gastronomy_items',
+            items: dedupeResults(rows).slice(0, 5).map((g) => ({
+              id: g.id,
+              type: 'gastronomy',
+              title: g.title,
+              description: g.description || '',
+              url: `/gastronomie/${g.id}`,
+              category: g.category || undefined,
+            })),
+          };
+        })(),
+        (async () => {
+          const [byTitle, byContent] = await Promise.all([
+            supabase.from('global_announcements').select('id, title, content, type').ilike('title', pattern).limit(5),
+            supabase.from('global_announcements').select('id, title, content, type').ilike('content', pattern).limit(5),
+          ]);
+
+          const rows = [...(byTitle.data || []), ...(byContent.data || [])];
+          return {
+            source: 'global_announcements',
+            items: dedupeResults(rows).slice(0, 5).map((a) => ({
+              id: a.id,
+              type: 'alert',
+              title: a.title,
+              description: a.content || '',
+              url: '/',
+              category: a.type,
+            })),
+          };
+        })(),
+      ];
+
+      try {
+        const settled = await Promise.allSettled(tasks);
+        const nextResults: SearchResult[] = [];
+        const failedSources: string[] = [];
+
+        settled.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            nextResults.push(...result.value.items);
+          } else {
+            const sourceName = Object.keys(sourceLabels).find((key) => result.reason?.message?.includes(key));
+            failedSources.push(sourceName ? sourceLabels[sourceName] : 'Source indisponible');
+          }
         });
 
-        pricesRes.data?.forEach((p) => {
-          searchResults.push({ id: p.id, type: 'price', title: p.product, description: `${p.market} - ${p.island}`, url: '/prix', category: p.category });
-        });
-
-        gastronomyRes.data?.forEach((g) => {
-          searchResults.push({ id: g.id, type: 'gastronomy' as SearchResult['type'], title: g.title, description: g.description || '', url: `/gastronomie/${g.id}`, category: g.category || undefined });
-        });
-
-        alertsRes.data?.forEach((a) => {
-          searchResults.push({ id: a.id, type: 'alert' as SearchResult['type'], title: a.title, description: a.content || '', url: '/', category: a.type });
-        });
-
-        setResults(searchResults);
+        setSearchErrors(Array.from(new Set(failedSources)));
+        setResults(dedupeResults(nextResults));
       } catch (error) {
+        setSearchErrors(['Recherche indisponible']);
+        setResults([]);
         console.error('Erreur de recherche:', error);
       } finally {
         setIsSearching(false);
       }
-    }, 150);
+    }, 120);
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
