@@ -273,8 +273,8 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm animate-fadeIn">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-white dark:bg-gray-950" style={{ opacity: 1 }}>
       <div className="container mx-auto px-4 py-8 h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
