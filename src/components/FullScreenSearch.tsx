@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Search, MessageCircle, Loader2 } from 'lucide-react';
+import { X, Search, MessageCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
