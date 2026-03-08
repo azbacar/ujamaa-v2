@@ -270,7 +270,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
     const labels: Record<string, string> = {
       price: 'Prix', event: 'Événement', service: 'Service',
       announcement: 'Annonce', tender: 'Appel d\'offres',
-      gastronomy: 'Gastronomie', alert: 'Alerte',
+      gastronomy: 'Gastronomie', alert: 'Alerte', page: 'Page',
     };
     return labels[type] || 'Autre';
   };
