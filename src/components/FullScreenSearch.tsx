@@ -117,33 +117,27 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
 
   const getTypeIcon = (type: SearchResult['type']) => {
     const icons: Record<string, string> = {
-      price: '💰',
-      event: '🎭',
-      service: '🏛️',
-      announcement: '📢',
-      tender: '📋',
+      price: '💰', event: '🎭', service: '🏛️', announcement: '📢',
+      tender: '📋', gastronomy: '🍽️', alert: '🚨',
     };
     return icons[type] || '📄';
   };
 
   const getTypeLabel = (type: SearchResult['type']) => {
     const labels: Record<string, string> = {
-      price: 'Prix',
-      event: 'Événement',
-      service: 'Service',
-      announcement: 'Annonce',
-      tender: 'Appel d\'offres',
+      price: 'Prix', event: 'Événement', service: 'Service',
+      announcement: 'Annonce', tender: 'Appel d\'offres',
+      gastronomy: 'Gastronomie', alert: 'Alerte',
     };
     return labels[type] || 'Autre';
   };
 
   const getTypeColor = (type: SearchResult['type']) => {
     const colors: Record<string, string> = {
-      price: 'bg-green-100 text-green-700',
-      event: 'bg-purple-100 text-purple-700',
-      service: 'bg-blue-100 text-blue-700',
-      announcement: 'bg-orange-100 text-orange-700',
-      tender: 'bg-yellow-100 text-yellow-700',
+      price: 'bg-green-100 text-green-700', event: 'bg-purple-100 text-purple-700',
+      service: 'bg-blue-100 text-blue-700', announcement: 'bg-orange-100 text-orange-700',
+      tender: 'bg-yellow-100 text-yellow-700', gastronomy: 'bg-pink-100 text-pink-700',
+      alert: 'bg-red-100 text-red-700',
     };
     return colors[type] || 'bg-gray-100 text-gray-700';
   };
