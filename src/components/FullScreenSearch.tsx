@@ -125,7 +125,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
           const typeMap: Record<string, { type: SearchResult['type']; url: string }> = {
             announcement: { type: 'announcement', url: `/annonces/${c.id}` },
             service: { type: 'service', url: `/services/${c.id}` },
-            tender: { type: 'tender', url: `/appels-offres` },
+            tender: { type: 'tender', url: `/appels-offres/${c.id}` },
           };
           const mapped = typeMap[c.type] || { type: 'announcement', url: `/annonces/${c.id}` };
           searchResults.push({ id: c.id, type: mapped.type, title: c.title, description: c.description || '', url: mapped.url, category: c.category || undefined });
