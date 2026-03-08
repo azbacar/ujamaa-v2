@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/components/LanguageProvider";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import FloatingChatbox from "@/components/FloatingChatbox";
+import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import Index from "./pages/Index";
 import PricesPage from "./pages/PricesPage";
 import EventsPage from "./pages/EventsPage";
