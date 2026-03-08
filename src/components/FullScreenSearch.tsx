@@ -19,6 +19,23 @@ interface FullScreenSearchProps {
   onClose: () => void;
 }
 
+const normalizeSearchTerm = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[%*,()'"`]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const dedupeResults = (items: SearchResult[]) => {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = `${item.type}-${item.id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
