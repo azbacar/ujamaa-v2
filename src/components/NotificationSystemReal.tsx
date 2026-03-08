@@ -1,37 +1,29 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { Bell, X, AlertTriangle, Info, CheckCircle, BellRing, BellOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRealTimeNotifications } from '@/hooks/useRealTimeNotifications';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useNavigate } from 'react-router-dom';
 
 const NotificationSystemReal = () => {
   const [showPanel, setShowPanel] = useState(false);
-  const [permissionGranted, setPermissionGranted] = useState(false);
   const { toast } = useToast();
   const { notifications, loading, markAsRead, deleteNotification } = useRealTimeNotifications();
+  const { isSubscribed, subscribe, unsubscribe, isSupported, loading: pushLoading } = usePushNotifications();
   const navigate = useNavigate();
 
-  const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        setPermissionGranted(true);
-        toast({
-          title: "Notifications activées",
-          description: "Vous recevrez maintenant les alertes importantes",
-        });
-        new Notification('UJAMAA - Notifications activées', {
-          body: 'Vous recevrez maintenant toutes les alertes importantes des Comores',
-          icon: '/favicon.ico'
-        });
+  const handleTogglePush = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+      toast({ title: 'Notifications push désactivées' });
+    } else {
+      const ok = await subscribe();
+      if (ok) {
+        toast({ title: '🔔 Notifications push activées !' });
       } else {
-        toast({
-          title: "Notifications refusées",
-          description: "Vous pouvez les activer plus tard dans les paramètres de votre navigateur",
-          variant: "destructive"
-        });
+        toast({ title: 'Échec', description: 'Vérifiez les paramètres de votre navigateur.', variant: 'destructive' });
       }
     }
   };
@@ -93,12 +85,7 @@ const NotificationSystemReal = () => {
         variant="outline" 
         size="sm" 
         className="h-12 w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50 relative"
-        onClick={() => {
-          if (!permissionGranted) {
-            requestNotificationPermission();
-          }
-          setShowPanel(!showPanel);
-        }}
+        onClick={() => setShowPanel(!showPanel)}
       >
         <Bell className="w-5 h-5 text-emerald-600" />
         {unreadCount > 0 && (
@@ -130,13 +117,18 @@ const NotificationSystemReal = () => {
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              {!permissionGranted && (
+              {isSupported && (
                 <Button
                   size="sm"
                   className="w-full mt-2 bg-white text-emerald-600 hover:bg-gray-50 text-xs sm:text-sm"
-                  onClick={requestNotificationPermission}
+                  onClick={handleTogglePush}
+                  disabled={pushLoading}
                 >
-                  Activer les notifications
+                  {isSubscribed ? (
+                    <><BellOff className="w-3 h-3 mr-1" /> Désactiver les push</>
+                  ) : (
+                    <><BellRing className="w-3 h-3 mr-1" /> Activer les push</>
+                  )}
                 </Button>
               )}
             </div>

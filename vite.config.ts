@@ -15,11 +15,12 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.png", "og-image.png"],
+      includeAssets: ["favicon.png", "og-image.png", "push-sw.js"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/~oauth/],
+        importScripts: ["/push-sw.js"],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/vpibvgdpeiicczelbynf\.supabase\.co\/.*/i,
