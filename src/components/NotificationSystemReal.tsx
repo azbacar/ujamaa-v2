@@ -9,9 +9,9 @@ import { useNavigate } from 'react-router-dom';
 
 const NotificationSystemReal = () => {
   const [showPanel, setShowPanel] = useState(false);
-  const [permissionGranted, setPermissionGranted] = useState(false);
   const { toast } = useToast();
   const { notifications, loading, markAsRead, deleteNotification } = useRealTimeNotifications();
+  const { isSubscribed, subscribe, unsubscribe, isSupported, loading: pushLoading } = usePushNotifications();
   const navigate = useNavigate();
 
   const requestNotificationPermission = async () => {
