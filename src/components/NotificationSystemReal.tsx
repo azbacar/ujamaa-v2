@@ -14,25 +14,16 @@ const NotificationSystemReal = () => {
   const { isSubscribed, subscribe, unsubscribe, isSupported, loading: pushLoading } = usePushNotifications();
   const navigate = useNavigate();
 
-  const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        setPermissionGranted(true);
-        toast({
-          title: "Notifications activées",
-          description: "Vous recevrez maintenant les alertes importantes",
-        });
-        new Notification('UJAMAA - Notifications activées', {
-          body: 'Vous recevrez maintenant toutes les alertes importantes des Comores',
-          icon: '/favicon.ico'
-        });
+  const handleTogglePush = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+      toast({ title: 'Notifications push désactivées' });
+    } else {
+      const ok = await subscribe();
+      if (ok) {
+        toast({ title: '🔔 Notifications push activées !' });
       } else {
-        toast({
-          title: "Notifications refusées",
-          description: "Vous pouvez les activer plus tard dans les paramètres de votre navigateur",
-          variant: "destructive"
-        });
+        toast({ title: 'Échec', description: 'Vérifiez les paramètres de votre navigateur.', variant: 'destructive' });
       }
     }
   };
