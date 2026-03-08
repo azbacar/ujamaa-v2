@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Search, MessageCircle, Loader2 } from 'lucide-react';
+import { X, Search, MessageCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +24,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchErrors, setSearchErrors] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -103,17 +104,21 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
             .limit(5),
         ]);
 
-        const errors = [
+        const sourceLabels: Record<string, string> = {
+          events: 'Événements', content_items: 'Annonces/Services',
+          prices: 'Prix', gastronomy_items: 'Gastronomie', global_announcements: 'Alertes',
+        };
+        const failedSources = [
           ['events', eventsRes.error],
           ['content_items', contentRes.error],
           ['prices', pricesRes.error],
           ['gastronomy_items', gastronomyRes.error],
           ['global_announcements', alertsRes.error],
-        ].filter(([, error]) => Boolean(error));
+        ]
+          .filter(([, error]) => Boolean(error))
+          .map(([name]) => sourceLabels[name as string] || name);
 
-        if (errors.length > 0) {
-          console.error('Erreurs partielles de recherche:', errors);
-        }
+        setSearchErrors(failedSources as string[]);
 
         const searchResults: SearchResult[] = [];
 
@@ -213,6 +218,14 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
             <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-muted-foreground" />
           )}
         </div>
+
+        {/* Error banner */}
+        {searchErrors.length > 0 && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span>Certaines sources n'ont pas répondu : {searchErrors.join(', ')}. Les résultats affichés sont partiels.</span>
+          </div>
+        )}
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto">
