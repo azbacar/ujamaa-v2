@@ -41,7 +41,24 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   }, [onClose]);
 
   useEffect(() => {
-    if (!searchTerm.trim()) {
+    const normalized = searchTerm.trim();
+
+    if (!normalized) {
+      setResults([]);
+      setHasSearched(false);
+      return;
+    }
+
+    const sanitizeForPostgrestOr = (value: string) =>
+      value
+        .toLowerCase()
+        .replace(/[,*()]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const query = sanitizeForPostgrestOr(normalized);
+
+    if (!query) {
       setResults([]);
       setHasSearched(false);
       return;
@@ -52,29 +69,51 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
       setHasSearched(true);
 
       try {
-        const query = searchTerm.toLowerCase();
+        const pattern = `*${query}*`;
 
         const [eventsRes, contentRes, pricesRes, gastronomyRes, alertsRes] = await Promise.all([
-          supabase.from('events').select('id, title, description, category')
+          supabase
+            .from('events')
+            .select('id, title, description, category')
             .eq('status', 'published')
-            .or(`title.ilike.*${query}*,description.ilike.*${query}*,category.ilike.*${query}*`)
+            .or(`title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern}`)
             .limit(5),
-          supabase.from('content_items').select('id, title, description, type, category')
+          supabase
+            .from('content_items')
+            .select('id, title, description, type, category')
             .eq('status', 'published')
-            .or(`title.ilike.*${query}*,description.ilike.*${query}*`)
+            .or(`title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern}`)
             .limit(10),
-          supabase.from('prices').select('id, product, category, market, island')
+          supabase
+            .from('prices')
+            .select('id, product, category, market, island')
             .eq('status', 'published')
-            .or(`product.ilike.*${query}*,category.ilike.*${query}*,market.ilike.*${query}*`)
+            .or(`product.ilike.${pattern},category.ilike.${pattern},market.ilike.${pattern}`)
             .limit(5),
-          supabase.from('gastronomy_items').select('id, title, description, category, type')
+          supabase
+            .from('gastronomy_items')
+            .select('id, title, description, category, type')
             .eq('status', 'published')
-            .or(`title.ilike.*${query}*,description.ilike.*${query}*`)
+            .or(`title.ilike.${pattern},description.ilike.${pattern},category.ilike.${pattern}`)
             .limit(5),
-          supabase.from('global_announcements').select('id, title, content, type')
-            .or(`title.ilike.*${query}*,content.ilike.*${query}*`)
+          supabase
+            .from('global_announcements')
+            .select('id, title, content, type')
+            .or(`title.ilike.${pattern},content.ilike.${pattern}`)
             .limit(5),
         ]);
+
+        const errors = [
+          ['events', eventsRes.error],
+          ['content_items', contentRes.error],
+          ['prices', pricesRes.error],
+          ['gastronomy_items', gastronomyRes.error],
+          ['global_announcements', alertsRes.error],
+        ].filter(([, error]) => Boolean(error));
+
+        if (errors.length > 0) {
+          console.error('Erreurs partielles de recherche:', errors);
+        }
 
         const searchResults: SearchResult[] = [];
 
@@ -86,7 +125,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
           const typeMap: Record<string, { type: SearchResult['type']; url: string }> = {
             announcement: { type: 'announcement', url: `/annonces/${c.id}` },
             service: { type: 'service', url: `/services/${c.id}` },
-            tender: { type: 'tender', url: `/appels-offres` },
+            tender: { type: 'tender', url: `/appels-offres/${c.id}` },
           };
           const mapped = typeMap[c.type] || { type: 'announcement', url: `/annonces/${c.id}` };
           searchResults.push({ id: c.id, type: mapped.type, title: c.title, description: c.description || '', url: mapped.url, category: c.category || undefined });
