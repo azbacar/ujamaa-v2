@@ -27,6 +27,7 @@ import ResetPassword from "./pages/ResetPassword";
 import ProfilePage from "./pages/ProfilePage";
 import ProPage from "./pages/ProPage";
 import StaticPage from "./pages/StaticPage";
+import InstallPage from "./pages/InstallPage";
 import { MaintenanceCheck } from "./components/MaintenanceCheck";
 import ScrollToTop from "./components/ScrollToTop";
 
