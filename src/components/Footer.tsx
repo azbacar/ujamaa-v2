@@ -41,6 +41,7 @@ const Footer = () => {
           <div>
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Support</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
+              <li><a href="/install" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📲 Installer l'app</a></li>
               <li><a href="/pro" className="hover:text-emerald-400 transition-colors flex items-center gap-2">⭐ Devenir Pro</a></li>
               <li><a href="/page/contact" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📞 Contact</a></li>
               <li><a href="/page/a-propos" className="hover:text-emerald-400 transition-colors flex items-center gap-2">ℹ️ À propos</a></li>
