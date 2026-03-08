@@ -177,6 +177,8 @@ export default function AdminDashboard() {
       case 'moderation': return <ModerationQueueSection />;
       case 'ai-knowledge': return <AIKnowledgeManagementSection />;
       case 'seo': return <SEOManagementSection />;
+      case 'tourism': return <TourismManagementSection />;
+      case 'pro-subscriptions': return <ProSubscriptionsSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
