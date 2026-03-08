@@ -219,6 +219,14 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
           )}
         </div>
 
+        {/* Error banner */}
+        {searchErrors.length > 0 && (
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span>Certaines sources n'ont pas répondu : {searchErrors.join(', ')}. Les résultats affichés sont partiels.</span>
+          </div>
+        )}
+
         {/* Results */}
         <div className="flex-1 overflow-y-auto">
           {results.length > 0 ? (
