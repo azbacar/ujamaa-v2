@@ -60,9 +60,10 @@ export const usePushNotifications = () => {
       const existing = await registration.pushManager.getSubscription();
       if (existing) await existing.unsubscribe();
 
+      const appServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        applicationServerKey: appServerKey.buffer as ArrayBuffer,
       });
 
       const subJson = subscription.toJSON();
