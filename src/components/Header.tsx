@@ -120,12 +120,21 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     <Settings className="h-4 w-4 mr-2" />
                     Mon compte
                   </DropdownMenuItem>
-                  {(isAdmin || isModerator) && (
+                  {isAnnonceur() && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/annonceur')}>
+                        <Megaphone className="h-4 w-4 mr-2" />
+                        Espace Annonceur
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(isAdmin() || isModerator()) && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate('/admin')}>
                         <Shield className="h-4 w-4 mr-2" />
-                        {isAdmin ? 'Administration' : 'Modération'}
+                        {isAdmin() ? 'Administration' : 'Modération'}
                       </DropdownMenuItem>
                     </>
                   )}
