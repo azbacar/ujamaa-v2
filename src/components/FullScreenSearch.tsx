@@ -261,7 +261,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   const getTypeIcon = (type: SearchResult['type']) => {
     const icons: Record<string, string> = {
       price: '💰', event: '🎭', service: '🏛️', announcement: '📢',
-      tender: '📋', gastronomy: '🍽️', alert: '🚨',
+      tender: '📋', gastronomy: '🍽️', alert: '🚨', page: '📄',
     };
     return icons[type] || '📄';
   };
