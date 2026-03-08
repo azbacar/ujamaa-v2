@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/~oauth/],
+        importScripts: ["/push-sw.js"],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/vpibvgdpeiicczelbynf\.supabase\.co\/.*/i,
