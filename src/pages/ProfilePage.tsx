@@ -89,6 +89,17 @@ const PasswordChangeSection = () => {
       {showForm && (
         <div className="space-y-3 pt-2 border-t">
           <div>
+            <Label htmlFor="current-password">Mot de passe actuel</Label>
+            <Input
+              id="current-password"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Votre mot de passe actuel"
+              className="mt-1"
+            />
+          </div>
+          <div>
             <Label htmlFor="new-password">Nouveau mot de passe</Label>
             <Input
               id="new-password"
