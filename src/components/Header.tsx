@@ -6,6 +6,7 @@ import { useLanguage } from '@/components/LanguageProvider';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
+import { Megaphone } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import NotificationSystemReal from './NotificationSystemReal';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -20,7 +21,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { user, signOut } = useAuth();
-  const { role, isAdmin, isModerator } = useRole();
+  const { role, isAdmin, isModerator, isAnnonceur } = useRole();
   const navigate = useNavigate();
   const { settings } = useSiteSettings();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -119,12 +120,21 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     <Settings className="h-4 w-4 mr-2" />
                     Mon compte
                   </DropdownMenuItem>
-                  {(isAdmin || isModerator) && (
+                  {isAnnonceur() && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/annonceur')}>
+                        <Megaphone className="h-4 w-4 mr-2" />
+                        Espace Annonceur
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(isAdmin() || isModerator()) && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate('/admin')}>
                         <Shield className="h-4 w-4 mr-2" />
-                        {isAdmin ? 'Administration' : 'Modération'}
+                        {isAdmin() ? 'Administration' : 'Modération'}
                       </DropdownMenuItem>
                     </>
                   )}

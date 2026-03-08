@@ -22,26 +22,28 @@ export default function AdminSidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const menuItems = [
-    { id: 'overview', title: 'Vue d\'ensemble', icon: BarChart3, description: 'Tableau de bord principal', available: true, category: 'dashboard' },
+    { id: 'overview', title: 'Vue d\'ensemble', icon: Home, description: 'Tableau de bord principal', available: true, category: 'dashboard' },
     { id: 'stats', title: 'Statistiques', icon: Activity, description: 'Métriques détaillées', available: true, category: 'dashboard' },
-    { id: 'homepage', title: 'Page d\'accueil', icon: Home, description: 'Gestion du contenu principal', available: true, category: 'content' },
+    { id: 'homepage', title: 'Page d\'accueil', icon: Settings, description: 'Gestion du contenu principal', available: true, category: 'content' },
     { id: 'content', title: 'Contenu', icon: FileText, description: 'Articles et publications', available: true, category: 'content' },
     { id: 'events', title: 'Événements', icon: Calendar, description: 'Gestion des événements', available: isAdmin || isModerator, category: 'content' },
-    { id: 'ads', title: 'Publicités', icon: BarChart3, description: 'Espaces publicitaires', available: isAdmin, category: 'content' },
-    { id: 'ad-stats', title: 'Stats Publicités', icon: Activity, description: 'Statistiques CTR', available: isAdmin, category: 'content' },
+    { id: 'tourism', title: 'Tourisme', icon: Database, description: 'Gastronomie & hébergements', available: isAdmin, category: 'content' },
+    { id: 'ads', title: 'Publicités', icon: Crown, description: 'Espaces publicitaires', available: isAdmin, category: 'content' },
+    { id: 'ad-stats', title: 'Stats Publicités', icon: BarChart3, description: 'Statistiques CTR', available: isAdmin, category: 'content' },
     { id: 'prices', title: 'Prix & Marchés', icon: DollarSign, description: 'Gestion des prix', available: isModerator || isAdmin, category: 'content' },
-    { id: 'moderation', title: 'Modération', icon: Shield, description: 'Signalements et attente', available: isModerator || isAdmin, category: 'content' },
+    { id: 'moderation', title: 'Modération', icon: UserCheck, description: 'Signalements et attente', available: isModerator || isAdmin, category: 'content' },
     { id: 'pending', title: 'Modifications', icon: Clock, description: 'En attente de validation', available: true, category: 'content' },
     { id: 'media', title: 'Médias', icon: Image, description: 'Images et fichiers', available: isModerator || isAdmin, category: 'content' },
+    { id: 'static-pages', title: 'Pages statiques', icon: FileText, description: 'Contact, À propos...', available: isAdmin, category: 'content' },
     { id: 'users', title: 'Utilisateurs', icon: Users, description: 'Gestion des comptes', available: isAdmin, category: 'management' },
-    { id: 'site-control', title: 'Contrôle du site', icon: Database, description: 'Paramètres globaux', available: isAdmin, category: 'management' },
+    { id: 'pro-subscriptions', title: 'Abonnements Pro', icon: Crown, description: 'Demandes d\'abonnement', available: isAdmin, category: 'management' },
+    { id: 'site-control', title: 'Contrôle du site', icon: Settings, description: 'Paramètres globaux', available: isAdmin, category: 'management' },
     { id: 'security', title: 'Sécurité', icon: Shield, description: 'Logs et permissions', available: isAdmin, category: 'management' },
     { id: 'analytics', title: 'Analytiques', icon: BarChart3, description: 'Statistiques avancées', available: isAdmin, category: 'management' },
+    { id: 'seo', title: 'SEO & Réseaux sociaux', icon: Search, description: 'Référencement et partage', available: isAdmin, category: 'management' },
     { id: 'actions', title: 'Journal d\'actions', icon: Bell, description: 'Historique des actions', available: isAdmin, category: 'monitoring' },
     { id: 'ai-analytics', title: 'Analyse IA', icon: Brain, description: 'Requêtes IA & tendances', available: isAdmin, category: 'monitoring' },
     { id: 'ai-knowledge', title: 'Sources IA', icon: Brain, description: 'Liens et sources de l\'IA', available: isAdmin, category: 'monitoring' },
-    { id: 'static-pages', title: 'Pages statiques', icon: FileText, description: 'Contact, À propos...', available: isAdmin, category: 'content' },
-    { id: 'seo', title: 'SEO & Réseaux sociaux', icon: Search, description: 'Référencement et partage', available: isAdmin, category: 'management' },
   ];
 
   const getCategory = (category: string) => {

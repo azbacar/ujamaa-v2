@@ -276,8 +276,8 @@ export default function AdminOverview({
               <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Calendar className="h-8 w-8 text-purple-600" />
               </div>
-              <h4 className="font-medium text-slate-900">Dernière sauvegarde</h4>
-              <p className="text-sm text-slate-500">Il y a 2 heures</p>
+              <h4 className="font-medium text-slate-900">Données en temps réel</h4>
+              <p className="text-sm text-slate-500">Synchronisation active</p>
             </div>
           </div>
         </CardContent>
