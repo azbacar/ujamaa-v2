@@ -360,7 +360,8 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
