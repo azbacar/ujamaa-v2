@@ -32,6 +32,8 @@ import StaticPagesManagementSection from '@/components/admin/StaticPagesManageme
 import ModerationQueueSection from '@/components/admin/ModerationQueueSection';
 import AIKnowledgeManagementSection from '@/components/admin/AIKnowledgeManagementSection';
 import SEOManagementSection from '@/components/admin/SEOManagementSection';
+import TourismManagementSection from '@/components/admin/TourismManagementSection';
+import ProSubscriptionsSection from '@/components/admin/ProSubscriptionsSection';
 
 interface PendingModification {
   id: string;
