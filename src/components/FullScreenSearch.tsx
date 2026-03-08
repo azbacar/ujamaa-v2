@@ -199,11 +199,30 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
             failed: Boolean(byTitle.error || byContent.error),
             items: dedupeById(rows).slice(0, 5).map((a) => ({
               id: a.id,
-              type: 'alert',
+              type: 'alert' as SearchResult['type'],
               title: a.title,
               description: a.content || '',
               url: '/',
               category: a.type,
+            })),
+          };
+        })(),
+        (async () => {
+          const [byTitle, byContent] = await Promise.all([
+            supabase.from('static_pages').select('id, title, slug, content, meta_description').ilike('title', pattern).limit(5),
+            supabase.from('static_pages').select('id, title, slug, content, meta_description').ilike('content', pattern).limit(5),
+          ]);
+
+          const rows = [...(byTitle.data || []), ...(byContent.data || [])];
+          return {
+            source: 'static_pages',
+            failed: Boolean(byTitle.error || byContent.error),
+            items: dedupeById(rows).slice(0, 5).map((p) => ({
+              id: p.id,
+              type: 'page' as SearchResult['type'],
+              title: p.title,
+              description: p.meta_description || p.content?.substring(0, 120) || '',
+              url: `/page/${p.slug}`,
             })),
           };
         })(),
