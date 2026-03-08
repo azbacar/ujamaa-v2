@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 interface SearchResult {
   id: string;
-  type: 'price' | 'event' | 'service' | 'announcement' | 'tender' | 'gastronomy' | 'alert';
+  type: 'price' | 'event' | 'service' | 'announcement' | 'tender' | 'gastronomy' | 'alert' | 'page';
   title: string;
   description: string;
   url: string;
