@@ -57,22 +57,22 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
         const [eventsRes, contentRes, pricesRes, gastronomyRes, alertsRes] = await Promise.all([
           supabase.from('events').select('id, title, description, category')
             .eq('status', 'published')
-            .or(`title.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
+            .or(`title.ilike.*${query}*,description.ilike.*${query}*,category.ilike.*${query}*`)
             .limit(5),
           supabase.from('content_items').select('id, title, description, type, category')
             .eq('status', 'published')
-            .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+            .or(`title.ilike.*${query}*,description.ilike.*${query}*`)
             .limit(10),
           supabase.from('prices').select('id, product, category, market, island')
             .eq('status', 'published')
-            .or(`product.ilike.%${query}%,category.ilike.%${query}%,market.ilike.%${query}%`)
+            .or(`product.ilike.*${query}*,category.ilike.*${query}*,market.ilike.*${query}*`)
             .limit(5),
           supabase.from('gastronomy_items').select('id, title, description, category, type')
             .eq('status', 'published')
-            .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+            .or(`title.ilike.*${query}*,description.ilike.*${query}*`)
             .limit(5),
           supabase.from('global_announcements').select('id, title, content, type')
-            .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+            .or(`title.ilike.*${query}*,content.ilike.*${query}*`)
             .limit(5),
         ]);
 
