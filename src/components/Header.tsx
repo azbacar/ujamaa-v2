@@ -21,7 +21,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { user, signOut } = useAuth();
-  const { role, isAdmin, isModerator } = useRole();
+  const { role, isAdmin, isModerator, isAnnonceur } = useRole();
   const navigate = useNavigate();
   const { settings } = useSiteSettings();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
