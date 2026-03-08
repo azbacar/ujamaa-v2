@@ -85,12 +85,7 @@ const NotificationSystemReal = () => {
         variant="outline" 
         size="sm" 
         className="h-12 w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50 relative"
-        onClick={() => {
-          if (!permissionGranted) {
-            requestNotificationPermission();
-          }
-          setShowPanel(!showPanel);
-        }}
+        onClick={() => setShowPanel(!showPanel)}
       >
         <Bell className="w-5 h-5 text-emerald-600" />
         {unreadCount > 0 && (
