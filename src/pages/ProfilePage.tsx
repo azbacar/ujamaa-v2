@@ -31,6 +31,10 @@ const PasswordChangeSection = () => {
   const [showForm, setShowForm] = useState(false);
 
   const handleChangePassword = async () => {
+    if (!currentPassword) {
+      toast.error('Veuillez entrer votre mot de passe actuel');
+      return;
+    }
     if (newPassword.length < 6) {
       toast.error('Le mot de passe doit contenir au moins 6 caractères');
       return;
@@ -41,6 +45,19 @@ const PasswordChangeSection = () => {
     }
     setChangingPassword(true);
     try {
+      // Re-authenticate with current password first
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser?.email) throw new Error('Utilisateur non trouvé');
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: currentUser.email,
+        password: currentPassword,
+      });
+      if (signInError) {
+        toast.error('Mot de passe actuel incorrect');
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       toast.success('Mot de passe mis à jour avec succès !');
