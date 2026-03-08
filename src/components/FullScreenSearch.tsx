@@ -280,7 +280,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
       price: 'bg-green-100 text-green-700', event: 'bg-purple-100 text-purple-700',
       service: 'bg-blue-100 text-blue-700', announcement: 'bg-orange-100 text-orange-700',
       tender: 'bg-yellow-100 text-yellow-700', gastronomy: 'bg-pink-100 text-pink-700',
-      alert: 'bg-red-100 text-red-700',
+      alert: 'bg-red-100 text-red-700', page: 'bg-gray-100 text-gray-700',
     };
     return colors[type] || 'bg-gray-100 text-gray-700';
   };
