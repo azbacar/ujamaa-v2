@@ -89,6 +89,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
         prices: 'Prix',
         gastronomy_items: 'Gastronomie',
         global_announcements: 'Alertes',
+        static_pages: 'Pages',
       };
 
       const tasks: Array<Promise<{ source: string; items: SearchResult[]; failed: boolean }>> = [
