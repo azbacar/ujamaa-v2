@@ -67,6 +67,7 @@ const App = () => (
               <Route path="/annonces/:id" element={<AnnouncementDetail />} />
               <Route path="/pro" element={<ProPage />} />
               <Route path="/page/:slug" element={<StaticPage />} />
+              <Route path="/install" element={<InstallPage />} />
               <Route 
                 path="/profile" 
                 element={
