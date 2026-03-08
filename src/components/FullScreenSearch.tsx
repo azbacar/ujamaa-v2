@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 interface SearchResult {
   id: string;
-  type: 'price' | 'event' | 'service' | 'announcement' | 'tender' | 'gastronomy' | 'alert';
+  type: 'price' | 'event' | 'service' | 'announcement' | 'tender' | 'gastronomy' | 'alert' | 'page';
   title: string;
   description: string;
   url: string;
@@ -89,6 +89,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
         prices: 'Prix',
         gastronomy_items: 'Gastronomie',
         global_announcements: 'Alertes',
+        static_pages: 'Pages',
       };
 
       const tasks: Array<Promise<{ source: string; items: SearchResult[]; failed: boolean }>> = [
@@ -199,11 +200,30 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
             failed: Boolean(byTitle.error || byContent.error),
             items: dedupeById(rows).slice(0, 5).map((a) => ({
               id: a.id,
-              type: 'alert',
+              type: 'alert' as SearchResult['type'],
               title: a.title,
               description: a.content || '',
               url: '/',
               category: a.type,
+            })),
+          };
+        })(),
+        (async () => {
+          const [byTitle, byContent] = await Promise.all([
+            supabase.from('static_pages').select('id, title, slug, content, meta_description').ilike('title', pattern).limit(5),
+            supabase.from('static_pages').select('id, title, slug, content, meta_description').ilike('content', pattern).limit(5),
+          ]);
+
+          const rows = [...(byTitle.data || []), ...(byContent.data || [])];
+          return {
+            source: 'static_pages',
+            failed: Boolean(byTitle.error || byContent.error),
+            items: dedupeById(rows).slice(0, 5).map((p) => ({
+              id: p.id,
+              type: 'page' as SearchResult['type'],
+              title: p.title,
+              description: p.meta_description || p.content?.substring(0, 120) || '',
+              url: `/page/${p.slug}`,
             })),
           };
         })(),
@@ -242,7 +262,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   const getTypeIcon = (type: SearchResult['type']) => {
     const icons: Record<string, string> = {
       price: '💰', event: '🎭', service: '🏛️', announcement: '📢',
-      tender: '📋', gastronomy: '🍽️', alert: '🚨',
+      tender: '📋', gastronomy: '🍽️', alert: '🚨', page: '📄',
     };
     return icons[type] || '📄';
   };
@@ -251,7 +271,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
     const labels: Record<string, string> = {
       price: 'Prix', event: 'Événement', service: 'Service',
       announcement: 'Annonce', tender: 'Appel d\'offres',
-      gastronomy: 'Gastronomie', alert: 'Alerte',
+      gastronomy: 'Gastronomie', alert: 'Alerte', page: 'Page',
     };
     return labels[type] || 'Autre';
   };
@@ -261,7 +281,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
       price: 'bg-green-100 text-green-700', event: 'bg-purple-100 text-purple-700',
       service: 'bg-blue-100 text-blue-700', announcement: 'bg-orange-100 text-orange-700',
       tender: 'bg-yellow-100 text-yellow-700', gastronomy: 'bg-pink-100 text-pink-700',
-      alert: 'bg-red-100 text-red-700',
+      alert: 'bg-red-100 text-red-700', page: 'bg-gray-100 text-gray-700',
     };
     return colors[type] || 'bg-gray-100 text-gray-700';
   };
