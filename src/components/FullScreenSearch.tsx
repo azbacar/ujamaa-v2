@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 interface SearchResult {
   id: string;
-  type: 'price' | 'event' | 'service' | 'announcement' | 'tender';
+  type: 'price' | 'event' | 'service' | 'announcement' | 'tender' | 'gastronomy' | 'alert';
   title: string;
   description: string;
   url: string;
@@ -52,70 +52,56 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
       setHasSearched(true);
 
       try {
-        const searchResults: SearchResult[] = [];
         const query = searchTerm.toLowerCase();
 
-        // Search events
-        const { data: events } = await supabase
-          .from('events')
-          .select('id, title, description, category')
-          .eq('status', 'published')
-          .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
-          .limit(5);
+        const [eventsRes, contentRes, pricesRes, gastronomyRes, alertsRes] = await Promise.all([
+          supabase.from('events').select('id, title, description, category')
+            .eq('status', 'published')
+            .or(`title.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
+            .limit(5),
+          supabase.from('content_items').select('id, title, description, type, category')
+            .eq('status', 'published')
+            .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+            .limit(10),
+          supabase.from('prices').select('id, product, category, market, island')
+            .eq('status', 'published')
+            .or(`product.ilike.%${query}%,category.ilike.%${query}%,market.ilike.%${query}%`)
+            .limit(5),
+          supabase.from('gastronomy_items').select('id, title, description, category, type')
+            .eq('status', 'published')
+            .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+            .limit(5),
+          supabase.from('global_announcements').select('id, title, content, type')
+            .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+            .limit(5),
+        ]);
 
-        events?.forEach((e) => {
-          searchResults.push({
-            id: e.id,
-            type: 'event',
-            title: e.title,
-            description: e.description || '',
-            url: `/evenements/${e.id}`,
-            category: e.category,
-          });
+        const searchResults: SearchResult[] = [];
+
+        eventsRes.data?.forEach((e) => {
+          searchResults.push({ id: e.id, type: 'event', title: e.title, description: e.description || '', url: `/evenements/${e.id}`, category: e.category });
         });
 
-        // Search content items (announcements, services, tenders)
-        const { data: content } = await supabase
-          .from('content_items')
-          .select('id, title, description, type, category')
-          .eq('status', 'published')
-          .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
-          .limit(10);
-
-        content?.forEach((c) => {
+        contentRes.data?.forEach((c) => {
           const typeMap: Record<string, { type: SearchResult['type']; url: string }> = {
             announcement: { type: 'announcement', url: `/annonces/${c.id}` },
-            service: { type: 'service', url: `/services` },
+            service: { type: 'service', url: `/services/${c.id}` },
             tender: { type: 'tender', url: `/appels-offres` },
           };
           const mapped = typeMap[c.type] || { type: 'announcement', url: `/annonces/${c.id}` };
-          searchResults.push({
-            id: c.id,
-            type: mapped.type,
-            title: c.title,
-            description: c.description || '',
-            url: mapped.url,
-            category: c.category || undefined,
-          });
+          searchResults.push({ id: c.id, type: mapped.type, title: c.title, description: c.description || '', url: mapped.url, category: c.category || undefined });
         });
 
-        // Search prices
-        const { data: prices } = await supabase
-          .from('prices')
-          .select('id, product, category, market, island')
-          .eq('status', 'published')
-          .or(`product.ilike.%${query}%,category.ilike.%${query}%,market.ilike.%${query}%`)
-          .limit(5);
+        pricesRes.data?.forEach((p) => {
+          searchResults.push({ id: p.id, type: 'price', title: p.product, description: `${p.market} - ${p.island}`, url: '/prix', category: p.category });
+        });
 
-        prices?.forEach((p) => {
-          searchResults.push({
-            id: p.id,
-            type: 'price',
-            title: p.product,
-            description: `${p.market} - ${p.island}`,
-            url: '/prix',
-            category: p.category,
-          });
+        gastronomyRes.data?.forEach((g) => {
+          searchResults.push({ id: g.id, type: 'gastronomy' as SearchResult['type'], title: g.title, description: g.description || '', url: `/gastronomie/${g.id}`, category: g.category || undefined });
+        });
+
+        alertsRes.data?.forEach((a) => {
+          searchResults.push({ id: a.id, type: 'alert' as SearchResult['type'], title: a.title, description: a.content || '', url: '/', category: a.type });
         });
 
         setResults(searchResults);
@@ -131,33 +117,27 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
 
   const getTypeIcon = (type: SearchResult['type']) => {
     const icons: Record<string, string> = {
-      price: '💰',
-      event: '🎭',
-      service: '🏛️',
-      announcement: '📢',
-      tender: '📋',
+      price: '💰', event: '🎭', service: '🏛️', announcement: '📢',
+      tender: '📋', gastronomy: '🍽️', alert: '🚨',
     };
     return icons[type] || '📄';
   };
 
   const getTypeLabel = (type: SearchResult['type']) => {
     const labels: Record<string, string> = {
-      price: 'Prix',
-      event: 'Événement',
-      service: 'Service',
-      announcement: 'Annonce',
-      tender: 'Appel d\'offres',
+      price: 'Prix', event: 'Événement', service: 'Service',
+      announcement: 'Annonce', tender: 'Appel d\'offres',
+      gastronomy: 'Gastronomie', alert: 'Alerte',
     };
     return labels[type] || 'Autre';
   };
 
   const getTypeColor = (type: SearchResult['type']) => {
     const colors: Record<string, string> = {
-      price: 'bg-green-100 text-green-700',
-      event: 'bg-purple-100 text-purple-700',
-      service: 'bg-blue-100 text-blue-700',
-      announcement: 'bg-orange-100 text-orange-700',
-      tender: 'bg-yellow-100 text-yellow-700',
+      price: 'bg-green-100 text-green-700', event: 'bg-purple-100 text-purple-700',
+      service: 'bg-blue-100 text-blue-700', announcement: 'bg-orange-100 text-orange-700',
+      tender: 'bg-yellow-100 text-yellow-700', gastronomy: 'bg-pink-100 text-pink-700',
+      alert: 'bg-red-100 text-red-700',
     };
     return colors[type] || 'bg-gray-100 text-gray-700';
   };
