@@ -117,13 +117,18 @@ const NotificationSystemReal = () => {
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              {!permissionGranted && (
+              {isSupported && (
                 <Button
                   size="sm"
                   className="w-full mt-2 bg-white text-emerald-600 hover:bg-gray-50 text-xs sm:text-sm"
-                  onClick={requestNotificationPermission}
+                  onClick={handleTogglePush}
+                  disabled={pushLoading}
                 >
-                  Activer les notifications
+                  {isSubscribed ? (
+                    <><BellOff className="w-3 h-3 mr-1" /> Désactiver les push</>
+                  ) : (
+                    <><BellRing className="w-3 h-3 mr-1" /> Activer les push</>
+                  )}
                 </Button>
               )}
             </div>
