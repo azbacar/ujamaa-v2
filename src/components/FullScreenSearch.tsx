@@ -104,17 +104,21 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
             .limit(5),
         ]);
 
-        const errors = [
+        const sourceLabels: Record<string, string> = {
+          events: 'Événements', content_items: 'Annonces/Services',
+          prices: 'Prix', gastronomy_items: 'Gastronomie', global_announcements: 'Alertes',
+        };
+        const failedSources = [
           ['events', eventsRes.error],
           ['content_items', contentRes.error],
           ['prices', pricesRes.error],
           ['gastronomy_items', gastronomyRes.error],
           ['global_announcements', alertsRes.error],
-        ].filter(([, error]) => Boolean(error));
+        ]
+          .filter(([, error]) => Boolean(error))
+          .map(([name]) => sourceLabels[name as string] || name);
 
-        if (errors.length > 0) {
-          console.error('Erreurs partielles de recherche:', errors);
-        }
+        setSearchErrors(failedSources as string[]);
 
         const searchResults: SearchResult[] = [];
 
