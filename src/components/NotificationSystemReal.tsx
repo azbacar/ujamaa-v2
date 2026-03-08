@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { Bell, X, AlertTriangle, Info, CheckCircle, BellRing, BellOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRealTimeNotifications } from '@/hooks/useRealTimeNotifications';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useNavigate } from 'react-router-dom';
 
 const NotificationSystemReal = () => {
