@@ -24,6 +24,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchErrors, setSearchErrors] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
