@@ -90,7 +90,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
         global_announcements: 'Alertes',
       };
 
-      const tasks: Array<Promise<{ source: string; items: SearchResult[] }>> = [
+      const tasks: Array<Promise<{ source: string; items: SearchResult[]; failed: boolean }>> = [
         (async () => {
           const [byTitle, byDescription, byCategory] = await Promise.all([
             supabase.from('events').select('id, title, description, category').eq('status', 'published').ilike('title', pattern).limit(5),
@@ -101,7 +101,8 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
           const rows = [...(byTitle.data || []), ...(byDescription.data || []), ...(byCategory.data || [])];
           return {
             source: 'events',
-            items: dedupeResults(rows).slice(0, 5).map((e) => ({
+            failed: Boolean(byTitle.error || byDescription.error || byCategory.error),
+            items: dedupeById(rows).slice(0, 5).map((e) => ({
               id: e.id,
               type: 'event',
               title: e.title,
@@ -127,7 +128,8 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
 
           return {
             source: 'content_items',
-            items: dedupeResults(rows)
+            failed: Boolean(byTitle.error || byDescription.error || byCategory.error),
+            items: dedupeById(rows)
               .slice(0, 10)
               .map((c) => {
                 const mapped = typeMap[c.type] || { type: 'announcement' as SearchResult['type'], url: (id: string) => `/annonces/${id}` };
@@ -152,7 +154,8 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
           const rows = [...(byProduct.data || []), ...(byCategory.data || []), ...(byMarket.data || [])];
           return {
             source: 'prices',
-            items: dedupeResults(rows).slice(0, 5).map((p) => ({
+            failed: Boolean(byProduct.error || byCategory.error || byMarket.error),
+            items: dedupeById(rows).slice(0, 5).map((p) => ({
               id: p.id,
               type: 'price',
               title: p.product,
@@ -172,7 +175,8 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
           const rows = [...(byTitle.data || []), ...(byDescription.data || []), ...(byCategory.data || [])];
           return {
             source: 'gastronomy_items',
-            items: dedupeResults(rows).slice(0, 5).map((g) => ({
+            failed: Boolean(byTitle.error || byDescription.error || byCategory.error),
+            items: dedupeById(rows).slice(0, 5).map((g) => ({
               id: g.id,
               type: 'gastronomy',
               title: g.title,
@@ -191,7 +195,8 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
           const rows = [...(byTitle.data || []), ...(byContent.data || [])];
           return {
             source: 'global_announcements',
-            items: dedupeResults(rows).slice(0, 5).map((a) => ({
+            failed: Boolean(byTitle.error || byContent.error),
+            items: dedupeById(rows).slice(0, 5).map((a) => ({
               id: a.id,
               type: 'alert',
               title: a.title,
@@ -211,9 +216,11 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
         settled.forEach((result) => {
           if (result.status === 'fulfilled') {
             nextResults.push(...result.value.items);
+            if (result.value.failed) {
+              failedSources.push(sourceLabels[result.value.source] || result.value.source);
+            }
           } else {
-            const sourceName = Object.keys(sourceLabels).find((key) => result.reason?.message?.includes(key));
-            failedSources.push(sourceName ? sourceLabels[sourceName] : 'Source indisponible');
+            failedSources.push('Source indisponible');
           }
         });
 
