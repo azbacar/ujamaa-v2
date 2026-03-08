@@ -1,0 +1,9 @@
+
+-- Insert test ads for different formats and positions
+INSERT INTO public.ads (title, description, image_url, link_url, position, size, is_active, created_by) VALUES
+  ('🏨 Hôtel Itsandra Beach', 'Réservez votre séjour au meilleur prix. Vue sur mer, piscine et restaurant.', 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80', 'https://example.com/hotel', 'content', 'banner', true, 'c1751a41-bb62-4533-9ade-0ab374f02eb0'),
+  ('📱 Comores Telecom - Forfait Pro', 'Internet illimité à partir de 5000 FC/mois. Couverture nationale.', 'https://images.unsplash.com/photo-1556656793-08538906a9f8?auto=format&fit=crop&w=800&q=80', 'https://example.com/telecom', 'content', 'small', true, 'c1751a41-bb62-4533-9ade-0ab374f02eb0'),
+  ('🛒 Marché Central Moroni', 'Produits frais livrés chez vous. Fruits, légumes, épices des Comores.', 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80', 'https://example.com/marche', 'content', 'medium', true, 'c1751a41-bb62-4533-9ade-0ab374f02eb0'),
+  ('✈️ Air Austral - Vols Comores', 'Billets à prix réduit vers Mayotte et La Réunion. Réservez maintenant !', 'https://images.unsplash.com/photo-1436491865332-7a61a109db05?auto=format&fit=crop&w=800&q=80', 'https://example.com/air', 'sidebar', 'small', true, 'c1751a41-bb62-4533-9ade-0ab374f02eb0'),
+  ('🏗️ BTP Comores - Construction', 'Matériaux de construction de qualité. Livraison sur toutes les îles.', 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80', 'https://example.com/btp', 'header', 'banner', true, 'c1751a41-bb62-4533-9ade-0ab374f02eb0'),
+  ('🎓 Formation Digitale Comores', 'Apprenez le développement web et mobile. Inscriptions ouvertes !', 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80', 'https://example.com/formation', 'footer', 'banner', true, 'c1751a41-bb62-4533-9ade-0ab374f02eb0');
