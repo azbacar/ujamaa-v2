@@ -124,7 +124,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
       } finally {
         setIsSearching(false);
       }
-    }, 300);
+    }, 150);
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm]);
