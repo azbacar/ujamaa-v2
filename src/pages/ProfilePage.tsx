@@ -13,7 +13,7 @@ import {
   BarChart3, Eye, FileText, Calendar, DollarSign,
   LogOut, Key, Star, Activity, Clock, ChevronRight,
   Edit3, Save, X, Utensils, Camera, Loader2,
-  Heart, Flag
+  Heart, Flag, Trash2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -573,12 +573,34 @@ const ProfilePage = () => {
                     </Badge>
                   </div>
                   <Separator />
-                  <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5">
-                    <p className="font-medium text-destructive mb-1">Zone dangereuse</p>
-                    <p className="text-sm text-muted-foreground mb-3">La déconnexion supprimera votre session locale.</p>
-                    <Button variant="destructive" size="sm" onClick={handleSignOut}>
-                      <LogOut className="h-4 w-4 mr-1" /> Se déconnecter
-                    </Button>
+                  <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5 space-y-4">
+                    <div>
+                      <p className="font-medium text-destructive mb-1">Zone dangereuse</p>
+                      <p className="text-sm text-muted-foreground mb-3">La déconnexion supprimera votre session locale.</p>
+                      <Button variant="destructive" size="sm" onClick={handleSignOut}>
+                        <LogOut className="h-4 w-4 mr-1" /> Se déconnecter
+                      </Button>
+                    </div>
+                    <Separator />
+                    <div>
+                      <p className="font-medium text-destructive mb-1">Suppression du compte</p>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Vous pouvez demander la suppression définitive de votre compte et de toutes vos données personnelles. 
+                        Cette action est irréversible.
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={() => {
+                          const subject = encodeURIComponent('Demande de suppression de compte');
+                          const body = encodeURIComponent(`Bonjour,\n\nJe souhaite demander la suppression définitive de mon compte et de toutes mes données personnelles.\n\nEmail du compte : ${user.email}\nIdentifiant : ${user.id}\n\nCordialement`);
+                          window.open(`mailto:contact@ujamaan.com?subject=${subject}&body=${body}`, '_blank');
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" /> Demander la suppression de mon compte
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
