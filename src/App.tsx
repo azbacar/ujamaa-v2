@@ -29,6 +29,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ProPage from "./pages/ProPage";
 import StaticPage from "./pages/StaticPage";
 import InstallPage from "./pages/InstallPage";
+import DeleteAccountPage from "./pages/DeleteAccountPage";
 import { MaintenanceCheck } from "./components/MaintenanceCheck";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/pro" element={<ProPage />} />
               <Route path="/page/:slug" element={<StaticPage />} />
               <Route path="/install" element={<InstallPage />} />
+              <Route path="/supprimer-compte" element={<DeleteAccountPage />} />
               <Route 
                 path="/profile" 
                 element={
