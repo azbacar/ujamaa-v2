@@ -46,7 +46,7 @@ const Footer = () => {
               <li><a href="/page/contact" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📞 Contact</a></li>
               <li><a href="/page/a-propos" className="hover:text-emerald-400 transition-colors flex items-center gap-2">ℹ️ À propos</a></li>
               <li><a href="/page/confidentialite" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🔒 Confidentialité</a></li>
-              <li><a href="/profile" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗑️ Supprimer mon compte</a></li>
+              <li><a href="/supprimer-compte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗑️ Supprimer mon compte</a></li>
             </ul>
           </div>
         </div>

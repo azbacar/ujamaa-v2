@@ -70,6 +70,7 @@ const App = () => (
               <Route path="/pro" element={<ProPage />} />
               <Route path="/page/:slug" element={<StaticPage />} />
               <Route path="/install" element={<InstallPage />} />
+              <Route path="/supprimer-compte" element={<DeleteAccountPage />} />
               <Route 
                 path="/profile" 
                 element={
