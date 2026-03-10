@@ -13,7 +13,7 @@ import {
   BarChart3, Eye, FileText, Calendar, DollarSign,
   LogOut, Key, Star, Activity, Clock, ChevronRight,
   Edit3, Save, X, Utensils, Camera, Loader2,
-  Heart, Flag
+  Heart, Flag, Trash2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
