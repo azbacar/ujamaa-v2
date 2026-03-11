@@ -66,12 +66,21 @@ export default function ModerationQueueSection() {
 
   const handleContentAction = async (item: DraftContent, action: 'published' | 'archived') => {
     try {
-      const table = item.source === 'events' ? 'events' : 'content_items';
-      const { error } = await supabase.from(table).update({ status: action } as any).eq('id', item.id);
-      if (error) throw error;
+      if (item.source === 'events') {
+        // Events table uses 'cancelled' instead of 'archived'
+        const eventStatus = action === 'published' ? 'published' : 'cancelled';
+        const { error } = await supabase.from('events').update({ status: eventStatus }).eq('id', item.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('content_items').update({ status: action }).eq('id', item.id);
+        if (error) throw error;
+      }
       toast.success(action === 'published' ? 'Contenu publié' : 'Contenu rejeté');
       fetchData();
-    } catch { toast.error('Erreur'); }
+    } catch (err: any) {
+      console.error('Moderation action error:', err);
+      toast.error(err?.message || 'Erreur lors de la mise à jour');
+    }
   };
 
   const getContentLink = (report: Report) => {
