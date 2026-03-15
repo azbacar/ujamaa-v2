@@ -169,6 +169,58 @@ const AnnouncementDetail = () => {
             </div>
 
             <div className="space-y-6">
+              {/* Contact téléphone */}
+              <Card className="border-blue-200 bg-blue-50/50">
+                <CardHeader>
+                  <CardTitle className="text-lg">📞 Contact</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isAuthorPro && dbItem.contact_phone ? (
+                    <div className="space-y-3">
+                      {isMobile ? (
+                        <Button 
+                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                          onClick={() => window.open(`tel:${formatPhone(dbItem.contact_phone!)}`, '_self')}
+                        >
+                          <Phone className="w-4 h-4 mr-2" />
+                          Appeler l'annonceur
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2 p-3 bg-background rounded-lg border">
+                          <Phone className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium text-foreground">{dbItem.contact_phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-2">
+                      <Lock className="w-8 h-8 text-muted-foreground mx-auto" />
+                      <p className="text-sm text-muted-foreground">
+                        Les coordonnées de contact sont disponibles uniquement pour les annonceurs Pro.
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => window.location.href = '/pro'}>
+                        Devenir Pro
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Contact WhatsApp - visible uniquement si Pro */}
+              {isAuthorPro && dbItem.contact_whatsapp && (
+                <Card className="border-green-200 bg-green-50/50">
+                  <CardContent className="pt-6">
+                    <Button 
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+                      onClick={() => window.open(`https://wa.me/${formatPhone(dbItem.contact_whatsapp!)}`, '_blank')}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Contacter via WhatsApp
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Actions</CardTitle>
