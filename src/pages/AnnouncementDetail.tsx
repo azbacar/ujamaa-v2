@@ -68,12 +68,22 @@ const AnnouncementDetail = () => {
       try {
         const { data, error } = await supabase
           .from('content_items')
-          .select('id, title, description, category, created_at, type')
+          .select('id, title, description, category, created_at, type, author_id, contact_phone, contact_whatsapp')
           .eq('id', id)
           .maybeSingle();
 
         if (error) throw error;
         setDbItem(data);
+
+        // Fetch author account type to check Pro status
+        if (data?.author_id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('account_type')
+            .eq('id', data.author_id)
+            .maybeSingle();
+          setAuthorInfo(userData);
+        }
       } catch (error) {
         console.error('Erreur:', error);
       } finally {
