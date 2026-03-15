@@ -96,6 +96,9 @@ const AnnouncementDetail = () => {
   // Legacy numeric ID lookup
   const legacyItem = !isUuid ? legacyAnnouncements.find(a => a.id === parseInt(id || '0')) : null;
 
+  const isAuthorPro = authorInfo?.account_type === 'pro';
+  const formatPhone = (phone: string) => phone.replace(/\s+/g, '');
+
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
