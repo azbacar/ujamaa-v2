@@ -49,8 +49,10 @@ interface AuthorInfo {
 const AnnouncementDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [dbItem, setDbItem] = useState<DbAnnouncement | null>(null);
+  const [authorInfo, setAuthorInfo] = useState<AuthorInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Check if ID looks like a UUID
