@@ -73,6 +73,7 @@ const AnnouncementDetail = () => {
           .maybeSingle();
 
         if (error) throw error;
+        console.log('AnnouncementDetail: item loaded', { id: data?.id, phone: data?.contact_phone, whatsapp: data?.contact_whatsapp });
         setDbItem(data);
 
         // Fetch author account type to check Pro status
