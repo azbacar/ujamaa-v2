@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdSpace from '@/components/AdSpace';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, MapPin, User, Share2 } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, User, Share2, Phone, MessageCircle, Lock } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useState, useEffect } from 'react';
@@ -12,6 +12,7 @@ import FavoriteButton from '@/components/FavoriteButton';
 import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Hardcoded fallback announcements for legacy numeric IDs
 const legacyAnnouncements = [
@@ -36,13 +37,22 @@ interface DbAnnouncement {
   category: string | null;
   created_at: string;
   type: string;
+  author_id: string;
+  contact_phone: string | null;
+  contact_whatsapp: string | null;
+}
+
+interface AuthorInfo {
+  account_type: string;
 }
 
 const AnnouncementDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [dbItem, setDbItem] = useState<DbAnnouncement | null>(null);
+  const [authorInfo, setAuthorInfo] = useState<AuthorInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Check if ID looks like a UUID
@@ -58,12 +68,22 @@ const AnnouncementDetail = () => {
       try {
         const { data, error } = await supabase
           .from('content_items')
-          .select('id, title, description, category, created_at, type')
+          .select('id, title, description, category, created_at, type, author_id, contact_phone, contact_whatsapp')
           .eq('id', id)
           .maybeSingle();
 
         if (error) throw error;
         setDbItem(data);
+
+        // Fetch author account type to check Pro status
+        if (data?.author_id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('account_type')
+            .eq('id', data.author_id)
+            .maybeSingle();
+          setAuthorInfo(userData);
+        }
       } catch (error) {
         console.error('Erreur:', error);
       } finally {
@@ -75,6 +95,9 @@ const AnnouncementDetail = () => {
 
   // Legacy numeric ID lookup
   const legacyItem = !isUuid ? legacyAnnouncements.find(a => a.id === parseInt(id || '0')) : null;
+
+  const isAuthorPro = authorInfo?.account_type === 'pro';
+  const formatPhone = (phone: string) => phone.replace(/\s+/g, '');
 
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -146,6 +169,58 @@ const AnnouncementDetail = () => {
             </div>
 
             <div className="space-y-6">
+              {/* Contact téléphone */}
+              <Card className="border-blue-200 bg-blue-50/50">
+                <CardHeader>
+                  <CardTitle className="text-lg">📞 Contact</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isAuthorPro && dbItem.contact_phone ? (
+                    <div className="space-y-3">
+                      {isMobile ? (
+                        <Button 
+                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                          onClick={() => window.open(`tel:${formatPhone(dbItem.contact_phone!)}`, '_self')}
+                        >
+                          <Phone className="w-4 h-4 mr-2" />
+                          Appeler l'annonceur
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2 p-3 bg-background rounded-lg border">
+                          <Phone className="w-4 h-4 text-blue-600" />
+                          <span className="font-medium text-foreground">{dbItem.contact_phone}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-2">
+                      <Lock className="w-8 h-8 text-muted-foreground mx-auto" />
+                      <p className="text-sm text-muted-foreground">
+                        Les coordonnées de contact sont disponibles uniquement pour les annonceurs Pro.
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => window.location.href = '/pro'}>
+                        Devenir Pro
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Contact WhatsApp - visible uniquement si Pro */}
+              {isAuthorPro && dbItem.contact_whatsapp && (
+                <Card className="border-green-200 bg-green-50/50">
+                  <CardContent className="pt-6">
+                    <Button 
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
+                      onClick={() => window.open(`https://wa.me/${formatPhone(dbItem.contact_whatsapp!)}`, '_blank')}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Contacter via WhatsApp
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Actions</CardTitle>
