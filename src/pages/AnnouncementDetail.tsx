@@ -37,6 +37,13 @@ interface DbAnnouncement {
   category: string | null;
   created_at: string;
   type: string;
+  author_id: string;
+  contact_phone: string | null;
+  contact_whatsapp: string | null;
+}
+
+interface AuthorInfo {
+  account_type: string;
 }
 
 const AnnouncementDetail = () => {
