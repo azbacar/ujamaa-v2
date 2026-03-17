@@ -1231,6 +1231,14 @@ export type Database = {
     }
     Functions: {
       generate_ticket_code: { Args: never; Returns: string }
+      get_public_usernames: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          avatar_url: string
+          id: string
+          username: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

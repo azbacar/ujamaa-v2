@@ -8,6 +8,7 @@ import { ArrowLeft, MapPin, Wifi, Calendar, Banknote, User, Eye } from 'lucide-r
 import { useFreelanceJob, useJobReviews, FREELANCE_CATEGORIES } from '@/hooks/useFreelance';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/components/LanguageProvider';
+import FreelanceJobForm from '@/components/freelance/FreelanceJobForm';
 import FreelanceProposalForm from '@/components/freelance/FreelanceProposalForm';
 import FreelanceProposalList from '@/components/freelance/FreelanceProposalList';
 import FreelanceReviewCard from '@/components/freelance/FreelanceReviewCard';
@@ -55,6 +56,12 @@ export default function FreelanceJobDetail() {
     return 'Budget à discuter';
   };
 
+  const statusLabel: Record<string, string> = {
+    draft: '🟡 Brouillon',
+    published: '🟢 Publié',
+    closed: '🔴 Clôturé',
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
@@ -70,15 +77,23 @@ export default function FreelanceJobDetail() {
             <Card>
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-start justify-between gap-3">
-                  <h1 className="text-xl font-bold text-foreground">{job.title}</h1>
-                  <Badge variant="secondary">{categoryLabel}</Badge>
+                  <div className="space-y-1">
+                    <h1 className="text-xl font-bold text-foreground">{job.title}</h1>
+                    {isAuthor && (
+                      <span className="text-xs text-muted-foreground">{statusLabel[job.status] || job.status}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{categoryLabel}</Badge>
+                    {isAuthor && <FreelanceJobForm editJob={job} />}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1"><User className="h-4 w-4" />{job.author_username}</span>
                   {job.island && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{job.island}{job.location && ` · ${job.location}`}</span>}
-                  {job.is_remote && <span className="flex items-center gap-1"><Wifi className="h-4 w-4" />Remote</span>}
-                  <span className="flex items-center gap-1"><Eye className="h-4 w-4" />{job.views} vues</span>
+                  {job.is_remote && <span className="flex items-center gap-1"><Wifi className="h-4 w-4" />À distance</span>}
+                  <span className="flex items-center gap-1"><Eye className="h-4 w-4" />{job.views} vue{job.views !== 1 ? 's' : ''}</span>
                 </div>
 
                 <div className="flex items-center gap-4 text-sm">
@@ -127,7 +142,14 @@ export default function FreelanceJobDetail() {
 
           {/* Sidebar */}
           <div className="space-y-4">
-            {!isAuthor && <FreelanceProposalForm jobId={job.id} />}
+            {!isAuthor && user && <FreelanceProposalForm jobId={job.id} />}
+            {!user && (
+              <Card>
+                <CardContent className="p-4 text-center text-sm text-muted-foreground">
+                  <p>Connectez-vous pour postuler à cette mission</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </main>

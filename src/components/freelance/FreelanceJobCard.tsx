@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Clock, Wifi, User } from 'lucide-react';
+import { MapPin, Clock, Wifi, User, Eye } from 'lucide-react';
 import { FreelanceJob, FREELANCE_CATEGORIES } from '@/hooks/useFreelance';
 
 interface Props {
@@ -55,9 +55,12 @@ export default function FreelanceJobCard({ job }: Props) {
               )}
               {job.is_remote && (
                 <span className="flex items-center gap-1">
-                  <Wifi className="h-3 w-3" />Remote
+                  <Wifi className="h-3 w-3" />À distance
                 </span>
               )}
+              <span className="flex items-center gap-1">
+                <Eye className="h-3 w-3" />{job.views} vue{job.views !== 1 ? 's' : ''}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="font-medium text-primary">{formatBudget()}</span>

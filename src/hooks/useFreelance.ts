@@ -22,6 +22,7 @@ export interface FreelanceJob {
   created_at: string;
   updated_at: string;
   author_username?: string;
+  author_avatar_url?: string;
 }
 
 export interface FreelanceProposal {
@@ -49,6 +50,13 @@ export interface FreelanceReview {
   reviewer_username?: string;
 }
 
+// Helper to fetch public usernames via security definer function
+async function fetchUsernames(userIds: string[]): Promise<Map<string, { username: string; avatar_url: string | null }>> {
+  if (userIds.length === 0) return new Map();
+  const { data } = await supabase.rpc('get_public_usernames', { _user_ids: userIds });
+  return new Map((data || []).map((u: any) => [u.id, { username: u.username, avatar_url: u.avatar_url }]));
+}
+
 export const useFreelanceJobs = (category?: string) => {
   return useQuery({
     queryKey: ['freelance-jobs', category],
@@ -66,18 +74,15 @@ export const useFreelanceJobs = (category?: string) => {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Enrich with author usernames
       const authorIds = [...new Set((data || []).map(j => j.author_id))];
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, username')
-        .in('id', authorIds);
+      const userMap = await fetchUsernames(authorIds);
 
-      const userMap = new Map((users || []).map(u => [u.id, u.username]));
       return (data || []).map(job => ({
         ...job,
         skills: job.skills || [],
-        author_username: userMap.get(job.author_id) || 'Anonyme',
+        is_remote: job.is_remote ?? false,
+        author_username: userMap.get(job.author_id)?.username || 'Anonyme',
+        author_avatar_url: userMap.get(job.author_id)?.avatar_url || null,
       })) as FreelanceJob[];
     },
   });
@@ -95,16 +100,21 @@ export const useFreelanceJob = (id: string) => {
 
       if (error) throw error;
 
-      const { data: author } = await supabase
-        .from('users')
-        .select('username')
-        .eq('id', data.author_id)
-        .maybeSingle();
+      // Increment views
+      supabase
+        .from('freelance_jobs')
+        .update({ views: (data.views || 0) + 1 })
+        .eq('id', id)
+        .then();
+
+      const userMap = await fetchUsernames([data.author_id]);
 
       return {
         ...data,
         skills: data.skills || [],
-        author_username: author?.username || 'Anonyme',
+        is_remote: data.is_remote ?? false,
+        author_username: userMap.get(data.author_id)?.username || 'Anonyme',
+        author_avatar_url: userMap.get(data.author_id)?.avatar_url || null,
       } as FreelanceJob;
     },
     enabled: !!id,
@@ -123,7 +133,7 @@ export const useMyFreelanceJobs = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data || []) as FreelanceJob[];
+      return (data || []).map(j => ({ ...j, skills: j.skills || [], is_remote: j.is_remote ?? false })) as FreelanceJob[];
     },
     enabled: !!user,
   });
@@ -134,7 +144,7 @@ export const useCreateFreelanceJob = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (job: Omit<FreelanceJob, 'id' | 'author_id' | 'views' | 'created_at' | 'updated_at' | 'author_username'>) => {
+    mutationFn: async (job: Omit<FreelanceJob, 'id' | 'author_id' | 'views' | 'created_at' | 'updated_at' | 'author_username' | 'author_avatar_url'>) => {
       const { data, error } = await supabase
         .from('freelance_jobs')
         .insert({ ...job, author_id: user!.id })
@@ -155,6 +165,33 @@ export const useCreateFreelanceJob = () => {
   });
 };
 
+export const useUpdateFreelanceJob = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<FreelanceJob> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('freelance_jobs')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['freelance-jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['freelance-job', data.id] });
+      queryClient.invalidateQueries({ queryKey: ['my-freelance-jobs'] });
+      toast.success('Mission mise à jour avec succès');
+    },
+    onError: () => {
+      toast.error('Erreur lors de la mise à jour');
+    },
+  });
+};
+
 export const useJobProposals = (jobId: string) => {
   return useQuery({
     queryKey: ['freelance-proposals', jobId],
@@ -168,15 +205,11 @@ export const useJobProposals = (jobId: string) => {
       if (error) throw error;
 
       const freelancerIds = [...new Set((data || []).map(p => p.freelancer_id))];
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, username')
-        .in('id', freelancerIds);
+      const userMap = await fetchUsernames(freelancerIds);
 
-      const userMap = new Map((users || []).map(u => [u.id, u.username]));
       return (data || []).map(p => ({
         ...p,
-        freelancer_username: userMap.get(p.freelancer_id) || 'Anonyme',
+        freelancer_username: userMap.get(p.freelancer_id)?.username || 'Anonyme',
       })) as FreelanceProposal[];
     },
     enabled: !!jobId,
@@ -229,15 +262,11 @@ export const useJobReviews = (jobId: string) => {
       if (error) throw error;
 
       const reviewerIds = [...new Set((data || []).map(r => r.reviewer_id))];
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, username')
-        .in('id', reviewerIds);
+      const userMap = await fetchUsernames(reviewerIds);
 
-      const userMap = new Map((users || []).map(u => [u.id, u.username]));
       return (data || []).map(r => ({
         ...r,
-        reviewer_username: userMap.get(r.reviewer_id) || 'Anonyme',
+        reviewer_username: userMap.get(r.reviewer_id)?.username || 'Anonyme',
       })) as FreelanceReview[];
     },
     enabled: !!jobId,
