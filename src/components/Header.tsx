@@ -206,7 +206,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                       🏛️ {t('nav.services')}
                     </Link>
                     <Link to="/freelance" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      💼 Freelance
+                      💼 Missions
                     </Link>
                     <Link to="/freelancers" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       👨‍💻 Répertoire Freelancers

@@ -25,6 +25,9 @@ const Footer = () => {
               <li><a href="/appels-offres" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Appels d'Offres</a></li>
               <li><a href="/evenements" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🎭 Événements</a></li>
               <li><a href="/services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏛️ Services Publics</a></li>
+              <li><a href="/freelance" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💼 Missions</a></li>
+              <li><a href="/freelancers" className="hover:text-emerald-400 transition-colors flex items-center gap-2">👨‍💻 Freelancers</a></li>
+              <li><a href="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌍 Investissement Diaspora</a></li>
             </ul>
           </div>
           
