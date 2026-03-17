@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   BarChart3, Home, FileText, Clock, Users, Image, Settings,
   Shield, Activity, Bell, Database, ChevronRight, Crown,
-  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase
+  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase, Globe
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
