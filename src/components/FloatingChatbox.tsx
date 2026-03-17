@@ -36,6 +36,8 @@ const INTERNAL_LINK_LABELS: Record<string, string> = {
   '/appels-offres': '📋 Appels d\'offres',
   '/annonces': '📢 Annonces',
   '/tourisme': '🏨 Tourisme',
+  '/freelance': '💼 Missions Freelance',
+  '/freelancers': '👨‍💻 Répertoire Freelancers',
   '/auth': '🔐 Inscription',
 };
 
