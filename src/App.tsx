@@ -36,6 +36,8 @@ import FreelancePage from "./pages/FreelancePage";
 import FreelanceJobDetail from "./pages/FreelanceJobDetail";
 import FreelancerDirectoryPage from "./pages/FreelancerDirectoryPage";
 import MessagesPage from "./pages/MessagesPage";
+import DiasporaPage from "./pages/DiasporaPage";
+import DiasporaProjectDetail from "./pages/DiasporaProjectDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
