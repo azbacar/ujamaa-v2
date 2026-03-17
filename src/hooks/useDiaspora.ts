@@ -110,7 +110,27 @@ export function useDiasporaProject(id: string | undefined) {
         .eq('id', id)
         .single();
       if (error) throw error;
-      return data as DiasporaProject;
+      const project = data as DiasporaProject;
+
+      // Check carrier verification
+      const { data: carrier } = await supabase
+        .from('project_carriers' as any)
+        .select('is_verified')
+        .eq('user_id', project.author_id)
+        .eq('is_verified', true)
+        .maybeSingle();
+
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', project.author_id)
+        .eq('role', 'annonceur')
+        .maybeSingle();
+
+      return {
+        ...project,
+        is_carrier_verified: !!(carrier || roleData),
+      };
     },
     enabled: !!id,
   });
