@@ -4,13 +4,16 @@ import Footer from '@/components/Footer';
 import { useDiasporaProjects } from '@/hooks/useDiaspora';
 import DiasporaProjectCard from '@/components/diaspora/DiasporaProjectCard';
 import DiasporaProjectForm from '@/components/diaspora/DiasporaProjectForm';
+import CarrierProfileForm from '@/components/diaspora/CarrierProfileForm';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
+import { useRole } from '@/hooks/useRole';
+import { useMyCarrierProfile } from '@/hooks/useProjectCarrier';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Plus, TrendingUp, Globe } from 'lucide-react';
+import { Search, TrendingUp, Globe, CheckCircle2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 const categories = [
   { value: 'all', label: 'Toutes catégories' },
@@ -36,10 +39,13 @@ const islands = [
 
 export default function DiasporaPage() {
   const { user } = useAuth();
+  const { isAnnonceur } = useRole();
+  const { data: carrierProfile } = useMyCarrierProfile();
   const [category, setCategory] = useState('all');
   const [island, setIsland] = useState('all');
   const [search, setSearch] = useState('');
-  const [showForm, setShowForm] = useState(false);
+
+  const canSubmitProject = isAnnonceur() || !!carrierProfile;
 
   const { data: projects, isLoading } = useDiasporaProjects({
     category: category !== 'all' ? category : undefined,
@@ -54,7 +60,6 @@ export default function DiasporaPage() {
     <div className="min-h-screen bg-gradient-to-b from-emerald-50/50 to-background">
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
 
-      {/* Hero */}
       <section className="relative py-12 sm:py-16 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -80,10 +85,15 @@ export default function DiasporaPage() {
               <TabsTrigger value="explore">🔍 Explorer</TabsTrigger>
               {user && <TabsTrigger value="submit">➕ Soumettre</TabsTrigger>}
             </TabsList>
+            {user && canSubmitProject && (
+              <Badge variant="outline" className="text-emerald-600 border-emerald-300 gap-1">
+                <CheckCircle2 className="h-3 w-3" />
+                {isAnnonceur() ? 'Annonceur' : 'Porteur de projet'}
+              </Badge>
+            )}
           </div>
 
           <TabsContent value="explore">
-            {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -112,7 +122,6 @@ export default function DiasporaPage() {
               </Select>
             </div>
 
-            {/* Grid */}
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
@@ -135,13 +144,22 @@ export default function DiasporaPage() {
           </TabsContent>
 
           <TabsContent value="submit">
-            {user ? (
+            {!user ? (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground">Connectez-vous pour soumettre un projet.</p>
+              </div>
+            ) : canSubmitProject ? (
               <div className="max-w-2xl mx-auto">
                 <DiasporaProjectForm onSuccess={() => {}} />
               </div>
             ) : (
-              <div className="text-center py-16">
-                <p className="text-muted-foreground">Connectez-vous pour soumettre un projet.</p>
+              <div className="max-w-2xl mx-auto space-y-4">
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground text-sm mb-2">
+                    Vous devez être <strong>annonceur</strong> ou créer un <strong>profil porteur de projet</strong> pour soumettre un projet.
+                  </p>
+                </div>
+                <CarrierProfileForm onSuccess={() => {}} />
               </div>
             )}
           </TabsContent>

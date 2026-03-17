@@ -1117,6 +1117,54 @@ export type Database = {
         }
         Relationships: []
       }
+      project_carriers: {
+        Row: {
+          bio: string | null
+          created_at: string
+          display_name: string
+          email: string | null
+          id: string
+          is_active: boolean
+          is_verified: boolean
+          island: string | null
+          location: string | null
+          organization: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          island?: string | null
+          location?: string | null
+          organization?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_verified?: boolean
+          island?: string | null
+          location?: string | null
+          organization?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       project_investments: {
         Row: {
           amount: number
@@ -1493,6 +1541,7 @@ export type Database = {
       }
       is_pro_annonceur: { Args: { _user_id: string }; Returns: boolean }
       is_pro_user: { Args: { _user_id: string }; Returns: boolean }
+      is_project_carrier: { Args: { _user_id: string }; Returns: boolean }
       log_admin_action: {
         Args: {
           _action_type: string
