@@ -13,7 +13,7 @@ import { Search, Plus, TrendingUp, Globe } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const categories = [
-  { value: '', label: 'Toutes catégories' },
+  { value: 'all', label: 'Toutes catégories' },
   { value: 'agriculture', label: '🌾 Agriculture' },
   { value: 'immobilier', label: '🏠 Immobilier' },
   { value: 'commerce', label: '🏪 Commerce' },
@@ -27,7 +27,7 @@ const categories = [
 ];
 
 const islands = [
-  { value: '', label: 'Toutes les îles' },
+  { value: 'all', label: 'Toutes les îles' },
   { value: 'Grande Comore', label: 'Grande Comore' },
   { value: 'Anjouan', label: 'Anjouan' },
   { value: 'Mohéli', label: 'Mohéli' },
@@ -36,14 +36,14 @@ const islands = [
 
 export default function DiasporaPage() {
   const { user } = useAuth();
-  const [category, setCategory] = useState('');
-  const [island, setIsland] = useState('');
+  const [category, setCategory] = useState('all');
+  const [island, setIsland] = useState('all');
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
 
   const { data: projects, isLoading } = useDiasporaProjects({
-    category: category || undefined,
-    island: island || undefined,
+    category: category !== 'all' ? category : undefined,
+    island: island !== 'all' ? island : undefined,
   });
 
   const filtered = projects?.filter(p =>
