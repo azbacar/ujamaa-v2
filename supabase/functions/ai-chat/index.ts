@@ -185,6 +185,7 @@ ${knowledgeSection}
 - /tourisme → Tourisme 🏨
 - /freelance → Missions freelance 💼
 - /freelancers → Répertoire des freelancers 👨‍💻
+- /investissement → Investissement Diaspora 🌍
 
 🚨 RÈGLES ABSOLUES:
 1. Tu te bases UNIQUEMENT sur les données de la plateforme ujamaan.com et les sources de référence autorisées ci-dessus.
