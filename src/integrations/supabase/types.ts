@@ -299,6 +299,33 @@ export type Database = {
         }
         Relationships: []
       }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       event_registrations: {
         Row: {
           additional_info: Json | null
@@ -601,6 +628,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      freelancer_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          currency: string
+          display_name: string
+          experience_years: number | null
+          hourly_rate_max: number | null
+          hourly_rate_min: number | null
+          id: string
+          is_available: boolean
+          is_visible: boolean
+          island: string | null
+          location: string | null
+          portfolio_url: string | null
+          skills: string[] | null
+          updated_at: string
+          user_id: string
+          views: number
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          currency?: string
+          display_name: string
+          experience_years?: number | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
+          id?: string
+          is_available?: boolean
+          is_visible?: boolean
+          island?: string | null
+          location?: string | null
+          portfolio_url?: string | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id: string
+          views?: number
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          currency?: string
+          display_name?: string
+          experience_years?: number | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
+          id?: string
+          is_available?: boolean
+          is_visible?: boolean
+          island?: string | null
+          location?: string | null
+          portfolio_url?: string | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id?: string
+          views?: number
+        }
+        Relationships: []
       }
       gastronomy_items: {
         Row: {
@@ -1261,6 +1348,23 @@ export type Database = {
           _target_type?: string
         }
         Returns: string
+      }
+      search_freelancers: {
+        Args: { _island?: string; _limit?: number; _skills: string[] }
+        Returns: {
+          bio: string
+          currency: string
+          display_name: string
+          experience_years: number
+          hourly_rate_max: number
+          hourly_rate_min: number
+          id: string
+          is_available: boolean
+          island: string
+          location: string
+          skills: string[]
+          user_id: string
+        }[]
       }
     }
     Enums: {
