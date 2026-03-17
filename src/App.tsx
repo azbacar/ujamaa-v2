@@ -97,6 +97,8 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/freelance" element={<FreelancePage />} />
+              <Route path="/freelance/:id" element={<FreelanceJobDetail />} />
               <Route path="/ile/:islandName" element={<IslandDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
