@@ -80,6 +80,9 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/freelancers" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               👨‍💻 Freelancers
             </Link>
+            <Link to="/investissement" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              🌍 Diaspora
+            </Link>
           </nav>
 
           {/* Spacer */}
