@@ -299,6 +299,75 @@ export type Database = {
         }
         Relationships: []
       }
+      diaspora_projects: {
+        Row: {
+          author_id: string
+          category: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          currency: string
+          current_amount: number
+          deadline: string | null
+          description: string
+          full_content: string | null
+          id: string
+          images: string[] | null
+          island: string | null
+          location: string | null
+          min_investment: number | null
+          status: string
+          target_amount: number
+          title: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string
+          current_amount?: number
+          deadline?: string | null
+          description: string
+          full_content?: string | null
+          id?: string
+          images?: string[] | null
+          island?: string | null
+          location?: string | null
+          min_investment?: number | null
+          status?: string
+          target_amount?: number
+          title: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string
+          current_amount?: number
+          deadline?: string | null
+          description?: string
+          full_content?: string | null
+          id?: string
+          images?: string[] | null
+          island?: string | null
+          location?: string | null
+          min_investment?: number | null
+          status?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: []
+      }
       direct_messages: {
         Row: {
           content: string
@@ -1047,6 +1116,91 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      project_investments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          investor_id: string
+          message: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          project_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          investor_id: string
+          message?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          project_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          investor_id?: string
+          message?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          project_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_investments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "diaspora_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_updates: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          project_id: string
+          title: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          project_id: string
+          title: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          project_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_updates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "diaspora_projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {

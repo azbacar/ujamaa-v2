@@ -36,6 +36,8 @@ import FreelancePage from "./pages/FreelancePage";
 import FreelanceJobDetail from "./pages/FreelanceJobDetail";
 import FreelancerDirectoryPage from "./pages/FreelancerDirectoryPage";
 import MessagesPage from "./pages/MessagesPage";
+import DiasporaPage from "./pages/DiasporaPage";
+import DiasporaProjectDetail from "./pages/DiasporaProjectDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -104,6 +106,8 @@ const App = () => (
               <Route path="/freelancers" element={<FreelancerDirectoryPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/messages/:partnerId" element={<MessagesPage />} />
+              <Route path="/investissement" element={<DiasporaPage />} />
+              <Route path="/investissement/:id" element={<DiasporaProjectDetail />} />
               <Route path="/ile/:islandName" element={<IslandDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
