@@ -32,6 +32,8 @@ import InstallPage from "./pages/InstallPage";
 import DeleteAccountPage from "./pages/DeleteAccountPage";
 import { MaintenanceCheck } from "./components/MaintenanceCheck";
 import ScrollToTop from "./components/ScrollToTop";
+import FreelancePage from "./pages/FreelancePage";
+import FreelanceJobDetail from "./pages/FreelanceJobDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -95,6 +97,8 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
+              <Route path="/freelance" element={<FreelancePage />} />
+              <Route path="/freelance/:id" element={<FreelanceJobDetail />} />
               <Route path="/ile/:islandName" element={<IslandDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
