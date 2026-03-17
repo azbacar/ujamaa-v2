@@ -82,26 +82,17 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             </Link>
           </nav>
 
-          {/* Bouton de recherche - desktop */}
-          <div className="hidden md:block flex-1 max-w-xl">
-            <Button
-              variant="outline"
-              onClick={() => setShowFullScreenSearch(true)}
-              className="w-full h-12 justify-start gap-3 bg-white/90 border-emerald-200 hover:border-emerald-400 rounded-2xl shadow-sm text-base text-muted-foreground"
-            >
-              <Search className="w-5 h-5 text-emerald-500" />
-              <span>🔍 {t('hero.search')}</span>
-            </Button>
-          </div>
+          {/* Spacer */}
+          <div className="hidden lg:block flex-1" />
 
           {/* Actions */}
           <div className="flex items-center gap-1 sm:gap-3">
-            {/* Search mobile */}
+            {/* Search */}
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowFullScreenSearch(true)}
-              className="md:hidden h-10 w-10 rounded-xl text-emerald-600"
+              className="h-10 w-10 rounded-xl text-emerald-600"
             >
               <Search className="w-5 h-5" />
             </Button>
