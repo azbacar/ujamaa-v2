@@ -24,6 +24,7 @@ export interface DiasporaProject {
   views: number;
   created_at: string;
   updated_at: string;
+  is_carrier_verified?: boolean;
 }
 
 export interface ProjectInvestment {
