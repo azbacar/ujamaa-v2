@@ -27,6 +27,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const { settings } = useSiteSettings();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showFullScreenSearch, setShowFullScreenSearch] = useState(false);
+  const { data: unreadCount } = useUnreadCount();
 
   const handleSignOut = async () => {
     await signOut();
