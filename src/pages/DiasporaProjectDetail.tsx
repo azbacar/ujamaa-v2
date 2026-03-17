@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle, BadgeCheck } from 'lucide-react';
 
 export default function DiasporaProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -71,7 +71,14 @@ export default function DiasporaProjectDetail() {
             )}
 
             <div>
-              <Badge variant="secondary" className="mb-2">{project.category}</Badge>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary">{project.category}</Badge>
+                {project.is_carrier_verified && (
+                  <Badge className="bg-blue-100 text-blue-700 text-xs gap-1">
+                    <BadgeCheck className="h-3 w-3" /> Porteur vérifié
+                  </Badge>
+                )}
+              </div>
               <h1 className="text-2xl sm:text-3xl font-bold">{project.title}</h1>
               <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted-foreground">
                 {project.island && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {project.island}</span>}
