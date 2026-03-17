@@ -44,9 +44,16 @@ export default function DiasporaProjectCard({ project }: Props) {
       )}
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
-          <Badge variant="secondary" className="text-xs">
-            {categoryLabels[project.category] || project.category}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              {categoryLabels[project.category] || project.category}
+            </Badge>
+            {project.is_carrier_verified && (
+              <Badge className="bg-blue-100 text-blue-700 text-xs gap-1 px-1.5">
+                <BadgeCheck className="h-3 w-3" /> Vérifié
+              </Badge>
+            )}
+          </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Eye className="h-3 w-3" />
             {project.views}
