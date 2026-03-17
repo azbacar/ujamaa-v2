@@ -138,6 +138,16 @@ serve(async (req) => {
       dynamicContent += '\n';
     }
 
+    if (dynamicData.freelancers && dynamicData.freelancers.length > 0) {
+      dynamicContent += '👨‍💻 FREELANCERS DISPONIBLES:\n';
+      dynamicData.freelancers.slice(0, 15).forEach((f: any) => {
+        const skills = (f.skills || []).slice(0, 5).join(', ');
+        const rate = f.hourly_rate_min ? `${f.hourly_rate_min}${f.hourly_rate_max ? '-' + f.hourly_rate_max : '+'} ${f.currency}/h` : '';
+        dynamicContent += `- ${f.display_name} (${skills})${f.island ? ' - ' + f.island : ''}${rate ? ' - ' + rate : ''}${f.experience_years ? ' - ' + f.experience_years + ' ans exp.' : ''}\n`;
+      });
+      dynamicContent += '\n';
+    }
+
     // Build knowledge sources section
     let knowledgeSection = '';
     if (knowledgeSources.length > 0) {
