@@ -17,11 +17,12 @@ async function getDynamicSiteData(authHeader: string | null) {
   });
 
   try {
-    const [pricesRes, eventsRes, announcementsRes, freelancersRes] = await Promise.all([
+    const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes] = await Promise.all([
       supabase.from('prices').select('product, price, unit, island, category').eq('status', 'published').order('created_at', { ascending: false }).limit(50),
       supabase.from('events').select('title, description, date, end_date, location, island').gte('end_date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
       supabase.from('content_items').select('title, description, category').eq('status', 'published').order('published_at', { ascending: false }).limit(20),
       supabase.from('freelancer_profiles').select('display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available').eq('is_visible', true).eq('is_available', true).limit(30),
+      supabase.from('diaspora_projects').select('title, description, category, target_amount, current_amount, currency, island, location, min_investment, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
     ]);
 
     return {
@@ -29,10 +30,11 @@ async function getDynamicSiteData(authHeader: string | null) {
       events: eventsRes.data || [],
       announcements: announcementsRes.data || [],
       freelancers: freelancersRes.data || [],
+      diasporaProjects: diasporaRes.data || [],
     };
   } catch (error) {
     console.error('Error fetching dynamic data:', error);
-    return { prices: [], events: [], announcements: [], freelancers: [] };
+    return { prices: [], events: [], announcements: [], freelancers: [], diasporaProjects: [] };
   }
 }
 
@@ -148,6 +150,16 @@ serve(async (req) => {
       dynamicContent += '\n';
     }
 
+    if (dynamicData.diasporaProjects && dynamicData.diasporaProjects.length > 0) {
+      dynamicContent += '🌍 PROJETS D\'INVESTISSEMENT DIASPORA:\n';
+      dynamicData.diasporaProjects.forEach((p: any) => {
+        const progress = p.target_amount > 0 ? Math.round((p.current_amount / p.target_amount) * 100) : 0;
+        const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '';
+        dynamicContent += `- ${p.title} (${p.category}) - Objectif: ${p.target_amount} ${p.currency} - ${progress}% financé${p.island ? ' - ' + p.island : ''}${p.min_investment ? ' - Min: ' + p.min_investment + ' ' + p.currency : ''}${deadline ? ' - Échéance: ' + deadline : ''}\n`;
+      });
+      dynamicContent += '\n';
+    }
+
     // Build knowledge sources section
     let knowledgeSection = '';
     if (knowledgeSources.length > 0) {
@@ -174,6 +186,7 @@ ${knowledgeSection}
 - /tourisme → Tourisme 🏨
 - /freelance → Missions freelance 💼
 - /freelancers → Répertoire des freelancers 👨‍💻
+- /investissement → Investissement Diaspora 🌍
 
 🚨 RÈGLES ABSOLUES:
 1. Tu te bases UNIQUEMENT sur les données de la plateforme ujamaan.com et les sources de référence autorisées ci-dessus.
