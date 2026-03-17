@@ -184,6 +184,7 @@ export default function AdminDashboard() {
       case 'pro-subscriptions': return <ProSubscriptionsSection />;
       case 'freelance': return <FreelanceManagementSection />;
       case 'diaspora': return <DiasporaManagementSection />;
+      case 'carriers': return <CarrierManagementSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
