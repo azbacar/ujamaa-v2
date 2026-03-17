@@ -72,6 +72,9 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/services" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🏛️ {t('nav.services')}
             </Link>
+            <Link to="/freelance" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              💼 Freelance
+            </Link>
           </nav>
 
           {/* Bouton de recherche - desktop */}
