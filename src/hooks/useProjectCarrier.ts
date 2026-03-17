@@ -31,7 +31,7 @@ export const useMyCarrierProfile = () => {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
-      return data as ProjectCarrier | null;
+      return data as unknown as ProjectCarrier | null;
     },
     enabled: !!user,
   });
