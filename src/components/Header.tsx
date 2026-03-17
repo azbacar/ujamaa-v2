@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import NotificationSystemReal from './NotificationSystemReal';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import FullScreenSearch from './FullScreenSearch';
+import { useUnreadCount } from '@/hooks/useMessages';
 
 interface HeaderProps {
   currentLanguage: string;
