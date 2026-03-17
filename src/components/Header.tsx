@@ -106,6 +106,23 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               <Search className="w-5 h-5" />
             </Button>
 
+            {/* Messages */}
+            {user && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/messages')}
+                className="h-10 w-10 rounded-xl text-emerald-600 relative"
+              >
+                <MessageCircle className="w-5 h-5" />
+                {(unreadCount ?? 0) > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            )}
+
             {/* Notifications */}
             <NotificationSystemReal />
 
