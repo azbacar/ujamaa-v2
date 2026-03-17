@@ -75,7 +75,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               🏛️ {t('nav.services')}
             </Link>
             <Link to="/freelance" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              💼 Freelance
+              💼 Missions
             </Link>
             <Link to="/freelancers" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               👨‍💻 Freelancers
