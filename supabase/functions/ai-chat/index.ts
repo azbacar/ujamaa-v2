@@ -17,20 +17,22 @@ async function getDynamicSiteData(authHeader: string | null) {
   });
 
   try {
-    const [pricesRes, eventsRes, announcementsRes] = await Promise.all([
+    const [pricesRes, eventsRes, announcementsRes, freelancersRes] = await Promise.all([
       supabase.from('prices').select('product, price, unit, island, category').eq('status', 'published').order('created_at', { ascending: false }).limit(50),
       supabase.from('events').select('title, description, date, end_date, location, island').gte('end_date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
       supabase.from('content_items').select('title, description, category').eq('status', 'published').order('published_at', { ascending: false }).limit(20),
+      supabase.from('freelancer_profiles').select('display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available').eq('is_visible', true).eq('is_available', true).limit(30),
     ]);
 
     return {
       prices: pricesRes.data || [],
       events: eventsRes.data || [],
       announcements: announcementsRes.data || [],
+      freelancers: freelancersRes.data || [],
     };
   } catch (error) {
     console.error('Error fetching dynamic data:', error);
-    return { prices: [], events: [], announcements: [] };
+    return { prices: [], events: [], announcements: [], freelancers: [] };
   }
 }
 
@@ -136,6 +138,16 @@ serve(async (req) => {
       dynamicContent += '\n';
     }
 
+    if (dynamicData.freelancers && dynamicData.freelancers.length > 0) {
+      dynamicContent += '👨‍💻 FREELANCERS DISPONIBLES:\n';
+      dynamicData.freelancers.slice(0, 15).forEach((f: any) => {
+        const skills = (f.skills || []).slice(0, 5).join(', ');
+        const rate = f.hourly_rate_min ? `${f.hourly_rate_min}${f.hourly_rate_max ? '-' + f.hourly_rate_max : '+'} ${f.currency}/h` : '';
+        dynamicContent += `- ${f.display_name} (${skills})${f.island ? ' - ' + f.island : ''}${rate ? ' - ' + rate : ''}${f.experience_years ? ' - ' + f.experience_years + ' ans exp.' : ''}\n`;
+      });
+      dynamicContent += '\n';
+    }
+
     // Build knowledge sources section
     let knowledgeSection = '';
     if (knowledgeSources.length > 0) {
@@ -160,6 +172,8 @@ ${knowledgeSection}
 - /appels-offres → Appels d'offres 📋
 - /annonces → Annonces 📢
 - /tourisme → Tourisme 🏨
+- /freelance → Missions freelance 💼
+- /freelancers → Répertoire des freelancers 👨‍💻
 
 🚨 RÈGLES ABSOLUES:
 1. Tu te bases UNIQUEMENT sur les données de la plateforme ujamaan.com et les sources de référence autorisées ci-dessus.

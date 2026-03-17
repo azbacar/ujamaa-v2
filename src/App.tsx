@@ -34,6 +34,8 @@ import { MaintenanceCheck } from "./components/MaintenanceCheck";
 import ScrollToTop from "./components/ScrollToTop";
 import FreelancePage from "./pages/FreelancePage";
 import FreelanceJobDetail from "./pages/FreelanceJobDetail";
+import FreelancerDirectoryPage from "./pages/FreelancerDirectoryPage";
+import MessagesPage from "./pages/MessagesPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -99,6 +101,9 @@ const App = () => (
               />
               <Route path="/freelance" element={<FreelancePage />} />
               <Route path="/freelance/:id" element={<FreelanceJobDetail />} />
+              <Route path="/freelancers" element={<FreelancerDirectoryPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/messages/:partnerId" element={<MessagesPage />} />
               <Route path="/ile/:islandName" element={<IslandDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

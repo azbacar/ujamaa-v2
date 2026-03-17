@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Menu, Globe, User, LogOut, Settings, Shield } from 'lucide-react';
+import { Search, Menu, Globe, User, LogOut, Settings, Shield, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import NotificationSystemReal from './NotificationSystemReal';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import FullScreenSearch from './FullScreenSearch';
+import { useUnreadCount } from '@/hooks/useMessages';
 
 interface HeaderProps {
   currentLanguage: string;
@@ -26,6 +27,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const { settings } = useSiteSettings();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showFullScreenSearch, setShowFullScreenSearch] = useState(false);
+  const { data: unreadCount } = useUnreadCount();
 
   const handleSignOut = async () => {
     await signOut();
@@ -75,6 +77,9 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/freelance" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               💼 Freelance
             </Link>
+            <Link to="/freelancers" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              👨‍💻 Freelancers
+            </Link>
           </nav>
 
           {/* Bouton de recherche - desktop */}
@@ -100,6 +105,23 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             >
               <Search className="w-5 h-5" />
             </Button>
+
+            {/* Messages */}
+            {user && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/messages')}
+                className="h-10 w-10 rounded-xl text-emerald-600 relative"
+              >
+                <MessageCircle className="w-5 h-5" />
+                {(unreadCount ?? 0) > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            )}
 
             {/* Notifications */}
             <NotificationSystemReal />
@@ -191,6 +213,9 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     </Link>
                     <Link to="/freelance" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       💼 Freelance
+                    </Link>
+                    <Link to="/freelancers" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
+                      👨‍💻 Répertoire Freelancers
                     </Link>
                     <div className="border-t border-gray-100 my-1" />
                     <Link to="/install" className="block px-4 py-3 text-emerald-600 hover:bg-emerald-50 font-medium transition-colors" onClick={() => setShowMobileMenu(false)}>
