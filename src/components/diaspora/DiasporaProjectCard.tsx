@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { MapPin, Calendar, TrendingUp, Eye } from 'lucide-react';
+import { MapPin, Calendar, TrendingUp, Eye, BadgeCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DiasporaProject } from '@/hooks/useDiaspora';
 
