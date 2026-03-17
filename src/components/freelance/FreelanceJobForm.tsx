@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,67 +6,102 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus } from 'lucide-react';
-import { useCreateFreelanceJob, FREELANCE_CATEGORIES, COMOROS_ISLANDS } from '@/hooks/useFreelance';
+import { Plus, Pencil } from 'lucide-react';
+import { useCreateFreelanceJob, useUpdateFreelanceJob, FreelanceJob, FREELANCE_CATEGORIES, COMOROS_ISLANDS } from '@/hooks/useFreelance';
 
-export default function FreelanceJobForm() {
+interface Props {
+  editJob?: FreelanceJob;
+}
+
+const emptyForm = {
+  title: '',
+  description: '',
+  category: '',
+  skills: '',
+  budget_min: '',
+  budget_max: '',
+  island: '',
+  location: '',
+  is_remote: false,
+  deadline: '',
+  status: 'published' as string,
+};
+
+export default function FreelanceJobForm({ editJob }: Props) {
   const [open, setOpen] = useState(false);
   const createJob = useCreateFreelanceJob();
+  const updateJob = useUpdateFreelanceJob();
+  const isEdit = !!editJob;
 
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    category: '',
-    skills: '',
-    budget_min: '',
-    budget_max: '',
-    island: '',
-    location: '',
-    is_remote: false,
-    deadline: '',
-    status: 'published' as string,
-  });
+  const [form, setForm] = useState(emptyForm);
+
+  useEffect(() => {
+    if (editJob && open) {
+      setForm({
+        title: editJob.title,
+        description: editJob.description,
+        category: editJob.category,
+        skills: (editJob.skills || []).join(', '),
+        budget_min: editJob.budget_min?.toString() || '',
+        budget_max: editJob.budget_max?.toString() || '',
+        island: editJob.island || '',
+        location: editJob.location || '',
+        is_remote: editJob.is_remote ?? false,
+        deadline: editJob.deadline ? editJob.deadline.split('T')[0] : '',
+        status: editJob.status,
+      });
+    }
+  }, [editJob, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.description || !form.category) {
-      return;
-    }
+    if (!form.title || !form.description || !form.category) return;
 
-    createJob.mutate(
-      {
-        title: form.title,
-        description: form.description,
-        category: form.category,
-        skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
-        budget_min: form.budget_min ? Number(form.budget_min) : null,
-        budget_max: form.budget_max ? Number(form.budget_max) : null,
-        currency: 'FC',
-        island: form.island || null,
-        location: form.location || null,
-        is_remote: form.is_remote,
-        deadline: form.deadline || null,
-        status: form.status,
-      },
-      {
-        onSuccess: () => {
-          setOpen(false);
-          setForm({ title: '', description: '', category: '', skills: '', budget_min: '', budget_max: '', island: '', location: '', is_remote: false, deadline: '', status: 'published' });
-        },
-      }
-    );
+    const payload = {
+      title: form.title,
+      description: form.description,
+      category: form.category,
+      skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
+      budget_min: form.budget_min ? Number(form.budget_min) : null,
+      budget_max: form.budget_max ? Number(form.budget_max) : null,
+      currency: 'FC',
+      island: form.island || null,
+      location: form.location || null,
+      is_remote: form.is_remote,
+      deadline: form.deadline || null,
+      status: form.status,
+    };
+
+    const onSuccess = () => {
+      setOpen(false);
+      if (!isEdit) setForm(emptyForm);
+    };
+
+    if (isEdit) {
+      updateJob.mutate({ id: editJob.id, ...payload }, { onSuccess });
+    } else {
+      createJob.mutate(payload, { onSuccess });
+    }
   };
+
+  const isPending = isEdit ? updateJob.isPending : createJob.isPending;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" /> Publier une mission
-        </Button>
+        {isEdit ? (
+          <Button variant="outline" size="sm" className="gap-2">
+            <Pencil className="h-4 w-4" /> Modifier
+          </Button>
+        ) : (
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" /> Publier une mission
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Publier une mission freelance</DialogTitle>
+          <DialogTitle>{isEdit ? 'Modifier la mission' : 'Publier une mission freelance'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -134,8 +169,22 @@ export default function FreelanceJobForm() {
             <Input id="deadline" type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))} />
           </div>
 
-          <Button type="submit" className="w-full" disabled={createJob.isPending}>
-            {createJob.isPending ? 'Publication...' : 'Publier la mission'}
+          {isEdit && (
+            <div>
+              <Label>Statut</Label>
+              <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Brouillon</SelectItem>
+                  <SelectItem value="published">Publié</SelectItem>
+                  <SelectItem value="closed">Clôturé</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? (isEdit ? 'Mise à jour...' : 'Publication...') : (isEdit ? 'Mettre à jour' : 'Publier la mission')}
           </Button>
         </form>
       </DialogContent>
