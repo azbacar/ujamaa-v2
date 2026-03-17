@@ -36,14 +36,14 @@ const islands = [
 
 export default function DiasporaPage() {
   const { user } = useAuth();
-  const [category, setCategory] = useState('');
-  const [island, setIsland] = useState('');
+  const [category, setCategory] = useState('all');
+  const [island, setIsland] = useState('all');
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
 
   const { data: projects, isLoading } = useDiasporaProjects({
-    category: category || undefined,
-    island: island || undefined,
+    category: category !== 'all' ? category : undefined,
+    island: island !== 'all' ? island : undefined,
   });
 
   const filtered = projects?.filter(p =>
