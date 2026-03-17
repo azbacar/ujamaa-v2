@@ -180,6 +180,7 @@ export default function AdminDashboard() {
       case 'seo': return <SEOManagementSection />;
       case 'tourism': return <TourismManagementSection />;
       case 'pro-subscriptions': return <ProSubscriptionsSection />;
+      case 'freelance': return <FreelanceManagementSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
