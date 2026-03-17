@@ -150,6 +150,15 @@ serve(async (req) => {
       dynamicContent += '\n';
     }
 
+    if (dynamicData.diasporaProjects && dynamicData.diasporaProjects.length > 0) {
+      dynamicContent += '🌍 PROJETS D\'INVESTISSEMENT DIASPORA:\n';
+      dynamicData.diasporaProjects.forEach((p: any) => {
+        const progress = p.target_amount > 0 ? Math.round((p.current_amount / p.target_amount) * 100) : 0;
+        const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '';
+        dynamicContent += `- ${p.title} (${p.category}) - Objectif: ${p.target_amount} ${p.currency} - ${progress}% financé${p.island ? ' - ' + p.island : ''}${p.min_investment ? ' - Min: ' + p.min_investment + ' ' + p.currency : ''}${deadline ? ' - Échéance: ' + deadline : ''}\n`;
+      });
+      dynamicContent += '\n';
+
     // Build knowledge sources section
     let knowledgeSection = '';
     if (knowledgeSources.length > 0) {
