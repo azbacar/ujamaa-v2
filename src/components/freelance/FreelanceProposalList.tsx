@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Calendar, Banknote } from 'lucide-react';
-import { useJobProposals } from '@/hooks/useFreelance';
+import { Button } from '@/components/ui/button';
+import { Users, Calendar, Banknote, CheckCircle, XCircle } from 'lucide-react';
+import { useJobProposals, useUpdateProposalStatus } from '@/hooks/useFreelance';
 
 interface Props {
   jobId: string;
@@ -16,6 +17,7 @@ const statusMap: Record<string, { label: string; className: string }> = {
 
 export default function FreelanceProposalList({ jobId }: Props) {
   const { data: proposals, isLoading } = useJobProposals(jobId);
+  const updateStatus = useUpdateProposalStatus();
 
   if (isLoading) {
     return <p className="text-sm text-muted-foreground py-4">Chargement des candidatures...</p>;
@@ -31,6 +33,10 @@ export default function FreelanceProposalList({ jobId }: Props) {
     );
   }
 
+  const handleStatusChange = (proposalId: string, status: string) => {
+    updateStatus.mutate({ proposalId, status, jobId });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -41,6 +47,7 @@ export default function FreelanceProposalList({ jobId }: Props) {
       <CardContent className="space-y-3">
         {proposals.map(proposal => {
           const st = statusMap[proposal.status] || statusMap.pending;
+          const isPending = proposal.status === 'pending';
           return (
             <div key={proposal.id} className="border border-border rounded-lg p-3 space-y-2">
               <div className="flex items-center justify-between">
@@ -48,18 +55,42 @@ export default function FreelanceProposalList({ jobId }: Props) {
                 <Badge className={st.className}>{st.label}</Badge>
               </div>
               <p className="text-sm text-muted-foreground">{proposal.cover_letter}</p>
-              <div className="flex gap-4 text-xs text-muted-foreground">
-                {proposal.proposed_amount && (
-                  <span className="flex items-center gap-1">
-                    <Banknote className="h-3 w-3" />
-                    {proposal.proposed_amount.toLocaleString()} {proposal.currency}
-                  </span>
-                )}
-                {proposal.estimated_days && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {proposal.estimated_days} jours
-                  </span>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-4 text-xs text-muted-foreground">
+                  {proposal.proposed_amount && (
+                    <span className="flex items-center gap-1">
+                      <Banknote className="h-3 w-3" />
+                      {proposal.proposed_amount.toLocaleString()} {proposal.currency}
+                    </span>
+                  )}
+                  {proposal.estimated_days && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {proposal.estimated_days} jours
+                    </span>
+                  )}
+                </div>
+                {isPending && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs gap-1 text-green-700 border-green-200 hover:bg-green-50"
+                      onClick={() => handleStatusChange(proposal.id, 'accepted')}
+                      disabled={updateStatus.isPending}
+                    >
+                      <CheckCircle className="h-3 w-3" /> Accepter
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs gap-1 text-red-700 border-red-200 hover:bg-red-50"
+                      onClick={() => handleStatusChange(proposal.id, 'rejected')}
+                      disabled={updateStatus.isPending}
+                    >
+                      <XCircle className="h-3 w-3" /> Refuser
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
