@@ -182,6 +182,7 @@ export default function AdminDashboard() {
       case 'tourism': return <TourismManagementSection />;
       case 'pro-subscriptions': return <ProSubscriptionsSection />;
       case 'freelance': return <FreelanceManagementSection />;
+      case 'diaspora': return <DiasporaManagementSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
