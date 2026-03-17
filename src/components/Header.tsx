@@ -189,6 +189,9 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     <Link to="/services" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🏛️ {t('nav.services')}
                     </Link>
+                    <Link to="/freelance" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
+                      💼 Freelance
+                    </Link>
                     <div className="border-t border-gray-100 my-1" />
                     <Link to="/install" className="block px-4 py-3 text-emerald-600 hover:bg-emerald-50 font-medium transition-colors" onClick={() => setShowMobileMenu(false)}>
                       📲 Installer l'app
