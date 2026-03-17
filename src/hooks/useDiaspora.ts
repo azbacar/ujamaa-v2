@@ -66,7 +66,34 @@ export function useDiasporaProjects(filters?: { category?: string; island?: stri
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as DiasporaProject[];
+      const projects = data as DiasporaProject[];
+
+      // Fetch carrier verification status for all authors
+      if (projects.length > 0) {
+        const authorIds = [...new Set(projects.map(p => p.author_id))];
+        const { data: carriers } = await supabase
+          .from('project_carriers' as any)
+          .select('user_id, is_verified')
+          .in('user_id', authorIds)
+          .eq('is_verified', true);
+
+        // Also check annonceur roles
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('user_id, role')
+          .in('user_id', authorIds)
+          .eq('role', 'annonceur');
+
+        const verifiedCarriers = new Set((carriers || []).map((c: any) => c.user_id));
+        const annonceurs = new Set((roles || []).map((r: any) => r.user_id));
+
+        return projects.map(p => ({
+          ...p,
+          is_carrier_verified: verifiedCarriers.has(p.author_id) || annonceurs.has(p.author_id),
+        }));
+      }
+
+      return projects;
     },
   });
 }
