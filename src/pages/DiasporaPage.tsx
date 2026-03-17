@@ -13,7 +13,7 @@ import { Search, Plus, TrendingUp, Globe } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const categories = [
-  { value: '', label: 'Toutes catégories' },
+  { value: 'all', label: 'Toutes catégories' },
   { value: 'agriculture', label: '🌾 Agriculture' },
   { value: 'immobilier', label: '🏠 Immobilier' },
   { value: 'commerce', label: '🏪 Commerce' },
@@ -27,7 +27,7 @@ const categories = [
 ];
 
 const islands = [
-  { value: '', label: 'Toutes les îles' },
+  { value: 'all', label: 'Toutes les îles' },
   { value: 'Grande Comore', label: 'Grande Comore' },
   { value: 'Anjouan', label: 'Anjouan' },
   { value: 'Mohéli', label: 'Mohéli' },
