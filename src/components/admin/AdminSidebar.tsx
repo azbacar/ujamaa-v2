@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   BarChart3, Home, FileText, Clock, Users, Image, Settings,
   Shield, Activity, Bell, Database, ChevronRight, Crown,
-  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search
+  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ export default function AdminSidebar({
     { id: 'ad-stats', title: 'Stats Publicités', icon: BarChart3, description: 'Statistiques CTR', available: isAdmin, category: 'content' },
     { id: 'prices', title: 'Prix & Marchés', icon: DollarSign, description: 'Gestion des prix', available: isModerator || isAdmin, category: 'content' },
     { id: 'moderation', title: 'Modération', icon: UserCheck, description: 'Signalements et attente', available: isModerator || isAdmin, category: 'content' },
+    { id: 'freelance', title: 'Freelance', icon: Briefcase, description: 'Missions et candidatures', available: isAdmin, category: 'content' },
     { id: 'pending', title: 'Modifications', icon: Clock, description: 'En attente de validation', available: true, category: 'content' },
     { id: 'media', title: 'Médias', icon: Image, description: 'Images et fichiers', available: isModerator || isAdmin, category: 'content' },
     { id: 'static-pages', title: 'Pages statiques', icon: FileText, description: 'Contact, À propos...', available: isAdmin, category: 'content' },

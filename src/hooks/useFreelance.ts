@@ -249,6 +249,80 @@ export const useCreateProposal = () => {
   });
 };
 
+export const useUpdateProposalStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ proposalId, status, jobId }: { proposalId: string; status: string; jobId: string }) => {
+      const { data, error } = await supabase
+        .from('freelance_proposals')
+        .update({ status })
+        .eq('id', proposalId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { ...data, jobId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['freelance-proposals', data.jobId] });
+      const labels: Record<string, string> = { accepted: 'acceptée', rejected: 'refusée' };
+      toast.success(`Candidature ${labels[data.status] || 'mise à jour'}`);
+    },
+    onError: () => {
+      toast.error('Erreur lors de la mise à jour du statut');
+    },
+  });
+};
+
+// Admin: fetch all jobs (any status)
+export const useAdminFreelanceJobs = () => {
+  return useQuery({
+    queryKey: ['admin-freelance-jobs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freelance_jobs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const authorIds = [...new Set((data || []).map(j => j.author_id))];
+      const userMap = await fetchUsernames(authorIds);
+
+      return (data || []).map(job => ({
+        ...job,
+        skills: job.skills || [],
+        is_remote: job.is_remote ?? false,
+        author_username: userMap.get(job.author_id)?.username || 'Anonyme',
+      })) as FreelanceJob[];
+    },
+  });
+};
+
+// Admin: fetch all proposals
+export const useAdminFreelanceProposals = () => {
+  return useQuery({
+    queryKey: ['admin-freelance-proposals'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freelance_proposals')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const freelancerIds = [...new Set((data || []).map(p => p.freelancer_id))];
+      const userMap = await fetchUsernames(freelancerIds);
+
+      return (data || []).map(p => ({
+        ...p,
+        freelancer_username: userMap.get(p.freelancer_id)?.username || 'Anonyme',
+      })) as FreelanceProposal[];
+    },
+  });
+};
+
 export const useJobReviews = (jobId: string) => {
   return useQuery({
     queryKey: ['freelance-reviews', jobId],
