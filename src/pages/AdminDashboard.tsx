@@ -34,6 +34,7 @@ import AIKnowledgeManagementSection from '@/components/admin/AIKnowledgeManageme
 import SEOManagementSection from '@/components/admin/SEOManagementSection';
 import TourismManagementSection from '@/components/admin/TourismManagementSection';
 import ProSubscriptionsSection from '@/components/admin/ProSubscriptionsSection';
+import FreelanceManagementSection from '@/components/admin/FreelanceManagementSection';
 
 interface PendingModification {
   id: string;
