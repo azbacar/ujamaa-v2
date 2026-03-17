@@ -457,6 +457,151 @@ export type Database = {
         }
         Relationships: []
       }
+      freelance_jobs: {
+        Row: {
+          author_id: string
+          budget_max: number | null
+          budget_min: number | null
+          category: string
+          created_at: string
+          currency: string
+          deadline: string | null
+          description: string
+          id: string
+          is_remote: boolean | null
+          island: string | null
+          location: string | null
+          skills: string[] | null
+          status: string
+          title: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          author_id: string
+          budget_max?: number | null
+          budget_min?: number | null
+          category: string
+          created_at?: string
+          currency?: string
+          deadline?: string | null
+          description: string
+          id?: string
+          is_remote?: boolean | null
+          island?: string | null
+          location?: string | null
+          skills?: string[] | null
+          status?: string
+          title: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          author_id?: string
+          budget_max?: number | null
+          budget_min?: number | null
+          category?: string
+          created_at?: string
+          currency?: string
+          deadline?: string | null
+          description?: string
+          id?: string
+          is_remote?: boolean | null
+          island?: string | null
+          location?: string | null
+          skills?: string[] | null
+          status?: string
+          title?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: []
+      }
+      freelance_proposals: {
+        Row: {
+          cover_letter: string
+          created_at: string
+          currency: string
+          estimated_days: number | null
+          freelancer_id: string
+          id: string
+          job_id: string
+          proposed_amount: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cover_letter: string
+          created_at?: string
+          currency?: string
+          estimated_days?: number | null
+          freelancer_id: string
+          id?: string
+          job_id: string
+          proposed_amount?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cover_letter?: string
+          created_at?: string
+          currency?: string
+          estimated_days?: number | null
+          freelancer_id?: string
+          id?: string
+          job_id?: string
+          proposed_amount?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freelance_proposals_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "freelance_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      freelance_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          job_id: string
+          rating: number
+          reviewed_id: string
+          reviewer_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          rating: number
+          reviewed_id: string
+          reviewer_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          rating?: number
+          reviewed_id?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freelance_reviews_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "freelance_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gastronomy_items: {
         Row: {
           author_id: string
