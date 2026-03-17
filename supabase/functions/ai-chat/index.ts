@@ -158,6 +158,7 @@ serve(async (req) => {
         dynamicContent += `- ${p.title} (${p.category}) - Objectif: ${p.target_amount} ${p.currency} - ${progress}% financé${p.island ? ' - ' + p.island : ''}${p.min_investment ? ' - Min: ' + p.min_investment + ' ' + p.currency : ''}${deadline ? ' - Échéance: ' + deadline : ''}\n`;
       });
       dynamicContent += '\n';
+    }
 
     // Build knowledge sources section
     let knowledgeSection = '';
