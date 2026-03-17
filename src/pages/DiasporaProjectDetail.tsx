@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle, BadgeCheck } from 'lucide-react';
 
 export default function DiasporaProjectDetail() {
   const { id } = useParams<{ id: string }>();
