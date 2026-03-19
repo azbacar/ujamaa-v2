@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, XCircle, AlertTriangle, Flag, FileText, Eye, Calendar, ExternalLink } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CheckCircle, XCircle, AlertTriangle, Flag, FileText, ExternalLink, Edit, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -29,6 +32,11 @@ interface DraftContent {
   author_id: string;
   created_at: string;
   source: 'content_items' | 'events';
+  category?: string | null;
+  contact_phone?: string | null;
+  contact_whatsapp?: string | null;
+  location?: string | null;
+  island?: string | null;
 }
 
 export default function ModerationQueueSection() {
@@ -36,6 +44,8 @@ export default function ModerationQueueSection() {
   const [reports, setReports] = useState<Report[]>([]);
   const [drafts, setDrafts] = useState<DraftContent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingItem, setEditingItem] = useState<DraftContent | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -43,8 +53,8 @@ export default function ModerationQueueSection() {
     setLoading(true);
     const [reportsRes, contentDraftsRes, eventDraftsRes] = await Promise.all([
       supabase.from('reports').select('*').order('created_at', { ascending: false }),
-      supabase.from('content_items').select('id, title, description, type, status, author_id, created_at').eq('status', 'draft').order('created_at', { ascending: false }),
-      supabase.from('events').select('id, title, description, status, author_id, created_at').eq('status', 'draft').order('created_at', { ascending: false }),
+      supabase.from('content_items').select('id, title, description, type, status, author_id, created_at, category, contact_phone, contact_whatsapp').eq('status', 'draft').order('created_at', { ascending: false }),
+      supabase.from('events').select('id, title, description, status, author_id, created_at, category, location, island, contact_phone').eq('status', 'draft').order('created_at', { ascending: false }),
     ]);
     setReports(reportsRes.data || []);
 
@@ -67,7 +77,6 @@ export default function ModerationQueueSection() {
   const handleContentAction = async (item: DraftContent, action: 'published' | 'archived') => {
     try {
       if (item.source === 'events') {
-        // Events table uses 'cancelled' instead of 'archived'
         const eventStatus = action === 'published' ? 'published' : 'cancelled';
         const { error } = await supabase.from('events').update({ status: eventStatus }).eq('id', item.id);
         if (error) throw error;
@@ -80,6 +89,42 @@ export default function ModerationQueueSection() {
     } catch (err: any) {
       console.error('Moderation action error:', err);
       toast.error(err?.message || 'Erreur lors de la mise à jour');
+    }
+  };
+
+  const openEditDialog = (item: DraftContent) => {
+    setEditingItem({ ...item });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingItem) return;
+    try {
+      if (editingItem.source === 'events') {
+        const { error } = await supabase.from('events').update({
+          title: editingItem.title,
+          description: editingItem.description,
+          location: editingItem.location,
+          category: editingItem.category,
+          contact_phone: editingItem.contact_phone,
+        }).eq('id', editingItem.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('content_items').update({
+          title: editingItem.title,
+          description: editingItem.description,
+          category: editingItem.category,
+          contact_phone: editingItem.contact_phone,
+          contact_whatsapp: editingItem.contact_whatsapp,
+        }).eq('id', editingItem.id);
+        if (error) throw error;
+      }
+      toast.success('Contenu modifié avec succès');
+      setIsEditDialogOpen(false);
+      setEditingItem(null);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors de la modification');
     }
   };
 
@@ -196,6 +241,9 @@ export default function ModerationQueueSection() {
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => openEditDialog(item)}>
+                        <Edit className="h-4 w-4 mr-1" /> Modifier
+                      </Button>
                       <Button size="sm" onClick={() => handleContentAction(item, 'published')}>
                         <CheckCircle className="h-4 w-4 mr-1" /> Publier
                       </Button>
@@ -210,6 +258,58 @@ export default function ModerationQueueSection() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Modifier le contenu avant publication
+            </DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <Label>Titre</Label>
+                <Input value={editingItem.title} onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })} />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea value={editingItem.description || ''} onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })} rows={5} />
+              </div>
+              <div>
+                <Label>Catégorie</Label>
+                <Input value={editingItem.category || ''} onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })} />
+              </div>
+              {editingItem.source === 'events' && (
+                <div>
+                  <Label>Lieu</Label>
+                  <Input value={editingItem.location || ''} onChange={(e) => setEditingItem({ ...editingItem, location: e.target.value })} />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Téléphone</Label>
+                  <Input value={editingItem.contact_phone || ''} onChange={(e) => setEditingItem({ ...editingItem, contact_phone: e.target.value })} />
+                </div>
+                {editingItem.source === 'content_items' && (
+                  <div>
+                    <Label>WhatsApp</Label>
+                    <Input value={editingItem.contact_whatsapp || ''} onChange={(e) => setEditingItem({ ...editingItem, contact_whatsapp: e.target.value })} />
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Annuler</Button>
+                <Button onClick={handleEditSave} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Save className="h-4 w-4 mr-2" /> Sauvegarder
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
