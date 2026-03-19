@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle, XCircle, AlertTriangle, Flag, FileText, Eye, Calendar, ExternalLink } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CheckCircle, XCircle, AlertTriangle, Flag, FileText, Eye, Calendar, ExternalLink, Edit, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -29,9 +32,287 @@ interface DraftContent {
   author_id: string;
   created_at: string;
   source: 'content_items' | 'events';
+  category?: string | null;
+  contact_phone?: string | null;
+  contact_whatsapp?: string | null;
+  location?: string | null;
+  island?: string | null;
 }
 
 export default function ModerationQueueSection() {
+  const { user } = useAuth();
+  const [reports, setReports] = useState<Report[]>([]);
+  const [drafts, setDrafts] = useState<DraftContent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingItem, setEditingItem] = useState<DraftContent | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    const [reportsRes, contentDraftsRes, eventDraftsRes] = await Promise.all([
+      supabase.from('reports').select('*').order('created_at', { ascending: false }),
+      supabase.from('content_items').select('id, title, description, type, status, author_id, created_at, category, contact_phone, contact_whatsapp').eq('status', 'draft').order('created_at', { ascending: false }),
+      supabase.from('events').select('id, title, description, status, author_id, created_at, category, location, island, contact_phone').eq('status', 'draft').order('created_at', { ascending: false }),
+    ]);
+    setReports(reportsRes.data || []);
+
+    const contentDrafts: DraftContent[] = (contentDraftsRes.data || []).map(d => ({ ...d, source: 'content_items' as const }));
+    const eventDrafts: DraftContent[] = (eventDraftsRes.data || []).map(d => ({ ...d, type: 'event', source: 'events' as const }));
+    setDrafts([...contentDrafts, ...eventDrafts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    setLoading(false);
+  };
+
+  const handleReportAction = async (reportId: string, status: string) => {
+    if (!user) return;
+    try {
+      const { error } = await supabase.from('reports').update({ status, reviewed_by: user.id }).eq('id', reportId);
+      if (error) throw error;
+      toast.success(`Signalement ${status === 'reviewed' ? 'traité' : 'rejeté'}`);
+      fetchData();
+    } catch { toast.error('Erreur'); }
+  };
+
+  const handleContentAction = async (item: DraftContent, action: 'published' | 'archived') => {
+    try {
+      if (item.source === 'events') {
+        const eventStatus = action === 'published' ? 'published' : 'cancelled';
+        const { error } = await supabase.from('events').update({ status: eventStatus }).eq('id', item.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('content_items').update({ status: action }).eq('id', item.id);
+        if (error) throw error;
+      }
+      toast.success(action === 'published' ? 'Contenu publié' : 'Contenu rejeté');
+      fetchData();
+    } catch (err: any) {
+      console.error('Moderation action error:', err);
+      toast.error(err?.message || 'Erreur lors de la mise à jour');
+    }
+  };
+
+  const openEditDialog = (item: DraftContent) => {
+    setEditingItem({ ...item });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSave = async () => {
+    if (!editingItem) return;
+    try {
+      if (editingItem.source === 'events') {
+        const { error } = await supabase.from('events').update({
+          title: editingItem.title,
+          description: editingItem.description,
+          location: editingItem.location,
+          category: editingItem.category,
+          contact_phone: editingItem.contact_phone,
+        }).eq('id', editingItem.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('content_items').update({
+          title: editingItem.title,
+          description: editingItem.description,
+          category: editingItem.category,
+          contact_phone: editingItem.contact_phone,
+          contact_whatsapp: editingItem.contact_whatsapp,
+        }).eq('id', editingItem.id);
+        if (error) throw error;
+      }
+      toast.success('Contenu modifié avec succès');
+      setIsEditDialogOpen(false);
+      setEditingItem(null);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors de la modification');
+    }
+  };
+
+  const getContentLink = (report: Report) => {
+    switch (report.content_type) {
+      case 'announcement': return `/annonces/${report.content_id}`;
+      case 'event': return `/evenements/${report.content_id}`;
+      case 'service': return `/services/${report.content_id}`;
+      case 'tender': return `/appels-offres/${report.content_id}`;
+      default: return null;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'announcement': return '📢 Annonce';
+      case 'event': return '🎭 Événement';
+      case 'service': return '🏛️ Service';
+      case 'tender': return '📋 Appel d\'offres';
+      default: return type;
+    }
+  };
+
+  const pendingReports = reports.filter(r => r.status === 'pending');
+
+  return (
+    <div className="space-y-6 p-6">
+      <Card className="border-amber-200 bg-white">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold text-amber-600 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" />
+            File d'attente de modération
+          </CardTitle>
+          <CardDescription>
+            {pendingReports.length} signalement(s) en attente · {drafts.length} contenu(s) à valider
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
+      <Tabs defaultValue="reports">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="reports" className="flex items-center gap-2">
+            <Flag className="h-4 w-4" /> Signalements ({pendingReports.length})
+          </TabsTrigger>
+          <TabsTrigger value="drafts" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" /> Contenus en attente ({drafts.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="reports" className="space-y-4">
+          {loading ? (
+            <p className="text-center py-8 text-muted-foreground">Chargement...</p>
+          ) : pendingReports.length === 0 ? (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Aucun signalement en attente</CardContent></Card>
+          ) : (
+            pendingReports.map(report => {
+              const link = getContentLink(report);
+              return (
+                <Card key={report.id}>
+                  <CardContent className="pt-4">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="destructive">{report.reason}</Badge>
+                          <Badge variant="outline">{report.content_type}</Badge>
+                        </div>
+                        {report.details && <p className="text-sm text-muted-foreground">{report.details}</p>}
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(report.created_at).toLocaleDateString('fr-FR')}
+                          </p>
+                          {link && (
+                            <a href={link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                              <ExternalLink className="h-3 w-3" /> Voir le contenu
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => handleReportAction(report.id, 'reviewed')}>
+                          <CheckCircle className="h-4 w-4 mr-1" /> Traité
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleReportAction(report.id, 'dismissed')}>
+                          <XCircle className="h-4 w-4 mr-1" /> Rejeter
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </TabsContent>
+
+        <TabsContent value="drafts" className="space-y-4">
+          {loading ? (
+            <p className="text-center py-8 text-muted-foreground">Chargement...</p>
+          ) : drafts.length === 0 ? (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Aucun contenu en attente</CardContent></Card>
+          ) : (
+            drafts.map(item => (
+              <Card key={`${item.source}-${item.id}`}>
+                <CardContent className="pt-4">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <h4 className="font-semibold">{item.title}</h4>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary">{getTypeLabel(item.type)}</Badge>
+                        {item.source === 'events' && <Badge variant="outline" className="text-green-600 border-green-200">Table events</Badge>}
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(item.created_at).toLocaleDateString('fr-FR')}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => openEditDialog(item)}>
+                        <Edit className="h-4 w-4 mr-1" /> Modifier
+                      </Button>
+                      <Button size="sm" onClick={() => handleContentAction(item, 'published')}>
+                        <CheckCircle className="h-4 w-4 mr-1" /> Publier
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleContentAction(item, 'archived')}>
+                        <XCircle className="h-4 w-4 mr-1" /> Rejeter
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Modifier le contenu avant publication
+            </DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <Label>Titre</Label>
+                <Input value={editingItem.title} onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })} />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea value={editingItem.description || ''} onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })} rows={5} />
+              </div>
+              <div>
+                <Label>Catégorie</Label>
+                <Input value={editingItem.category || ''} onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })} />
+              </div>
+              {editingItem.source === 'events' && (
+                <div>
+                  <Label>Lieu</Label>
+                  <Input value={editingItem.location || ''} onChange={(e) => setEditingItem({ ...editingItem, location: e.target.value })} />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Téléphone</Label>
+                  <Input value={editingItem.contact_phone || ''} onChange={(e) => setEditingItem({ ...editingItem, contact_phone: e.target.value })} />
+                </div>
+                {editingItem.source === 'content_items' && (
+                  <div>
+                    <Label>WhatsApp</Label>
+                    <Input value={editingItem.contact_whatsapp || ''} onChange={(e) => setEditingItem({ ...editingItem, contact_whatsapp: e.target.value })} />
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Annuler</Button>
+                <Button onClick={handleEditSave} className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Save className="h-4 w-4 mr-2" /> Sauvegarder
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
   const { user } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [drafts, setDrafts] = useState<DraftContent[]>([]);
