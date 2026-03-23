@@ -14,6 +14,8 @@ import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
+import { usePageSEO } from '@/hooks/usePageSEO';
+import { useJsonLd } from '@/hooks/useJsonLd';
 
 interface HomepageSection {
   id: string;
