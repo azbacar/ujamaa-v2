@@ -56,6 +56,7 @@ const App = () => (
     <AuthProvider>
       <LanguageProvider>
         <TooltipProvider>
+          <DynamicFavicon />
           <Toaster />
           <Sonner />
           <BrowserRouter>
