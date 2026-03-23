@@ -8,6 +8,7 @@ import { useFreelanceJobs } from '@/hooks/useFreelance';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { useLanguage } from '@/components/LanguageProvider';
+import { usePageSEO } from '@/hooks/usePageSEO';
 import { Briefcase } from 'lucide-react';
 
 export default function FreelancePage() {
