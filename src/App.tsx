@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import FloatingChatbox from "@/components/FloatingChatbox";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
+import { DynamicFavicon } from "@/components/DynamicFavicon";
 import Index from "./pages/Index";
 import PricesPage from "./pages/PricesPage";
 import EventsPage from "./pages/EventsPage";
@@ -55,6 +56,7 @@ const App = () => (
     <AuthProvider>
       <LanguageProvider>
         <TooltipProvider>
+          <DynamicFavicon />
           <Toaster />
           <Sonner />
           <BrowserRouter>

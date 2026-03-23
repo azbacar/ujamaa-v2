@@ -14,6 +14,8 @@ import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
+import { usePageSEO } from '@/hooks/usePageSEO';
+import { useJsonLd } from '@/hooks/useJsonLd';
 
 interface HomepageSection {
   id: string;
@@ -38,6 +40,12 @@ const Index = () => {
   const { user } = useAuth();
   const { isAdmin, isModerator } = useRole();
   const [sections, setSections] = useState<HomepageSection[]>([]);
+
+  usePageSEO({
+    canonicalPath: '/',
+    keywords: 'Comores, prix, événements, services, annonces, investissement, diaspora, Moroni, Anjouan, Mohéli, Mayotte',
+  });
+  useJsonLd();
 
   useEffect(() => {
     const fetchSections = async () => {

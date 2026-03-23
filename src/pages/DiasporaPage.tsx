@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePageSEO } from '@/hooks/usePageSEO';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useDiasporaProjects } from '@/hooks/useDiaspora';
@@ -39,6 +40,7 @@ const islands = [
 
 export default function DiasporaPage() {
   const { user } = useAuth();
+  usePageSEO({ title: 'Investissement Diaspora', description: 'Investissez dans des projets aux Comores. Découvrez les opportunités d\'investissement pour la diaspora comorienne.', canonicalPath: '/investissement', keywords: 'investissement Comores, diaspora, projets, financement' });
   const { isAnnonceur } = useRole();
   const { data: carrierProfile } = useMyCarrierProfile();
   const [category, setCategory] = useState('all');
