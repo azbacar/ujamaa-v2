@@ -13,6 +13,7 @@ import { Briefcase } from 'lucide-react';
 
 export default function FreelancePage() {
   const [category, setCategory] = useState('all');
+  usePageSEO({ title: 'Missions Freelance', description: 'Trouvez des missions freelance aux Comores ou proposez vos services professionnels.', canonicalPath: '/freelance', keywords: 'freelance Comores, missions, travail, services professionnels' });
   const { data: jobs, isLoading } = useFreelanceJobs(category);
   const { user } = useAuth();
   const { isAnnonceur } = useRole();
