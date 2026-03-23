@@ -11,6 +11,7 @@ import AdSpace from '@/components/AdSpace';
 import PriceSubmissionForm from '@/components/PriceSubmissionForm';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 interface PriceData {
   id: string;

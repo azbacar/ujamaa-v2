@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { usePageSEO } from '@/hooks/usePageSEO';
 import { toast } from 'sonner';
 
 interface Event {
