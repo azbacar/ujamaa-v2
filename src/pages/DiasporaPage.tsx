@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePageSEO } from '@/hooks/usePageSEO';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useDiasporaProjects } from '@/hooks/useDiaspora';
