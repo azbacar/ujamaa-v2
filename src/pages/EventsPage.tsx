@@ -33,6 +33,7 @@ interface Event {
 
 const EventsPage = () => {
   const { t } = useLanguage();
+  usePageSEO({ title: 'Événements', description: 'Découvrez les événements culturels, sportifs et sociaux aux Comores.', canonicalPath: '/evenements', keywords: 'événements Comores, culture, festival, sport' });
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');

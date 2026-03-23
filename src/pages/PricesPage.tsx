@@ -34,6 +34,7 @@ interface PriceData {
 
 const PricesPage = () => {
   const { t } = useLanguage();
+  usePageSEO({ title: 'Prix du Marché', description: 'Comparez les prix des produits alimentaires, matériaux et services aux Comores en temps réel.', canonicalPath: '/prix', keywords: 'prix Comores, marché, produits, alimentation, Moroni' });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Toutes');
   const [selectedIsland, setSelectedIsland] = useState('Toutes');
