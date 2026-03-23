@@ -41,6 +41,12 @@ const Index = () => {
   const { isAdmin, isModerator } = useRole();
   const [sections, setSections] = useState<HomepageSection[]>([]);
 
+  usePageSEO({
+    canonicalPath: '/',
+    keywords: 'Comores, prix, événements, services, annonces, investissement, diaspora, Moroni, Anjouan, Mohéli, Mayotte',
+  });
+  useJsonLd();
+
   useEffect(() => {
     const fetchSections = async () => {
       const { data } = await supabase
