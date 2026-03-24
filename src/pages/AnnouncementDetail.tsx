@@ -13,6 +13,7 @@ import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 // Hardcoded fallback announcements for legacy numeric IDs
 const legacyAnnouncements = [
