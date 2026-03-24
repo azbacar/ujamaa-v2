@@ -95,14 +95,10 @@ const EventDetail = () => {
     if (!id) return;
     
     try {
-      await supabase.rpc('increment_views' as never, { table_name: 'events', row_id: id } as never).catch(() => {
-        // Fallback: simple increment via raw update
-        supabase.from('events').select('views').eq('id', id).single().then(({ data }) => {
-          if (data) {
-            supabase.from('events').update({ views: (data.views || 0) + 1 }).eq('id', id);
-          }
-        });
-      });
+      const { data } = await supabase.from('events').select('views').eq('id', id).single();
+      if (data) {
+        await supabase.from('events').update({ views: (data.views || 0) + 1 }).eq('id', id);
+      }
     } catch (error) {
       console.error('Error incrementing views:', error);
     }
