@@ -12,6 +12,7 @@ import FreelanceJobForm from '@/components/freelance/FreelanceJobForm';
 import FreelanceProposalForm from '@/components/freelance/FreelanceProposalForm';
 import FreelanceProposalList from '@/components/freelance/FreelanceProposalList';
 import FreelanceReviewCard from '@/components/freelance/FreelanceReviewCard';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 export default function FreelanceJobDetail() {
   const { id } = useParams<{ id: string }>();
