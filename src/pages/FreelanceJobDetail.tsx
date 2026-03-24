@@ -21,6 +21,14 @@ export default function FreelanceJobDetail() {
   const { user } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
 
+  usePageSEO({
+    title: job?.title || 'Mission Freelance',
+    description: job?.description?.substring(0, 160) || 'Détail d\'une mission freelance aux Comores',
+    canonicalPath: id ? `/freelance/${id}` : undefined,
+    ogType: 'article',
+    keywords: job ? `${job.category}, freelance, mission, comores` : undefined,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">

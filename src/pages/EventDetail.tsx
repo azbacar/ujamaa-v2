@@ -50,6 +50,14 @@ const EventDetail = () => {
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
 
+  usePageSEO({
+    title: event ? event.title : 'Événement',
+    description: event?.description?.substring(0, 160) || 'Détail d\'un événement aux Comores',
+    canonicalPath: id ? `/evenements/${id}` : undefined,
+    ogType: 'article',
+    keywords: event ? `${event.category}, ${event.island}, événement, comores` : undefined,
+  });
+
   useEffect(() => {
     if (id) {
       fetchEvent().then(() => incrementViews());

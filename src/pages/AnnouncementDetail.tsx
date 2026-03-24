@@ -56,6 +56,15 @@ const AnnouncementDetail = () => {
   const [authorInfo, setAuthorInfo] = useState<AuthorInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const seoTitle = dbItem?.title || legacyAnnouncements.find(a => a.id === parseInt(id || '0'))?.title;
+  usePageSEO({
+    title: seoTitle || 'Annonce',
+    description: dbItem?.description?.substring(0, 160) || 'Détail d\'une annonce sur Ujamaan',
+    canonicalPath: id ? `/annonces/${id}` : undefined,
+    ogType: 'article',
+    keywords: dbItem?.category ? `${dbItem.category}, annonce, comores` : undefined,
+  });
+
   // Check if ID looks like a UUID
   const isUuid = id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 

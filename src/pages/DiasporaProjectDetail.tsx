@@ -21,6 +21,14 @@ export default function DiasporaProjectDetail() {
   const { data: updates } = useProjectUpdates(id);
   const updateStatus = useUpdateInvestmentStatus();
 
+  usePageSEO({
+    title: project?.title || 'Projet Diaspora',
+    description: project?.description?.substring(0, 160) || 'Projet d\'investissement diaspora aux Comores',
+    canonicalPath: id ? `/investissement/${id}` : undefined,
+    ogType: 'article',
+    keywords: project ? `${project.category}, investissement, diaspora, comores` : undefined,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
