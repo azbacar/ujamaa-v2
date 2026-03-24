@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle, BadgeCheck } from 'lucide-react';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 export default function DiasporaProjectDetail() {
   const { id } = useParams<{ id: string }>();
