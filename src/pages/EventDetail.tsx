@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import FavoriteButton from '@/components/FavoriteButton';
 import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 interface Event {
   id: string;
@@ -48,6 +49,14 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+
+  usePageSEO({
+    title: event ? event.title : 'Événement',
+    description: event?.description?.substring(0, 160) || 'Détail d\'un événement aux Comores',
+    canonicalPath: id ? `/evenements/${id}` : undefined,
+    ogType: 'article',
+    keywords: event ? `${event.category}, ${event.island}, événement, comores` : undefined,
+  });
 
   useEffect(() => {
     if (id) {

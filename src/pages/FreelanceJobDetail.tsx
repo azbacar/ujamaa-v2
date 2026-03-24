@@ -12,6 +12,7 @@ import FreelanceJobForm from '@/components/freelance/FreelanceJobForm';
 import FreelanceProposalForm from '@/components/freelance/FreelanceProposalForm';
 import FreelanceProposalList from '@/components/freelance/FreelanceProposalList';
 import FreelanceReviewCard from '@/components/freelance/FreelanceReviewCard';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 export default function FreelanceJobDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,14 @@ export default function FreelanceJobDetail() {
   const { data: reviews } = useJobReviews(id!);
   const { user } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
+
+  usePageSEO({
+    title: job?.title || 'Mission Freelance',
+    description: job?.description?.substring(0, 160) || 'Détail d\'une mission freelance aux Comores',
+    canonicalPath: id ? `/freelance/${id}` : undefined,
+    ogType: 'article',
+    keywords: job ? `${job.category}, freelance, mission, comores` : undefined,
+  });
 
   if (isLoading) {
     return (

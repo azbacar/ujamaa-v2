@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle, BadgeCheck } from 'lucide-react';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 export default function DiasporaProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,14 @@ export default function DiasporaProjectDetail() {
   const { data: investments } = useProjectInvestments(id);
   const { data: updates } = useProjectUpdates(id);
   const updateStatus = useUpdateInvestmentStatus();
+
+  usePageSEO({
+    title: project?.title || 'Projet Diaspora',
+    description: project?.description?.substring(0, 160) || 'Projet d\'investissement diaspora aux Comores',
+    canonicalPath: id ? `/investissement/${id}` : undefined,
+    ogType: 'article',
+    keywords: project ? `${project.category}, investissement, diaspora, comores` : undefined,
+  });
 
   if (isLoading) {
     return (
