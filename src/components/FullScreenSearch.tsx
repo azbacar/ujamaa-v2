@@ -183,7 +183,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
               type: 'gastronomy',
               title: g.title,
               description: g.description || '',
-              url: `/gastronomie/${g.id}`,
+              url: `/annonces/${g.id}`,
               category: g.category || undefined,
             })),
           };

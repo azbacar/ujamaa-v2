@@ -40,14 +40,14 @@ const AnnouncementsPage = () => {
           .from('content_items')
           .select('id, title, category, description, created_at, author_id, type')
           .eq('status', 'published')
+          .eq('type', 'announcement')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
         
-        // Map content items to announcements with display types
-        const mappedData: Announcement[] = (data || []).map((item: ContentItem, index: number) => ({
+        const mappedData: Announcement[] = (data || []).map((item: ContentItem) => ({
           ...item,
-          type: index === 0 ? 'featured' : index < 5 ? 'urgent' : 'normal'
+          type: 'normal'
         }));
         
         setAnnouncements(mappedData);

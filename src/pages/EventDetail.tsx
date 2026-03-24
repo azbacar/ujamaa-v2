@@ -51,9 +51,8 @@ const EventDetail = () => {
 
   useEffect(() => {
     if (id) {
-      fetchEvent();
+      fetchEvent().then(() => incrementViews());
       checkRegistration();
-      incrementViews();
     }
   }, [id]);
 
@@ -96,12 +95,10 @@ const EventDetail = () => {
     if (!id) return;
     
     try {
-      const { error } = await supabase
-        .from('events')
-        .update({ views: (event?.views || 0) + 1 })
-        .eq('id', id);
-      
-      if (error) throw error;
+      const { data } = await supabase.from('events').select('views').eq('id', id).single();
+      if (data) {
+        await supabase.from('events').update({ views: (data.views || 0) + 1 }).eq('id', id);
+      }
     } catch (error) {
       console.error('Error incrementing views:', error);
     }
