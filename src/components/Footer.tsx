@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -21,42 +22,42 @@ const Footer = () => {
           <div>
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Informations</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
-              <li><a href="/prix" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 Prix & Marchés</a></li>
-              <li><a href="/appels-offres" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Appels d'Offres</a></li>
-              <li><a href="/evenements" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🎭 Événements</a></li>
-              <li><a href="/services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏛️ Services Publics</a></li>
-              <li><a href="/freelance" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💼 Missions</a></li>
-              <li><a href="/freelancers" className="hover:text-emerald-400 transition-colors flex items-center gap-2">👨‍💻 Freelancers</a></li>
-              <li><a href="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌍 Investissement Diaspora</a></li>
+              <li><Link to="/prix" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 Prix & Marchés</Link></li>
+              <li><Link to="/appels-offres" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Appels d'Offres</Link></li>
+              <li><Link to="/evenements" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🎭 Événements</Link></li>
+              <li><Link to="/services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏛️ Services Publics</Link></li>
+              <li><Link to="/freelance" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💼 Missions</Link></li>
+              <li><Link to="/freelancers" className="hover:text-emerald-400 transition-colors flex items-center gap-2">👨‍💻 Freelancers</Link></li>
+              <li><Link to="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌍 Investissement Diaspora</Link></li>
             </ul>
           </div>
           
           <div>
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Îles</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
-              <li><a href="/ile/grande-comore" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏔️ Grande Comore</a></li>
-              <li><a href="/ile/anjouan" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌺 Anjouan</a></li>
-              <li><a href="/ile/moheli" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🐢 Mohéli</a></li>
-              <li><a href="/ile/mayotte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏝️ Mayotte</a></li>
+              <li><Link to="/ile/grande-comore" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏔️ Grande Comore</Link></li>
+              <li><Link to="/ile/anjouan" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌺 Anjouan</Link></li>
+              <li><Link to="/ile/moheli" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🐢 Mohéli</Link></li>
+              <li><Link to="/ile/mayotte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏝️ Mayotte</Link></li>
             </ul>
           </div>
           
           <div>
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Support</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
-              <li><a href="/install" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📲 Installer l'app</a></li>
-              <li><a href="/pro" className="hover:text-emerald-400 transition-colors flex items-center gap-2">⭐ Devenir Pro</a></li>
-              <li><a href="/page/contact" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📞 Contact</a></li>
-              <li><a href="/page/a-propos" className="hover:text-emerald-400 transition-colors flex items-center gap-2">ℹ️ À propos</a></li>
-              <li><a href="/page/confidentialite" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🔒 Confidentialité</a></li>
-              <li><a href="/supprimer-compte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗑️ Supprimer mon compte</a></li>
+              <li><Link to="/install" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📲 Installer l'app</Link></li>
+              <li><Link to="/pro" className="hover:text-emerald-400 transition-colors flex items-center gap-2">⭐ Devenir Pro</Link></li>
+              <li><Link to="/page/contact" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📞 Contact</Link></li>
+              <li><Link to="/page/a-propos" className="hover:text-emerald-400 transition-colors flex items-center gap-2">ℹ️ À propos</Link></li>
+              <li><Link to="/page/confidentialite" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🔒 Confidentialité</Link></li>
+              <li><Link to="/supprimer-compte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗑️ Supprimer mon compte</Link></li>
             </ul>
           </div>
         </div>
         
         <div className="border-t border-gray-700 mt-8 sm:mt-12 pt-6 sm:pt-8 text-center">
           <p className="text-gray-400 text-sm sm:text-base">
-            &copy; 2024 Ujamaan Call Center. Tous droits réservés. 
+            &copy; {new Date().getFullYear()} Ujamaan Call Center. Tous droits réservés. 
             <span className="ml-2 text-2xl">🇰🇲</span>
           </p>
         </div>
