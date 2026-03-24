@@ -51,9 +51,8 @@ const EventDetail = () => {
 
   useEffect(() => {
     if (id) {
-      fetchEvent();
+      fetchEvent().then(() => incrementViews());
       checkRegistration();
-      incrementViews();
     }
   }, [id]);
 
