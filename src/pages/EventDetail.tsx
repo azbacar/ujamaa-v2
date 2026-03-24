@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import FavoriteButton from '@/components/FavoriteButton';
 import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 interface Event {
   id: string;
