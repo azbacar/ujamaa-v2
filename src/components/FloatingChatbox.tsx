@@ -199,15 +199,27 @@ const FloatingChatbox = () => {
     loadSettings();
   }, []);
 
-  // Listen for external open event
+  // Listen for external open event + reload messages from localStorage (sync with search chat)
   useEffect(() => {
     const handleOpenChat = () => {
       setIsOpen(true);
       setIsMinimized(false);
+      // Reload messages from localStorage to pick up any messages added by search chat
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw) as Array<Omit<Message, 'timestamp'> & { timestamp: string }>;
+          const restored: Message[] = parsed.map((m) => ({ ...m, timestamp: new Date(m.timestamp) }));
+          if (restored.length > 0) {
+            setMessages(restored);
+            setMessageCount(restored.filter((m) => m.isUser).length);
+          }
+        }
+      } catch {}
     };
     window.addEventListener('openFloatingChat', handleOpenChat);
     return () => window.removeEventListener('openFloatingChat', handleOpenChat);
-  }, []);
+  }, [storageKey]);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
