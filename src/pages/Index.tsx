@@ -10,6 +10,8 @@ import CategoriesSection from '@/components/CategoriesSection';
 import AnnouncementsSection from '@/components/AnnouncementsSection';
 import AdSpace from '@/components/AdSpace';
 import LiveUrgentAlerts from '@/components/LiveUrgentAlerts';
+import LiveStatsBar from '@/components/LiveStatsBar';
+import RecentContentSection from '@/components/RecentContentSection';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -24,16 +26,6 @@ interface HomepageSection {
   is_visible: boolean;
   sort_order: number;
 }
-
-const SECTION_COMPONENTS: Record<string, React.FC<any>> = {
-  alerts: LiveUrgentAlerts,
-  hero: HeroSection,
-  islands: IslandSelector,
-  announcements: AnnouncementsSection,
-  categories: CategoriesSection,
-  quick_actions: QuickActions,
-  ai_assistant: AIAssistantSection,
-};
 
 const Index = () => {
   const { currentLanguage, setLanguage } = useLanguage();
@@ -58,83 +50,69 @@ const Index = () => {
     fetchSections();
   }, []);
 
-  const renderSection = (section: HomepageSection) => {
-    if (!section.is_visible) return null;
-    if (section.section_key === 'ads_header') {
-      return <div key={section.id} className="flex justify-center"><AdSpace size="banner" position="header" /></div>;
-    }
-    if (section.section_key === 'ads_content') {
-      return <div key={section.id} className="my-8 flex justify-center"><AdSpace size="medium" position="content" /></div>;
-    }
-    if (section.section_key === 'ads_sidebar' || section.section_key === 'ads_sidebar_2') return null;
-    if (section.section_key === 'statistics') {
-      return user && (isAdmin() || isModerator()) ? <StatisticsCard key={section.id} /> : null;
-    }
-    const Component = SECTION_COMPONENTS[section.section_key];
-    if (Component) return <Component key={section.id} />;
-    return null;
+  const isSectionVisible = (key: string) => {
+    const section = sections.find(s => s.section_key === key);
+    return section ? section.is_visible : true; // default visible if not in DB
   };
 
-  const mainSections = sections.filter(s => 
-    !['categories', 'quick_actions', 'ads_sidebar', 'statistics', 'ads_sidebar_2', 'ads_content'].includes(s.section_key)
-  );
-  const categoriesSection = sections.find(s => s.section_key === 'categories');
-  const adsContentSection = sections.find(s => s.section_key === 'ads_content');
-  const quickActionsSection = sections.find(s => s.section_key === 'quick_actions');
-  const adsSidebarSection = sections.find(s => s.section_key === 'ads_sidebar');
-  const statisticsSection = sections.find(s => s.section_key === 'statistics');
-  const adsSidebar2Section = sections.find(s => s.section_key === 'ads_sidebar_2');
-
-  // Fallback if no sections loaded yet
-  if (sections.length === 0) {
-    return (
-      <div className="min-h-screen">
-        <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
-        <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10 sm:space-y-16">
-          <LiveUrgentAlerts />
-          <HeroSection />
-          <div className="flex justify-center"><AdSpace size="banner" position="header" /></div>
-          <IslandSelector />
-          <AnnouncementsSection />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-            <div className="lg:col-span-2">
-              <CategoriesSection />
-              <div className="my-8 flex justify-center"><AdSpace size="medium" position="content" /></div>
-            </div>
-            <div className="space-y-8">
-              <QuickActions />
-              <AdSpace size="medium" position="sidebar" />
-              {user && (isAdmin() || isModerator()) ? <StatisticsCard /> : null}
-              <AdSpace size="small" position="sidebar" />
-            </div>
-          </div>
-          <AIAssistantSection />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
-      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10 sm:space-y-16">
-        {mainSections.map(s => renderSection(s))}
+      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
+        {/* Alerts */}
+        {isSectionVisible('alerts') && <LiveUrgentAlerts />}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-          <div className="lg:col-span-2">
-            {categoriesSection?.is_visible && <CategoriesSection />}
-            {adsContentSection?.is_visible && (
-              <div className="my-8 flex justify-center"><AdSpace size="medium" position="content" /></div>
+        {/* Hero - compact dashboard style */}
+        {isSectionVisible('hero') && <HeroSection />}
+
+        {/* Live stats strip */}
+        <LiveStatsBar />
+
+        {/* Ad banner */}
+        {isSectionVisible('ads_header') && (
+          <div className="flex justify-center"><AdSpace size="banner" position="header" /></div>
+        )}
+
+        {/* Islands */}
+        {isSectionVisible('islands') && <IslandSelector />}
+
+        {/* Main content grid: 2-column dashboard layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          {/* Left column - main content */}
+          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+            {/* Announcements */}
+            {isSectionVisible('announcements') && <AnnouncementsSection />}
+
+            {/* Categories */}
+            {isSectionVisible('categories') && <CategoriesSection />}
+            
+            {/* Content ad */}
+            {isSectionVisible('ads_content') && (
+              <div className="flex justify-center"><AdSpace size="medium" position="content" /></div>
             )}
           </div>
-          <div className="space-y-8">
-            {quickActionsSection?.is_visible && <QuickActions />}
-            {adsSidebarSection?.is_visible && <AdSpace size="medium" position="sidebar" />}
-            {statisticsSection?.is_visible && user && (isAdmin() || isModerator()) && <StatisticsCard />}
-            {adsSidebar2Section?.is_visible && <AdSpace size="small" position="sidebar" />}
+
+          {/* Right column - sidebar widgets */}
+          <div className="space-y-6">
+            {/* Recent activity feed */}
+            <RecentContentSection />
+
+            {/* Quick actions / urgent info */}
+            {isSectionVisible('quick_actions') && <QuickActions />}
+
+            {/* Sidebar ad */}
+            {isSectionVisible('ads_sidebar') && <AdSpace size="medium" position="sidebar" />}
+
+            {/* Admin stats */}
+            {isSectionVisible('statistics') && user && (isAdmin() || isModerator()) && <StatisticsCard />}
+
+            {/* Second sidebar ad */}
+            {isSectionVisible('ads_sidebar_2') && <AdSpace size="small" position="sidebar" />}
           </div>
         </div>
+
+        {/* AI Assistant - full width */}
+        {isSectionVisible('ai_assistant') && <AIAssistantSection />}
       </main>
       <Footer />
     </div>
