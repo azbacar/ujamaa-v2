@@ -5,7 +5,7 @@ import IslandSelector from '@/components/IslandSelector';
 import QuickActions from '@/components/QuickActions';
 import HeroSection from '@/components/HeroSection';
 import StatisticsCard from '@/components/StatisticsCard';
-import AIAssistantSection from '@/components/AIAssistantSection';
+
 import CategoriesSection from '@/components/CategoriesSection';
 import AnnouncementsSection from '@/components/AnnouncementsSection';
 import AdSpace from '@/components/AdSpace';
