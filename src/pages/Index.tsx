@@ -111,8 +111,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* AI Assistant - full width */}
-        {isSectionVisible('ai_assistant') && <AIAssistantSection />}
       </main>
       <Footer />
     </div>

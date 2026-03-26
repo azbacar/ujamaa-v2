@@ -29,6 +29,13 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const [showFullScreenSearch, setShowFullScreenSearch] = useState(false);
   const { data: unreadCount } = useUnreadCount();
 
+  // Listen for openFullScreenSearch event from HeroSection
+  useEffect(() => {
+    const handler = () => setShowFullScreenSearch(true);
+    window.addEventListener('openFullScreenSearch', handler);
+    return () => window.removeEventListener('openFullScreenSearch', handler);
+  }, []);
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
