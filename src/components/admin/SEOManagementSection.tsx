@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Search, Globe, Image, Share2, Save, Eye, CheckCircle, AlertTriangle, Info, ExternalLink
+  Search, Globe, Image, Share2, Save, Eye, CheckCircle, AlertTriangle, Info, ExternalLink, Activity
 } from 'lucide-react';
 import { toast } from 'sonner';
 
