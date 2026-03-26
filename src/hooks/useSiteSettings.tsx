@@ -5,6 +5,7 @@ interface SiteSettings {
   site_name: string;
   site_logo_url?: string;
   site_favicon_url?: string;
+  ga_tracking_id?: string;
   hero_title: string;
   hero_subtitle: string;
   hero_image_url?: string;
