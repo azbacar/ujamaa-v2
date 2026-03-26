@@ -26,6 +26,7 @@ interface SEOSettings {
   seo_keywords: string | null;
   hero_title: string | null;
   hero_subtitle: string | null;
+  ga_tracking_id: string | null;
 }
 
 export default function SEOManagementSection() {
