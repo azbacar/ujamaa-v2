@@ -44,7 +44,7 @@ export default function SEOManagementSection() {
       setLoading(true);
       const { data, error } = await supabase
         .from('site_settings')
-        .select('id, site_name, site_favicon_url, og_title, og_description, og_image_url, twitter_card, twitter_site, seo_keywords, hero_title, hero_subtitle')
+        .select('id, site_name, site_favicon_url, og_title, og_description, og_image_url, twitter_card, twitter_site, seo_keywords, hero_title, hero_subtitle, ga_tracking_id')
         .single();
       if (error) throw error;
       setSettings(data);
