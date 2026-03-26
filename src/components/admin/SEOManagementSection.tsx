@@ -340,6 +340,65 @@ export default function SEOManagementSection() {
           </Card>
         </TabsContent>
 
+        {/* Google Analytics Tracking */}
+        <TabsContent value="tracking" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="h-5 w-5 text-blue-600" />
+                Google Analytics
+              </CardTitle>
+              <CardDescription>
+                Connectez Google Analytics pour suivre le trafic et le comportement des visiteurs.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="ga-id">ID de suivi Google Analytics (GA4)</Label>
+                <Input
+                  id="ga-id"
+                  value={settings?.ga_tracking_id || ''}
+                  onChange={(e) => updateField('ga_tracking_id', e.target.value)}
+                  placeholder="G-XXXXXXXXXX"
+                  className="font-mono"
+                />
+                <p className="text-xs text-slate-500">
+                  Format attendu : <code className="bg-slate-100 px-1 py-0.5 rounded">G-XXXXXXXXXX</code> (Google Analytics 4)
+                </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-2 text-sm text-blue-800">
+                    <p className="font-medium">Comment obtenir votre ID Google Analytics :</p>
+                    <ol className="list-decimal list-inside space-y-1 text-blue-700">
+                      <li>Accédez à <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">analytics.google.com</a></li>
+                      <li>Créez un compte et une propriété pour votre site</li>
+                      <li>Dans <strong>Admin → Flux de données → Web</strong>, copiez l'ID de mesure</li>
+                      <li>Collez-le dans le champ ci-dessus et enregistrez</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              {settings?.ga_tracking_id && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                    <span className="text-sm font-medium text-emerald-800">
+                      Google Analytics actif : <code className="bg-emerald-100 px-1 py-0.5 rounded">{settings.ga_tracking_id}</code>
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-600 mt-1">
+                    Le suivi des pages vues est automatique sur toutes les pages du site.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Preview */}
         <TabsContent value="preview" className="space-y-4 mt-4">
           <Card>
