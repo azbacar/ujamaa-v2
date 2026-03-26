@@ -70,6 +70,7 @@ export default function SEOManagementSection() {
           twitter_card: settings.twitter_card,
           twitter_site: settings.twitter_site,
           seo_keywords: settings.seo_keywords,
+          ga_tracking_id: settings.ga_tracking_id,
           updated_by: user?.id,
           updated_at: new Date().toISOString(),
         })
