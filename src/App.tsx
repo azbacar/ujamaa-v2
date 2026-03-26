@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import FloatingChatbox from "@/components/FloatingChatbox";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import Index from "./pages/Index";
 import PricesPage from "./pages/PricesPage";
 import EventsPage from "./pages/EventsPage";
