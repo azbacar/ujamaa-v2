@@ -1354,6 +1354,7 @@ export type Database = {
           allow_registration: boolean
           created_at: string
           email_notifications: boolean
+          ga_tracking_id: string | null
           hero_image_url: string | null
           hero_subtitle: string | null
           hero_title: string | null
@@ -1381,6 +1382,7 @@ export type Database = {
           allow_registration?: boolean
           created_at?: string
           email_notifications?: boolean
+          ga_tracking_id?: string | null
           hero_image_url?: string | null
           hero_subtitle?: string | null
           hero_title?: string | null
@@ -1408,6 +1410,7 @@ export type Database = {
           allow_registration?: boolean
           created_at?: string
           email_notifications?: boolean
+          ga_tracking_id?: string | null
           hero_image_url?: string | null
           hero_subtitle?: string | null
           hero_title?: string | null
