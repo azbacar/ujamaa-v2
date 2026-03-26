@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Search, Globe, Image, Share2, Save, Eye, CheckCircle, AlertTriangle, Info, ExternalLink
+  Search, Globe, Image, Share2, Save, Eye, CheckCircle, AlertTriangle, Info, ExternalLink, Activity
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -26,6 +26,7 @@ interface SEOSettings {
   seo_keywords: string | null;
   hero_title: string | null;
   hero_subtitle: string | null;
+  ga_tracking_id: string | null;
 }
 
 export default function SEOManagementSection() {
@@ -43,7 +44,7 @@ export default function SEOManagementSection() {
       setLoading(true);
       const { data, error } = await supabase
         .from('site_settings')
-        .select('id, site_name, site_favicon_url, og_title, og_description, og_image_url, twitter_card, twitter_site, seo_keywords, hero_title, hero_subtitle')
+        .select('id, site_name, site_favicon_url, og_title, og_description, og_image_url, twitter_card, twitter_site, seo_keywords, hero_title, hero_subtitle, ga_tracking_id')
         .single();
       if (error) throw error;
       setSettings(data);
@@ -69,6 +70,7 @@ export default function SEOManagementSection() {
           twitter_card: settings.twitter_card,
           twitter_site: settings.twitter_site,
           seo_keywords: settings.seo_keywords,
+          ga_tracking_id: settings.ga_tracking_id,
           updated_by: user?.id,
           updated_at: new Date().toISOString(),
         })
@@ -165,7 +167,7 @@ export default function SEOManagementSection() {
       </Card>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white border">
+        <TabsList className="grid w-full grid-cols-4 bg-white border">
           <TabsTrigger value="general" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Globe className="h-4 w-4" />
             Général
@@ -173,6 +175,10 @@ export default function SEOManagementSection() {
           <TabsTrigger value="social" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Share2 className="h-4 w-4" />
             Réseaux sociaux
+          </TabsTrigger>
+          <TabsTrigger value="tracking" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <Activity className="h-4 w-4" />
+            Tracking
           </TabsTrigger>
           <TabsTrigger value="preview" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Eye className="h-4 w-4" />
@@ -330,6 +336,65 @@ export default function SEOManagementSection() {
                   placeholder="@ujamaan"
                 />
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Google Analytics Tracking */}
+        <TabsContent value="tracking" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Activity className="h-5 w-5 text-blue-600" />
+                Google Analytics
+              </CardTitle>
+              <CardDescription>
+                Connectez Google Analytics pour suivre le trafic et le comportement des visiteurs.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="ga-id">ID de suivi Google Analytics (GA4)</Label>
+                <Input
+                  id="ga-id"
+                  value={settings?.ga_tracking_id || ''}
+                  onChange={(e) => updateField('ga_tracking_id', e.target.value)}
+                  placeholder="G-XXXXXXXXXX"
+                  className="font-mono"
+                />
+                <p className="text-xs text-slate-500">
+                  Format attendu : <code className="bg-slate-100 px-1 py-0.5 rounded">G-XXXXXXXXXX</code> (Google Analytics 4)
+                </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-2 text-sm text-blue-800">
+                    <p className="font-medium">Comment obtenir votre ID Google Analytics :</p>
+                    <ol className="list-decimal list-inside space-y-1 text-blue-700">
+                      <li>Accédez à <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">analytics.google.com</a></li>
+                      <li>Créez un compte et une propriété pour votre site</li>
+                      <li>Dans <strong>Admin → Flux de données → Web</strong>, copiez l'ID de mesure</li>
+                      <li>Collez-le dans le champ ci-dessus et enregistrez</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              {settings?.ga_tracking_id && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-emerald-600" />
+                    <span className="text-sm font-medium text-emerald-800">
+                      Google Analytics actif : <code className="bg-emerald-100 px-1 py-0.5 rounded">{settings.ga_tracking_id}</code>
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-600 mt-1">
+                    Le suivi des pages vues est automatique sur toutes les pages du site.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
