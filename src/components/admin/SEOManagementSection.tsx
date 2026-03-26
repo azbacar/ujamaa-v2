@@ -167,7 +167,7 @@ export default function SEOManagementSection() {
       </Card>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white border">
+        <TabsList className="grid w-full grid-cols-4 bg-white border">
           <TabsTrigger value="general" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Globe className="h-4 w-4" />
             Général
@@ -175,6 +175,10 @@ export default function SEOManagementSection() {
           <TabsTrigger value="social" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Share2 className="h-4 w-4" />
             Réseaux sociaux
+          </TabsTrigger>
+          <TabsTrigger value="tracking" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <Activity className="h-4 w-4" />
+            Tracking
           </TabsTrigger>
           <TabsTrigger value="preview" className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
             <Eye className="h-4 w-4" />
