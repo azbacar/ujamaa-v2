@@ -1,18 +1,14 @@
-
-import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { Search, TrendingUp, Calendar, Briefcase, Globe, Zap } from 'lucide-react';
 
 const HeroSection = () => {
   const { t } = useLanguage();
   const { settings } = useSiteSettings();
-  const [searchOpen, setSearchOpen] = useState(false);
-  
+
   const heroStyle = settings?.hero_image_url ? {
-    backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.92), hsl(var(--secondary) / 0.88)), url(${settings.hero_image_url})`,
+    backgroundImage: `linear-gradient(135deg, hsl(var(--primary) / 0.93), hsl(var(--secondary) / 0.88)), url(${settings.hero_image_url})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center'
   } : {};
@@ -21,50 +17,59 @@ const HeroSection = () => {
     window.dispatchEvent(new CustomEvent('openFullScreenSearch'));
   };
 
+  const quickLinks = [
+    { label: 'Prix', icon: TrendingUp, to: '/prix' },
+    { label: 'Événements', icon: Calendar, to: '/evenements' },
+    { label: 'Appels d\'offres', icon: Briefcase, to: '/appels-offres' },
+    { label: 'Freelance', icon: Zap, to: '/freelance' },
+    { label: 'Investissement', icon: Globe, to: '/investissement' },
+  ];
+
   return (
-    <section 
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-secondary px-5 py-8 sm:px-10 sm:py-12 text-primary-foreground"
+    <section
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-secondary text-primary-foreground"
       style={heroStyle}
     >
-      {/* Subtle pattern overlay */}
-      <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+      {/* Pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2l2 3-2 3z'/%3E%3C/g%3E%3C/svg%3E")`,
       }} />
-      
-      <div className="relative z-10 max-w-3xl mx-auto text-center space-y-5">
-        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
-          {settings?.hero_title || t('hero.title')}
-        </h1>
-        <p className="text-sm sm:text-lg text-primary-foreground/85 max-w-2xl mx-auto leading-relaxed font-medium">
-          {settings?.hero_subtitle || t('hero.subtitle')}
-        </p>
-        
-        {/* Search bar */}
-        <button
-          onClick={openSearch}
-          className="mx-auto flex items-center gap-3 w-full max-w-md bg-white/15 backdrop-blur-sm border border-white/25 rounded-xl px-4 py-3 text-left text-primary-foreground/70 hover:bg-white/25 transition-all cursor-pointer"
-        >
-          <Search className="w-4 h-4 flex-shrink-0" />
-          <span className="text-sm">Rechercher prix, événements, services...</span>
-        </button>
 
-        {/* Quick nav pills */}
-        <div className="flex flex-wrap justify-center gap-2 pt-1">
-          {[
-            { label: '💰 Prix', to: '/prix' },
-            { label: '📅 Événements', to: '/evenements' },
-            { label: '📋 Appels d\'offres', to: '/appels-offres' },
-            { label: '💼 Freelance', to: '/freelance' },
-            { label: '🌍 Investissement', to: '/investissement' },
-          ].map(item => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 backdrop-blur-sm text-xs sm:text-sm font-medium transition-all border border-white/10 hover:border-white/30"
-            >
-              {item.label}
-            </Link>
-          ))}
+      <div className="relative z-10 px-5 py-7 sm:px-8 sm:py-10 md:px-12 md:py-12">
+        <div className="max-w-3xl mx-auto text-center space-y-4">
+          {/* Title */}
+          <h1 className="text-xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
+            {settings?.hero_title || t('hero.title')}
+          </h1>
+          <p className="text-xs sm:text-sm md:text-base text-primary-foreground/80 max-w-xl mx-auto leading-relaxed">
+            {settings?.hero_subtitle || t('hero.subtitle')}
+          </p>
+
+          {/* Search bar */}
+          <button
+            onClick={openSearch}
+            className="mx-auto flex items-center gap-3 w-full max-w-lg bg-white/15 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 text-left text-primary-foreground/60 hover:bg-white/25 hover:border-white/35 transition-all duration-200 cursor-pointer group"
+          >
+            <Search className="w-4 h-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+            <span className="text-sm flex-1">Rechercher prix, événements, services...</span>
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-white/10 text-[10px] font-mono text-primary-foreground/50">
+              ⌘K
+            </kbd>
+          </button>
+
+          {/* Quick nav */}
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 pt-1">
+            {quickLinks.map(item => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-sm text-xs sm:text-sm font-medium transition-all duration-200 border border-white/5 hover:border-white/20"
+              >
+                <item.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>
