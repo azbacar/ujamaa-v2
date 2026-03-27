@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Bell } from 'lucide-react';
 
 interface UrgentItem {
   type: string;
@@ -28,7 +27,6 @@ const QuickActions = () => {
     try {
       const items: UrgentItem[] = [];
 
-      // Fetch urgent/warning global announcements
       const { data: announcements } = await supabase
         .from('global_announcements')
         .select('*')
@@ -49,7 +47,6 @@ const QuickActions = () => {
         });
       }
 
-      // Fetch upcoming events (next 7 days)
       const now = new Date();
       const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       const { data: events } = await supabase
@@ -65,43 +62,18 @@ const QuickActions = () => {
         events.forEach(e => {
           const eventDate = new Date(e.date);
           const diffHours = Math.round((eventDate.getTime() - now.getTime()) / (1000 * 60 * 60));
-          const timeStr = diffHours < 24 
-            ? `Dans ${diffHours}h` 
-            : `Dans ${Math.round(diffHours / 24)} jour(s)`;
+          const timeStr = diffHours < 24 ? `Dans ${diffHours}h` : `Dans ${Math.round(diffHours / 24)}j`;
           items.push({
             type: 'ÉVÉNEMENT',
             title: e.title,
             time: timeStr,
             severity: 'low',
-            icon: '🎭',
+            icon: '📅',
             link: `/evenements/${e.id}`
           });
         });
       }
 
-      // Fetch recent content items (tenders with deadline)
-      const { data: tenders } = await supabase
-        .from('content_items')
-        .select('id, title, created_at')
-        .eq('type', 'tender')
-        .eq('status', 'published')
-        .order('created_at', { ascending: false })
-        .limit(2);
-
-      if (tenders) {
-        tenders.forEach(t => {
-          items.push({
-            type: "APPEL D'OFFRES",
-            title: t.title,
-            time: getRelativeTime(t.created_at),
-            severity: 'medium',
-            icon: '📋',
-            link: '/appels-offres'
-          });
-        });
-      }
-
-      // If no real data, show a helpful empty state
       setUrgentInfo(items.slice(0, 5));
     } catch (error) {
       console.error('Error fetching urgent info:', error);
@@ -114,27 +86,26 @@ const QuickActions = () => {
     const diff = Date.now() - new Date(dateStr).getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     if (hours < 1) return "À l'instant";
-    if (hours < 24) return `Il y a ${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `Il y a ${days} jour(s)`;
+    if (hours < 24) return `${hours}h`;
+    return `${Math.floor(hours / 24)}j`;
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityDot = (severity: string) => {
     switch (severity) {
-      case 'high': return 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300';
-      case 'medium': return 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border-orange-300';
-      default: return 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300';
+      case 'high': return 'bg-destructive';
+      case 'medium': return 'bg-amber-500';
+      default: return 'bg-primary';
     }
   };
 
   if (loading) {
     return (
-      <Card className="glass-effect shadow-2xl">
-        <CardContent className="p-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-6 bg-muted rounded w-1/2"></div>
-            <div className="h-16 bg-muted rounded"></div>
-            <div className="h-16 bg-muted rounded"></div>
+      <Card>
+        <CardContent className="p-4">
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 bg-muted rounded w-1/2" />
+            <div className="h-12 bg-muted rounded" />
+            <div className="h-12 bg-muted rounded" />
           </div>
         </CardContent>
       </Card>
@@ -143,70 +114,49 @@ const QuickActions = () => {
 
   if (urgentInfo.length === 0) {
     return (
-      <Card className="glass-effect shadow-2xl">
-        <CardContent className="p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">Informations urgentes</h2>
-              <p className="text-gray-600">Restez informé en temps réel</p>
-            </div>
-          </div>
-          <div className="text-center py-6 text-muted-foreground">
-            <p className="text-lg">✅ Aucune alerte en cours</p>
-            <p className="text-sm mt-1">Tout est calme pour le moment</p>
-          </div>
+      <Card>
+        <CardHeader className="pb-2 px-4 pt-4">
+          <CardTitle className="text-sm font-bold flex items-center gap-2">
+            <Bell className="w-4 h-4 text-primary" />
+            Alertes & événements
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-4 pb-4">
+          <p className="text-xs text-muted-foreground text-center py-4">✅ Aucune alerte en cours</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="glass-effect shadow-2xl">
-      <CardContent className="p-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">Informations urgentes</h2>
-            <p className="text-gray-600">Restez informé en temps réel</p>
-          </div>
-          <Badge variant="destructive" className="animate-pulse bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 text-base font-bold shadow-lg">
-            🔔 {urgentInfo.length} alertes
+    <Card>
+      <CardHeader className="pb-2 px-4 pt-4">
+        <CardTitle className="text-sm font-bold flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-500" />
+          Alertes & événements
+          <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0.5 bg-destructive/10 text-destructive">
+            {urgentInfo.length}
           </Badge>
-        </div>
-        
-        <div className="space-y-4">
-           {urgentInfo.map((info, index) => (
-            <div 
-              key={index} 
-              className="group flex items-start gap-4 p-4 rounded-xl bg-white/60 hover:bg-white/90 transition-all duration-300 cursor-pointer border border-white/30 hover:shadow-lg"
-              onClick={() => navigate(info.link)}
-            >
-              <div className="text-2xl group-hover:scale-110 transition-transform duration-300">
-                {info.icon}
-              </div>
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="flex items-start gap-3">
-                  <Badge variant="outline" className={`${getSeverityColor(info.severity)} font-semibold text-xs px-3 py-1`}>
-                    {info.type}
-                  </Badge>
-                </div>
-                <p className="font-semibold text-base text-gray-900 group-hover:text-emerald-700 transition-colors">
-                  {info.title}
-                </p>
-                <p className="text-sm text-gray-500 flex items-center gap-1">
-                  <span>⏰</span> {info.time}
-                </p>
-              </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-4 pb-4 space-y-1">
+        {urgentInfo.map((info, index) => (
+          <div
+            key={index}
+            className="group flex items-start gap-2.5 p-2 rounded-lg hover:bg-muted/60 transition-colors cursor-pointer"
+            onClick={() => navigate(info.link)}
+          >
+            <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${getSeverityDot(info.severity)}`} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                {info.title}
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                {info.type} · {info.time}
+              </p>
             </div>
-          ))}
-        </div>
-        
-        <Button 
-          variant="outline" 
-          className="w-full mt-6 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold py-3 text-base rounded-xl shadow-sm"
-          onClick={() => navigate('/annonces')}
-        >
-          📢 Voir toutes les alertes
-        </Button>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

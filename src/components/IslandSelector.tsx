@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/components/LanguageProvider';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { ArrowRight } from 'lucide-react';
 
 interface Island {
   name: string;
   nameLocal: string;
-  description: string;
-  activeCount: number;
   image: string;
-  gradient: string;
   slug: string;
 }
 
@@ -39,58 +35,40 @@ const IslandSelector = () => {
   const getImage = (slug: string) => customImages[slug] || DEFAULT_IMAGES[slug];
 
   const islands: Island[] = [
-    { name: t('island.grandeComore') || 'Grande Comore', nameLocal: 'Ngazidja', description: 'La plus grande île de l\'archipel, abritant la capitale Moroni et le volcan Karthala.', activeCount: 245, image: getImage('grande-comore'), gradient: 'from-emerald-500 to-teal-600', slug: 'grande-comore' },
-    { name: t('island.anjouan') || 'Anjouan', nameLocal: 'Ndzuwani', description: 'L\'île aux parfums, célèbre pour sa production d\'ylang-ylang et ses paysages montagneux.', activeCount: 186, image: getImage('anjouan'), gradient: 'from-blue-500 to-indigo-600', slug: 'anjouan' },
-    { name: t('island.moheli') || 'Mohéli', nameLocal: 'Mwali', description: 'La plus petite île habitée, réputée pour son parc marin national et son écotourisme.', activeCount: 67, image: getImage('moheli'), gradient: 'from-purple-500 to-pink-600', slug: 'moheli' },
-    { name: t('island.mayotte') || 'Mayotte', nameLocal: 'Maore', description: 'L\'île au lagon, quatrième île des Comores avec un magnifique lagon turquoise.', activeCount: 198, image: getImage('mayotte'), gradient: 'from-cyan-500 to-blue-600', slug: 'mayotte' }
+    { name: t('island.grandeComore') || 'Grande Comore', nameLocal: 'Ngazidja', image: getImage('grande-comore'), slug: 'grande-comore' },
+    { name: t('island.anjouan') || 'Anjouan', nameLocal: 'Ndzuwani', image: getImage('anjouan'), slug: 'anjouan' },
+    { name: t('island.moheli') || 'Mohéli', nameLocal: 'Mwali', image: getImage('moheli'), slug: 'moheli' },
+    { name: t('island.mayotte') || 'Mayotte', nameLocal: 'Maore', image: getImage('mayotte'), slug: 'mayotte' },
   ];
 
   return (
-    <section className="py-10 sm:py-20 bg-gradient-to-br from-white via-gray-50 to-blue-50">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="text-center mb-10 sm:mb-16">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 mb-4 sm:mb-6">
-            🏝️ Archipel des Comores
-          </h2>
-          <div className="flex justify-center mb-4 sm:mb-6">
-            <Badge variant="outline" className="px-4 sm:px-6 py-1.5 sm:py-2 bg-white border-2 border-emerald-500 text-emerald-700 font-semibold text-sm sm:text-lg shadow-lg">
-              4 Îles · Une Nation
-            </Badge>
-          </div>
-          <p className="text-base sm:text-xl text-gray-700 max-w-4xl mx-auto leading-relaxed font-medium">
-            Découvrez chaque île de notre archipel : leurs spécificités, prix locaux, événements culturels et services disponibles.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
-          {islands.map((island, index) => (
-            <Link key={index} to={`/ile/${island.slug}`}>
-              <Card className="group bg-white border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 cursor-pointer overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="relative overflow-hidden">
-                    <img src={island.image} alt={island.name} className="w-full h-40 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-700" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
-                    <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 text-white">
-                      <div className="flex items-center justify-between mb-1 sm:mb-2">
-                        <h3 className="font-black text-xl sm:text-2xl group-hover:text-emerald-300 transition-colors">{island.name}</h3>
-                        <span className="text-xs sm:text-sm font-medium bg-white/20 px-2 py-0.5 sm:py-1 rounded-full">{island.nameLocal}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 sm:p-6 bg-white">
-                    <p className="text-gray-700 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 group-hover:text-gray-900 transition-colors">{island.description}</p>
-                    <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100">
-                      <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Explorer l'île</span>
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-emerald-500 rounded-full flex items-center justify-center group-hover:bg-emerald-600 transition-colors">
-                        <span className="text-white font-bold text-sm">→</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+    <section>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg sm:text-xl font-bold text-foreground">🏝️ Nos îles</h2>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {islands.map((island) => (
+          <Link
+            key={island.slug}
+            to={`/ile/${island.slug}`}
+            className="group relative overflow-hidden rounded-xl aspect-[4/3] bg-muted"
+          >
+            <img
+              src={island.image}
+              alt={island.name}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <h3 className="font-bold text-white text-sm sm:text-base leading-tight">{island.name}</h3>
+              <p className="text-white/70 text-[10px] sm:text-xs">{island.nameLocal}</p>
+            </div>
+            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <ArrowRight className="w-3 h-3 text-white" />
+            </div>
+          </Link>
+        ))}
       </div>
     </section>
   );

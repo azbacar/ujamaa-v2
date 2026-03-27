@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,8 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Calendar, TrendingUp, Briefcase, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Calendar, TrendingUp, Briefcase, ArrowRight, Activity } from 'lucide-react';
 
 interface RecentItem {
   id: string;
@@ -18,10 +16,10 @@ interface RecentItem {
 }
 
 const TYPE_CONFIG = {
-  event: { label: 'Événement', icon: Calendar, color: 'bg-blue-100 text-blue-700 border-blue-200', link: '/evenements' },
-  price: { label: 'Prix', icon: TrendingUp, color: 'bg-emerald-100 text-emerald-700 border-emerald-200', link: '/prix' },
-  tender: { label: 'Appel d\'offres', icon: Briefcase, color: 'bg-amber-100 text-amber-700 border-amber-200', link: '/appels-offres' },
-  freelance: { label: 'Mission', icon: Briefcase, color: 'bg-purple-100 text-purple-700 border-purple-200', link: '/freelance' },
+  event: { label: 'Événement', icon: Calendar, color: 'bg-blue-50 text-blue-700 border-blue-200', link: '/evenements' },
+  price: { label: 'Prix', icon: TrendingUp, color: 'bg-emerald-50 text-emerald-700 border-emerald-200', link: '/prix' },
+  tender: { label: 'Appel d\'offres', icon: Briefcase, color: 'bg-amber-50 text-amber-700 border-amber-200', link: '/appels-offres' },
+  freelance: { label: 'Mission', icon: Briefcase, color: 'bg-purple-50 text-purple-700 border-purple-200', link: '/freelance' },
 };
 
 const RecentContentSection = () => {
@@ -63,34 +61,35 @@ const RecentContentSection = () => {
   };
 
   return (
-    <Card className="border-border">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-bold flex items-center gap-2">
-          🔥 Activité récente
+    <Card>
+      <CardHeader className="pb-2 px-4 pt-4">
+        <CardTitle className="text-sm font-bold flex items-center gap-2">
+          <Activity className="w-4 h-4 text-primary" />
+          Activité récente
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="px-4 pb-4 space-y-1">
         {items.map((item) => {
           const config = TYPE_CONFIG[item.type];
           return (
             <Link
               key={`${item.type}-${item.id}`}
               to={getLink(item)}
-              className="group flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/60 transition-colors"
+              className="group flex items-start gap-2.5 p-2 rounded-lg hover:bg-muted/60 transition-colors"
             >
-              <Badge variant="outline" className={`${config.color} text-[10px] px-1.5 py-0.5 flex-shrink-0 mt-0.5`}>
+              <Badge variant="outline" className={`${config.color} text-[9px] px-1.5 py-0.5 flex-shrink-0 mt-0.5`}>
                 {config.label}
               </Badge>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                <p className="text-xs font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
                   {item.title}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground">
                   {formatDistanceToNow(new Date(item.date), { addSuffix: true, locale: fr })}
                   {item.meta && ` · ${item.meta}`}
                 </p>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex-shrink-0" />
+              <ArrowRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex-shrink-0" />
             </Link>
           );
         })}
