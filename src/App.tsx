@@ -45,13 +45,17 @@ import DiasporaProjectDetail from "./pages/DiasporaProjectDetail";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Désactiver le refetch automatique pour éviter la perte de données saisies
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
+
+// Auto-clear cache every 30 minutes
+setInterval(() => {
+  queryClient.invalidateQueries();
+}, 30 * 60 * 1000);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
