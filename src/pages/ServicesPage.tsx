@@ -11,6 +11,9 @@ import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 interface Service {
   id: string;
