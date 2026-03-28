@@ -120,6 +120,7 @@ const App = () => (
               <Route path="/ile/:islandName" element={<IslandDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <WelcomeDialog />
             <FloatingChatbox />
             <PushNotificationPrompt />
             {/* Maintenance check seulement en développement */}
