@@ -29,12 +29,16 @@ interface Announcement extends Omit<ContentItem, 'type'> {
 }
 
 const AnnouncementsPage = () => {
+  const { user } = useAuth();
+  const { isAnnonceur } = useRole();
+  const navigate = useNavigate();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
