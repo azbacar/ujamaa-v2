@@ -16,4 +16,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            /home/admin/web/ujamaan.com/app/deploy.sh
+  sudo -u deploy bash /home/admin/web/ujamaan.com/app/deploy.sh
