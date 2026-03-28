@@ -28,6 +28,8 @@ interface Tender {
 const TendersPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { isAnnonceur } = useRole();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
@@ -36,6 +38,7 @@ const TendersPage = () => {
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     const fetchTenders = async () => {
