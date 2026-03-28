@@ -1,22 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import Header from '@/components/Header';
 import { useLanguage } from '@/components/LanguageProvider';
 import HeroSection from '@/components/HeroSection';
 import LiveStatsBar from '@/components/LiveStatsBar';
-import CategoriesSection from '@/components/CategoriesSection';
-import AnnouncementsSection from '@/components/AnnouncementsSection';
-import IslandSelector from '@/components/IslandSelector';
-import RecentContentSection from '@/components/RecentContentSection';
-import QuickActions from '@/components/QuickActions';
 import AdSpace from '@/components/AdSpace';
 import LiveUrgentAlerts from '@/components/LiveUrgentAlerts';
-import StatisticsCard from '@/components/StatisticsCard';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { useJsonLd } from '@/hooks/useJsonLd';
+import {
+  StatsBarSkeleton,
+  IslandsSkeleton,
+  AnnouncementsSkeleton,
+  CategoriesSkeleton,
+  SidebarSkeleton,
+} from '@/components/HomepageSkeleton';
+
+const IslandSelector = lazy(() => import('@/components/IslandSelector'));
+const AnnouncementsSection = lazy(() => import('@/components/AnnouncementsSection'));
+const CategoriesSection = lazy(() => import('@/components/CategoriesSection'));
+const RecentContentSection = lazy(() => import('@/components/RecentContentSection'));
+const QuickActions = lazy(() => import('@/components/QuickActions'));
+const StatisticsCard = lazy(() => import('@/components/StatisticsCard'));
 
 interface HomepageSection {
   id: string;
@@ -76,19 +84,28 @@ const Index = () => {
         )}
 
         {/* Islands - compact */}
-        {isSectionVisible('islands') && <IslandSelector />}
+        {isSectionVisible('islands') && (
+          <Suspense fallback={<IslandsSkeleton />}>
+            <IslandSelector />
+          </Suspense>
+        )}
 
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
           {/* Main content */}
           <div className="lg:col-span-8 space-y-5 sm:space-y-6">
-            {/* Announcements */}
-            {isSectionVisible('announcements') && <AnnouncementsSection />}
+            {isSectionVisible('announcements') && (
+              <Suspense fallback={<AnnouncementsSkeleton />}>
+                <AnnouncementsSection />
+              </Suspense>
+            )}
 
-            {/* Categories */}
-            {isSectionVisible('categories') && <CategoriesSection />}
+            {isSectionVisible('categories') && (
+              <Suspense fallback={<CategoriesSkeleton />}>
+                <CategoriesSection />
+              </Suspense>
+            )}
 
-            {/* Content ad */}
             {isSectionVisible('ads_content') && (
               <div className="flex justify-center">
                 <AdSpace size="medium" position="content" />
@@ -98,13 +115,23 @@ const Index = () => {
 
           {/* Sidebar */}
           <div className="lg:col-span-4 space-y-5">
-            <RecentContentSection />
+            <Suspense fallback={<SidebarSkeleton />}>
+              <RecentContentSection />
+            </Suspense>
 
-            {isSectionVisible('quick_actions') && <QuickActions />}
+            {isSectionVisible('quick_actions') && (
+              <Suspense fallback={<SidebarSkeleton />}>
+                <QuickActions />
+              </Suspense>
+            )}
 
             {isSectionVisible('ads_sidebar') && <AdSpace size="medium" position="sidebar" />}
 
-            {isSectionVisible('statistics') && user && (isAdmin() || isModerator()) && <StatisticsCard />}
+            {isSectionVisible('statistics') && user && (isAdmin() || isModerator()) && (
+              <Suspense fallback={<SidebarSkeleton />}>
+                <StatisticsCard />
+              </Suspense>
+            )}
 
             {isSectionVisible('ads_sidebar_2') && <AdSpace size="small" position="sidebar" />}
           </div>
