@@ -1,31 +1,36 @@
-name: Deploy Ujamaan
+#!/usr/bin/env bash
+set -e
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+echo "== Setup environment =="
+export HOME=/home/deploy
+export USER=deploy
+export PATH=/usr/local/bin:/usr/bin:/bin
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+APP_DIR="/home/admin/web/ujamaan.com/app/source"
+WEB_DIR="/home/admin/web/ujamaan.com/public_html"
+BRANCH="main"
 
-    steps:
-      - name: Deploy to server via SSH
-        uses: appleboy/ssh-action@v1.0.3
+cd "$APP_DIR"
 
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+echo "== Fix Git security =="
+git config --global --add safe.directory "$APP_DIR"
 
-          script: |
-            export HOME=/home/deploy
-            export USER=deploy
+echo "== Fix SSH known_hosts =="
+mkdir -p ~/.ssh
+ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
 
-            echo "== Go to project =="
-            cd /home/admin/web/ujamaan.com/app
+echo "== Git pull =="
+GIT_SSH_COMMAND="ssh -i /home/deploy/.ssh/ujamaan_deploy_key -o StrictHostKeyChecking=no" git fetch --all --prune
+GIT_SSH_COMMAND="ssh -i /home/deploy/.ssh/ujamaan_deploy_key -o StrictHostKeyChecking=no" git reset --hard "origin/$BRANCH"
 
-            echo "== Run deploy script =="
-            bash deploy.sh
+echo "== Install deps =="
+npm install
+
+echo "== Build =="
+npm run build
+
+echo "== Publish =="
+rm -rf "$WEB_DIR"/*
+cp -r "$APP_DIR/dist/"* "$WEB_DIR/"
+
+echo "✅ Deploy done."
