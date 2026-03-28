@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import FloatingChatbox from "@/components/FloatingChatbox";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
+import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import Index from "./pages/Index";
