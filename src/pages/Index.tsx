@@ -1,22 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import Header from '@/components/Header';
 import { useLanguage } from '@/components/LanguageProvider';
 import HeroSection from '@/components/HeroSection';
 import LiveStatsBar from '@/components/LiveStatsBar';
-import CategoriesSection from '@/components/CategoriesSection';
-import AnnouncementsSection from '@/components/AnnouncementsSection';
-import IslandSelector from '@/components/IslandSelector';
-import RecentContentSection from '@/components/RecentContentSection';
-import QuickActions from '@/components/QuickActions';
 import AdSpace from '@/components/AdSpace';
 import LiveUrgentAlerts from '@/components/LiveUrgentAlerts';
-import StatisticsCard from '@/components/StatisticsCard';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { useJsonLd } from '@/hooks/useJsonLd';
+import {
+  StatsBarSkeleton,
+  IslandsSkeleton,
+  AnnouncementsSkeleton,
+  CategoriesSkeleton,
+  SidebarSkeleton,
+} from '@/components/HomepageSkeleton';
+
+const IslandSelector = lazy(() => import('@/components/IslandSelector'));
+const AnnouncementsSection = lazy(() => import('@/components/AnnouncementsSection'));
+const CategoriesSection = lazy(() => import('@/components/CategoriesSection'));
+const RecentContentSection = lazy(() => import('@/components/RecentContentSection'));
+const QuickActions = lazy(() => import('@/components/QuickActions'));
+const StatisticsCard = lazy(() => import('@/components/StatisticsCard'));
 
 interface HomepageSection {
   id: string;
