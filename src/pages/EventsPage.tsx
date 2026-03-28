@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, MapPin, Users, Search, Ticket } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
@@ -13,6 +13,9 @@ import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 interface Event {
   id: string;
@@ -34,12 +37,16 @@ interface Event {
 const EventsPage = () => {
   const { t } = useLanguage();
   usePageSEO({ title: 'Événements', description: 'Découvrez les événements culturels, sportifs et sociaux aux Comores.', canonicalPath: '/evenements', keywords: 'événements Comores, culture, festival, sport' });
+  const { user } = useAuth();
+  const { isAnnonceur } = useRole();
+  const navigate = useNavigate();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -237,22 +244,32 @@ const EventsPage = () => {
         )}
 
         {/* Section d'action */}
-        <div className="text-center mt-12 space-y-6">
-          <div className="bg-gradient-to-r from-violet-100 to-purple-100 p-8 rounded-3xl">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              🎉 Vous organisez un événement ?
-            </h3>
-            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Faites connaître votre événement sur UJAMAA et attirez plus de participants de toutes les îles.
-            </p>
-            <Button 
-              size="lg" 
-              onClick={() => window.location.href = '/auth'}
-              className="bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-purple-500/50 transition-all hover:scale-105"
-            >
-              ✨ Ajouter mon événement
-            </Button>
-          </div>
+        <div className="mt-12 max-w-lg mx-auto">
+          {showUpgrade && (!user || !isAnnonceur()) ? (
+            <UpgradePrompt action="publier un événement" />
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="bg-gradient-to-r from-violet-100 to-purple-100 p-8 rounded-3xl">
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  🎉 Vous organisez un événement ?
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                  Faites connaître votre événement sur UJAMAA et attirez plus de participants de toutes les îles.
+                </p>
+                <Button 
+                  size="lg" 
+                  onClick={() => {
+                    if (!user) { navigate('/auth'); return; }
+                    if (!isAnnonceur()) { setShowUpgrade(true); return; }
+                    navigate('/annonceur');
+                  }}
+                  className="bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-purple-500/50 transition-all hover:scale-105"
+                >
+                  ✨ Ajouter mon événement
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer ad */}
