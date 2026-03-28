@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import FloatingChatbox from "@/components/FloatingChatbox";
 import PushNotificationPrompt from "@/components/PushNotificationPrompt";
+import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import Index from "./pages/Index";
@@ -44,13 +45,17 @@ import DiasporaProjectDetail from "./pages/DiasporaProjectDetail";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Désactiver le refetch automatique pour éviter la perte de données saisies
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
+
+// Auto-clear cache every 30 minutes
+setInterval(() => {
+  queryClient.invalidateQueries();
+}, 30 * 60 * 1000);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -115,6 +120,7 @@ const App = () => (
               <Route path="/ile/:islandName" element={<IslandDetailPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <WelcomeDialog />
             <FloatingChatbox />
             <PushNotificationPrompt />
             {/* Maintenance check seulement en développement */}
