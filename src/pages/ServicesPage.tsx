@@ -203,22 +203,32 @@ const ServicesPage = () => {
         )}
 
         {/* Section d'action */}
-        <div className="text-center mt-12 space-y-6">
-          <div className="bg-gradient-to-r from-teal-100 to-cyan-100 p-8 rounded-3xl">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              🛠️ Vous proposez un service ?
-            </h3>
-            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Faites connaître vos services sur UJAMAA et développez votre activité dans toutes les îles.
-            </p>
-            <Button 
-              size="lg" 
-              onClick={() => window.location.href = '/auth'}
-              className="bg-gradient-to-r from-teal-500 via-cyan-600 to-blue-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-teal-500/50 transition-all hover:scale-105"
-            >
-              ✨ Ajouter mon service
-            </Button>
-          </div>
+        <div className="mt-12 max-w-lg mx-auto">
+          {showUpgrade && (!user || !isAnnonceur()) ? (
+            <UpgradePrompt action="proposer un service" />
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="bg-gradient-to-r from-teal-100 to-cyan-100 p-8 rounded-3xl">
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  🛠️ Vous proposez un service ?
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                  Faites connaître vos services sur UJAMAA et développez votre activité dans toutes les îles.
+                </p>
+                <Button 
+                  size="lg" 
+                  onClick={() => {
+                    if (!user) { navigate('/auth'); return; }
+                    if (!isAnnonceur()) { setShowUpgrade(true); return; }
+                    navigate('/annonceur');
+                  }}
+                  className="bg-gradient-to-r from-teal-500 via-cyan-600 to-blue-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-teal-500/50 transition-all hover:scale-105"
+                >
+                  ✨ Ajouter mon service
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer ad */}

@@ -225,22 +225,32 @@ const TendersPage = () => {
         )}
 
         {/* Section d'action */}
-        <div className="text-center mt-12 space-y-6">
-          <div className="bg-gradient-to-r from-orange-100 to-red-100 p-8 rounded-3xl">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              📋 Vous lancez un appel d'offres ?
-            </h3>
-            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Publiez vos appels d'offres sur UJAMAA pour recevoir les meilleures propositions des prestataires locaux.
-            </p>
-            <Button 
-              size="lg" 
-              onClick={() => window.location.href = '/auth'}
-              className="bg-gradient-to-r from-orange-500 via-red-600 to-pink-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-orange-500/50 transition-all hover:scale-105"
-            >
-              ✨ Publier un appel d'offres
-            </Button>
-          </div>
+        <div className="mt-12 max-w-lg mx-auto">
+          {showUpgrade && (!user || !isAnnonceur()) ? (
+            <UpgradePrompt action="publier un appel d'offres" />
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="bg-gradient-to-r from-orange-100 to-red-100 p-8 rounded-3xl">
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  📋 Vous lancez un appel d'offres ?
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                  Publiez vos appels d'offres sur UJAMAA pour recevoir les meilleures propositions des prestataires locaux.
+                </p>
+                <Button 
+                  size="lg" 
+                  onClick={() => {
+                    if (!user) { navigate('/auth'); return; }
+                    if (!isAnnonceur()) { setShowUpgrade(true); return; }
+                    navigate('/annonceur');
+                  }}
+                  className="bg-gradient-to-r from-orange-500 via-red-600 to-pink-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-orange-500/50 transition-all hover:scale-105"
+                >
+                  ✨ Publier un appel d'offres
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer ad */}

@@ -244,22 +244,32 @@ const EventsPage = () => {
         )}
 
         {/* Section d'action */}
-        <div className="text-center mt-12 space-y-6">
-          <div className="bg-gradient-to-r from-violet-100 to-purple-100 p-8 rounded-3xl">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              🎉 Vous organisez un événement ?
-            </h3>
-            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Faites connaître votre événement sur UJAMAA et attirez plus de participants de toutes les îles.
-            </p>
-            <Button 
-              size="lg" 
-              onClick={() => window.location.href = '/auth'}
-              className="bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-purple-500/50 transition-all hover:scale-105"
-            >
-              ✨ Ajouter mon événement
-            </Button>
-          </div>
+        <div className="mt-12 max-w-lg mx-auto">
+          {showUpgrade && (!user || !isAnnonceur()) ? (
+            <UpgradePrompt action="publier un événement" />
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="bg-gradient-to-r from-violet-100 to-purple-100 p-8 rounded-3xl">
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  🎉 Vous organisez un événement ?
+                </h3>
+                <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+                  Faites connaître votre événement sur UJAMAA et attirez plus de participants de toutes les îles.
+                </p>
+                <Button 
+                  size="lg" 
+                  onClick={() => {
+                    if (!user) { navigate('/auth'); return; }
+                    if (!isAnnonceur()) { setShowUpgrade(true); return; }
+                    navigate('/annonceur');
+                  }}
+                  className="bg-gradient-to-r from-violet-500 via-purple-600 to-indigo-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-purple-500/50 transition-all hover:scale-105"
+                >
+                  ✨ Ajouter mon événement
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer ad */}
