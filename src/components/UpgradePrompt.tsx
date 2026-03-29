@@ -92,7 +92,15 @@ export const UpgradePrompt = ({ action = 'publier du contenu', compact = false }
             </div>
           )}
 
-          <div className="flex flex-col gap-2">
+          {annonceurCount !== null && annonceurCount > 0 && (
+            <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-primary/5 border border-primary/10">
+              <Users className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">
+                {annonceurCount} annonceur{annonceurCount > 1 ? 's' : ''} actif{annonceurCount > 1 ? 's' : ''}
+              </span>
+              <span className="text-xs text-muted-foreground">utilisent déjà la plateforme</span>
+            </div>
+          )}
             <Button
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
               onClick={() => navigate('/annonceur')}
