@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,41 +7,51 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import FloatingChatbox from "@/components/FloatingChatbox";
-import PushNotificationPrompt from "@/components/PushNotificationPrompt";
-import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
-import Index from "./pages/Index";
-import PricesPage from "./pages/PricesPage";
-import EventsPage from "./pages/EventsPage";
-import TendersPage from "./pages/TendersPage";
-import ServicesPage from "./pages/ServicesPage";
-import ContentDetailPage from "./pages/ContentDetailPage";
-import AnnouncementsPage from "./pages/AnnouncementsPage";
-import AnnouncementDetail from "./pages/AnnouncementDetail";
-import EventDetail from "./pages/EventDetail";
-import AdminDashboard from "./pages/AdminDashboard";
-
-import IslandDetailPage from "./pages/IslandDetailPage";
-import AnnouncerDashboard from "./pages/AnnouncerDashboard";
-import NotFound from "./pages/NotFound";
-import AuthPage from "./pages/AuthPage";
-import ResetPasswordRequest from "./pages/ResetPasswordRequest";
-import ResetPassword from "./pages/ResetPassword";
-import ProfilePage from "./pages/ProfilePage";
-import ProPage from "./pages/ProPage";
-import StaticPage from "./pages/StaticPage";
-import InstallPage from "./pages/InstallPage";
-import DeleteAccountPage from "./pages/DeleteAccountPage";
-import { MaintenanceCheck } from "./components/MaintenanceCheck";
 import ScrollToTop from "./components/ScrollToTop";
-import FreelancePage from "./pages/FreelancePage";
-import FreelanceJobDetail from "./pages/FreelanceJobDetail";
-import FreelancerDirectoryPage from "./pages/FreelancerDirectoryPage";
-import MessagesPage from "./pages/MessagesPage";
-import DiasporaPage from "./pages/DiasporaPage";
-import DiasporaProjectDetail from "./pages/DiasporaProjectDetail";
+
+// Eagerly loaded: homepage
+import Index from "./pages/Index";
+
+// Lazy loaded: everything else
+const FloatingChatbox = lazy(() => import("@/components/FloatingChatbox"));
+const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationPrompt"));
+const WelcomeDialog = lazy(() => import("@/components/WelcomeDialog").then(m => ({ default: m.WelcomeDialog })));
+const MaintenanceCheck = lazy(() => import("./components/MaintenanceCheck").then(m => ({ default: m.MaintenanceCheck })));
+
+const PricesPage = lazy(() => import("./pages/PricesPage"));
+const EventsPage = lazy(() => import("./pages/EventsPage"));
+const TendersPage = lazy(() => import("./pages/TendersPage"));
+const ServicesPage = lazy(() => import("./pages/ServicesPage"));
+const ContentDetailPage = lazy(() => import("./pages/ContentDetailPage"));
+const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"));
+const AnnouncementDetail = lazy(() => import("./pages/AnnouncementDetail"));
+const EventDetail = lazy(() => import("./pages/EventDetail"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const IslandDetailPage = lazy(() => import("./pages/IslandDetailPage"));
+const AnnouncerDashboard = lazy(() => import("./pages/AnnouncerDashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+const ResetPasswordRequest = lazy(() => import("./pages/ResetPasswordRequest"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const ProPage = lazy(() => import("./pages/ProPage"));
+const StaticPage = lazy(() => import("./pages/StaticPage"));
+const InstallPage = lazy(() => import("./pages/InstallPage"));
+const DeleteAccountPage = lazy(() => import("./pages/DeleteAccountPage"));
+const FreelancePage = lazy(() => import("./pages/FreelancePage"));
+const FreelanceJobDetail = lazy(() => import("./pages/FreelanceJobDetail"));
+const FreelancerDirectoryPage = lazy(() => import("./pages/FreelancerDirectoryPage"));
+const MessagesPage = lazy(() => import("./pages/MessagesPage"));
+const DiasporaPage = lazy(() => import("./pages/DiasporaPage"));
+const DiasporaProjectDetail = lazy(() => import("./pages/DiasporaProjectDetail"));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-pulse text-muted-foreground text-sm">Chargement…</div>
+  </div>
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
