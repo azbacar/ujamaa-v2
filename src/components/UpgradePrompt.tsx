@@ -26,6 +26,15 @@ export const UpgradePrompt = ({ action = 'publier du contenu', compact = false }
   const { user } = useAuth();
   const { role } = useRole();
   const navigate = useNavigate();
+  const [annonceurCount, setAnnonceurCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('user_roles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'annonceur')
+      .then(({ count }) => setAnnonceurCount(count ?? 0));
+  }, []);
 
   // Not logged in
   if (!user) {
