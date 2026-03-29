@@ -68,26 +68,38 @@ const Index = () => {
       
       <main className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
         {/* Urgent alerts */}
-        {isSectionVisible('alerts') && <LiveUrgentAlerts />}
+        {isSectionVisible('alerts') && (
+          <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
+            <LiveUrgentAlerts />
+          </div>
+        )}
 
         {/* Hero */}
-        {isSectionVisible('hero') && <HeroSection />}
+        {isSectionVisible('hero') && (
+          <div className="animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+            <HeroSection />
+          </div>
+        )}
 
         {/* Live stats */}
-        <LiveStatsBar />
+        <div className="animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+          <LiveStatsBar />
+        </div>
 
         {/* Ad banner */}
         {isSectionVisible('ads_header') && (
-          <div className="flex justify-center">
+          <div className="flex justify-center animate-fade-in" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
             <AdSpace size="banner" position="header" />
           </div>
         )}
 
         {/* Islands - compact */}
         {isSectionVisible('islands') && (
-          <Suspense fallback={<IslandsSkeleton />}>
-            <IslandSelector />
-          </Suspense>
+          <div className="animate-fade-in" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+            <Suspense fallback={<IslandsSkeleton />}>
+              <IslandSelector />
+            </Suspense>
+          </div>
         )}
 
         {/* Two-column layout */}
@@ -95,19 +107,23 @@ const Index = () => {
           {/* Main content */}
           <div className="lg:col-span-8 space-y-5 sm:space-y-6">
             {isSectionVisible('announcements') && (
-              <Suspense fallback={<AnnouncementsSkeleton />}>
-                <AnnouncementsSection />
-              </Suspense>
+              <div className="animate-fade-in" style={{ animationDelay: '400ms', animationFillMode: 'both' }}>
+                <Suspense fallback={<AnnouncementsSkeleton />}>
+                  <AnnouncementsSection />
+                </Suspense>
+              </div>
             )}
 
             {isSectionVisible('categories') && (
-              <Suspense fallback={<CategoriesSkeleton />}>
-                <CategoriesSection />
-              </Suspense>
+              <div className="animate-fade-in" style={{ animationDelay: '500ms', animationFillMode: 'both' }}>
+                <Suspense fallback={<CategoriesSkeleton />}>
+                  <CategoriesSection />
+                </Suspense>
+              </div>
             )}
 
             {isSectionVisible('ads_content') && (
-              <div className="flex justify-center">
+              <div className="flex justify-center animate-fade-in" style={{ animationDelay: '550ms', animationFillMode: 'both' }}>
                 <AdSpace size="medium" position="content" />
               </div>
             )}
@@ -115,25 +131,39 @@ const Index = () => {
 
           {/* Sidebar */}
           <div className="lg:col-span-4 space-y-5">
-            <Suspense fallback={<SidebarSkeleton />}>
-              <RecentContentSection />
-            </Suspense>
+            <div className="animate-fade-in" style={{ animationDelay: '450ms', animationFillMode: 'both' }}>
+              <Suspense fallback={<SidebarSkeleton />}>
+                <RecentContentSection />
+              </Suspense>
+            </div>
 
             {isSectionVisible('quick_actions') && (
-              <Suspense fallback={<SidebarSkeleton />}>
-                <QuickActions />
-              </Suspense>
+              <div className="animate-fade-in" style={{ animationDelay: '550ms', animationFillMode: 'both' }}>
+                <Suspense fallback={<SidebarSkeleton />}>
+                  <QuickActions />
+                </Suspense>
+              </div>
             )}
 
-            {isSectionVisible('ads_sidebar') && <AdSpace size="medium" position="sidebar" />}
+            {isSectionVisible('ads_sidebar') && (
+              <div className="animate-fade-in" style={{ animationDelay: '600ms', animationFillMode: 'both' }}>
+                <AdSpace size="medium" position="sidebar" />
+              </div>
+            )}
 
             {isSectionVisible('statistics') && user && (isAdmin() || isModerator()) && (
-              <Suspense fallback={<SidebarSkeleton />}>
-                <StatisticsCard />
-              </Suspense>
+              <div className="animate-fade-in" style={{ animationDelay: '650ms', animationFillMode: 'both' }}>
+                <Suspense fallback={<SidebarSkeleton />}>
+                  <StatisticsCard />
+                </Suspense>
+              </div>
             )}
 
-            {isSectionVisible('ads_sidebar_2') && <AdSpace size="small" position="sidebar" />}
+            {isSectionVisible('ads_sidebar_2') && (
+              <div className="animate-fade-in" style={{ animationDelay: '700ms', animationFillMode: 'both' }}>
+                <AdSpace size="small" position="sidebar" />
+              </div>
+            )}
           </div>
         </div>
       </main>
