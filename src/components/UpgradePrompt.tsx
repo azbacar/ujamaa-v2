@@ -101,6 +101,7 @@ export const UpgradePrompt = ({ action = 'publier du contenu', compact = false }
               <span className="text-xs text-muted-foreground">utilisent déjà la plateforme</span>
             </div>
           )}
+          <div className="flex flex-col gap-2">
             <Button
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
               onClick={() => navigate('/annonceur')}
