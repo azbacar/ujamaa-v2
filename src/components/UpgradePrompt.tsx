@@ -1,10 +1,12 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Megaphone, CheckCircle, ArrowRight, LogIn, Crown, Sparkles } from 'lucide-react';
+import { Megaphone, CheckCircle, ArrowRight, LogIn, Crown, Sparkles, Users } from 'lucide-react';
 
 interface UpgradePromptProps {
   /** What action the user tried to perform */
@@ -24,6 +26,15 @@ export const UpgradePrompt = ({ action = 'publier du contenu', compact = false }
   const { user } = useAuth();
   const { role } = useRole();
   const navigate = useNavigate();
+  const [annonceurCount, setAnnonceurCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('user_roles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'annonceur')
+      .then(({ count }) => setAnnonceurCount(count ?? 0));
+  }, []);
 
   // Not logged in
   if (!user) {
@@ -81,6 +92,15 @@ export const UpgradePrompt = ({ action = 'publier du contenu', compact = false }
             </div>
           )}
 
+          {annonceurCount !== null && annonceurCount > 0 && (
+            <div className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-primary/5 border border-primary/10">
+              <Users className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">
+                {annonceurCount} annonceur{annonceurCount > 1 ? 's' : ''} actif{annonceurCount > 1 ? 's' : ''}
+              </span>
+              <span className="text-xs text-muted-foreground">utilisent déjà la plateforme</span>
+            </div>
+          )}
           <div className="flex flex-col gap-2">
             <Button
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"

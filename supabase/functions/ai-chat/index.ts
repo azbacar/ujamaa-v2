@@ -275,7 +275,7 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
 
   } catch (error) {
     console.error('Error in ai-chat:', error);
-    return new Response(JSON.stringify({ error: 'Erreur. Réessayez.', details: error.message }), {
+    return new Response(JSON.stringify({ error: 'Erreur. Réessayez.', details: (error as Error).message }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

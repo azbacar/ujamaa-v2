@@ -45,10 +45,10 @@ async function generateVapidAuthHeader(
   };
 
   const encHeader = arrayBufferToBase64Url(
-    new TextEncoder().encode(JSON.stringify(header))
+    new TextEncoder().encode(JSON.stringify(header)).buffer as ArrayBuffer
   );
   const encPayload = arrayBufferToBase64Url(
-    new TextEncoder().encode(JSON.stringify(payload))
+    new TextEncoder().encode(JSON.stringify(payload)).buffer as ArrayBuffer
   );
   const unsignedToken = `${encHeader}.${encPayload}`;
 
@@ -56,7 +56,7 @@ async function generateVapidAuthHeader(
   const privateKeyBytes = urlBase64ToUint8Array(privateKey);
   const cryptoKey = await crypto.subtle.importKey(
     "pkcs8",
-    privateKeyBytes,
+    privateKeyBytes.buffer as ArrayBuffer,
     { name: "ECDSA", namedCurve: "P-256" },
     false,
     ["sign"]
@@ -222,7 +222,7 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("send-push error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
