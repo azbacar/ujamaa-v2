@@ -56,7 +56,7 @@ async function generateVapidAuthHeader(
   const privateKeyBytes = urlBase64ToUint8Array(privateKey);
   const cryptoKey = await crypto.subtle.importKey(
     "pkcs8",
-    privateKeyBytes,
+    privateKeyBytes.buffer as ArrayBuffer,
     { name: "ECDSA", namedCurve: "P-256" },
     false,
     ["sign"]
