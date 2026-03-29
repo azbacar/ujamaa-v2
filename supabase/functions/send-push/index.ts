@@ -45,10 +45,10 @@ async function generateVapidAuthHeader(
   };
 
   const encHeader = arrayBufferToBase64Url(
-    new TextEncoder().encode(JSON.stringify(header))
+    new TextEncoder().encode(JSON.stringify(header)).buffer as ArrayBuffer
   );
   const encPayload = arrayBufferToBase64Url(
-    new TextEncoder().encode(JSON.stringify(payload))
+    new TextEncoder().encode(JSON.stringify(payload)).buffer as ArrayBuffer
   );
   const unsignedToken = `${encHeader}.${encPayload}`;
 
