@@ -1,10 +1,12 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Megaphone, CheckCircle, ArrowRight, LogIn, Crown, Sparkles } from 'lucide-react';
+import { Megaphone, CheckCircle, ArrowRight, LogIn, Crown, Sparkles, Users } from 'lucide-react';
 
 interface UpgradePromptProps {
   /** What action the user tried to perform */
