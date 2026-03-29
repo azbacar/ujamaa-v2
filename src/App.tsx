@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,41 +7,51 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import FloatingChatbox from "@/components/FloatingChatbox";
-import PushNotificationPrompt from "@/components/PushNotificationPrompt";
-import { WelcomeDialog } from "@/components/WelcomeDialog";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
-import Index from "./pages/Index";
-import PricesPage from "./pages/PricesPage";
-import EventsPage from "./pages/EventsPage";
-import TendersPage from "./pages/TendersPage";
-import ServicesPage from "./pages/ServicesPage";
-import ContentDetailPage from "./pages/ContentDetailPage";
-import AnnouncementsPage from "./pages/AnnouncementsPage";
-import AnnouncementDetail from "./pages/AnnouncementDetail";
-import EventDetail from "./pages/EventDetail";
-import AdminDashboard from "./pages/AdminDashboard";
-
-import IslandDetailPage from "./pages/IslandDetailPage";
-import AnnouncerDashboard from "./pages/AnnouncerDashboard";
-import NotFound from "./pages/NotFound";
-import AuthPage from "./pages/AuthPage";
-import ResetPasswordRequest from "./pages/ResetPasswordRequest";
-import ResetPassword from "./pages/ResetPassword";
-import ProfilePage from "./pages/ProfilePage";
-import ProPage from "./pages/ProPage";
-import StaticPage from "./pages/StaticPage";
-import InstallPage from "./pages/InstallPage";
-import DeleteAccountPage from "./pages/DeleteAccountPage";
-import { MaintenanceCheck } from "./components/MaintenanceCheck";
 import ScrollToTop from "./components/ScrollToTop";
-import FreelancePage from "./pages/FreelancePage";
-import FreelanceJobDetail from "./pages/FreelanceJobDetail";
-import FreelancerDirectoryPage from "./pages/FreelancerDirectoryPage";
-import MessagesPage from "./pages/MessagesPage";
-import DiasporaPage from "./pages/DiasporaPage";
-import DiasporaProjectDetail from "./pages/DiasporaProjectDetail";
+
+// Eagerly loaded: homepage
+import Index from "./pages/Index";
+
+// Lazy loaded: everything else
+const FloatingChatbox = lazy(() => import("@/components/FloatingChatbox"));
+const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationPrompt"));
+const WelcomeDialog = lazy(() => import("@/components/WelcomeDialog").then(m => ({ default: m.WelcomeDialog })));
+const MaintenanceCheck = lazy(() => import("./components/MaintenanceCheck").then(m => ({ default: m.MaintenanceCheck })));
+
+const PricesPage = lazy(() => import("./pages/PricesPage"));
+const EventsPage = lazy(() => import("./pages/EventsPage"));
+const TendersPage = lazy(() => import("./pages/TendersPage"));
+const ServicesPage = lazy(() => import("./pages/ServicesPage"));
+const ContentDetailPage = lazy(() => import("./pages/ContentDetailPage"));
+const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"));
+const AnnouncementDetail = lazy(() => import("./pages/AnnouncementDetail"));
+const EventDetail = lazy(() => import("./pages/EventDetail"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const IslandDetailPage = lazy(() => import("./pages/IslandDetailPage"));
+const AnnouncerDashboard = lazy(() => import("./pages/AnnouncerDashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+const ResetPasswordRequest = lazy(() => import("./pages/ResetPasswordRequest"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const ProPage = lazy(() => import("./pages/ProPage"));
+const StaticPage = lazy(() => import("./pages/StaticPage"));
+const InstallPage = lazy(() => import("./pages/InstallPage"));
+const DeleteAccountPage = lazy(() => import("./pages/DeleteAccountPage"));
+const FreelancePage = lazy(() => import("./pages/FreelancePage"));
+const FreelanceJobDetail = lazy(() => import("./pages/FreelanceJobDetail"));
+const FreelancerDirectoryPage = lazy(() => import("./pages/FreelancerDirectoryPage"));
+const MessagesPage = lazy(() => import("./pages/MessagesPage"));
+const DiasporaPage = lazy(() => import("./pages/DiasporaPage"));
+const DiasporaProjectDetail = lazy(() => import("./pages/DiasporaProjectDetail"));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-pulse text-muted-foreground text-sm">Chargement…</div>
+  </div>
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,27 +81,27 @@ const App = () => (
             <GoogleAnalytics />
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/auth/forgot" element={<ResetPasswordRequest />} />
-              <Route path="/auth/reset" element={<ResetPassword />} />
-              <Route path="/prix" element={<PricesPage />} />
-              <Route path="/evenements" element={<EventsPage />} />
-              <Route path="/evenements/:id" element={<EventDetail />} />
-              <Route path="/appels-offres" element={<TendersPage />} />
-              <Route path="/appels-offres/:id" element={<ContentDetailPage contentType="tender" label="Appel d'offres" icon="📋" backPath="/appels-offres" />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/services/:id" element={<ContentDetailPage contentType="service" label="Service" icon="🏛️" backPath="/services" />} />
-              <Route path="/annonces" element={<AnnouncementsPage />} />
-              <Route path="/annonces/:id" element={<AnnouncementDetail />} />
-              <Route path="/pro" element={<ProPage />} />
-              <Route path="/page/:slug" element={<StaticPage />} />
-              <Route path="/install" element={<InstallPage />} />
-              <Route path="/supprimer-compte" element={<DeleteAccountPage />} />
+              <Route path="/auth" element={<Suspense fallback={<PageLoader />}><AuthPage /></Suspense>} />
+              <Route path="/auth/forgot" element={<Suspense fallback={<PageLoader />}><ResetPasswordRequest /></Suspense>} />
+              <Route path="/auth/reset" element={<Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>} />
+              <Route path="/prix" element={<Suspense fallback={<PageLoader />}><PricesPage /></Suspense>} />
+              <Route path="/evenements" element={<Suspense fallback={<PageLoader />}><EventsPage /></Suspense>} />
+              <Route path="/evenements/:id" element={<Suspense fallback={<PageLoader />}><EventDetail /></Suspense>} />
+              <Route path="/appels-offres" element={<Suspense fallback={<PageLoader />}><TendersPage /></Suspense>} />
+              <Route path="/appels-offres/:id" element={<Suspense fallback={<PageLoader />}><ContentDetailPage contentType="tender" label="Appel d'offres" icon="📋" backPath="/appels-offres" /></Suspense>} />
+              <Route path="/services" element={<Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>} />
+              <Route path="/services/:id" element={<Suspense fallback={<PageLoader />}><ContentDetailPage contentType="service" label="Service" icon="🏛️" backPath="/services" /></Suspense>} />
+              <Route path="/annonces" element={<Suspense fallback={<PageLoader />}><AnnouncementsPage /></Suspense>} />
+              <Route path="/annonces/:id" element={<Suspense fallback={<PageLoader />}><AnnouncementDetail /></Suspense>} />
+              <Route path="/pro" element={<Suspense fallback={<PageLoader />}><ProPage /></Suspense>} />
+              <Route path="/page/:slug" element={<Suspense fallback={<PageLoader />}><StaticPage /></Suspense>} />
+              <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
+              <Route path="/supprimer-compte" element={<Suspense fallback={<PageLoader />}><DeleteAccountPage /></Suspense>} />
               <Route 
                 path="/profile" 
                 element={
                   <ProtectedRoute allowedRoles={['user', 'moderator', 'admin']}>
-                    <ProfilePage />
+                    <Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>
                   </ProtectedRoute>
                 } 
               />
@@ -98,7 +109,7 @@ const App = () => (
                 path="/admin" 
                 element={
                   <ProtectedRoute allowedRoles={['admin', 'moderator']}>
-                    <AdminDashboard />
+                    <Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>
                   </ProtectedRoute>
                 } 
               />
@@ -106,25 +117,30 @@ const App = () => (
                 path="/annonceur" 
                 element={
                   <ProtectedRoute allowedRoles={['annonceur', 'moderator', 'admin']}>
-                    <AnnouncerDashboard />
+                    <Suspense fallback={<PageLoader />}><AnnouncerDashboard /></Suspense>
                   </ProtectedRoute>
                 } 
               />
-              <Route path="/freelance" element={<FreelancePage />} />
-              <Route path="/freelance/:id" element={<FreelanceJobDetail />} />
-              <Route path="/freelancers" element={<FreelancerDirectoryPage />} />
-              <Route path="/messages" element={<MessagesPage />} />
-              <Route path="/messages/:partnerId" element={<MessagesPage />} />
-              <Route path="/investissement" element={<DiasporaPage />} />
-              <Route path="/investissement/:id" element={<DiasporaProjectDetail />} />
-              <Route path="/ile/:islandName" element={<IslandDetailPage />} />
-              <Route path="*" element={<NotFound />} />
+              <Route path="/freelance" element={<Suspense fallback={<PageLoader />}><FreelancePage /></Suspense>} />
+              <Route path="/freelance/:id" element={<Suspense fallback={<PageLoader />}><FreelanceJobDetail /></Suspense>} />
+              <Route path="/freelancers" element={<Suspense fallback={<PageLoader />}><FreelancerDirectoryPage /></Suspense>} />
+              <Route path="/messages" element={<Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>} />
+              <Route path="/messages/:partnerId" element={<Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>} />
+              <Route path="/investissement" element={<Suspense fallback={<PageLoader />}><DiasporaPage /></Suspense>} />
+              <Route path="/investissement/:id" element={<Suspense fallback={<PageLoader />}><DiasporaProjectDetail /></Suspense>} />
+              <Route path="/ile/:islandName" element={<Suspense fallback={<PageLoader />}><IslandDetailPage /></Suspense>} />
+              <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
-            <WelcomeDialog />
-            <FloatingChatbox />
-            <PushNotificationPrompt />
-            {/* Maintenance check seulement en développement */}
-            {import.meta.env.DEV && <MaintenanceCheck />}
+            <Suspense fallback={null}>
+              <WelcomeDialog />
+              <FloatingChatbox />
+              <PushNotificationPrompt />
+            </Suspense>
+            {import.meta.env.DEV && (
+              <Suspense fallback={null}>
+                <MaintenanceCheck />
+              </Suspense>
+            )}
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
