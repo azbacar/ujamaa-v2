@@ -115,10 +115,40 @@ export default function AdminDashboard() {
   const handleModificationReview = async (modId: string, action: 'approved' | 'rejected', notes?: string) => {
     if (!user) return;
     try {
+      // Find the modification to check its type
+      const mod = pendingMods.find(m => m.id === modId);
+      
       const { error } = await supabase.from('pending_modifications').update({
         status: action, reviewed_by: user.id, reviewed_at: new Date().toISOString(), review_notes: notes || null,
       }).eq('id', modId);
       if (error) throw error;
+
+      // If approved and it's a role_request, assign the annonceur role
+      if (action === 'approved' && mod?.type === 'role_request') {
+        const requestedRole = mod.content?.requested_role || 'annonceur';
+        // Check if role already exists
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('id')
+          .eq('user_id', mod.submitted_by)
+          .eq('role', requestedRole)
+          .maybeSingle();
+        
+        if (!existingRole) {
+          const { error: roleError } = await supabase.from('user_roles').insert({
+            user_id: mod.submitted_by,
+            role: requestedRole as any,
+            assigned_by: user.id,
+          });
+          if (roleError) {
+            console.error('Error assigning role:', roleError);
+            toast.error("Erreur lors de l'assignation du rôle");
+          } else {
+            toast.success(`Rôle "${requestedRole}" assigné avec succès`);
+          }
+        }
+      }
+
       await supabase.rpc('log_admin_action', {
         _action_type: 'modification_review', _target_type: 'pending_modification', _target_id: modId,
         _description: `Modification ${action} par ${user.email}`,
