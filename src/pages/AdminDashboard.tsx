@@ -153,6 +153,22 @@ export default function AdminDashboard() {
         _action_type: 'modification_review', _target_type: 'pending_modification', _target_id: modId,
         _description: `Modification ${action} par ${user.email}`,
       });
+      // Send notification to the user who submitted the request
+      const notifTitle = action === 'approved' 
+        ? '✅ Demande approuvée' 
+        : '❌ Demande rejetée';
+      const notifMessage = action === 'approved'
+        ? `Votre demande "${mod?.title}" a été approuvée. ${mod?.type === 'role_request' ? 'Vous avez maintenant accès au rôle annonceur !' : ''}`
+        : `Votre demande "${mod?.title}" a été rejetée.${notes ? ` Motif : ${notes}` : ''}`;
+      
+      await supabase.from('notifications').insert({
+        user_id: mod?.submitted_by,
+        title: notifTitle,
+        message: notifMessage,
+        type: action === 'approved' ? 'success' : 'error',
+        link: mod?.type === 'role_request' ? '/annonceur' : undefined,
+      });
+
       toast.success(`Modification ${action === 'approved' ? 'approuvée' : 'rejetée'}`);
       fetchData({ silent: true });
     } catch (error) { toast.error('Erreur lors de la révision'); }
