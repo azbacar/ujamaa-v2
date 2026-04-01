@@ -90,7 +90,22 @@ export default function AdminDashboard() {
     try {
       if (!silent) setLoading(true);
       const { data: modsData } = await supabase.from('pending_modifications').select('*').order('created_at', { ascending: false });
-      setPendingMods(modsData || []);
+      
+      // Enrich modifications with user info
+      let enrichedMods = modsData || [];
+      if (enrichedMods.length > 0) {
+        const submitterIds = [...new Set(enrichedMods.map(m => m.submitted_by))];
+        const { data: usernames } = await supabase.rpc('get_public_usernames', { _user_ids: submitterIds });
+        const usernameMap = new Map((usernames || []).map((u: any) => [u.id, u]));
+        enrichedMods = enrichedMods.map(m => ({
+          ...m,
+          users: usernameMap.get(m.submitted_by) 
+            ? { username: usernameMap.get(m.submitted_by).username, email: (m.content as any)?.user_email || '' }
+            : { username: (m.content as any)?.user_email || 'Inconnu', email: (m.content as any)?.user_email || '' }
+        }));
+      }
+      setPendingMods(enrichedMods);
+
       if (isAdmin()) {
         const { data: actionsData } = await supabase.from('admin_actions').select('*').order('created_at', { ascending: false }).limit(10);
         setAdminActions(actionsData || []);
