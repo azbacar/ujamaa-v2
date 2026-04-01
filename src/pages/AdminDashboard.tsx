@@ -90,7 +90,22 @@ export default function AdminDashboard() {
     try {
       if (!silent) setLoading(true);
       const { data: modsData } = await supabase.from('pending_modifications').select('*').order('created_at', { ascending: false });
-      setPendingMods(modsData || []);
+      
+      // Enrich modifications with user info
+      let enrichedMods = modsData || [];
+      if (enrichedMods.length > 0) {
+        const submitterIds = [...new Set(enrichedMods.map(m => m.submitted_by))];
+        const { data: usernames } = await supabase.rpc('get_public_usernames', { _user_ids: submitterIds });
+        const usernameMap = new Map((usernames || []).map((u: any) => [u.id, u]));
+        enrichedMods = enrichedMods.map(m => ({
+          ...m,
+          users: usernameMap.get(m.submitted_by) 
+            ? { username: usernameMap.get(m.submitted_by).username, email: (m.content as any)?.user_email || '' }
+            : { username: (m.content as any)?.user_email || 'Inconnu', email: (m.content as any)?.user_email || '' }
+        }));
+      }
+      setPendingMods(enrichedMods);
+
       if (isAdmin()) {
         const { data: actionsData } = await supabase.from('admin_actions').select('*').order('created_at', { ascending: false }).limit(10);
         setAdminActions(actionsData || []);
@@ -115,7 +130,6 @@ export default function AdminDashboard() {
   const handleModificationReview = async (modId: string, action: 'approved' | 'rejected', notes?: string) => {
     if (!user) return;
     try {
-      // Find the modification to check its type
       const mod = pendingMods.find(m => m.id === modId);
       
       const { error } = await supabase.from('pending_modifications').update({
@@ -123,29 +137,33 @@ export default function AdminDashboard() {
       }).eq('id', modId);
       if (error) throw error;
 
-      // If approved and it's a role_request, assign the annonceur role
+      // If approved and it's a role_request, assign the role
       if (action === 'approved' && mod?.type === 'role_request') {
-        const requestedRole = mod.content?.requested_role || 'annonceur';
+        const requestedRole = (mod.content as any)?.requested_role || 'annonceur';
+        const targetUserId = mod.submitted_by;
+        
         // Check if role already exists
         const { data: existingRole } = await supabase
           .from('user_roles')
           .select('id')
-          .eq('user_id', mod.submitted_by)
+          .eq('user_id', targetUserId)
           .eq('role', requestedRole)
           .maybeSingle();
         
         if (!existingRole) {
           const { error: roleError } = await supabase.from('user_roles').insert({
-            user_id: mod.submitted_by,
+            user_id: targetUserId,
             role: requestedRole as any,
             assigned_by: user.id,
           });
           if (roleError) {
             console.error('Error assigning role:', roleError);
-            toast.error("Erreur lors de l'assignation du rôle");
+            toast.error(`Erreur lors de l'assignation du rôle: ${roleError.message}`);
           } else {
-            toast.success(`Rôle "${requestedRole}" assigné avec succès`);
+            toast.success(`Rôle "${requestedRole}" assigné à ${mod.users?.username || 'l\'utilisateur'}`);
           }
+        } else {
+          toast.info('L\'utilisateur a déjà ce rôle');
         }
       }
 
@@ -153,12 +171,11 @@ export default function AdminDashboard() {
         _action_type: 'modification_review', _target_type: 'pending_modification', _target_id: modId,
         _description: `Modification ${action} par ${user.email}`,
       });
-      // Send notification to the user who submitted the request
-      const notifTitle = action === 'approved' 
-        ? '✅ Demande approuvée' 
-        : '❌ Demande rejetée';
+
+      // Notification à l'utilisateur
+      const notifTitle = action === 'approved' ? '✅ Demande approuvée' : '❌ Demande rejetée';
       const notifMessage = action === 'approved'
-        ? `Votre demande "${mod?.title}" a été approuvée. ${mod?.type === 'role_request' ? 'Vous avez maintenant accès au rôle annonceur !' : ''}`
+        ? `Votre demande "${mod?.title}" a été approuvée. ${mod?.type === 'role_request' ? 'Vous avez maintenant accès au rôle annonceur ! Reconnectez-vous pour activer vos permissions.' : ''}`
         : `Votre demande "${mod?.title}" a été rejetée.${notes ? ` Motif : ${notes}` : ''}`;
       
       await supabase.from('notifications').insert({
@@ -171,7 +188,10 @@ export default function AdminDashboard() {
 
       toast.success(`Modification ${action === 'approved' ? 'approuvée' : 'rejetée'}`);
       fetchData({ silent: true });
-    } catch (error) { toast.error('Erreur lors de la révision'); }
+    } catch (error) { 
+      console.error('Review error:', error);
+      toast.error('Erreur lors de la révision'); 
+    }
   };
 
   if (roleLoading) {
