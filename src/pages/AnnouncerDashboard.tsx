@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  Megaphone, Plus, FileText, Eye, BarChart3, Crown, 
-  CheckCircle, Zap, Phone, Save, Trash2, ChevronRight, MessageCircle 
+  Megaphone, Plus, FileText, Eye, Crown, 
+  CheckCircle, Zap, Phone, Save, Trash2, ChevronRight, MessageCircle,
+  Calendar, MapPin, Users, Clock
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +28,7 @@ interface ContentItem {
   status: string;
   views: number;
   created_at: string;
+  source: 'content' | 'event';
 }
 
 interface Privilege {
@@ -43,6 +45,18 @@ const PRIVILEGE_CONFIG: Record<string, { label: string; icon: any; color: string
   contact_direct: { label: 'Contact Direct', icon: Phone, color: 'bg-green-500' },
 };
 
+const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
+const EVENT_CATEGORIES = ['Culture', 'Sport', 'Musique', 'Conférence', 'Formation', 'Religieux', 'Associatif', 'Autre'];
+
+const initialForm = {
+  title: '', description: '', type: 'announcement', category: '',
+  contact_phone: '', contact_whatsapp: '', contact_email: '',
+  // Event-specific
+  date: '', end_date: '', location: '', island: '', organizer: '',
+  capacity: '', price: '', currency: 'FC',
+  requires_registration: false, requires_payment: false,
+};
+
 export default function AnnouncerDashboard() {
   const { user } = useAuth();
   const { isAnnonceur } = useRole();
@@ -50,7 +64,8 @@ export default function AnnouncerDashboard() {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [privileges, setPrivileges] = useState<Privilege[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newForm, setNewForm] = useState({ title: '', description: '', type: 'announcement', category: '', contact_phone: '', contact_whatsapp: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [newForm, setNewForm] = useState(initialForm);
 
   useEffect(() => {
     if (user) fetchData();
@@ -59,44 +74,89 @@ export default function AnnouncerDashboard() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
-    const [itemsRes, privRes] = await Promise.all([
-      supabase.from('content_items').select('*').eq('author_id', user.id).order('created_at', { ascending: false }),
+    const [itemsRes, eventsRes, privRes] = await Promise.all([
+      supabase.from('content_items').select('id, title, description, type, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('events').select('id, title, description, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
       supabase.from('announcer_privileges').select('*').eq('user_id', user.id),
     ]);
-    setItems(itemsRes.data || []);
+    
+    const contentItems: ContentItem[] = (itemsRes.data || []).map(i => ({ ...i, source: 'content' as const }));
+    const eventItems: ContentItem[] = (eventsRes.data || []).map(e => ({ ...e, type: 'event', views: e.views || 0, status: e.status || 'draft', source: 'event' as const }));
+    
+    const all = [...contentItems, ...eventItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setItems(all);
     setPrivileges(privRes.data || []);
     setLoading(false);
   };
 
   const handleCreate = async () => {
     if (!user || !newForm.title || !newForm.description) {
-      toast.error('Remplissez tous les champs');
+      toast.error('Remplissez le titre et la description');
       return;
     }
+
+    setSubmitting(true);
     try {
-      const { error } = await supabase.from('content_items').insert({
-        title: newForm.title,
-        description: newForm.description,
-        type: newForm.type as any,
-        category: newForm.category || null,
-        author_id: user.id,
-        status: 'draft',
-        contact_phone: newForm.contact_phone || null,
-        contact_whatsapp: newForm.contact_whatsapp || null,
-      });
-      if (error) throw error;
-      toast.success('Annonce soumise pour modération');
-      setNewForm({ title: '', description: '', type: 'announcement', category: '', contact_phone: '', contact_whatsapp: '' });
+      if (newForm.type === 'event') {
+        // Validate event-specific fields
+        if (!newForm.date || !newForm.location || !newForm.island || !newForm.organizer || !newForm.category) {
+          toast.error('Remplissez tous les champs obligatoires de l\'événement');
+          setSubmitting(false);
+          return;
+        }
+        const { error } = await supabase.from('events').insert({
+          title: newForm.title,
+          description: newForm.description,
+          date: new Date(newForm.date).toISOString(),
+          end_date: newForm.end_date ? new Date(newForm.end_date).toISOString() : null,
+          location: newForm.location,
+          island: newForm.island,
+          organizer: newForm.organizer,
+          category: newForm.category,
+          capacity: newForm.capacity ? parseInt(newForm.capacity) : null,
+          price: newForm.price ? parseFloat(newForm.price) : 0,
+          currency: newForm.currency,
+          requires_registration: newForm.requires_registration,
+          requires_payment: newForm.requires_payment,
+          contact_phone: newForm.contact_phone || null,
+          contact_email: newForm.contact_email || null,
+          author_id: user.id,
+          status: 'draft',
+        });
+        if (error) throw error;
+        toast.success('Événement soumis pour modération');
+      } else {
+        // content_items: announcement, service, tender
+        const { error } = await supabase.from('content_items').insert({
+          title: newForm.title,
+          description: newForm.description,
+          type: newForm.type as any,
+          category: newForm.category || null,
+          author_id: user.id,
+          status: 'draft',
+          contact_phone: newForm.contact_phone || null,
+          contact_whatsapp: newForm.contact_whatsapp || null,
+        });
+        if (error) throw error;
+        toast.success(newForm.type === 'tender' ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
+      }
+      setNewForm(initialForm);
       fetchData();
     } catch (e: any) {
-      toast.error(e.message || 'Erreur');
+      toast.error(e.message || 'Erreur lors de la création');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (item: ContentItem) => {
     if (!confirm('Supprimer ce brouillon ?')) return;
     try {
-      await supabase.from('content_items').delete().eq('id', id).eq('status', 'draft');
+      if (item.source === 'event') {
+        await supabase.from('events').delete().eq('id', item.id).eq('status', 'draft');
+      } else {
+        await supabase.from('content_items').delete().eq('id', item.id).eq('status', 'draft');
+      }
       toast.success('Supprimé');
       fetchData();
     } catch {
@@ -104,7 +164,17 @@ export default function AnnouncerDashboard() {
     }
   };
 
+  const updateForm = (field: string, value: any) => setNewForm(prev => ({ ...prev, [field]: value }));
   const activePrivileges = privileges.filter(p => p.is_active);
+  const isEvent = newForm.type === 'event';
+  const isTenderOrService = newForm.type === 'tender' || newForm.type === 'service';
+
+  const typeLabels: Record<string, string> = {
+    announcement: '📢 Annonce',
+    event: '🎉 Événement',
+    service: '🏛️ Service',
+    tender: '📋 Appel d\'offres',
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,7 +187,7 @@ export default function AnnouncerDashboard() {
               <Megaphone className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               Espace Annonceur
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Gérez vos annonces et privilèges</p>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Gérez vos annonces, événements et appels d'offres</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => navigate('/pro')}>
             <Crown className="h-4 w-4 mr-2" /> Upgrade PRO
@@ -136,14 +206,9 @@ export default function AnnouncerDashboard() {
                 const active = priv?.is_active;
                 const Icon = cfg.icon;
                 return (
-                  <Badge
-                    key={key}
-                    variant={active ? 'default' : 'outline'}
-                    className={`px-3 py-1.5 ${active ? `${cfg.color} text-white` : 'opacity-50'}`}
-                  >
+                  <Badge key={key} variant={active ? 'default' : 'outline'} className={`px-3 py-1.5 ${active ? `${cfg.color} text-white` : 'opacity-50'}`}>
                     <Icon className="h-3 w-3 mr-1" />
-                    {cfg.label}
-                    {!active && ' (inactif)'}
+                    {cfg.label}{!active && ' (inactif)'}
                   </Badge>
                 );
               })}
@@ -160,56 +225,40 @@ export default function AnnouncerDashboard() {
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{items.length}</p>
-              <p className="text-xs text-muted-foreground">Annonces</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{items.filter(i => i.status === 'published').length}</p>
-              <p className="text-xs text-muted-foreground">Publiées</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{items.reduce((s, i) => s + i.views, 0)}</p>
-              <p className="text-xs text-muted-foreground">Vues totales</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.length}</p><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
+          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.filter(i => i.source === 'event').length}</p><p className="text-xs text-muted-foreground">Événements</p></CardContent></Card>
+          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.filter(i => i.status === 'published').length}</p><p className="text-xs text-muted-foreground">Publiés</p></CardContent></Card>
+          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.reduce((s, i) => s + i.views, 0)}</p><p className="text-xs text-muted-foreground">Vues</p></CardContent></Card>
         </div>
 
         <Tabs defaultValue="my-content">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Mes annonces</TabsTrigger>
-            <TabsTrigger value="create"><Plus className="h-4 w-4 mr-1" /> Nouvelle annonce</TabsTrigger>
+            <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Mes publications</TabsTrigger>
+            <TabsTrigger value="create"><Plus className="h-4 w-4 mr-1" /> Créer</TabsTrigger>
           </TabsList>
 
+          {/* My content list */}
           <TabsContent value="my-content" className="space-y-3">
             {items.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground">Aucune annonce</CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-muted-foreground">Aucune publication</CardContent></Card>
             ) : (
               items.map(item => (
                 <Card key={item.id}>
                   <CardContent className="pt-4 flex justify-between items-center">
                     <div>
                       <h4 className="font-semibold">{item.title}</h4>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <Badge variant="outline" className="text-xs">{typeLabels[item.type] || item.type}</Badge>
                         <Badge variant={item.status === 'published' ? 'default' : item.status === 'draft' ? 'secondary' : 'outline'}>
-                          {item.status === 'published' ? 'Publié' : item.status === 'draft' ? 'En attente' : 'Archivé'}
+                          {item.status === 'published' ? 'Publié' : item.status === 'draft' ? 'En attente' : item.status === 'cancelled' ? 'Annulé' : 'Archivé'}
                         </Badge>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Eye className="h-3 w-3" /> {item.views}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(item.created_at).toLocaleDateString('fr-FR')}
-                        </span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1"><Eye className="h-3 w-3" /> {item.views}</span>
+                        <span className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
                       </div>
                     </div>
                     {item.status === 'draft' && (
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     )}
@@ -219,17 +268,19 @@ export default function AnnouncerDashboard() {
             )}
           </TabsContent>
 
+          {/* Create form */}
           <TabsContent value="create">
             <Card>
               <CardHeader>
-                <CardTitle>Créer une nouvelle annonce</CardTitle>
-                <CardDescription>Votre annonce sera soumise à modération avant publication</CardDescription>
+                <CardTitle>Créer une publication</CardTitle>
+                <CardDescription>Votre publication sera soumise à modération avant diffusion</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Type selector */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label>Type</Label>
-                    <Select value={newForm.type} onValueChange={v => setNewForm({ ...newForm, type: v })}>
+                    <Label>Type de publication *</Label>
+                    <Select value={newForm.type} onValueChange={v => updateForm('type', v)}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="announcement">📢 Annonce</SelectItem>
@@ -240,34 +291,125 @@ export default function AnnouncerDashboard() {
                     </Select>
                   </div>
                   <div>
-                    <Label>Catégorie</Label>
-                    <Input value={newForm.category} onChange={e => setNewForm({ ...newForm, category: e.target.value })} placeholder="Ex: Commerce, Santé..." />
+                    <Label>Catégorie {isEvent ? '*' : ''}</Label>
+                    {isEvent ? (
+                      <Select value={newForm.category} onValueChange={v => updateForm('category', v)}>
+                        <SelectTrigger><SelectValue placeholder="Choisir une catégorie" /></SelectTrigger>
+                        <SelectContent>
+                          {EVENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input value={newForm.category} onChange={e => updateForm('category', e.target.value)} placeholder="Ex: Commerce, Santé..." />
+                    )}
                   </div>
                 </div>
+
+                {/* Common fields */}
                 <div>
-                  <Label>Titre</Label>
-                  <Input value={newForm.title} onChange={e => setNewForm({ ...newForm, title: e.target.value })} placeholder="Titre de l'annonce" />
+                  <Label>Titre *</Label>
+                  <Input value={newForm.title} onChange={e => updateForm('title', e.target.value)} placeholder="Titre de la publication" />
                 </div>
                 <div>
-                  <Label>Description</Label>
-                  <Textarea value={newForm.description} onChange={e => setNewForm({ ...newForm, description: e.target.value })} rows={5} placeholder="Description détaillée..." />
+                  <Label>Description *</Label>
+                  <Textarea value={newForm.description} onChange={e => updateForm('description', e.target.value)} rows={4} placeholder="Description détaillée..." />
                 </div>
-                {(newForm.type === 'service' || newForm.type === 'tender') && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
-                    <div>
-                      <Label className="flex items-center gap-2"><Phone className="h-4 w-4" /> Numéro de contact</Label>
-                      <Input value={newForm.contact_phone} onChange={e => setNewForm({ ...newForm, contact_phone: e.target.value })} placeholder="+269 XXX XX XX" />
-                      <p className="text-xs text-muted-foreground mt-1">Visible uniquement avec un compte Pro</p>
+
+                {/* Event-specific fields */}
+                {isEvent && (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                    <h4 className="font-medium text-sm flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> Détails de l'événement</h4>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="flex items-center gap-1"><Clock className="h-3 w-3" /> Date de début *</Label>
+                        <Input type="datetime-local" value={newForm.date} onChange={e => updateForm('date', e.target.value)} />
+                      </div>
+                      <div>
+                        <Label className="flex items-center gap-1"><Clock className="h-3 w-3" /> Date de fin</Label>
+                        <Input type="datetime-local" value={newForm.end_date} onChange={e => updateForm('end_date', e.target.value)} />
+                      </div>
                     </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Lieu *</Label>
+                        <Input value={newForm.location} onChange={e => updateForm('location', e.target.value)} placeholder="Ex: Salle des fêtes, Moroni" />
+                      </div>
+                      <div>
+                        <Label>Île *</Label>
+                        <Select value={newForm.island} onValueChange={v => updateForm('island', v)}>
+                          <SelectTrigger><SelectValue placeholder="Choisir l'île" /></SelectTrigger>
+                          <SelectContent>
+                            {ISLANDS.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
                     <div>
-                      <Label className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> WhatsApp</Label>
-                      <Input value={newForm.contact_whatsapp} onChange={e => setNewForm({ ...newForm, contact_whatsapp: e.target.value })} placeholder="269XXXXXXX" />
-                      <p className="text-xs text-muted-foreground mt-1">Numéro WhatsApp sans + ni espaces</p>
+                      <Label>Organisateur *</Label>
+                      <Input value={newForm.organizer} onChange={e => updateForm('organizer', e.target.value)} placeholder="Nom de l'organisateur" />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="flex items-center gap-1"><Users className="h-3 w-3" /> Capacité</Label>
+                        <Input type="number" value={newForm.capacity} onChange={e => updateForm('capacity', e.target.value)} placeholder="Illimitée" />
+                      </div>
+                      <div>
+                        <Label>Prix d'entrée</Label>
+                        <Input type="number" value={newForm.price} onChange={e => updateForm('price', e.target.value)} placeholder="0 = Gratuit" />
+                      </div>
+                      <div>
+                        <Label>Devise</Label>
+                        <Select value={newForm.currency} onValueChange={v => updateForm('currency', v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="FC">FC (Franc Comorien)</SelectItem>
+                            <SelectItem value="EUR">EUR (Euro)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-4">
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input type="checkbox" checked={newForm.requires_registration} onChange={e => updateForm('requires_registration', e.target.checked)} className="rounded" />
+                        Inscription requise
+                      </label>
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input type="checkbox" checked={newForm.requires_payment} onChange={e => updateForm('requires_payment', e.target.checked)} className="rounded" />
+                        Paiement requis
+                      </label>
                     </div>
                   </div>
                 )}
-                <Button onClick={handleCreate}>
-                  <Save className="h-4 w-4 mr-2" /> Soumettre pour modération
+
+                {/* Contact fields for service/tender/event */}
+                {(isTenderOrService || isEvent) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                    <div>
+                      <Label className="flex items-center gap-2"><Phone className="h-4 w-4" /> Téléphone</Label>
+                      <Input value={newForm.contact_phone} onChange={e => updateForm('contact_phone', e.target.value)} placeholder="+269 XXX XX XX" />
+                    </div>
+                    {isEvent ? (
+                      <div>
+                        <Label className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> Email de contact</Label>
+                        <Input type="email" value={newForm.contact_email} onChange={e => updateForm('contact_email', e.target.value)} placeholder="contact@exemple.com" />
+                      </div>
+                    ) : (
+                      <div>
+                        <Label className="flex items-center gap-2"><MessageCircle className="h-4 w-4" /> WhatsApp</Label>
+                        <Input value={newForm.contact_whatsapp} onChange={e => updateForm('contact_whatsapp', e.target.value)} placeholder="269XXXXXXX" />
+                        <p className="text-xs text-muted-foreground mt-1">Sans + ni espaces</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <Button onClick={handleCreate} disabled={submitting} className="w-full sm:w-auto">
+                  <Save className="h-4 w-4 mr-2" /> {submitting ? 'Envoi en cours...' : 'Soumettre pour modération'}
                 </Button>
               </CardContent>
             </Card>
