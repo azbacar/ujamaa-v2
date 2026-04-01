@@ -1,123 +1,165 @@
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { 
-  Crown, Zap, Star, Shield, TrendingUp, Users, BarChart3, Sparkles,
-  CheckCircle, ArrowRight, Smartphone, Banknote, CreditCard, X,
-  Eye, MessageSquare, Bell, Search, FileText, Phone, Lock
-} from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { useAuth } from '@/hooks/useAuth';
-import { useRole } from '@/hooks/useRole';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Crown,
+  Zap,
+  Star,
+  Shield,
+  TrendingUp,
+  Users,
+  BarChart3,
+  Sparkles,
+  CheckCircle,
+  ArrowRight,
+  Smartphone,
+  Banknote,
+  CreditCard,
+  X,
+  Eye,
+  MessageSquare,
+  Bell,
+  Search,
+  FileText,
+  Phone,
+  Lock,
+} from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const PLANS = [
   {
-    id: 'basic',
-    name: 'Gratuit',
-    price: '0',
-    currency: 'FC',
-    period: '/mois',
-    description: 'Accès aux fonctionnalités essentielles',
+    id: "basic",
+    name: "Gratuit",
+    price: "0",
+    currency: "FC",
+    period: "/mois",
+    description: "Accès aux fonctionnalités essentielles",
     features: [
-      'Consultation des prix et marchés',
-      'Annonces publiques',
-      'Événements et actualités',
-      'Assistant IA basique',
-      'Support communautaire',
+      "Consultation des prix et marchés",
+      "Annonces publiques",
+      "Événements et actualités",
+      "Assistant IA basique",
+      "Support communautaire",
     ],
     icon: Shield,
-    gradient: 'from-muted to-muted/80',
-    cta: 'Plan actuel',
+    gradient: "from-muted to-muted/80",
+    cta: "Plan actuel",
     disabled: true,
   },
   {
-    id: 'premium',
-    name: 'UJAMAA Pro',
-    price: '5 000',
-    currency: 'FC',
-    period: '/mois',
-    description: 'Pour les professionnels et commerçants',
+    id: "premium",
+    name: "UJAMAA Pro",
+    price: "5 000",
+    currency: "FC",
+    period: "/mois",
+    description: "Pour les professionnels et commerçants",
     popular: true,
     features: [
-      'Tout le plan Gratuit',
-      'Alertes prix en temps réel',
-      'Historique complet des prix',
-      'Statistiques avancées',
-      'Badge ✅ Vérifié sur le profil',
-      'Boost IA pour vos annonces',
-      'Contact direct activé',
-      'Support prioritaire 24/7',
+      "Tout le plan Gratuit",
+      "Alertes prix en temps réel",
+      "Historique complet des prix",
+      "Statistiques avancées",
+      "Badge ✅ Vérifié sur le profil",
+      "Boost IA pour vos annonces",
+      "Contact direct activé",
+      "Support prioritaire 24/7",
     ],
     icon: Star,
-    gradient: 'from-primary to-emerald-600',
-    cta: 'Passer au Pro',
+    gradient: "from-primary to-emerald-600",
+    cta: "Passer au Pro",
     disabled: false,
   },
   {
-    id: 'enterprise',
-    name: 'Entreprise',
-    price: 'Sur devis',
-    currency: '',
-    period: '',
-    description: 'Solutions sur mesure pour organisations',
+    id: "enterprise",
+    name: "Entreprise",
+    price: "Sur devis",
+    currency: "",
+    period: "",
+    description: "Solutions sur mesure pour organisations",
     features: [
-      'Tout le plan Pro',
-      'Intégration système personnalisée',
-      'Tableau de bord dédié',
-      'Formation équipe',
-      'Consultant dédié',
-      'SLA garanti 99.9%',
+      "Tout le plan Pro",
+      "Intégration système personnalisée",
+      "Tableau de bord dédié",
+      "Formation équipe",
+      "Consultant dédié",
+      "SLA garanti 99.9%",
     ],
     icon: Crown,
-    gradient: 'from-purple-600 to-pink-600',
-    cta: 'Nous contacter',
+    gradient: "from-purple-600 to-pink-600",
+    cta: "Nous contacter",
     disabled: false,
   },
 ];
 
 const PRO_ADVANTAGES = [
-  { icon: Eye, title: 'Visibilité maximale', desc: 'Vos annonces apparaissent en priorité dans les résultats de recherche' },
-  { icon: TrendingUp, title: 'Analyses prédictives', desc: 'IA avancée pour prévoir les tendances des prix sur l\'archipel' },
-  { icon: Bell, title: 'Alertes intelligentes', desc: 'Notifications instantanées sur les changements de prix qui vous concernent' },
-  { icon: MessageSquare, title: 'Contact direct', desc: 'Les utilisateurs peuvent vous contacter directement depuis vos annonces' },
-  { icon: Search, title: 'Boost IA', desc: 'L\'assistant UJAMAA recommande vos annonces aux utilisateurs pertinents' },
-  { icon: BarChart3, title: 'Rapports détaillés', desc: 'Statistiques de performance de vos annonces et tendances du marché' },
-  { icon: FileText, title: 'Annonces illimitées', desc: 'Publiez autant d\'annonces que nécessaire sans restriction' },
-  { icon: Lock, title: 'Badge vérifié', desc: 'Gagnez la confiance des utilisateurs avec le badge ✅ sur votre profil' },
+  {
+    icon: Eye,
+    title: "Visibilité maximale",
+    desc: "Vos annonces apparaissent en priorité dans les résultats de recherche",
+  },
+  {
+    icon: TrendingUp,
+    title: "Analyses prédictives",
+    desc: "IA avancée pour prévoir les tendances des prix sur l'archipel",
+  },
+  {
+    icon: Bell,
+    title: "Alertes intelligentes",
+    desc: "Notifications instantanées sur les changements de prix qui vous concernent",
+  },
+  {
+    icon: MessageSquare,
+    title: "Contact direct",
+    desc: "Les utilisateurs peuvent vous contacter directement depuis vos annonces",
+  },
+  { icon: Search, title: "Boost IA", desc: "L'assistant UJAMAA recommande vos annonces aux utilisateurs pertinents" },
+  {
+    icon: BarChart3,
+    title: "Rapports détaillés",
+    desc: "Statistiques de performance de vos annonces et tendances du marché",
+  },
+  { icon: FileText, title: "Annonces illimitées", desc: "Publiez autant d'annonces que nécessaire sans restriction" },
+  {
+    icon: Lock,
+    title: "Badge vérifié",
+    desc: "Gagnez la confiance des utilisateurs avec le badge ✅ sur votre profil",
+  },
 ];
 
 export default function ProPage() {
-  const [currentLanguage, setCurrentLanguage] = useState('fr');
+  const [currentLanguage, setCurrentLanguage] = useState("fr");
   const { user } = useAuth();
   const { role } = useRole();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  
+
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState('premium');
-  const [paymentTab, setPaymentTab] = useState('manual');
-  const [paymentRef, setPaymentRef] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState("premium");
+  const [paymentTab, setPaymentTab] = useState("manual");
+  const [paymentRef, setPaymentRef] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSelectPlan = (planId: string) => {
-    if (planId === 'basic') return;
-    if (planId === 'enterprise') {
-      document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' });
+    if (planId === "basic") return;
+    if (planId === "enterprise") {
+      document.getElementById("contact-section")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
     if (!user) {
-      toast.error('Connectez-vous d\'abord pour souscrire');
-      navigate('/auth');
+      toast.error("Connectez-vous d'abord pour souscrire");
+      navigate("/auth");
       return;
     }
     setSelectedPlan(planId);
@@ -126,34 +168,34 @@ export default function ProPage() {
 
   const handleSubmitPayment = async (method: string) => {
     if (!user) return;
-    if (method !== 'card' && !paymentRef.trim()) {
-      toast.error('Veuillez entrer la référence de paiement');
+    if (method !== "card" && !paymentRef.trim()) {
+      toast.error("Veuillez entrer la référence de paiement");
       return;
     }
     setSubmitting(true);
     try {
-      const plan = PLANS.find(p => p.id === selectedPlan);
-      const { error } = await supabase.from('pro_subscription_requests' as any).insert({
+      const plan = PLANS.find((p) => p.id === selectedPlan);
+      const { error } = await supabase.from("pro_subscription_requests" as any).insert({
         user_id: user.id,
         plan: selectedPlan,
         payment_method: method,
-        payment_reference: method === 'card' ? 'CARD_PENDING' : paymentRef.trim(),
-        amount: plan?.id === 'premium' ? 5000 : 0,
-        currency: 'FC',
-        status: 'pending',
+        payment_reference: method === "card" ? "CARD_PENDING" : paymentRef.trim(),
+        amount: plan?.id === "premium" ? 5000 : 0,
+        currency: "FC",
+        status: "pending",
       });
       if (error) throw error;
-      toast.success('Demande envoyée ! Vous recevrez une notification après validation par notre équipe.');
+      toast.success("Demande envoyée ! Vous recevrez une notification après validation par notre équipe.");
       setShowPayment(false);
-      setPaymentRef('');
+      setPaymentRef("");
     } catch (e: any) {
-      toast.error(e.message || 'Erreur lors de l\'envoi');
+      toast.error(e.message || "Erreur lors de l'envoi");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const selectedPlanData = PLANS.find(p => p.id === selectedPlan);
+  const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
 
   return (
     <div className="min-h-screen bg-background">
@@ -166,9 +208,7 @@ export default function ProPage() {
             <Crown className="w-5 h-5 text-primary" />
             <span className="text-primary font-semibold text-sm">UJAMAA Pro</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold text-foreground mb-4">
-            Débloquez tout le potentiel d'UJAMAA
-          </h1>
+          <h1 className="text-3xl sm:text-5xl font-bold text-foreground mb-4">Débloquez tout le potentiel d'UJAMAA</h1>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
             Outils professionnels, visibilité maximale et données avancées pour réussir dans l'archipel des Comores
           </p>
@@ -177,9 +217,9 @@ export default function ProPage() {
         {/* Plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {PLANS.map((plan) => (
-            <Card 
+            <Card
               key={plan.id}
-              className={`relative transition-all hover:shadow-lg ${plan.popular ? 'border-primary ring-2 ring-primary/20 scale-[1.02]' : 'border-border'}`}
+              className={`relative transition-all hover:shadow-lg ${plan.popular ? "border-primary ring-2 ring-primary/20 scale-[1.02]" : "border-border"}`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -187,7 +227,9 @@ export default function ProPage() {
                 </div>
               )}
               <CardHeader className="text-center pb-2 pt-6">
-                <div className={`w-14 h-14 mx-auto rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-3`}>
+                <div
+                  className={`w-14 h-14 mx-auto rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-3`}
+                >
                   <plan.icon className="w-7 h-7 text-white" />
                 </div>
                 <CardTitle className="text-xl">{plan.name}</CardTitle>
@@ -209,7 +251,7 @@ export default function ProPage() {
                 </ul>
                 <Button
                   className="w-full"
-                  variant={plan.popular ? 'default' : 'outline'}
+                  variant={plan.popular ? "default" : "outline"}
                   disabled={plan.disabled}
                   onClick={() => handleSelectPlan(plan.id)}
                 >
@@ -222,9 +264,7 @@ export default function ProPage() {
 
         {/* Avantages Pro */}
         <div className="mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-8">
-            Pourquoi passer au Pro ?
-          </h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-8">Pourquoi passer au Pro ?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {PRO_ADVANTAGES.map((adv, i) => (
               <Card key={i} className="hover:shadow-md transition-shadow">
@@ -251,7 +291,7 @@ export default function ProPage() {
           <CardContent className="text-center space-y-3">
             <p className="text-muted-foreground text-sm">📧 contact@ujamaan.com</p>
             <p className="text-muted-foreground text-sm">📞 +269 77 12 34 56</p>
-            <Button variant="outline" onClick={() => window.location.href = 'mailto:contact@ujamaan.com'}>
+            <Button variant="outline" onClick={() => (window.location.href = "mailto:contact@ujamaan.com")}>
               Envoyer un email <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </CardContent>
@@ -260,19 +300,20 @@ export default function ProPage() {
 
       {/* Payment Dialog */}
       <Dialog open={showPayment} onOpenChange={setShowPayment}>
-        <DialogContent className={`${isMobile ? 'max-w-[95vw]' : 'max-w-lg'} max-h-[90vh] overflow-y-auto`}>
+        <DialogContent className={`${isMobile ? "max-w-[95vw]" : "max-w-lg"} max-h-[90vh] overflow-y-auto`}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-primary" />
               Souscrire au {selectedPlanData?.name}
             </DialogTitle>
             <DialogDescription>
-              {selectedPlanData?.price} {selectedPlanData?.currency}{selectedPlanData?.period}
+              {selectedPlanData?.price} {selectedPlanData?.currency}
+              {selectedPlanData?.period}
             </DialogDescription>
           </DialogHeader>
 
           <Tabs value={paymentTab} onValueChange={setPaymentTab} className="mt-2">
-            <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-3'}`}>
+            <TabsList className={`grid w-full ${isMobile ? "grid-cols-3" : "grid-cols-3"}`}>
               <TabsTrigger value="manual" className="text-xs sm:text-sm">
                 <Banknote className="w-3.5 h-3.5 mr-1" /> Manuel
               </TabsTrigger>
@@ -298,33 +339,33 @@ export default function ProPage() {
                 <CardContent className="p-4 space-y-3">
                   <h4 className="font-semibold text-sm text-foreground">📋 Instructions de paiement</h4>
                   <div className="text-sm text-muted-foreground space-y-2">
-                    <p><strong>Virement bancaire :</strong></p>
+                    <p>
+                      <strong>Virement bancaire :</strong>
+                    </p>
                     <p>🏦 Banque : BIC Comores</p>
                     <p>👤 Titulaire : UJAMAA SARL</p>
-                    <p>📝 IBAN : KM46 0001 0000 1234 5678 9012</p>
-                    <p className="border-t border-border pt-2 mt-2"><strong>Ou espèces :</strong></p>
-                    <p>📍 Moroni : Marché Volo Volo, Stand UJAMAA</p>
-                    <p>📍 Mutsamudu : Près de la Grande Mosquée</p>
-                    <p>📍 Fomboni : Centre-ville, face à la poste</p>
+                    <p>📝 IBAN : KM46 00006 00001 0 0010061829 73</p>
+                    <p className="border-t border-border pt-2 mt-2">
+                      <strong>Ou espèces :</strong>
+                    </p>
+                    <p>📍 Moroni : ESPACE BEINNOV, Rond Point Yemenia, Rue des Douanes à 10 metres de la DRS</p>
+                    <p>📍 Mutsamudu : Bientôt</p>
+                    <p>📍 Fomboni : Bientôt</p>
                     <p className="text-xs mt-2">🕐 Lun-Sam 8h-17h</p>
                   </div>
                 </CardContent>
               </Card>
               <div>
                 <Label className="text-sm">Référence du paiement / N° de reçu *</Label>
-                <Input 
+                <Input
                   placeholder="Ex: REC-2026-001 ou numéro de transaction"
                   value={paymentRef}
-                  onChange={e => setPaymentRef(e.target.value)}
+                  onChange={(e) => setPaymentRef(e.target.value)}
                   className="mt-1"
                 />
               </div>
-              <Button 
-                className="w-full" 
-                onClick={() => handleSubmitPayment('manual')}
-                disabled={submitting}
-              >
-                {submitting ? 'Envoi...' : 'Soumettre pour validation'}
+              <Button className="w-full" onClick={() => handleSubmitPayment("manual")} disabled={submitting}>
+                {submitting ? "Envoi..." : "Soumettre pour validation"}
               </Button>
               <p className="text-xs text-muted-foreground text-center">
                 ⏱️ Validation sous 24h par notre équipe de modération
@@ -339,11 +380,11 @@ export default function ProPage() {
                   <div className="text-sm text-muted-foreground space-y-2">
                     <p>Composez directement depuis votre téléphone :</p>
                     <div className="bg-background rounded-lg p-3 text-center">
-                      <a 
-                        href={`tel:*880*3*0773456789*${selectedPlanData?.id === 'premium' ? '5000' : '0'}%23`}
+                      <a
+                        href={`tel:*880*3*0773456789*${selectedPlanData?.id === "premium" ? "5000" : "0"}%23`}
                         className="text-lg font-mono font-bold text-primary"
                       >
-                        *880*3*0773456789*5000#
+                        *444*1*2*4102122*5000*ujamaan#
                       </a>
                       <p className="text-xs text-muted-foreground mt-1">Appuyez pour composer</p>
                     </div>
@@ -358,22 +399,18 @@ export default function ProPage() {
               </Card>
               <div>
                 <Label className="text-sm">N° de transaction Mvola *</Label>
-                <Input 
+                <Input
                   placeholder="Ex: MP240305.1234.A56789"
                   value={paymentRef}
-                  onChange={e => setPaymentRef(e.target.value)}
+                  onChange={(e) => setPaymentRef(e.target.value)}
                   className="mt-1"
                 />
               </div>
-              <Button 
-                className="w-full" 
-                onClick={() => handleSubmitPayment('mvola')}
-                disabled={submitting}
-              >
-                {submitting ? 'Envoi...' : 'Confirmer le paiement Mvola'}
+              <Button className="w-full" onClick={() => handleSubmitPayment("mvola")} disabled={submitting}>
+                {submitting ? "Envoi..." : "Confirmer le paiement Mvola"}
               </Button>
               <p className="text-xs text-muted-foreground text-center">
-                ⏱️ Validation sous 24h après vérification de la transaction
+                ⏱️ Validation sous 12h après vérification de la transaction
               </p>
             </TabsContent>
 
@@ -384,8 +421,8 @@ export default function ProPage() {
                   <CreditCard className="w-12 h-12 mx-auto text-muted-foreground" />
                   <h4 className="font-semibold text-sm text-foreground">Paiement par carte bancaire</h4>
                   <p className="text-sm text-muted-foreground">
-                    Le paiement par carte sera bientôt disponible via Stripe. 
-                    En attendant, utilisez le paiement manuel ou Mvola.
+                    Le paiement par carte sera bientôt disponible via Stripe. En attendant, utilisez le paiement manuel
+                    ou Mvola.
                   </p>
                 </CardContent>
               </Card>
@@ -397,8 +434,8 @@ export default function ProPage() {
 
           <div className="bg-accent/50 rounded-lg p-3 mt-2">
             <p className="text-xs text-muted-foreground">
-              🔒 Votre paiement sera vérifié par notre équipe. Votre compte sera mis à jour automatiquement après validation. 
-              En cas de problème : <strong>support@ujamaan.com</strong>
+              🔒 Votre paiement sera vérifié par notre équipe. Votre compte sera mis à jour automatiquement après
+              validation. En cas de problème : <strong>support@ujamaan.com</strong>
             </p>
           </div>
         </DialogContent>
