@@ -106,6 +106,17 @@ export default function AnnouncerDashboard() {
           setSubmitting(false);
           return;
         }
+        // Upload images first
+        const uploadedUrls: string[] = [];
+        for (const file of eventImages) {
+          const ext = file.name.split('.').pop();
+          const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from('event-images').upload(path, file, { upsert: false });
+          if (uploadError) throw new Error(`Erreur upload image: ${uploadError.message}`);
+          const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
+          uploadedUrls.push(urlData.publicUrl);
+        }
+
         const { error } = await supabase.from('events').insert({
           title: newForm.title,
           description: newForm.description,
@@ -124,6 +135,7 @@ export default function AnnouncerDashboard() {
           contact_email: newForm.contact_email || null,
           author_id: user.id,
           status: 'draft',
+          images: uploadedUrls.length > 0 ? uploadedUrls : null,
         });
         if (error) throw error;
         toast.success('Événement soumis pour modération');
