@@ -424,6 +424,28 @@ export default function AnnouncerDashboard() {
                         Paiement requis
                       </label>
                     </div>
+
+                    {/* Image upload */}
+                    <div>
+                      <Label className="flex items-center gap-2 mb-2"><ImagePlus className="h-4 w-4 text-primary" /> Affiches / Images (max 5, 5 Mo chacune)</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {imagePreviews.map((src, i) => (
+                          <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-border group">
+                            <img src={src} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                            <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {eventImages.length < 5 && (
+                          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                            <ImagePlus className="h-6 w-6 text-primary/60" />
+                            <span className="text-[10px] text-muted-foreground mt-1">Ajouter</span>
+                            <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
+                          </label>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
 
