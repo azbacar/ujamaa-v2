@@ -222,8 +222,8 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
       { role: 'system', content: systemPrompt },
     ];
     
-    // Add conversation history for context
-    history.slice(-10).forEach(m => {
+    // Add full conversation history for continuity (last 20 messages)
+    history.slice(-20).forEach(m => {
       aiMessages.push({ role: m.role, content: m.content });
     });
     
