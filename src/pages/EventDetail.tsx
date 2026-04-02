@@ -227,6 +227,57 @@ const EventDetail = () => {
                 </div>
               </CardHeader>
               
+              {/* Image Gallery */}
+              {event.images && event.images.length > 0 && (
+                <CardContent className="pt-0">
+                  <div className="relative rounded-xl overflow-hidden mb-4">
+                    <img
+                      src={event.images[activeImageIndex]}
+                      alt={`${event.title} - Image ${activeImageIndex + 1}`}
+                      className="w-full h-64 sm:h-80 md:h-96 object-cover"
+                    />
+                    {event.images.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => setActiveImageIndex(i => (i - 1 + event.images!.length) % event.images!.length)}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-background transition-colors"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => setActiveImageIndex(i => (i + 1) % event.images!.length)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-1.5 hover:bg-background transition-colors"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </button>
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                          {event.images.map((_, i) => (
+                            <button
+                              key={i}
+                              onClick={() => setActiveImageIndex(i)}
+                              className={`w-2 h-2 rounded-full transition-colors ${i === activeImageIndex ? 'bg-primary' : 'bg-background/60'}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {event.images.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {event.images.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveImageIndex(i)}
+                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${i === activeImageIndex ? 'border-primary' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                        >
+                          <img src={img} alt={`Miniature ${i + 1}`} className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              )}
+
               <CardContent>
                 {event.requires_payment && (
                   <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 rounded-lg mb-6">
