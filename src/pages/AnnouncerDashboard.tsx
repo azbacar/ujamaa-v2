@@ -181,6 +181,31 @@ export default function AnnouncerDashboard() {
   };
 
   const updateForm = (field: string, value: any) => setNewForm(prev => ({ ...prev, [field]: value }));
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(f => {
+      if (f.size > 5 * 1024 * 1024) { toast.error(`${f.name} dépasse 5 Mo`); return false; }
+      if (!f.type.startsWith('image/')) { toast.error(`${f.name} n'est pas une image`); return false; }
+      return true;
+    });
+    if (eventImages.length + validFiles.length > 5) {
+      toast.error('Maximum 5 images');
+      return;
+    }
+    setEventImages(prev => [...prev, ...validFiles]);
+    validFiles.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = (ev) => setImagePreviews(prev => [...prev, ev.target?.result as string]);
+      reader.readAsDataURL(f);
+    });
+    e.target.value = '';
+  };
+
+  const removeImage = (index: number) => {
+    setEventImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
   const activePrivileges = privileges.filter(p => p.is_active);
   const isEvent = newForm.type === 'event';
   const isTenderOrService = newForm.type === 'tender' || newForm.type === 'service';
