@@ -86,7 +86,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, sessionId, searchQuery } = await req.json();
+    const { message, sessionId, searchQuery, clientHistory } = await req.json();
 
     if (!message || typeof message !== 'string') throw new Error('Message is required');
     if (!sessionId || typeof sessionId !== 'string') throw new Error('Session ID is required');
