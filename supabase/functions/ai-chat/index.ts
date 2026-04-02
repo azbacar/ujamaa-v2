@@ -107,11 +107,16 @@ serve(async (req) => {
     }
 
     // Fetch all data in parallel
-    const [dynamicData, knowledgeSources, history] = await Promise.all([
+    const [dynamicData, knowledgeSources, dbHistory] = await Promise.all([
       getDynamicSiteData(authHeader),
       getKnowledgeSources(),
       getConversationHistory(sessionId, authHeader),
     ]);
+
+    // Use DB history for logged-in users, client-sent history for guests
+    const history = dbHistory.length > 0 
+      ? dbHistory 
+      : (Array.isArray(clientHistory) ? clientHistory.slice(-20).map((m: any) => ({ role: m.role || (m.isUser ? 'user' : 'assistant'), content: m.content || m.text })).filter((m: any) => m.content) : []);
 
     // Build dynamic content section
     let dynamicContent = '\n\n📊 DONNÉES ACTUELLES DE LA PLATEFORME UJAMAAN.COM:\n\n';

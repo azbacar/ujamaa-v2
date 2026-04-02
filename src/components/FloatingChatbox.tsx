@@ -324,8 +324,13 @@ const FloatingChatbox = () => {
     }
 
     try {
+      // Send recent conversation history for context continuity (especially for guests)
+      const recentHistory = messages.slice(-20).map(m => ({
+        role: m.isUser ? 'user' : 'assistant',
+        content: m.text,
+      }));
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message: sanitizedMessage, sessionId, context: 'floating_chat' },
+        body: { message: sanitizedMessage, sessionId, context: 'floating_chat', clientHistory: recentHistory },
       });
 
       // Handle edge function errors (429, 402 etc.)
