@@ -155,6 +155,8 @@ export default function AnnouncerDashboard() {
         toast.success(newForm.type === 'tender' ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
       }
       setNewForm(initialForm);
+      setEventImages([]);
+      setImagePreviews([]);
       fetchData();
     } catch (e: any) {
       toast.error(e.message || 'Erreur lors de la création');
