@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Megaphone, Plus, FileText, Eye, Crown, 
   CheckCircle, Zap, Phone, Save, Trash2, ChevronRight, MessageCircle,
-  Calendar, MapPin, Users, Clock
+  Calendar, MapPin, Users, Clock, ImagePlus, X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -66,6 +66,8 @@ export default function AnnouncerDashboard() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [newForm, setNewForm] = useState(initialForm);
+  const [eventImages, setEventImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   useEffect(() => {
     if (user) fetchData();
@@ -104,6 +106,17 @@ export default function AnnouncerDashboard() {
           setSubmitting(false);
           return;
         }
+        // Upload images first
+        const uploadedUrls: string[] = [];
+        for (const file of eventImages) {
+          const ext = file.name.split('.').pop();
+          const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from('event-images').upload(path, file, { upsert: false });
+          if (uploadError) throw new Error(`Erreur upload image: ${uploadError.message}`);
+          const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
+          uploadedUrls.push(urlData.publicUrl);
+        }
+
         const { error } = await supabase.from('events').insert({
           title: newForm.title,
           description: newForm.description,
@@ -122,6 +135,7 @@ export default function AnnouncerDashboard() {
           contact_email: newForm.contact_email || null,
           author_id: user.id,
           status: 'draft',
+          images: uploadedUrls.length > 0 ? uploadedUrls : null,
         });
         if (error) throw error;
         toast.success('Événement soumis pour modération');
@@ -141,6 +155,8 @@ export default function AnnouncerDashboard() {
         toast.success(newForm.type === 'tender' ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
       }
       setNewForm(initialForm);
+      setEventImages([]);
+      setImagePreviews([]);
       fetchData();
     } catch (e: any) {
       toast.error(e.message || 'Erreur lors de la création');
@@ -165,6 +181,31 @@ export default function AnnouncerDashboard() {
   };
 
   const updateForm = (field: string, value: any) => setNewForm(prev => ({ ...prev, [field]: value }));
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter(f => {
+      if (f.size > 5 * 1024 * 1024) { toast.error(`${f.name} dépasse 5 Mo`); return false; }
+      if (!f.type.startsWith('image/')) { toast.error(`${f.name} n'est pas une image`); return false; }
+      return true;
+    });
+    if (eventImages.length + validFiles.length > 5) {
+      toast.error('Maximum 5 images');
+      return;
+    }
+    setEventImages(prev => [...prev, ...validFiles]);
+    validFiles.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = (ev) => setImagePreviews(prev => [...prev, ev.target?.result as string]);
+      reader.readAsDataURL(f);
+    });
+    e.target.value = '';
+  };
+
+  const removeImage = (index: number) => {
+    setEventImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
   const activePrivileges = privileges.filter(p => p.is_active);
   const isEvent = newForm.type === 'event';
   const isTenderOrService = newForm.type === 'tender' || newForm.type === 'service';
@@ -382,6 +423,28 @@ export default function AnnouncerDashboard() {
                         <input type="checkbox" checked={newForm.requires_payment} onChange={e => updateForm('requires_payment', e.target.checked)} className="rounded" />
                         Paiement requis
                       </label>
+                    </div>
+
+                    {/* Image upload */}
+                    <div>
+                      <Label className="flex items-center gap-2 mb-2"><ImagePlus className="h-4 w-4 text-primary" /> Affiches / Images (max 5, 5 Mo chacune)</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {imagePreviews.map((src, i) => (
+                          <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-border group">
+                            <img src={src} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                            <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {eventImages.length < 5 && (
+                          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                            <ImagePlus className="h-6 w-6 text-primary/60" />
+                            <span className="text-[10px] text-muted-foreground mt-1">Ajouter</span>
+                            <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
+                          </label>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
