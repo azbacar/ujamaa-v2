@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Megaphone, Plus, FileText, Eye, Crown, 
   CheckCircle, Zap, Phone, Save, Trash2, ChevronRight, MessageCircle,
-  Calendar, MapPin, Users, Clock
+  Calendar, MapPin, Users, Clock, ImagePlus, X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
