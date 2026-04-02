@@ -38,6 +38,7 @@ interface Event {
   requires_registration: boolean;
   requires_payment: boolean;
   views: number;
+  images: string[] | null;
 }
 
 const EventDetail = () => {
