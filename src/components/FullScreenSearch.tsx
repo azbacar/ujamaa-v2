@@ -398,6 +398,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   const [hasSearched, setHasSearched] = useState(false);
   const [searchErrors, setSearchErrors] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'search' | 'ai'>('search');
+  const [selectedPrice, setSelectedPrice] = useState<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
