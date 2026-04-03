@@ -485,9 +485,9 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
         })(),
         (async () => {
           const [byProduct, byCategory, byMarket] = await Promise.all([
-            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('product', pattern).limit(5),
-            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('category', pattern).limit(5),
-            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('market', pattern).limit(5),
+            supabase.from('prices').select('id, product, category, market, island, price, currency, unit, trend, vendor, city, region, village, created_at').eq('status', 'published').ilike('product', pattern).limit(5),
+            supabase.from('prices').select('id, product, category, market, island, price, currency, unit, trend, vendor, city, region, village, created_at').eq('status', 'published').ilike('category', pattern).limit(5),
+            supabase.from('prices').select('id, product, category, market, island, price, currency, unit, trend, vendor, city, region, village, created_at').eq('status', 'published').ilike('market', pattern).limit(5),
           ]);
           const rows = [...(byProduct.data || []), ...(byCategory.data || []), ...(byMarket.data || [])];
           return {
@@ -495,8 +495,15 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
             failed: Boolean(byProduct.error || byCategory.error || byMarket.error),
             items: dedupeById(rows).slice(0, 5).map((p) => ({
               id: p.id, type: 'price' as const, title: p.product,
-              description: `${p.market} - ${p.island}`, url: '/prix',
+              description: `${Number(p.price).toLocaleString('fr-FR')} ${p.currency}/${p.unit} — ${p.market}, ${p.island}`,
+              url: '/prix',
               category: p.category,
+              priceData: {
+                id: p.id, product: p.product, category: p.category, price: Number(p.price),
+                currency: p.currency, vendor: p.vendor, market: p.market, unit: p.unit,
+                trend: p.trend || 'stable', created_at: p.created_at,
+                location: { village: p.village, city: p.city, region: p.region, island: p.island },
+              },
             })),
           };
         })(),
