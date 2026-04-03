@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import DOMPurify from 'dompurify';
 import ReactMarkdown from 'react-markdown';
+import PriceDetailDialog from '@/components/PriceDetailDialog';
 
 interface SearchResult {
   id: string;
