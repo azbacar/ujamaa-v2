@@ -18,6 +18,7 @@ interface SearchResult {
   description: string;
   url: string;
   category?: string;
+  priceData?: any;
 }
 
 interface AIChatMessage {
