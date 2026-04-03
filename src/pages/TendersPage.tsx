@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 interface Tender {
   id: string;
@@ -30,6 +31,7 @@ const TendersPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAnnonceur } = useRole();
+  usePageSEO({ title: 'Appels d\'Offres', description: 'Consultez les appels d\'offres publics et privés aux Comores.', canonicalPath: '/appels-offres', keywords: 'appels offres Comores, marchés publics, soumissions' });
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');

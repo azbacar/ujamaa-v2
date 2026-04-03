@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
 import PriceSubmissionForm from '@/components/PriceSubmissionForm';
+import PriceDetailDialog from '@/components/PriceDetailDialog';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageSEO } from '@/hooks/usePageSEO';
@@ -41,6 +42,7 @@ const PricesPage = () => {
   const [selectedVendor, setSelectedVendor] = useState('Tous');
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [showPriceForm, setShowPriceForm] = useState(false);
+  const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
   const [pricesData, setPricesData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -249,7 +251,7 @@ const PricesPage = () => {
         ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPrices.map(price => (
-            <Card key={price.id} className="feature-card card-hover group">
+            <Card key={price.id} className="feature-card card-hover group cursor-pointer" onClick={() => setSelectedPrice(price)}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -344,6 +346,12 @@ const PricesPage = () => {
       {showPriceForm && (
         <PriceSubmissionForm onClose={() => setShowPriceForm(false)} />
       )}
+
+      <PriceDetailDialog
+        price={selectedPrice}
+        open={!!selectedPrice}
+        onOpenChange={(open) => { if (!open) setSelectedPrice(null); }}
+      />
 
       <Footer />
     </div>

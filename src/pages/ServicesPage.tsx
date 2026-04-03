@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { usePageSEO } from '@/hooks/usePageSEO';
 
 interface Service {
   id: string;
@@ -28,6 +29,7 @@ const ServicesPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAnnonceur } = useRole();
+  usePageSEO({ title: 'Services', description: 'Découvrez les services publics et privés disponibles aux Comores.', canonicalPath: '/services', keywords: 'services Comores, administration, services publics' });
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
