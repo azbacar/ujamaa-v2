@@ -347,6 +347,12 @@ const PricesPage = () => {
         <PriceSubmissionForm onClose={() => setShowPriceForm(false)} />
       )}
 
+      <PriceDetailDialog
+        price={selectedPrice}
+        open={!!selectedPrice}
+        onOpenChange={(open) => { if (!open) setSelectedPrice(null); }}
+      />
+
       <Footer />
     </div>
   );
