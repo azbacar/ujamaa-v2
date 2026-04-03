@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/useAuth';
 import DOMPurify from 'dompurify';
 import ReactMarkdown from 'react-markdown';
+import PriceDetailDialog from '@/components/PriceDetailDialog';
 
 interface SearchResult {
   id: string;
@@ -17,6 +18,7 @@ interface SearchResult {
   description: string;
   url: string;
   category?: string;
+  priceData?: any;
 }
 
 interface AIChatMessage {
@@ -273,7 +275,7 @@ const AISearchChat = ({ onClose }: { onClose: () => void }) => {
 
 // ─── Search Results Tab ────────────────────────────────────────
 const SearchResults = ({
-  searchTerm, results, isSearching, hasSearched, searchErrors, onClose, onOpenChat,
+  searchTerm, results, isSearching, hasSearched, searchErrors, onClose, onOpenChat, onPriceClick,
 }: {
   searchTerm: string;
   results: SearchResult[];
@@ -282,6 +284,7 @@ const SearchResults = ({
   searchErrors: string[];
   onClose: () => void;
   onOpenChat: () => void;
+  onPriceClick: (priceData: any) => void;
 }) => {
   const getTypeIcon = (type: SearchResult['type']) => {
     const icons: Record<string, string> = {
@@ -320,13 +323,8 @@ const SearchResults = ({
       )}
       {results.length > 0 ? (
         <div className="grid gap-4">
-          {results.map((result) => (
-            <Link
-              key={`${result.type}-${result.id}`}
-              to={result.url}
-              onClick={onClose}
-              className="block p-4 bg-card rounded-xl border border-border hover:shadow-lg hover:border-primary/30 transition-all"
-            >
+          {results.map((result) => {
+            const inner = (
               <div className="flex items-start gap-4">
                 <div className={`p-3 rounded-lg ${getTypeColor(result.type)}`}>
                   <span className="text-xl">{getTypeIcon(result.type)}</span>
@@ -344,8 +342,31 @@ const SearchResults = ({
                   <p className="text-sm text-muted-foreground line-clamp-2">{result.description}</p>
                 </div>
               </div>
-            </Link>
-          ))}
+            );
+
+            if (result.type === 'price' && result.priceData) {
+              return (
+                <button
+                  key={`${result.type}-${result.id}`}
+                  onClick={() => onPriceClick(result.priceData)}
+                  className="block w-full text-left p-4 bg-card rounded-xl border border-border hover:shadow-lg hover:border-primary/30 transition-all"
+                >
+                  {inner}
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={`${result.type}-${result.id}`}
+                to={result.url}
+                onClick={onClose}
+                className="block p-4 bg-card rounded-xl border border-border hover:shadow-lg hover:border-primary/30 transition-all"
+              >
+                {inner}
+              </Link>
+            );
+          })}
         </div>
       ) : hasSearched && !isSearching ? (
         <div className="text-center py-16">
@@ -377,6 +398,7 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
   const [hasSearched, setHasSearched] = useState(false);
   const [searchErrors, setSearchErrors] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'search' | 'ai'>('search');
+  const [selectedPrice, setSelectedPrice] = useState<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -464,9 +486,9 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
         })(),
         (async () => {
           const [byProduct, byCategory, byMarket] = await Promise.all([
-            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('product', pattern).limit(5),
-            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('category', pattern).limit(5),
-            supabase.from('prices').select('id, product, category, market, island').eq('status', 'published').ilike('market', pattern).limit(5),
+            supabase.from('prices').select('id, product, category, market, island, price, currency, unit, trend, vendor, city, region, village, created_at').eq('status', 'published').ilike('product', pattern).limit(5),
+            supabase.from('prices').select('id, product, category, market, island, price, currency, unit, trend, vendor, city, region, village, created_at').eq('status', 'published').ilike('category', pattern).limit(5),
+            supabase.from('prices').select('id, product, category, market, island, price, currency, unit, trend, vendor, city, region, village, created_at').eq('status', 'published').ilike('market', pattern).limit(5),
           ]);
           const rows = [...(byProduct.data || []), ...(byCategory.data || []), ...(byMarket.data || [])];
           return {
@@ -474,8 +496,15 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
             failed: Boolean(byProduct.error || byCategory.error || byMarket.error),
             items: dedupeById(rows).slice(0, 5).map((p) => ({
               id: p.id, type: 'price' as const, title: p.product,
-              description: `${p.market} - ${p.island}`, url: '/prix',
+              description: `${Number(p.price).toLocaleString('fr-FR')} ${p.currency}/${p.unit} — ${p.market}, ${p.island}`,
+              url: '/prix',
               category: p.category,
+              priceData: {
+                id: p.id, product: p.product, category: p.category, price: Number(p.price),
+                currency: p.currency, vendor: p.vendor, market: p.market, unit: p.unit,
+                trend: p.trend || 'stable', created_at: p.created_at,
+                location: { village: p.village, city: p.city, region: p.region, island: p.island },
+              },
             })),
           };
         })(),
@@ -622,11 +651,18 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
               searchErrors={searchErrors}
               onClose={onClose}
               onOpenChat={() => setActiveTab('ai')}
+              onPriceClick={(priceData) => setSelectedPrice(priceData)}
             />
           </>
         ) : (
           <AISearchChat onClose={onClose} />
         )}
+
+        <PriceDetailDialog
+          price={selectedPrice}
+          open={!!selectedPrice}
+          onOpenChange={(open) => { if (!open) setSelectedPrice(null); }}
+        />
       </div>
     </div>,
     document.body
