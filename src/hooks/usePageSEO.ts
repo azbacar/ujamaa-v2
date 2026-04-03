@@ -50,11 +50,13 @@ export const usePageSEO = ({
     // OG Type
     setMeta('meta[property="og:type"]', { property: 'og:type', content: ogType });
 
-    // OG Image
-    if (ogImage) {
-      setMeta('meta[property="og:image"]', { property: 'og:image', content: ogImage });
-      setMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: ogImage });
-    }
+    // Twitter card type
+    setMeta('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
+
+    // OG Image — always ensure a default
+    const imageUrl = ogImage || `${BASE_URL}/og-image.jpg`;
+    setMeta('meta[property="og:image"]', { property: 'og:image', content: imageUrl });
+    setMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: imageUrl });
 
     // Keywords
     if (keywords) {
