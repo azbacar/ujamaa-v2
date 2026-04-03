@@ -31,6 +31,7 @@ const TendersPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAnnonceur } = useRole();
+  usePageSEO({ title: 'Appels d\'Offres', description: 'Consultez les appels d\'offres publics et privés aux Comores.', canonicalPath: '/appels-offres', keywords: 'appels offres Comores, marchés publics, soumissions' });
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');

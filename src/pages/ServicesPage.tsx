@@ -29,6 +29,7 @@ const ServicesPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAnnonceur } = useRole();
+  usePageSEO({ title: 'Services', description: 'Découvrez les services publics et privés disponibles aux Comores.', canonicalPath: '/services', keywords: 'services Comores, administration, services publics' });
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');

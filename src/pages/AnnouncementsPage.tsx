@@ -33,6 +33,7 @@ const AnnouncementsPage = () => {
   const { user } = useAuth();
   const { isAnnonceur } = useRole();
   const navigate = useNavigate();
+  usePageSEO({ title: 'Annonces', description: 'Consultez toutes les annonces officielles et communautaires aux Comores.', canonicalPath: '/annonces', keywords: 'annonces Comores, communiqués, informations officielles' });
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
