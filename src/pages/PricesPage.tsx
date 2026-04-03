@@ -9,6 +9,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
 import PriceSubmissionForm from '@/components/PriceSubmissionForm';
+import PriceDetailDialog from '@/components/PriceDetailDialog';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageSEO } from '@/hooks/usePageSEO';
