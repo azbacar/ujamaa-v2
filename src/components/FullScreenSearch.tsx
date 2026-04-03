@@ -323,13 +323,8 @@ const SearchResults = ({
       )}
       {results.length > 0 ? (
         <div className="grid gap-4">
-          {results.map((result) => (
-            <Link
-              key={`${result.type}-${result.id}`}
-              to={result.url}
-              onClick={onClose}
-              className="block p-4 bg-card rounded-xl border border-border hover:shadow-lg hover:border-primary/30 transition-all"
-            >
+          {results.map((result) => {
+            const inner = (
               <div className="flex items-start gap-4">
                 <div className={`p-3 rounded-lg ${getTypeColor(result.type)}`}>
                   <span className="text-xl">{getTypeIcon(result.type)}</span>
@@ -347,8 +342,31 @@ const SearchResults = ({
                   <p className="text-sm text-muted-foreground line-clamp-2">{result.description}</p>
                 </div>
               </div>
-            </Link>
-          ))}
+            );
+
+            if (result.type === 'price' && result.priceData) {
+              return (
+                <button
+                  key={`${result.type}-${result.id}`}
+                  onClick={() => onPriceClick(result.priceData)}
+                  className="block w-full text-left p-4 bg-card rounded-xl border border-border hover:shadow-lg hover:border-primary/30 transition-all"
+                >
+                  {inner}
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={`${result.type}-${result.id}`}
+                to={result.url}
+                onClick={onClose}
+                className="block p-4 bg-card rounded-xl border border-border hover:shadow-lg hover:border-primary/30 transition-all"
+              >
+                {inner}
+              </Link>
+            );
+          })}
         </div>
       ) : hasSearched && !isSearching ? (
         <div className="text-center py-16">
