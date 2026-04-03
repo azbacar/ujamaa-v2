@@ -251,7 +251,7 @@ const PricesPage = () => {
         ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPrices.map(price => (
-            <Card key={price.id} className="feature-card card-hover group">
+            <Card key={price.id} className="feature-card card-hover group cursor-pointer" onClick={() => setSelectedPrice(price)}>
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
