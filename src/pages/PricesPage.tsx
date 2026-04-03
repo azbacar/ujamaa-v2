@@ -42,6 +42,7 @@ const PricesPage = () => {
   const [selectedVendor, setSelectedVendor] = useState('Tous');
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [showPriceForm, setShowPriceForm] = useState(false);
+  const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
   const [pricesData, setPricesData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(true);
 
