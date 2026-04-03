@@ -651,11 +651,18 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
               searchErrors={searchErrors}
               onClose={onClose}
               onOpenChat={() => setActiveTab('ai')}
+              onPriceClick={(priceData) => setSelectedPrice(priceData)}
             />
           </>
         ) : (
           <AISearchChat onClose={onClose} />
         )}
+
+        <PriceDetailDialog
+          price={selectedPrice}
+          open={!!selectedPrice}
+          onOpenChange={(open) => { if (!open) setSelectedPrice(null); }}
+        />
       </div>
     </div>,
     document.body
