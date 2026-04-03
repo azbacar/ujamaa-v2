@@ -275,7 +275,7 @@ const AISearchChat = ({ onClose }: { onClose: () => void }) => {
 
 // ─── Search Results Tab ────────────────────────────────────────
 const SearchResults = ({
-  searchTerm, results, isSearching, hasSearched, searchErrors, onClose, onOpenChat,
+  searchTerm, results, isSearching, hasSearched, searchErrors, onClose, onOpenChat, onPriceClick,
 }: {
   searchTerm: string;
   results: SearchResult[];
@@ -284,6 +284,7 @@ const SearchResults = ({
   searchErrors: string[];
   onClose: () => void;
   onOpenChat: () => void;
+  onPriceClick: (priceData: any) => void;
 }) => {
   const getTypeIcon = (type: SearchResult['type']) => {
     const icons: Record<string, string> = {
