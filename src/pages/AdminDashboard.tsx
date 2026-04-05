@@ -37,6 +37,7 @@ import ProSubscriptionsSection from '@/components/admin/ProSubscriptionsSection'
 import FreelanceManagementSection from '@/components/admin/FreelanceManagementSection';
 import DiasporaManagementSection from '@/components/admin/DiasporaManagementSection';
 import CarrierManagementSection from '@/components/admin/CarrierManagementSection';
+import EnterpriseManagementSection from '@/components/admin/EnterpriseManagementSection';
 
 interface PendingModification {
   id: string;
