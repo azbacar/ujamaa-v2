@@ -122,9 +122,11 @@ serve(async (req) => {
     let dynamicContent = '\n\n📊 DONNÉES ACTUELLES DE LA PLATEFORME UJAMAAN.COM:\n\n';
     
     if (dynamicData.prices.length > 0) {
-      dynamicContent += '💰 PRIX RÉCENTS:\n';
-      dynamicData.prices.slice(0, 15).forEach(p => {
-        dynamicContent += `- ${p.product}: ${p.price} ${p.unit} (${p.island})\n`;
+      dynamicContent += `💰 PRIX PUBLIÉS (${dynamicData.prices.length} produits au total):\n`;
+      dynamicData.prices.forEach(p => {
+        const date = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '';
+        const trend = p.trend && p.trend !== 'stable' ? ` [${p.trend === 'up' ? '📈 hausse' : '📉 baisse'}]` : '';
+        dynamicContent += `- ${p.product}: ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}, ${p.city || ''} (${p.market || ''}, vendeur: ${p.vendor || 'n/a'})${trend}${date ? ' — ' + date : ''}\n`;
       });
       dynamicContent += '\n';
     }
