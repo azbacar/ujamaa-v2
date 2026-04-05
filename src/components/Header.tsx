@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Menu, Globe, User, LogOut, Settings, Shield, MessageCircle } from 'lucide-react';
+import { Search, Menu, Globe, User, LogOut, Settings, Shield, MessageCircle, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
