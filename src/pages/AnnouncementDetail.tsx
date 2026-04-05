@@ -238,16 +238,7 @@ const AnnouncementDetail = () => {
                   <CardTitle className="text-lg">Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full" variant="outline" onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({ title: dbItem.title, url: window.location.href });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                    }
-                  }}>
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Partager
-                  </Button>
+                  <SocialShareButtons title={dbItem.title} description={dbItem.description || ''} />
                   <FavoriteButton contentType="announcement" contentId={dbItem.id} />
                   <ReportButton contentType="announcement" contentId={dbItem.id} />
                 </CardContent>

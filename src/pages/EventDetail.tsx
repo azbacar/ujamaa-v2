@@ -323,10 +323,7 @@ const EventDetail = () => {
                     Vous êtes inscrit
                   </Button>
                 )}
-                <Button className="w-full" variant="outline" onClick={handleShare}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Partager
-                </Button>
+                <SocialShareButtons title={event.title} description={event.description || ''} />
                 <FavoriteButton contentType="event" contentId={event.id} />
                 <ReportButton contentType="event" contentId={event.id} />
               </CardContent>

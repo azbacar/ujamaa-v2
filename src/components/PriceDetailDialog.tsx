@@ -100,6 +100,8 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
               )}
             </div>
           </div>
+
+          <SocialShareButtons title={`${price.product} — ${price.price} ${price.currency}/${price.unit}`} description={`Prix à ${price.location.island}`} className="pt-2" />
         </div>
       </DialogContent>
     </Dialog>
