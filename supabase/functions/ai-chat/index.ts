@@ -18,7 +18,7 @@ async function getDynamicSiteData(authHeader: string | null) {
 
   try {
     const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes] = await Promise.all([
-      supabase.from('prices').select('product, price, unit, island, category').eq('status', 'published').order('created_at', { ascending: false }).limit(50),
+      supabase.from('prices').select('product, price, unit, island, category, currency, market, city, vendor, trend, created_at').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
       supabase.from('events').select('title, description, date, end_date, location, island').gte('end_date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
       supabase.from('content_items').select('title, description, category').eq('status', 'published').order('published_at', { ascending: false }).limit(20),
       supabase.from('freelancer_profiles').select('display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available').eq('is_visible', true).eq('is_available', true).limit(30),
