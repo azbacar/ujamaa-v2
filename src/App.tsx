@@ -129,6 +129,14 @@ const App = () => (
               <Route path="/messages/:partnerId" element={<Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>} />
               <Route path="/investissement" element={<Suspense fallback={<PageLoader />}><DiasporaPage /></Suspense>} />
               <Route path="/investissement/:id" element={<Suspense fallback={<PageLoader />}><DiasporaProjectDetail /></Suspense>} />
+              <Route 
+                path="/entreprise" 
+                element={
+                  <ProtectedRoute allowedRoles={['user', 'annonceur', 'moderator', 'admin']}>
+                    <Suspense fallback={<PageLoader />}><EnterpriseDashboard /></Suspense>
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/ile/:islandName" element={<Suspense fallback={<PageLoader />}><IslandDetailPage /></Suspense>} />
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>

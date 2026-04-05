@@ -252,6 +252,7 @@ export default function AdminDashboard() {
       case 'freelance': return <FreelanceManagementSection />;
       case 'diaspora': return <DiasporaManagementSection />;
       case 'carriers': return <CarrierManagementSection />;
+      case 'enterprises': return <EnterpriseManagementSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };

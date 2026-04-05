@@ -35,6 +35,7 @@ export default function AdminSidebar({
     { id: 'freelance', title: 'Freelance', icon: Briefcase, description: 'Missions et candidatures', available: isAdmin, category: 'content' },
     { id: 'diaspora', title: 'Diaspora', icon: Globe, description: 'Projets d\'investissement', available: isAdmin, category: 'content' },
     { id: 'carriers', title: 'Porteurs de projet', icon: UserCheck, description: 'Vérification des porteurs', available: isAdmin, category: 'content' },
+    { id: 'enterprises', title: 'Entreprises', icon: Building2, description: 'Profils entreprises', available: isAdmin, category: 'management' },
     { id: 'pending', title: 'Modifications', icon: Clock, description: 'En attente de validation', available: true, category: 'content' },
     { id: 'media', title: 'Médias', icon: Image, description: 'Images et fichiers', available: isModerator || isAdmin, category: 'content' },
     { id: 'static-pages', title: 'Pages statiques', icon: FileText, description: 'Contact, À propos...', available: isAdmin, category: 'content' },
