@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdSpace from '@/components/AdSpace';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, Share2, Phone, MessageCircle, Lock } from 'lucide-react';
+import { ArrowLeft, Clock, Phone, MessageCircle, Lock } from 'lucide-react';
+import SocialShareButtons from '@/components/SocialShareButtons';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -286,16 +287,7 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
                 <CardTitle className="text-lg">Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" variant="outline" onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({ title: item.title, url: window.location.href });
-                  } else {
-                    navigator.clipboard.writeText(window.location.href);
-                  }
-                }}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Partager
-                </Button>
+                <SocialShareButtons title={item.title} description={item.description || ''} />
                 <FavoriteButton contentType={contentType} contentId={item.id} />
                 <ReportButton contentType={contentType} contentId={item.id} />
               </CardContent>

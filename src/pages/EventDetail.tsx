@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdSpace from '@/components/AdSpace';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Share2, Ticket, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Ticket, ChevronLeft, ChevronRight } from 'lucide-react';
+import SocialShareButtons from '@/components/SocialShareButtons';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useState, useEffect } from 'react';
@@ -322,10 +323,7 @@ const EventDetail = () => {
                     Vous êtes inscrit
                   </Button>
                 )}
-                <Button className="w-full" variant="outline" onClick={handleShare}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Partager
-                </Button>
+                <SocialShareButtons title={event.title} description={event.description || ''} />
                 <FavoriteButton contentType="event" contentId={event.id} />
                 <ReportButton contentType="event" contentId={event.id} />
               </CardContent>

@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { MapPin, User, Calendar, TrendingUp, TrendingDown, Store, Tag, Package } from 'lucide-react';
+import SocialShareButtons from '@/components/SocialShareButtons';
 
 interface PriceData {
   id: string;
@@ -100,6 +101,8 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
               )}
             </div>
           </div>
+
+          <SocialShareButtons title={`${price.product} — ${price.price} ${price.currency}/${price.unit}`} description={`Prix à ${price.location.island}`} className="pt-2" />
         </div>
       </DialogContent>
     </Dialog>

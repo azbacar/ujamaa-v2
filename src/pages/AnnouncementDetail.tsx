@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdSpace from '@/components/AdSpace';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, MapPin, User, Share2, Phone, MessageCircle, Lock } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, User, Phone, MessageCircle, Lock } from 'lucide-react';
+import SocialShareButtons from '@/components/SocialShareButtons';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useState, useEffect } from 'react';
@@ -237,16 +238,7 @@ const AnnouncementDetail = () => {
                   <CardTitle className="text-lg">Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full" variant="outline" onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({ title: dbItem.title, url: window.location.href });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                    }
-                  }}>
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Partager
-                  </Button>
+                  <SocialShareButtons title={dbItem.title} description={dbItem.description || ''} />
                   <FavoriteButton contentType="announcement" contentId={dbItem.id} />
                   <ReportButton contentType="announcement" contentId={dbItem.id} />
                 </CardContent>
