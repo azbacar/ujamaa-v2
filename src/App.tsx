@@ -46,6 +46,7 @@ const FreelancerDirectoryPage = lazy(() => import("./pages/FreelancerDirectoryPa
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const DiasporaPage = lazy(() => import("./pages/DiasporaPage"));
 const DiasporaProjectDetail = lazy(() => import("./pages/DiasporaProjectDetail"));
+const EnterpriseDashboard = lazy(() => import("./pages/EnterpriseDashboard"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
