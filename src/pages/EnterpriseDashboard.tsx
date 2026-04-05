@@ -42,7 +42,7 @@ export default function EnterpriseDashboard() {
   if (loading) {
     return (
       <>
-        <Header />
+        <Header currentLanguage="fr" onLanguageChange={() => {}} />
         <div className="min-h-screen flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Chargement…</div></div>
         <Footer />
       </>
@@ -52,7 +52,7 @@ export default function EnterpriseDashboard() {
   if (!enterprise) {
     return (
       <>
-        <Header />
+        <Header currentLanguage="fr" onLanguageChange={() => {}} />
         <div className="container max-w-2xl mx-auto py-12 px-4">
           <EnterpriseRegistrationForm onCreated={refresh} userId={user?.id || ''} />
         </div>
@@ -63,7 +63,7 @@ export default function EnterpriseDashboard() {
 
   return (
     <>
-      <Header />
+      <Header currentLanguage="fr" onLanguageChange={() => {}} />
       <div className="container max-w-6xl mx-auto py-8 px-4 space-y-6">
         {/* Enterprise Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
