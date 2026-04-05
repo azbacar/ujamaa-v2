@@ -243,8 +243,9 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
         messages: aiMessages,
-        temperature: 0.4,
-        max_tokens: 800,
+        temperature: 0.3,
+        max_tokens: 1500,
+        reasoning: { effort: 'medium' },
       }),
     });
 
