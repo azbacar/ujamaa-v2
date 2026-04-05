@@ -46,6 +46,7 @@ const FreelancerDirectoryPage = lazy(() => import("./pages/FreelancerDirectoryPa
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const DiasporaPage = lazy(() => import("./pages/DiasporaPage"));
 const DiasporaProjectDetail = lazy(() => import("./pages/DiasporaProjectDetail"));
+const EnterpriseDashboard = lazy(() => import("./pages/EnterpriseDashboard"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -128,6 +129,14 @@ const App = () => (
               <Route path="/messages/:partnerId" element={<Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>} />
               <Route path="/investissement" element={<Suspense fallback={<PageLoader />}><DiasporaPage /></Suspense>} />
               <Route path="/investissement/:id" element={<Suspense fallback={<PageLoader />}><DiasporaProjectDetail /></Suspense>} />
+              <Route 
+                path="/entreprise" 
+                element={
+                  <ProtectedRoute allowedRoles={['user', 'annonceur', 'moderator', 'admin']}>
+                    <Suspense fallback={<PageLoader />}><EnterpriseDashboard /></Suspense>
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/ile/:islandName" element={<Suspense fallback={<PageLoader />}><IslandDetailPage /></Suspense>} />
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>

@@ -395,6 +395,107 @@ export type Database = {
         }
         Relationships: []
       }
+      enterprise_members: {
+        Row: {
+          created_at: string
+          enterprise_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enterprise_id: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enterprise_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_members_enterprise_id_fkey"
+            columns: ["enterprise_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enterprise_profiles: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          is_verified: boolean
+          island: string | null
+          logo_url: string | null
+          name: string
+          nif: string | null
+          phone: string | null
+          rccm: string | null
+          sector: string
+          status: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          verified_by: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_verified?: boolean
+          island?: string | null
+          logo_url?: string | null
+          name: string
+          nif?: string | null
+          phone?: string | null
+          rccm?: string | null
+          sector?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_verified?: boolean
+          island?: string | null
+          logo_url?: string | null
+          name?: string
+          nif?: string | null
+          phone?: string | null
+          rccm?: string | null
+          sector?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       event_registrations: {
         Row: {
           additional_info: Json | null
@@ -1463,6 +1564,69 @@ export type Database = {
         }
         Relationships: []
       }
+      tender_submissions: {
+        Row: {
+          cover_letter: string
+          created_at: string
+          currency: string
+          documents: string[] | null
+          enterprise_id: string
+          id: string
+          proposed_amount: number | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          tender_id: string
+          updated_at: string
+        }
+        Insert: {
+          cover_letter: string
+          created_at?: string
+          currency?: string
+          documents?: string[] | null
+          enterprise_id: string
+          id?: string
+          proposed_amount?: number | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          tender_id: string
+          updated_at?: string
+        }
+        Update: {
+          cover_letter?: string
+          created_at?: string
+          currency?: string
+          documents?: string[] | null
+          enterprise_id?: string
+          id?: string
+          proposed_amount?: number | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          tender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tender_submissions_enterprise_id_fkey"
+            columns: ["enterprise_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tender_submissions_tender_id_fkey"
+            columns: ["tender_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_at: string | null
@@ -1523,6 +1687,7 @@ export type Database = {
     }
     Functions: {
       generate_ticket_code: { Args: never; Returns: string }
+      get_enterprise_id: { Args: { _user_id: string }; Returns: string }
       get_public_usernames: {
         Args: { _user_ids: string[] }
         Returns: {
@@ -1535,6 +1700,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      has_enterprise: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

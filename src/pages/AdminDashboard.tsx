@@ -37,6 +37,7 @@ import ProSubscriptionsSection from '@/components/admin/ProSubscriptionsSection'
 import FreelanceManagementSection from '@/components/admin/FreelanceManagementSection';
 import DiasporaManagementSection from '@/components/admin/DiasporaManagementSection';
 import CarrierManagementSection from '@/components/admin/CarrierManagementSection';
+import EnterpriseManagementSection from '@/components/admin/EnterpriseManagementSection';
 
 interface PendingModification {
   id: string;
@@ -251,6 +252,7 @@ export default function AdminDashboard() {
       case 'freelance': return <FreelanceManagementSection />;
       case 'diaspora': return <DiasporaManagementSection />;
       case 'carriers': return <CarrierManagementSection />;
+      case 'enterprises': return <EnterpriseManagementSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
