@@ -155,6 +155,11 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                       </DropdownMenuItem>
                     </>
                   )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/entreprise')}>
+                    <Building2 className="h-4 w-4 mr-2" />
+                    Espace Entreprise
+                  </DropdownMenuItem>
                   {(isAdmin() || isModerator()) && (
                     <>
                       <DropdownMenuSeparator />
