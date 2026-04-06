@@ -1115,7 +1115,10 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          image_url: string | null
           island: string
+          latitude: number | null
+          longitude: number | null
           market: string
           price: number
           product: string
@@ -1135,7 +1138,10 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          image_url?: string | null
           island: string
+          latitude?: number | null
+          longitude?: number | null
           market: string
           price: number
           product: string
@@ -1155,7 +1161,10 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          image_url?: string | null
           island?: string
+          latitude?: number | null
+          longitude?: number | null
           market?: string
           price?: number
           product?: string

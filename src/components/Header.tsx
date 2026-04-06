@@ -88,7 +88,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               👨‍💻 Freelancers
             </Link>
             <Link to="/investissement" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              🌍 Diaspora
+              🌍 Invest
             </Link>
           </nav>
 
@@ -224,7 +224,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                       👨‍💻 Répertoire Freelancers
                     </Link>
                     <Link to="/investissement" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      🌍 Investissement Diaspora
+                      🌍 Invest
                     </Link>
                     <div className="border-t border-gray-100 my-1" />
                     <Link to="/install" className="block px-4 py-3 text-emerald-600 hover:bg-emerald-50 font-medium transition-colors" onClick={() => setShowMobileMenu(false)}>

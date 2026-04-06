@@ -1,0 +1,5 @@
+
+ALTER TABLE public.prices 
+  ADD COLUMN IF NOT EXISTS image_url text DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS latitude numeric DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS longitude numeric DEFAULT NULL;

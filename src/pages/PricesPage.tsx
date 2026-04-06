@@ -31,6 +31,9 @@ interface PriceData {
   created_at: string;
   trend: 'up' | 'down' | 'stable';
   unit: string;
+  image_url?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 const PricesPage = () => {
@@ -73,7 +76,10 @@ const PricesPage = () => {
           },
           trend: item.trend as 'up' | 'down' | 'stable',
           unit: item.unit,
-          created_at: item.created_at
+          created_at: item.created_at,
+          image_url: (item as any).image_url,
+          latitude: (item as any).latitude,
+          longitude: (item as any).longitude,
         }));
 
         setPricesData(mappedData);
@@ -251,7 +257,12 @@ const PricesPage = () => {
         ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPrices.map(price => (
-            <Card key={price.id} className="feature-card card-hover group cursor-pointer" onClick={() => setSelectedPrice(price)}>
+            <Card key={price.id} className="feature-card card-hover group cursor-pointer overflow-hidden" onClick={() => setSelectedPrice(price)}>
+              {price.image_url && (
+                <div className="h-36 overflow-hidden">
+                  <img src={price.image_url} alt={price.product} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                </div>
+              )}
               <CardContent className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
