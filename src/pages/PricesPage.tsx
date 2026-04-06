@@ -76,7 +76,10 @@ const PricesPage = () => {
           },
           trend: item.trend as 'up' | 'down' | 'stable',
           unit: item.unit,
-          created_at: item.created_at
+          created_at: item.created_at,
+          image_url: (item as any).image_url,
+          latitude: (item as any).latitude,
+          longitude: (item as any).longitude,
         }));
 
         setPricesData(mappedData);
