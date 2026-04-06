@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface RealTimeStats {
@@ -32,21 +32,14 @@ export const useRealTimeStats = () => {
     error: null
   });
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setStats(prev => ({ ...prev, loading: true, error: null }));
 
-      // Fetch all stats in parallel
       const [
-        usersResult,
-        contentResult,
-        announcementsResult,
-        pendingModsResult,
-        totalModsResult,
-        adsResult,
-        analyticsResult,
-        eventsResult,
-        upcomingEventsResult,
+        usersResult, contentResult, announcementsResult,
+        pendingModsResult, totalModsResult, adsResult,
+        analyticsResult, eventsResult, upcomingEventsResult,
         registrationsResult
       ] = await Promise.all([
         supabase.from('users').select('*', { count: 'exact', head: true }),
@@ -83,70 +76,24 @@ export const useRealTimeStats = () => {
         error: 'Erreur lors du chargement des statistiques'
       }));
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStats();
 
-    // Set up real-time subscriptions for key tables
-    const usersChannel = supabase
-      .channel('users_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'users' }, 
-        () => fetchStats()
-      )
+    // Single channel listening to multiple tables (admin-only hook)
+    const channel = supabase
+      .channel('admin_stats_combined')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'content_items' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pending_modifications' }, () => fetchStats())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => fetchStats())
       .subscribe();
 
-    const contentChannel = supabase
-      .channel('content_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'content_items' }, 
-        () => fetchStats()
-      )
-      .subscribe();
-
-    const modsChannel = supabase
-      .channel('modifications_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'pending_modifications' }, 
-        () => fetchStats()
-      )
-      .subscribe();
-
-    const adsChannel = supabase
-      .channel('ads_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'ads' }, 
-        () => fetchStats()
-      )
-      .subscribe();
-
-    const eventsChannel = supabase
-      .channel('events_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'events' }, 
-        () => fetchStats()
-      )
-      .subscribe();
-
-    const registrationsChannel = supabase
-      .channel('registrations_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'event_registrations' }, 
-        () => fetchStats()
-      )
-      .subscribe();
-
-    // Cleanup subscriptions
     return () => {
-      supabase.removeChannel(usersChannel);
-      supabase.removeChannel(contentChannel);
-      supabase.removeChannel(modsChannel);
-      supabase.removeChannel(adsChannel);
-      supabase.removeChannel(eventsChannel);
-      supabase.removeChannel(registrationsChannel);
+      supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchStats]);
 
   return { ...stats, refresh: fetchStats };
 };

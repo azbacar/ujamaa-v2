@@ -64,10 +64,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Auto-clear cache every 30 minutes
-setInterval(() => {
-  queryClient.invalidateQueries();
-}, 30 * 60 * 1000);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
