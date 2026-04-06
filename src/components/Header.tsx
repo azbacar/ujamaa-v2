@@ -88,7 +88,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               👨‍💻 Freelancers
             </Link>
             <Link to="/investissement" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              🌍 Diaspora
+              🌍 Invest
             </Link>
           </nav>
 
