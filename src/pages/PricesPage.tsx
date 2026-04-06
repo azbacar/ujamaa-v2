@@ -31,6 +31,9 @@ interface PriceData {
   created_at: string;
   trend: 'up' | 'down' | 'stable';
   unit: string;
+  image_url?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 const PricesPage = () => {
