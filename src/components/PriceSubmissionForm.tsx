@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Plus, DollarSign, MapPin, User, Package, Camera } from 'lucide-react';
+import { X, Plus, DollarSign, MapPin, User, Package, ImagePlus, Navigation } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 
 interface PriceSubmissionFormProps {
   onClose: () => void;
@@ -19,23 +19,24 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isAnnonceur } = useRole();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     productName: '',
     category: '',
     unit: '',
-    description: '',
     price: '',
     currency: 'FC',
     vendorName: '',
-    shopName: '',
     village: '',
     city: '',
     island: '',
     market: '',
-    phone: '',
-    email: '',
-    hasImage: false
+    latitude: '',
+    longitude: '',
   });
 
   const categories = [
@@ -47,57 +48,100 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
   const islands = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
   const units = ['kg', 'litre', 'pièce', 'régime', 'boîte', 'sac', 'paquet', 'gramme'];
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Image trop volumineuse', description: 'Maximum 5 Mo.', variant: 'destructive' });
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleGeolocate = () => {
+    if (!navigator.geolocation) {
+      toast({ title: 'Géolocalisation non disponible', variant: 'destructive' });
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setFormData(prev => ({
+          ...prev,
+          latitude: pos.coords.latitude.toFixed(6),
+          longitude: pos.coords.longitude.toFixed(6),
+        }));
+        setGeoLoading(false);
+        toast({ title: '📍 Position détectée' });
+      },
+      () => {
+        setGeoLoading(false);
+        toast({ title: 'Impossible de détecter la position', variant: 'destructive' });
+      }
+    );
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile || !user) return null;
+    const ext = imageFile.name.split('.').pop();
+    const path = `prices/${user.id}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('event-images').upload(path, imageFile);
+    if (error) throw error;
+    const { data: { publicUrl } } = supabase.storage.from('event-images').getPublicUrl(path);
+    return publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!user) {
-      toast({
-        title: "Connexion requise",
-        description: "Vous devez être connecté pour soumettre un prix.",
-        variant: "destructive"
-      });
+      toast({ title: "Connexion requise", variant: "destructive" });
       return;
     }
 
     setIsSubmitting(true);
-    
     try {
-      const { error } = await supabase.from('prices').insert({
+      const imageUrl = await uploadImage();
+
+      const insertData: any = {
         product: formData.productName,
         category: formData.category,
         price: parseFloat(formData.price),
         currency: formData.currency,
         unit: formData.unit,
         vendor: formData.vendorName,
-        market: formData.market || formData.shopName || 'Non spécifié',
+        market: formData.market || 'Non spécifié',
         village: formData.village,
         city: formData.city,
         island: formData.island,
         region: null,
         author_id: user.id,
         status: 'published',
-        trend: 'stable'
-      });
+        trend: 'stable',
+        image_url: imageUrl,
+      };
 
+      // Geolocation only for pro announcers
+      if (isAnnonceur() && formData.latitude && formData.longitude) {
+        insertData.latitude = parseFloat(formData.latitude);
+        insertData.longitude = parseFloat(formData.longitude);
+      }
+
+      const { error } = await supabase.from('prices').insert(insertData);
       if (error) throw error;
 
       toast({
         title: "✅ Prix ajouté avec succès!",
         description: `${formData.productName} a été ajouté aux prix de ${formData.market || formData.city}.`,
       });
-      
       onClose();
     } catch (error: any) {
       console.error('Error submitting price:', error);
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'ajouter le prix. Réessayez.",
-        variant: "destructive"
-      });
+      toast({ title: "Erreur", description: error.message || "Impossible d'ajouter le prix.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -109,36 +153,30 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
            formData.island && formData.unit && formData.market;
   };
 
+  const isProAnnonceur = isAnnonceur();
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
         <CardHeader className="bg-gradient-to-r from-emerald-500 to-ocean-500 text-white relative">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="absolute right-4 top-4 text-white hover:bg-white/20"
-          >
+          <Button variant="ghost" size="sm" onClick={onClose} className="absolute right-4 top-4 text-white hover:bg-white/20">
             <X className="w-4 h-4" />
           </Button>
           <CardTitle className="flex items-center gap-3">
             <Plus className="w-6 h-6" />
             Ajouter un prix
           </CardTitle>
-          <p className="text-white/90 text-sm">
-            Partagez vos prix avec la communauté UJAMAA
-          </p>
+          <p className="text-white/90 text-sm">Partagez vos prix avec la communauté UJAMAA</p>
         </CardHeader>
         
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Informations produit */}
+            {/* Produit */}
             <div className="space-y-4">
               <h3 className="font-semibold text-lg flex items-center gap-2 text-emerald-700">
                 <Package className="w-5 h-5" />
                 Informations du produit
               </h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="productName">Nom du produit *</Label>
@@ -146,14 +184,14 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
                 </div>
                 <div>
                   <Label htmlFor="category">Catégorie *</Label>
-                  <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                  <Select value={formData.category} onValueChange={(v) => handleInputChange('category', v)}>
                     <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                     <SelectContent>{categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="unit">Unité de mesure *</Label>
-                  <Select value={formData.unit} onValueChange={(value) => handleInputChange('unit', value)}>
+                  <Select value={formData.unit} onValueChange={(v) => handleInputChange('unit', v)}>
                     <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                     <SelectContent>{units.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
                   </Select>
@@ -165,7 +203,33 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
               </div>
             </div>
 
-            {/* Informations vendeur */}
+            {/* Image */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg flex items-center gap-2 text-emerald-700">
+                <ImagePlus className="w-5 h-5" />
+                Photo du produit
+              </h3>
+              <div className="flex items-center gap-4">
+                <label className="flex-1 cursor-pointer border-2 border-dashed border-emerald-200 rounded-xl p-4 text-center hover:border-emerald-400 transition-colors">
+                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Aperçu" className="h-32 mx-auto rounded-lg object-cover" />
+                  ) : (
+                    <div className="text-muted-foreground text-sm">
+                      <ImagePlus className="w-8 h-8 mx-auto mb-2 text-emerald-400" />
+                      Cliquez pour ajouter une photo (max 5 Mo)
+                    </div>
+                  )}
+                </label>
+                {imagePreview && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => { setImageFile(null); setImagePreview(null); }}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Vendeur */}
             <div className="space-y-4">
               <h3 className="font-semibold text-lg flex items-center gap-2 text-emerald-700">
                 <User className="w-5 h-5" />
@@ -174,11 +238,11 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="vendorName">Nom du vendeur *</Label>
-                  <Input id="vendorName" value={formData.vendorName} onChange={(e) => handleInputChange('vendorName', e.target.value)} placeholder="Mama Hadija, Ahmed Soilihi..." className="mt-1" required />
+                  <Input id="vendorName" value={formData.vendorName} onChange={(e) => handleInputChange('vendorName', e.target.value)} placeholder="Mama Hadija, Ahmed..." className="mt-1" required />
                 </div>
                 <div>
                   <Label htmlFor="market">Marché/Lieu de vente *</Label>
-                  <Input id="market" value={formData.market} onChange={(e) => handleInputChange('market', e.target.value)} placeholder="Marché Central, Port de pêche..." className="mt-1" required />
+                  <Input id="market" value={formData.market} onChange={(e) => handleInputChange('market', e.target.value)} placeholder="Marché Central..." className="mt-1" required />
                 </div>
               </div>
             </div>
@@ -192,7 +256,7 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="island">Île *</Label>
-                  <Select value={formData.island} onValueChange={(value) => handleInputChange('island', value)}>
+                  <Select value={formData.island} onValueChange={(v) => handleInputChange('island', v)}>
                     <SelectTrigger className="mt-1"><SelectValue placeholder="Sélectionnez..." /></SelectTrigger>
                     <SelectContent>{islands.map(i => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent>
                   </Select>
@@ -206,6 +270,31 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
                   <Input id="village" value={formData.village} onChange={(e) => handleInputChange('village', e.target.value)} placeholder="Volo-Volo, Bangoi..." className="mt-1" />
                 </div>
               </div>
+
+              {/* Geolocation for pro announcers */}
+              {isProAnnonceur && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
+                      <Navigation className="w-4 h-4" />
+                      📍 Géolocalisation Pro
+                    </p>
+                    <Button type="button" variant="outline" size="sm" onClick={handleGeolocate} disabled={geoLoading} className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                      {geoLoading ? 'Détection...' : '📍 Détecter ma position'}
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-xs">Latitude</Label>
+                      <Input value={formData.latitude} onChange={(e) => handleInputChange('latitude', e.target.value)} placeholder="-12.2345" className="mt-1 text-sm" />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Longitude</Label>
+                      <Input value={formData.longitude} onChange={(e) => handleInputChange('longitude', e.target.value)} placeholder="44.2678" className="mt-1 text-sm" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bg-blue-50 p-4 rounded-lg">

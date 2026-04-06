@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, User, Calendar, TrendingUp, TrendingDown, Store, Tag, Package } from 'lucide-react';
+import { MapPin, User, Calendar, TrendingUp, TrendingDown, Store, Tag, Package, Navigation } from 'lucide-react';
 import SocialShareButtons from '@/components/SocialShareButtons';
 
 interface PriceData {
@@ -21,6 +21,9 @@ interface PriceData {
   created_at: string;
   trend: 'up' | 'down' | 'stable';
   unit: string;
+  image_url?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 interface PriceDetailDialogProps {
@@ -36,6 +39,8 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
   const trendColor = price.trend === 'up' ? 'text-red-600 bg-red-50 border-red-200' : price.trend === 'down' ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-blue-600 bg-blue-50 border-blue-200';
   const trendIcon = price.trend === 'up' ? <TrendingUp className="w-5 h-5" /> : price.trend === 'down' ? <TrendingDown className="w-5 h-5" /> : null;
 
+  const hasGeo = price.latitude && price.longitude;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
@@ -45,6 +50,13 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
             {price.product}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Product image */}
+        {price.image_url && (
+          <div className="rounded-xl overflow-hidden border">
+            <img src={price.image_url} alt={price.product} className="w-full h-48 object-cover" />
+          </div>
+        )}
 
         {/* Price highlight */}
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6 text-center">
@@ -101,6 +113,19 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
               )}
             </div>
           </div>
+
+          {/* Geolocation link */}
+          {hasGeo && (
+            <a
+              href={`https://www.google.com/maps?q=${price.latitude},${price.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 bg-emerald-50 rounded-lg p-3 transition-colors"
+            >
+              <Navigation className="h-4 w-4" />
+              📍 Voir sur Google Maps ({price.latitude?.toFixed(4)}, {price.longitude?.toFixed(4)})
+            </a>
+          )}
 
           <SocialShareButtons title={`${price.product} — ${price.price} ${price.currency}/${price.unit}`} description={`Prix à ${price.location.island}`} className="pt-2" />
         </div>
