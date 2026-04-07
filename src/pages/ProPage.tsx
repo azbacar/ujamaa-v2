@@ -2,47 +2,24 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
-  Crown,
-  Zap,
-  Star,
-  Shield,
-  TrendingUp,
-  Users,
-  BarChart3,
-  Sparkles,
-  CheckCircle,
-  ArrowRight,
-  Smartphone,
-  Banknote,
-  CreditCard,
-  X,
-  Eye,
-  MessageSquare,
-  Bell,
-  Search,
-  FileText,
-  Phone,
-  Lock,
+  Crown, Zap, Star, Shield, TrendingUp, BarChart3, CheckCircle, ArrowRight,
+  Eye, MessageSquare, Bell, Search, FileText, Lock,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
-import { useRole } from "@/hooks/useRole";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import MvolaPaymentDialog from "@/components/MvolaPaymentDialog";
 
 const PLANS = [
   {
     id: "basic",
     name: "Gratuit",
     price: "0",
+    amount: 0,
     currency: "FC",
     period: "/mois",
     description: "Accès aux fonctionnalités essentielles",
@@ -62,6 +39,7 @@ const PLANS = [
     id: "premium",
     name: "UJAMAA Pro",
     price: "5 000",
+    amount: 5000,
     currency: "FC",
     period: "/mois",
     description: "Pour les professionnels et commerçants",
@@ -85,6 +63,7 @@ const PLANS = [
     id: "enterprise",
     name: "Entreprise",
     price: "Sur devis",
+    amount: 0,
     currency: "",
     period: "",
     description: "Solutions complètes pour organisations",
@@ -106,52 +85,27 @@ const PLANS = [
 ];
 
 const PRO_ADVANTAGES = [
-  {
-    icon: Eye,
-    title: "Visibilité maximale",
-    desc: "Vos annonces apparaissent en priorité dans les résultats de recherche",
-  },
-  {
-    icon: TrendingUp,
-    title: "Analyses prédictives",
-    desc: "IA avancée pour prévoir les tendances des prix sur l'archipel",
-  },
-  {
-    icon: Bell,
-    title: "Alertes intelligentes",
-    desc: "Notifications instantanées sur les changements de prix qui vous concernent",
-  },
-  {
-    icon: MessageSquare,
-    title: "Contact direct",
-    desc: "Les utilisateurs peuvent vous contacter directement depuis vos annonces",
-  },
+  { icon: Eye, title: "Visibilité maximale", desc: "Vos annonces apparaissent en priorité dans les résultats de recherche" },
+  { icon: TrendingUp, title: "Analyses prédictives", desc: "IA avancée pour prévoir les tendances des prix sur l'archipel" },
+  { icon: Bell, title: "Alertes intelligentes", desc: "Notifications instantanées sur les changements de prix qui vous concernent" },
+  { icon: MessageSquare, title: "Contact direct", desc: "Les utilisateurs peuvent vous contacter directement depuis vos annonces" },
   { icon: Search, title: "Boost IA", desc: "L'assistant UJAMAA recommande vos annonces aux utilisateurs pertinents" },
-  {
-    icon: BarChart3,
-    title: "Rapports détaillés",
-    desc: "Statistiques de performance de vos annonces et tendances du marché",
-  },
+  { icon: BarChart3, title: "Rapports détaillés", desc: "Statistiques de performance de vos annonces et tendances du marché" },
   { icon: FileText, title: "Annonces illimitées", desc: "Publiez autant d'annonces que nécessaire sans restriction" },
-  {
-    icon: Lock,
-    title: "Badge vérifié",
-    desc: "Gagnez la confiance des utilisateurs avec le badge ✅ sur votre profil",
-  },
+  { icon: Lock, title: "Badge vérifié", desc: "Gagnez la confiance des utilisateurs avec le badge ✅ sur votre profil" },
 ];
+
+function generateUserRef(userId: string): string {
+  return ('UJA' + userId.replace(/-/g, '').slice(0, 12)).toUpperCase();
+}
 
 export default function ProPage() {
   const [currentLanguage, setCurrentLanguage] = useState("fr");
   const { user } = useAuth();
-  const { role } = useRole();
-  const isMobile = useIsMobile();
   const navigate = useNavigate();
 
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("premium");
-  const [paymentTab, setPaymentTab] = useState("manual");
-  const [paymentRef, setPaymentRef] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   const handleSelectPlan = (planId: string) => {
     if (planId === "basic") return;
@@ -168,36 +122,24 @@ export default function ProPage() {
     setShowPayment(true);
   };
 
-  const handleSubmitPayment = async (method: string) => {
+  const handlePaymentSubmit = async (method: 'mvola' | 'cash' | 'card', reference: string) => {
     if (!user) return;
-    if (method !== "card" && !paymentRef.trim()) {
-      toast.error("Veuillez entrer la référence de paiement");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const plan = PLANS.find((p) => p.id === selectedPlan);
-      const { error } = await supabase.from("pro_subscription_requests" as any).insert({
-        user_id: user.id,
-        plan: selectedPlan,
-        payment_method: method,
-        payment_reference: method === "card" ? "CARD_PENDING" : paymentRef.trim(),
-        amount: plan?.id === "premium" ? 5000 : 0,
-        currency: "FC",
-        status: "pending",
-      });
-      if (error) throw error;
-      toast.success("Demande envoyée ! Vous recevrez une notification après validation par notre équipe.");
-      setShowPayment(false);
-      setPaymentRef("");
-    } catch (e: any) {
-      toast.error(e.message || "Erreur lors de l'envoi");
-    } finally {
-      setSubmitting(false);
-    }
+    const plan = PLANS.find((p) => p.id === selectedPlan);
+    const { error } = await supabase.from("pro_subscription_requests" as any).insert({
+      user_id: user.id,
+      plan: selectedPlan,
+      payment_method: method,
+      payment_reference: reference,
+      amount: plan?.amount || 0,
+      currency: "FC",
+      status: "pending",
+    });
+    if (error) throw error;
+    toast.success("Demande envoyée ! Vous recevrez une notification après validation.");
   };
 
   const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
+  const userRef = user ? generateUserRef(user.id) : 'UJAMAAN';
 
   return (
     <div className="min-h-screen bg-background">
@@ -229,9 +171,7 @@ export default function ProPage() {
                 </div>
               )}
               <CardHeader className="text-center pb-2 pt-6">
-                <div
-                  className={`w-14 h-14 mx-auto rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-3`}
-                >
+                <div className={`w-14 h-14 mx-auto rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-3`}>
                   <plan.icon className="w-7 h-7 text-white" />
                 </div>
                 <CardTitle className="text-xl">{plan.name}</CardTitle>
@@ -291,7 +231,7 @@ export default function ProPage() {
             <CardDescription>Contactez-nous pour un devis personnalisé</CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-3">
-            <p className="text-muted-foreground text-sm"><p className="text-muted-foreground text-sm">📧 support@ujamaan.com</p></p>
+            <p className="text-muted-foreground text-sm">📧 support@ujamaan.com</p>
             <p className="text-muted-foreground text-sm">📞 +269 733 2122</p>
             <Button variant="outline" onClick={() => (window.location.href = "mailto:contact@ujamaan.com")}>
               Envoyer un email <ArrowRight className="w-4 h-4 ml-2" />
@@ -301,147 +241,18 @@ export default function ProPage() {
       </main>
 
       {/* Payment Dialog */}
-      <Dialog open={showPayment} onOpenChange={setShowPayment}>
-        <DialogContent className={`${isMobile ? "max-w-[95vw]" : "max-w-lg"} max-h-[90vh] overflow-y-auto`}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-primary" />
-              Souscrire au {selectedPlanData?.name}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedPlanData?.price} {selectedPlanData?.currency}
-              {selectedPlanData?.period}
-            </DialogDescription>
-          </DialogHeader>
-
-          <Tabs value={paymentTab} onValueChange={setPaymentTab} className="mt-2">
-            <TabsList className={`grid w-full ${isMobile ? "grid-cols-3" : "grid-cols-3"}`}>
-              <TabsTrigger value="manual" className="text-xs sm:text-sm">
-                <Banknote className="w-3.5 h-3.5 mr-1" /> Manuel
-              </TabsTrigger>
-              {isMobile && (
-                <TabsTrigger value="mvola" className="text-xs sm:text-sm">
-                  <Smartphone className="w-3.5 h-3.5 mr-1" /> Mvola
-                </TabsTrigger>
-              )}
-              {!isMobile && (
-                <TabsTrigger value="mvola" disabled className="text-xs sm:text-sm opacity-50">
-                  <Smartphone className="w-3.5 h-3.5 mr-1" /> Mvola
-                  <span className="text-[10px] ml-1">(mobile)</span>
-                </TabsTrigger>
-              )}
-              <TabsTrigger value="card" className="text-xs sm:text-sm">
-                <CreditCard className="w-3.5 h-3.5 mr-1" /> Carte
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Paiement Manuel */}
-            <TabsContent value="manual" className="space-y-4 mt-4">
-              <Card className="bg-muted/50">
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="font-semibold text-sm text-foreground">📋 Instructions de paiement</h4>
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p>
-                      <strong>Virement bancaire :</strong>
-                    </p>
-                    <p>🏦 Banque : BIC Comores</p>
-                    <p>👤 Titulaire : UJAMAA SARL</p>
-                    <p>📝 IBAN : KM46 00006 00001 0 0010061829 73</p>
-                    <p className="border-t border-border pt-2 mt-2">
-                      <strong>Ou espèces :</strong>
-                    </p>
-                    <p>📍 Moroni : ESPACE BEINNOV, Rond Point Yemenia, Rue des Douanes à 10 metres de la DRS</p>
-                    <p>📍 Mutsamudu : Bientôt</p>
-                    <p>📍 Fomboni : Bientôt</p>
-                    <p className="text-xs mt-2">🕐 Lun-Sam 8h-17h</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <div>
-                <Label className="text-sm">Référence du paiement / N° de reçu *</Label>
-                <Input
-                  placeholder="Ex: REC-2026-001 ou numéro de transaction"
-                  value={paymentRef}
-                  onChange={(e) => setPaymentRef(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <Button className="w-full" onClick={() => handleSubmitPayment("manual")} disabled={submitting}>
-                {submitting ? "Envoi..." : "Soumettre pour validation"}
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                ⏱️ Validation sous 24h par notre équipe de modération
-              </p>
-            </TabsContent>
-
-            {/* Mvola USSD - Mobile only */}
-            <TabsContent value="mvola" className="space-y-4 mt-4">
-              <Card className="bg-muted/50">
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="font-semibold text-sm text-foreground">📱 Paiement Mvola (USSD)</h4>
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p>Composez directement depuis votre téléphone :</p>
-                    <div className="bg-background rounded-lg p-3 text-center">
-                      <a
-                        href={`tel:*880*3*0773456789*${selectedPlanData?.id === "premium" ? "5000" : "0"}%23`}
-                        className="text-lg font-mono font-bold text-primary"
-                      >
-                        *444*1*2*4102122*5000*ujamaan#
-                      </a>
-                      <p className="text-xs text-muted-foreground mt-1">Appuyez pour composer</p>
-                    </div>
-                    <div className="border-t border-border pt-2 space-y-1">
-                      <p>1️⃣ Composez le code USSD ci-dessus</p>
-                      <p>2️⃣ Confirmez avec votre code PIN Mvola</p>
-                      <p>3️⃣ Notez le numéro de transaction</p>
-                      <p>4️⃣ Entrez-le ci-dessous</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <div>
-                <Label className="text-sm">N° de transaction Mvola *</Label>
-                <Input
-                  placeholder="Ex: MP240305.1234.A56789"
-                  value={paymentRef}
-                  onChange={(e) => setPaymentRef(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <Button className="w-full" onClick={() => handleSubmitPayment("mvola")} disabled={submitting}>
-                {submitting ? "Envoi..." : "Confirmer le paiement Mvola"}
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                ⏱️ Validation sous 12h après vérification de la transaction
-              </p>
-            </TabsContent>
-
-            {/* Carte bancaire */}
-            <TabsContent value="card" className="space-y-4 mt-4">
-              <Card className="bg-muted/50">
-                <CardContent className="p-4 text-center space-y-3">
-                  <CreditCard className="w-12 h-12 mx-auto text-muted-foreground" />
-                  <h4 className="font-semibold text-sm text-foreground">Paiement par carte bancaire</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Le paiement par carte sera bientôt disponible via Stripe. En attendant, utilisez le paiement manuel
-                    ou Mvola.
-                  </p>
-                </CardContent>
-              </Card>
-              <Button className="w-full" disabled variant="outline">
-                <Lock className="w-4 h-4 mr-2" /> Bientôt disponible
-              </Button>
-            </TabsContent>
-          </Tabs>
-
-          <div className="bg-accent/50 rounded-lg p-3 mt-2">
-            <p className="text-xs text-muted-foreground">
-              🔒 Votre paiement sera vérifié par notre équipe. Votre compte sera mis à jour automatiquement après
-              validation. En cas de problème : <strong>support@ujamaan.com</strong>
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {selectedPlanData && (
+        <MvolaPaymentDialog
+          open={showPayment}
+          onOpenChange={setShowPayment}
+          amount={selectedPlanData.amount}
+          currency="FC"
+          label={`Souscrire au ${selectedPlanData.name}`}
+          description={`${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period}`}
+          userRef={userRef}
+          onPaymentSubmit={handlePaymentSubmit}
+        />
+      )}
 
       <Footer />
     </div>

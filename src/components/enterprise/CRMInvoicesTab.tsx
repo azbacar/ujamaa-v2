@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, FileText, Send, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, FileText, Send, CheckCircle, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
 import type { EnterpriseInvoice, InvoiceItem, EnterpriseClient } from '@/hooks/useEnterpriseCRM';
+import MvolaPaymentDialog from '@/components/MvolaPaymentDialog';
 
 const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   draft: { label: '📝 Brouillon', variant: 'secondary' },
@@ -39,6 +40,7 @@ export default function CRMInvoicesTab({ invoices, clients, onAdd, onUpdate, onD
     items: [{ description: '', quantity: 1, unit_price: 0, total: 0 }] as InvoiceItem[],
   });
   const [saving, setSaving] = useState(false);
+  const [payingInvoice, setPayingInvoice] = useState<EnterpriseInvoice | null>(null);
 
   const updateItem = (idx: number, field: string, value: any) => {
     setForm(prev => {
@@ -85,6 +87,13 @@ export default function CRMInvoicesTab({ invoices, clients, onAdd, onUpdate, onD
       await onUpdate(id, { status: 'paid', paid_at: new Date().toISOString() } as any);
       toast.success('Facture marquée comme payée');
     } catch { toast.error('Erreur'); }
+  };
+
+  const handleInvoicePayment = async (method: 'mvola' | 'cash' | 'card', reference: string) => {
+    if (!payingInvoice) return;
+    await onUpdate(payingInvoice.id, { status: 'paid', paid_at: new Date().toISOString(), notes: `Paiement ${method}: ${reference}` } as any);
+    toast.success('Paiement enregistré !');
+    setPayingInvoice(null);
   };
 
   return (
@@ -188,11 +197,16 @@ export default function CRMInvoicesTab({ invoices, clients, onAdd, onUpdate, onD
                         <span className="text-xs text-muted-foreground">{new Date(inv.issue_date).toLocaleDateString('fr-FR')}</span>
                       </div>
                     </div>
-                    <div className="flex gap-1 shrink-0">
+                    <div className="flex gap-1 shrink-0 flex-wrap">
                       {(inv.status === 'sent' || inv.status === 'overdue') && (
-                        <Button size="sm" variant="outline" onClick={() => markPaid(inv.id)} className="gap-1 text-green-600">
-                          <CheckCircle className="h-3 w-3" /> Payée
-                        </Button>
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => setPayingInvoice(inv)} className="gap-1 text-primary">
+                            <Smartphone className="h-3 w-3" /> Payer
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => markPaid(inv.id)} className="gap-1 text-green-600">
+                            <CheckCircle className="h-3 w-3" /> Payée
+                          </Button>
+                        </>
                       )}
                       {inv.status === 'draft' && (
                         <Button size="sm" variant="outline" onClick={() => onUpdate(inv.id, { status: 'sent' })} className="gap-1">
@@ -209,6 +223,19 @@ export default function CRMInvoicesTab({ invoices, clients, onAdd, onUpdate, onD
             );
           })}
         </div>
+      )}
+
+      {/* Mvola Payment for invoice */}
+      {payingInvoice && (
+        <MvolaPaymentDialog
+          open={!!payingInvoice}
+          onOpenChange={(o) => { if (!o) setPayingInvoice(null); }}
+          amount={Number(payingInvoice.total)}
+          currency={payingInvoice.currency}
+          label={`Payer ${payingInvoice.invoice_number}`}
+          userRef={payingInvoice.invoice_number.replace(/[^a-zA-Z0-9]/g, '').slice(0, 15)}
+          onPaymentSubmit={handleInvoicePayment}
+        />
       )}
     </div>
   );
