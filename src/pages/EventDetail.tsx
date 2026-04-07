@@ -363,7 +363,7 @@ const EventDetail = () => {
                   </div>
                 )}
 
-                {authorInfo?.account_type === 'pro' && event.author_id && (
+                {(authorInfo?.account_type === 'pro' || authorInfo?.account_type === 'enterprise') && event.author_id && (
                   <div>
                     <Button 
                       className="w-full"

@@ -59,7 +59,7 @@ const PricesPage = () => {
   useEffect(() => {
     if (user) {
       supabase.from('users').select('account_type').eq('id', user.id).single().then(({ data }) => {
-        setIsPro(data?.account_type === 'pro');
+        setIsPro(data?.account_type === 'pro' || data?.account_type === 'enterprise');
       });
     }
   }, [user]);

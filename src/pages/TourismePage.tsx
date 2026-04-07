@@ -156,7 +156,7 @@ export default function TourismePage() {
             {filtered.map(item => {
               const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG.recipe;
               const Icon = cfg.icon;
-              const isPro = item.users?.account_type === 'pro';
+              const isPro = item.users?.account_type === 'pro' || item.users?.account_type === 'enterprise';
 
               return (
                 <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
