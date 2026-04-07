@@ -18,11 +18,11 @@ async function getDynamicSiteData(authHeader: string | null) {
 
   try {
     const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes] = await Promise.all([
-      supabase.from('prices').select('product, price, unit, island, category, currency, market, city, vendor, trend, created_at').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
-      supabase.from('events').select('title, description, date, end_date, location, island').gte('end_date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
-      supabase.from('content_items').select('title, description, category').eq('status', 'published').order('published_at', { ascending: false }).limit(20),
-      supabase.from('freelancer_profiles').select('display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available').eq('is_visible', true).eq('is_available', true).limit(30),
-      supabase.from('diaspora_projects').select('title, description, category, target_amount, current_amount, currency, island, location, min_investment, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
+      supabase.from('prices').select('id, product, price, unit, island, category, currency, market, city, vendor, trend, created_at, village, region').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
+      supabase.from('events').select('id, title, description, date, end_date, location, island, category, price, currency').gte('end_date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
+      supabase.from('content_items').select('id, title, description, category, type').eq('status', 'published').order('published_at', { ascending: false }).limit(20),
+      supabase.from('freelancer_profiles').select('id, display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available, location').eq('is_visible', true).eq('is_available', true).limit(30),
+      supabase.from('diaspora_projects').select('id, title, description, category, target_amount, current_amount, currency, island, location, min_investment, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
     ]);
 
     return {
@@ -118,7 +118,7 @@ serve(async (req) => {
       ? dbHistory 
       : (Array.isArray(clientHistory) ? clientHistory.slice(-20).map((m: any) => ({ role: m.role || (m.isUser ? 'user' : 'assistant'), content: m.content || m.text })).filter((m: any) => m.content) : []);
 
-    // Build dynamic content section
+    // Build dynamic content section with IDs for direct linking
     let dynamicContent = '\n\n📊 DONNÉES ACTUELLES DE LA PLATEFORME UJAMAAN.COM:\n\n';
     
     if (dynamicData.prices.length > 0) {
@@ -126,7 +126,8 @@ serve(async (req) => {
       dynamicData.prices.forEach(p => {
         const date = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '';
         const trend = p.trend && p.trend !== 'stable' ? ` [${p.trend === 'up' ? '📈 hausse' : '📉 baisse'}]` : '';
-        dynamicContent += `- ${p.product}: ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}, ${p.city || ''} (${p.market || ''}, vendeur: ${p.vendor || 'n/a'})${trend}${date ? ' — ' + date : ''}\n`;
+        const location = [p.village, p.city, p.region].filter(Boolean).join(', ');
+        dynamicContent += `- [ID:${p.id}] ${p.product}: ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}, ${location} (${p.market || ''}, vendeur: ${p.vendor || 'n/a'}, catégorie: ${p.category})${trend}${date ? ' — ' + date : ''}\n`;
       });
       dynamicContent += '\n';
     }
@@ -134,7 +135,8 @@ serve(async (req) => {
     if (dynamicData.events.length > 0) {
       dynamicContent += '🎉 ÉVÉNEMENTS À VENIR:\n';
       dynamicData.events.slice(0, 10).forEach(e => {
-        dynamicContent += `- ${e.title} - ${new Date(e.date).toLocaleDateString('fr-FR')} à ${e.location} (${e.island})\n`;
+        const price = e.price && e.price > 0 ? ` — ${e.price} ${e.currency || 'FC'}` : ' — Gratuit';
+        dynamicContent += `- [ID:${e.id}] ${e.title} - ${new Date(e.date).toLocaleDateString('fr-FR')} à ${e.location} (${e.island}) [${e.category}]${price}\n`;
       });
       dynamicContent += '\n';
     }
@@ -142,7 +144,7 @@ serve(async (req) => {
     if (dynamicData.announcements.length > 0) {
       dynamicContent += '📢 ANNONCES RÉCENTES:\n';
       dynamicData.announcements.slice(0, 8).forEach(a => {
-        dynamicContent += `- ${a.title}\n`;
+        dynamicContent += `- [ID:${a.id}] ${a.title} (${a.category || a.type || 'général'})\n`;
       });
       dynamicContent += '\n';
     }
@@ -152,7 +154,7 @@ serve(async (req) => {
       dynamicData.freelancers.slice(0, 15).forEach((f: any) => {
         const skills = (f.skills || []).slice(0, 5).join(', ');
         const rate = f.hourly_rate_min ? `${f.hourly_rate_min}${f.hourly_rate_max ? '-' + f.hourly_rate_max : '+'} ${f.currency}/h` : '';
-        dynamicContent += `- ${f.display_name} (${skills})${f.island ? ' - ' + f.island : ''}${rate ? ' - ' + rate : ''}${f.experience_years ? ' - ' + f.experience_years + ' ans exp.' : ''}\n`;
+        dynamicContent += `- [ID:${f.id}] ${f.display_name} (${skills})${f.island ? ' - ' + f.island : ''}${f.location ? ', ' + f.location : ''}${rate ? ' - ' + rate : ''}${f.experience_years ? ' - ' + f.experience_years + ' ans exp.' : ''}\n`;
       });
       dynamicContent += '\n';
     }
@@ -162,7 +164,7 @@ serve(async (req) => {
       dynamicData.diasporaProjects.forEach((p: any) => {
         const progress = p.target_amount > 0 ? Math.round((p.current_amount / p.target_amount) * 100) : 0;
         const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '';
-        dynamicContent += `- ${p.title} (${p.category}) - Objectif: ${p.target_amount} ${p.currency} - ${progress}% financé${p.island ? ' - ' + p.island : ''}${p.min_investment ? ' - Min: ' + p.min_investment + ' ' + p.currency : ''}${deadline ? ' - Échéance: ' + deadline : ''}\n`;
+        dynamicContent += `- [ID:${p.id}] ${p.title} (${p.category}) - Objectif: ${p.target_amount} ${p.currency} - ${progress}% financé${p.island ? ' - ' + p.island : ''}${p.min_investment ? ' - Min: ' + p.min_investment + ' ' + p.currency : ''}${deadline ? ' - Échéance: ' + deadline : ''}\n`;
       });
       dynamicContent += '\n';
     }
@@ -194,44 +196,70 @@ ${knowledgeSection}
   • Q1: "Je cherche un plombier" → Q2: "Il est disponible ?" → Tu comprends qu'il parle du freelancer suggéré.
 - Quand l'utilisateur revient sur un sujet abordé plus tôt, rappelle brièvement le contexte avant de répondre.
 
-🔗 PAGES INTERNES DU SITE (les SEULS liens que tu peux donner) :
+🔗 LIENS DIRECTS — TU DOIS IMPÉRATIVEMENT LIER VERS LES PRODUITS/CONTENUS SPÉCIFIQUES:
+
+Quand tu mentionnes un produit, un événement, un freelancer ou un projet, tu DOIS inclure un lien DIRECT vers ce contenu en utilisant son ID:
+- Prix/Produit → [Voir ce produit](/prix) ← lien vers la page prix avec le produit mentionné
+- Événement → [Voir cet événement](/evenements/ID_EVENEMENT)
+- Annonce → [Voir cette annonce](/annonces/ID_ANNONCE)  
+- Freelancer → [Voir le profil](/freelancers) ← vers le répertoire
+- Projet diaspora → [Voir ce projet](/investissement/ID_PROJET)
+
+EXEMPLES DE RÉPONSES AVEC LIENS DIRECTS:
+- "Le riz coûte 500 FC/kg au marché de Volo-Volo. [Voir tous les prix du riz](/prix)"
+- "L'événement 'Festival du cinéma' a lieu le 15/04. [Voir les détails](/evenements/abc-123)"
+- "Mohamed est disponible comme plombier à Moroni. [Voir le répertoire](/freelancers)"
+
+PAGES INTERNES DU SITE:
 - /prix → Prix et marchés 💰
 - /evenements → Événements 🎉
+- /evenements/:id → Détail d'un événement
 - /services → Services publics 🏛️
 - /appels-offres → Appels d'offres 📋
 - /annonces → Annonces 📢
+- /annonces/:id → Détail d'une annonce
 - /tourisme → Tourisme 🏨
 - /freelance → Missions freelance 💼
 - /freelancers → Répertoire des freelancers 👨‍💻
 - /investissement → Investissement Diaspora 🌍
+- /investissement/:id → Détail d'un projet
 
 🚨 RÈGLES ABSOLUES:
 1. Tu te bases EXCLUSIVEMENT sur les données de la plateforme ujamaan.com listées ci-dessus et les sources de référence autorisées. RIEN D'AUTRE.
-2. Si une information N'EST PAS dans les données ci-dessus, tu dis clairement : "Cette information n'est pas encore disponible sur ujamaan.com".
+2. Si une information N'EST PAS dans les données ci-dessus, tu dis clairement : "Cette information n'est pas encore disponible sur ujamaan.com" puis tu SUGGÈRES la page la plus pertinente pour que l'utilisateur explore lui-même.
 3. N'INVENTE JAMAIS de prix, de noms, de dates, d'événements ou de freelancers. Utilise UNIQUEMENT les données fournies.
 4. Les SEULS LIENS que tu donnes sont les chemins internes du site. JAMAIS d'URLs externes (pas de https://...).
 5. Quand tu cites une source externe autorisée, mentionne-la par son NOM uniquement, SANS URL.
-6. Tes liens internes doivent être au format markdown: [Titre du lien](/chemin)
+6. Tes liens internes doivent être au format markdown: [Titre du lien](/chemin) ou [Titre](/chemin/ID)
 7. Mayotte est une île comorienne. Dis TOUJOURS "l'archipel des Comores" (4 îles). JAMAIS "les Comores et Mayotte".
-8. Sois DIRECT, CONCIS avec des emojis. Max 5-6 phrases par réponse sauf si l'utilisateur demande un calcul détaillé.
-9. Suggère TOUJOURS au moins une page interne pertinente.
-10. Ne réponds PAS aux questions sans rapport avec les Comores ou la plateforme (politique internationale, code informatique, maths, etc.). Redirige poliment vers le sujet du site.
+8. Sois DIRECT, CONCIS avec des emojis. Max 5-6 phrases par réponse sauf si l'utilisateur demande un calcul détaillé ou une analyse complète.
+9. TOUJOURS inclure au moins un lien DIRECT vers un contenu spécifique quand tu en mentionnes un.
+10. Ne réponds PAS aux questions sans rapport avec les Comores ou la plateforme. Redirige poliment.
 
-🧮 CALCULS ET RAISONNEMENT:
-- Tu PEUX et DOIS faire des calculs détaillés quand l'utilisateur le demande (comparaisons de prix, moyennes, totaux, budgets, estimations).
+🧮 CALCULS ET RAISONNEMENT AVANCÉ:
+- Tu PEUX et DOIS faire des calculs détaillés quand l'utilisateur le demande (comparaisons de prix, moyennes, totaux, budgets, estimations, conversions).
 - Montre le détail du calcul étape par étape pour être transparent.
 - Compare les prix entre îles, marchés, vendeurs quand c'est pertinent.
 - Si on te demande "combien coûte X kg de Y", multiplie le prix unitaire par la quantité demandée.
-- Si on te demande une comparaison, présente un tableau clair avec les différences.
+- Si on te demande une comparaison, présente un TABLEAU CLAIR avec les différences en markdown.
 - Utilise les tendances (hausse/baisse/stable) pour contextualiser tes réponses.
+- Tu sais faire: additions, multiplications, moyennes, pourcentages, conversions KMF↔EUR (1 EUR ≈ 492 KMF), estimations de budget.
+- Si l'utilisateur demande un budget (ex: "budget pour un mariage", "coût de la vie"), fais un calcul détaillé basé sur les prix réels de la plateforme.
+- Quand tu compares des produits similaires, présente-les sous forme de tableau markdown pour une lecture rapide.
+
+📊 FORMAT DES RÉPONSES:
+- Pour les listes de prix: utilise un tableau markdown quand il y a 3+ produits à comparer
+- Pour les calculs: montre chaque étape
+- Pour les recommandations: bullet points avec liens directs
+- Pour les événements: date, lieu, prix, lien direct
 
 🤝 HONNÊTETÉ ET HUMANITÉ:
 - Si tu ne trouves PAS l'information dans les données fournies, dis-le franchement : "Je n'ai pas encore cette information sur ujamaan.com 😊"
-- Propose des PISTES CONCRÈTES : oriente vers la page interne la plus pertinente.
+- Propose des PISTES CONCRÈTES : oriente vers la page interne la plus pertinente avec un lien direct.
 - Ne JAMAIS inventer de données. Mieux vaut dire "je ne sais pas" que donner une fausse info.
 - Ton amical et empathique. Parle comme un ami comorien serviable.
 - Sois naturel et humain dans tes formulations, évite le ton robotique.
-${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les données de la plateforme.` : ''}`;
+${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les données de la plateforme et donne des liens directs vers les résultats pertinents.` : ''}`;
 
     // Build messages array with history
     const aiMessages: Array<{role: string; content: string}> = [
@@ -255,7 +283,7 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
         model: 'google/gemini-3-flash-preview',
         messages: aiMessages,
         temperature: 0.3,
-        max_tokens: 1500,
+        max_tokens: 2000,
         reasoning: { effort: 'medium' },
       }),
     });

@@ -111,14 +111,21 @@ export default function AdminDashboard() {
       if (isAdmin()) {
         const { data: actionsData } = await supabase.from('admin_actions').select('*').order('created_at', { ascending: false }).limit(10);
         setAdminActions(actionsData || []);
-        const { data: usersData, error: usersError } = await supabase.from('users').select('id, email, username, created_at');
-        if (usersError) { setUsers([]); } else {
-          const usersWithRoles = await Promise.all(
-            (usersData || []).map(async (user) => {
-              const { data: rolesData } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
-              return { ...user, user_roles: rolesData || [] };
-            })
-          );
+        const [usersResult, rolesResult] = await Promise.all([
+          supabase.from('users').select('id, email, username, created_at'),
+          supabase.from('user_roles').select('user_id, role'),
+        ]);
+        if (usersResult.error) { setUsers([]); } else {
+          const rolesByUser = new Map<string, { role: string }[]>();
+          (rolesResult.data || []).forEach((r) => {
+            const list = rolesByUser.get(r.user_id) || [];
+            list.push({ role: r.role });
+            rolesByUser.set(r.user_id, list);
+          });
+          const usersWithRoles = (usersResult.data || []).map((u) => ({
+            ...u,
+            user_roles: rolesByUser.get(u.id) || [],
+          }));
           setUsers(usersWithRoles);
         }
       }
