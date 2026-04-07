@@ -19,7 +19,15 @@ import { usePageSEO } from '@/hooks/usePageSEO';
 export default function DiasporaProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: project, isLoading } = useDiasporaProject(id);
+  const [isAuthorPro, setIsAuthorPro] = useState(false);
+
+  useEffect(() => {
+    if (!project?.author_id) return;
+    supabase.from('users').select('account_type').eq('id', project.author_id).maybeSingle()
+      .then(({ data }) => setIsAuthorPro(data?.account_type === 'pro'));
+  }, [project?.author_id]);
   const { data: investments } = useProjectInvestments(id);
   const { data: updates } = useProjectUpdates(id);
   const updateStatus = useUpdateInvestmentStatus();
