@@ -184,7 +184,7 @@ export default function AdminDashboard() {
         user_id: mod?.submitted_by,
         title: notifTitle,
         message: notifMessage,
-        type: action === 'approved' ? 'success' : 'error',
+        type: action === 'approved' ? 'info' : 'error',
         link: mod?.type === 'role_request' ? '/annonceur' : undefined,
       });
 

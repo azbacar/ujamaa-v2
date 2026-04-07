@@ -97,7 +97,7 @@ const App = () => (
               <Route 
                 path="/profile" 
                 element={
-                  <ProtectedRoute allowedRoles={['user', 'moderator', 'admin']}>
+                  <ProtectedRoute allowedRoles={['user', 'annonceur', 'moderator', 'admin']}>
                     <Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>
                   </ProtectedRoute>
                 } 
