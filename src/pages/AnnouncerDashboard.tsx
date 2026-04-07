@@ -367,6 +367,7 @@ export default function AnnouncerDashboard() {
                       <SelectContent>
                         <SelectItem value="announcement">📢 Annonce</SelectItem>
                         <SelectItem value="event">🎉 Événement</SelectItem>
+                        <SelectItem value="tourisme">🏝️ Tourisme</SelectItem>
                         <SelectItem value="service">🏛️ Service</SelectItem>
                         <SelectItem value="tender">📋 Appel d'offres</SelectItem>
                       </SelectContent>
