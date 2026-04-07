@@ -43,6 +43,7 @@ interface PriceData {
 
 const PricesPage = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   usePageSEO({ title: 'Prix du Marché', description: 'Comparez les prix des produits alimentaires, matériaux et services aux Comores en temps réel.', canonicalPath: '/prix', keywords: 'prix Comores, marché, produits, alimentation, Moroni' });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Toutes');
@@ -53,6 +54,15 @@ const PricesPage = () => {
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
   const [pricesData, setPricesData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('users').select('account_type').eq('id', user.id).single().then(({ data }) => {
+        setIsPro(data?.account_type === 'pro');
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchPrices = async () => {
