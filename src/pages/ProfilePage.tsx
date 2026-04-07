@@ -531,6 +531,37 @@ const ProfilePage = () => {
                   </CardContent>
                 </Card>
 
+                {/* Pro features summary */}
+                {userProfile?.account_type === 'pro' && (
+                  <Card className="lg:col-span-2 border-amber-200 bg-gradient-to-r from-amber-50/50 to-orange-50/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-amber-500" /> Vos avantages Pro
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {[
+                          { icon: '🔔', label: 'Alertes prix', desc: 'Temps réel' },
+                          { icon: '📊', label: 'Historique prix', desc: 'Complet' },
+                          { icon: '📈', label: 'Stats avancées', desc: 'Activé' },
+                          { icon: isVerified ? '✅' : '⏳', label: 'Badge vérifié', desc: isVerified ? 'Actif' : 'En attente' },
+                          { icon: '🤖', label: 'Boost IA', desc: 'Activé' },
+                          { icon: '💬', label: 'Contact direct', desc: 'Activé' },
+                          { icon: '🎧', label: 'Support 24/7', desc: 'Prioritaire' },
+                          { icon: '📍', label: 'Géolocalisation', desc: 'Activée' },
+                        ].map(f => (
+                          <div key={f.label} className="p-3 rounded-lg bg-background/80 border text-center">
+                            <span className="text-xl">{f.icon}</span>
+                            <p className="text-xs font-medium mt-1">{f.label}</p>
+                            <p className="text-xs text-muted-foreground">{f.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Statut du compte</CardTitle>
