@@ -73,7 +73,7 @@ const EventRegistrationDialog = ({ open, onOpenChange, event, onSuccess }: Event
         user_id: user.id,
         title: 'Inscription confirmée',
         message: `Votre inscription à "${event.title}" a été confirmée. Code: ${data.ticket_code}`,
-        type: 'success',
+        type: 'info',
         link: '/profile'
       });
 

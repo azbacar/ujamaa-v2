@@ -81,7 +81,7 @@ export default function VerificationManagementSection() {
           user_id: req.user_id,
           title: '✅ Profil vérifié',
           message: `Votre demande de vérification "${req.type}" a été approuvée. Vous êtes maintenant vérifié !`,
-          type: 'success',
+          type: 'info',
         });
       } else if (status === 'rejected' && req) {
         await supabase.from('notifications').insert({
