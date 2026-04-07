@@ -41,6 +41,17 @@ interface PriceDetailDialogProps {
 }
 
 export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDetailDialogProps) {
+  const { user } = useAuth();
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('users').select('account_type').eq('id', user.id).single().then(({ data }) => {
+        setIsPro(data?.account_type === 'pro');
+      });
+    }
+  }, [user]);
+
   if (!price) return null;
 
   const trendLabel = price.trend === 'up' ? 'En hausse' : price.trend === 'down' ? 'En baisse' : 'Stable';
