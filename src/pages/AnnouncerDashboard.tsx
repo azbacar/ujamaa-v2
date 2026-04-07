@@ -544,8 +544,8 @@ export default function AnnouncerDashboard() {
                   </div>
                 )}
 
-                {/* Contact fields for service/tender/event */}
-                {(isTenderOrService || isEvent) && (
+                {/* Contact fields for service/tender/event/tourisme */}
+                {(isTenderOrService || isEvent || isTourisme) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
                     <div>
                       <Label className="flex items-center gap-2"><Phone className="h-4 w-4" /> Téléphone</Label>
