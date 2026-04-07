@@ -21,6 +21,7 @@ export default function MessagesPage() {
   const sendMessage = useSendMessage();
   const [newMessage, setNewMessage] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  useRealtimeMessages(partnerId);
 
   useEffect(() => {
     if (scrollRef.current) {
