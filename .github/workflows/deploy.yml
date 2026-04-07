@@ -11,28 +11,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy via SSH
+      - name: 🚀 Deploy to server via SSH
         uses: appleboy/ssh-action@v1.0.3
 
         with:
           host: ${{ secrets.SSH_HOST }}
           username: deploy
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          port: ${{ secrets.SSH_PORT }}
+          timeout: 60s
+          command_timeout: 15m
 
           script: |
+            echo "=============================="
+            echo "🚀 START DEPLOY UJAMAAN"
+            echo "=============================="
+
             echo "== Setup environment =="
             export HOME=/home/deploy
             export USER=deploy
             export PATH=/usr/local/bin:/usr/bin:/bin
 
-            echo "== Go to app directory =="
-            cd /home/admin/web/ujamaan.com/app
+            echo "== Who am I =="
+            whoami
+            pwd
+
+            echo "== Node version =="
+            node -v || echo "Node not found"
+
+            echo "== NPM version =="
+            npm -v || echo "NPM not found"
+
+            echo "== Go to project =="
+            cd /home/admin/web/ujamaan.com/app || exit 1
+
+            echo "== Files check =="
+            ls -la
 
             echo "== Ensure script executable =="
             chmod +x deploy.sh
 
-            echo "== Run deploy =="
+            echo "== Run deploy script =="
             bash deploy.sh
 
-            echo "== Done =="
+            echo "=============================="
+            echo "✅ DEPLOY FINISHED"
+            echo "=============================="
