@@ -1125,6 +1125,83 @@ export type Database = {
         }
         Relationships: []
       }
+      price_alerts: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          island: string | null
+          last_triggered_at: string | null
+          product: string | null
+          threshold_type: string
+          threshold_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          island?: string | null
+          last_triggered_at?: string | null
+          product?: string | null
+          threshold_type?: string
+          threshold_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          island?: string | null
+          last_triggered_at?: string | null
+          product?: string | null
+          threshold_type?: string
+          threshold_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      price_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_price: number
+          old_price: number
+          price_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_price: number
+          old_price: number
+          price_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_price?: number
+          old_price?: number
+          price_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_history_price_id_fkey"
+            columns: ["price_id"]
+            isOneToOne: false
+            referencedRelation: "prices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prices: {
         Row: {
           author_id: string

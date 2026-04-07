@@ -154,11 +154,20 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
       fetchUserData();
+      // Check verified status
+      supabase.from('announcer_privileges')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('privilege', 'verified')
+        .eq('is_active', true)
+        .maybeSingle()
+        .then(({ data }) => setIsVerified(!!data));
     }
   }, [user]);
 
@@ -410,6 +419,11 @@ const ProfilePage = () => {
                         <Crown className="h-3 w-3 mr-1" /> PRO
                       </Badge>
                     )}
+                    {isVerified && (
+                      <Badge className="bg-emerald-500 text-white border-0">
+                        <BadgeCheck className="h-3 w-3 mr-1" /> Vérifié
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
                   <p className="text-xs text-muted-foreground">
@@ -516,6 +530,37 @@ const ProfilePage = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Pro features summary */}
+                {userProfile?.account_type === 'pro' && (
+                  <Card className="lg:col-span-2 border-amber-200 bg-gradient-to-r from-amber-50/50 to-orange-50/50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-amber-500" /> Vos avantages Pro
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {[
+                          { icon: '🔔', label: 'Alertes prix', desc: 'Temps réel' },
+                          { icon: '📊', label: 'Historique prix', desc: 'Complet' },
+                          { icon: '📈', label: 'Stats avancées', desc: 'Activé' },
+                          { icon: isVerified ? '✅' : '⏳', label: 'Badge vérifié', desc: isVerified ? 'Actif' : 'En attente' },
+                          { icon: '🤖', label: 'Boost IA', desc: 'Activé' },
+                          { icon: '💬', label: 'Contact direct', desc: 'Activé' },
+                          { icon: '🎧', label: 'Support 24/7', desc: 'Prioritaire' },
+                          { icon: '📍', label: 'Géolocalisation', desc: 'Activée' },
+                        ].map(f => (
+                          <div key={f.label} className="p-3 rounded-lg bg-background/80 border text-center">
+                            <span className="text-xl">{f.icon}</span>
+                            <p className="text-xs font-medium mt-1">{f.label}</p>
+                            <p className="text-xs text-muted-foreground">{f.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 <Card>
                   <CardHeader>

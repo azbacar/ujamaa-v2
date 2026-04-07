@@ -4,14 +4,17 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar } from 'lucide-react';
+import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar, Crown } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
 import PriceSubmissionForm from '@/components/PriceSubmissionForm';
 import PriceDetailDialog from '@/components/PriceDetailDialog';
+import PriceAlertsPanel from '@/components/PriceAlertsPanel';
+import ProFeaturesGate from '@/components/ProFeaturesGate';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { usePageSEO } from '@/hooks/usePageSEO';
 
 interface PriceData {
@@ -40,6 +43,7 @@ interface PriceData {
 
 const PricesPage = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   usePageSEO({ title: 'Prix du Marché', description: 'Comparez les prix des produits alimentaires, matériaux et services aux Comores en temps réel.', canonicalPath: '/prix', keywords: 'prix Comores, marché, produits, alimentation, Moroni' });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Toutes');
@@ -50,6 +54,15 @@ const PricesPage = () => {
   const [selectedPrice, setSelectedPrice] = useState<PriceData | null>(null);
   const [pricesData, setPricesData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('users').select('account_type').eq('id', user.id).single().then(({ data }) => {
+        setIsPro(data?.account_type === 'pro');
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -330,6 +343,45 @@ const PricesPage = () => {
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-2xl font-bold text-gray-600 mb-2">Aucun prix trouvé</h3>
             <p className="text-gray-500">Essayez de modifier vos critères de recherche.</p>
+          </div>
+        )}
+
+        {/* Pro: Price alerts */}
+        {user && (
+          <div className="mt-8">
+            <ProFeaturesGate feature="Les alertes prix en temps réel" isPro={isPro}>
+              <PriceAlertsPanel />
+            </ProFeaturesGate>
+          </div>
+        )}
+
+        {/* Pro: Advanced stats */}
+        {user && (
+          <div className="mt-6">
+            <ProFeaturesGate feature="Les statistiques avancées des prix" isPro={isPro}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Crown className="h-5 w-5 text-amber-500" /> Statistiques avancées
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Prix moyen', value: `${Math.round(filteredPrices.reduce((a, b) => a + b.price, 0) / (filteredPrices.length || 1)).toLocaleString()} FC` },
+                      { label: 'Prix min', value: `${Math.min(...filteredPrices.map(p => p.price)).toLocaleString()} FC` },
+                      { label: 'Prix max', value: `${Math.max(...filteredPrices.map(p => p.price)).toLocaleString()} FC` },
+                      { label: 'En hausse', value: `${filteredPrices.filter(p => p.trend === 'up').length} produits` },
+                    ].map(stat => (
+                      <div key={stat.label} className="text-center p-3 rounded-lg bg-muted/50">
+                        <p className="text-lg font-bold text-foreground">{stat.value}</p>
+                        <p className="text-xs text-muted-foreground">{stat.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </ProFeaturesGate>
           </div>
         )}
 

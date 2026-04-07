@@ -1,9 +1,14 @@
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { MapPin, User, Calendar, TrendingUp, TrendingDown, Store, Tag, Package, Navigation, Clock } from 'lucide-react';
 import SocialShareButtons from '@/components/SocialShareButtons';
+import PriceHistoryChart from '@/components/PriceHistoryChart';
+import ProFeaturesGate from '@/components/ProFeaturesGate';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PriceData {
   id: string;
@@ -36,6 +41,17 @@ interface PriceDetailDialogProps {
 }
 
 export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDetailDialogProps) {
+  const { user } = useAuth();
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('users').select('account_type').eq('id', user.id).single().then(({ data }) => {
+        setIsPro(data?.account_type === 'pro');
+      });
+    }
+  }, [user]);
+
   if (!price) return null;
 
   const trendLabel = price.trend === 'up' ? 'En hausse' : price.trend === 'down' ? 'En baisse' : 'Stable';
@@ -193,6 +209,16 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
               </p>
             </div>
           )}
+
+          {/* Price history chart - Pro feature */}
+          <ProFeaturesGate feature="L'historique complet des prix" isPro={isPro}>
+            <PriceHistoryChart
+              priceId={price.id}
+              productName={price.product}
+              currentPrice={price.price}
+              currency={price.currency}
+            />
+          </ProFeaturesGate>
 
           <SocialShareButtons title={`${price.product} — ${price.price} ${price.currency}/${price.unit}`} description={`Prix à ${price.location.island}`} className="pt-2" />
         </div>
