@@ -2086,7 +2086,7 @@ export type Database = {
       }
     }
     Enums: {
-      account_type: "free" | "pro"
+      account_type: "free" | "pro" | "enterprise"
       announcement_kind: "info" | "warning" | "urgent" | "maintenance"
       app_role: "admin" | "moderator" | "user" | "annonceur"
       content_status: "published" | "draft" | "archived"
@@ -2223,7 +2223,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type: ["free", "pro"],
+      account_type: ["free", "pro", "enterprise"],
       announcement_kind: ["info", "warning", "urgent", "maintenance"],
       app_role: ["admin", "moderator", "user", "annonceur"],
       content_status: ["published", "draft", "archived"],
