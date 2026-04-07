@@ -3,8 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Crown, Zap, Star, Shield, TrendingUp, BarChart3, CheckCircle, ArrowRight,
-  Eye, MessageSquare, Bell, Search, FileText, Lock,
+  Crown,
+  Zap,
+  Star,
+  Shield,
+  TrendingUp,
+  BarChart3,
+  CheckCircle,
+  ArrowRight,
+  Eye,
+  MessageSquare,
+  Bell,
+  Search,
+  FileText,
+  Lock,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -38,8 +50,8 @@ const PLANS = [
   {
     id: "premium",
     name: "UJAMAA Pro",
-    price: "5 000",
-    amount: 5000,
+    price: "4 875",
+    amount: 4875,
     currency: "FC",
     period: "/mois",
     description: "Pour les professionnels et commerçants",
@@ -85,18 +97,42 @@ const PLANS = [
 ];
 
 const PRO_ADVANTAGES = [
-  { icon: Eye, title: "Visibilité maximale", desc: "Vos annonces apparaissent en priorité dans les résultats de recherche" },
-  { icon: TrendingUp, title: "Analyses prédictives", desc: "IA avancée pour prévoir les tendances des prix sur l'archipel" },
-  { icon: Bell, title: "Alertes intelligentes", desc: "Notifications instantanées sur les changements de prix qui vous concernent" },
-  { icon: MessageSquare, title: "Contact direct", desc: "Les utilisateurs peuvent vous contacter directement depuis vos annonces" },
+  {
+    icon: Eye,
+    title: "Visibilité maximale",
+    desc: "Vos annonces apparaissent en priorité dans les résultats de recherche",
+  },
+  {
+    icon: TrendingUp,
+    title: "Analyses prédictives",
+    desc: "IA avancée pour prévoir les tendances des prix sur l'archipel",
+  },
+  {
+    icon: Bell,
+    title: "Alertes intelligentes",
+    desc: "Notifications instantanées sur les changements de prix qui vous concernent",
+  },
+  {
+    icon: MessageSquare,
+    title: "Contact direct",
+    desc: "Les utilisateurs peuvent vous contacter directement depuis vos annonces",
+  },
   { icon: Search, title: "Boost IA", desc: "L'assistant UJAMAA recommande vos annonces aux utilisateurs pertinents" },
-  { icon: BarChart3, title: "Rapports détaillés", desc: "Statistiques de performance de vos annonces et tendances du marché" },
+  {
+    icon: BarChart3,
+    title: "Rapports détaillés",
+    desc: "Statistiques de performance de vos annonces et tendances du marché",
+  },
   { icon: FileText, title: "Annonces illimitées", desc: "Publiez autant d'annonces que nécessaire sans restriction" },
-  { icon: Lock, title: "Badge vérifié", desc: "Gagnez la confiance des utilisateurs avec le badge ✅ sur votre profil" },
+  {
+    icon: Lock,
+    title: "Badge vérifié",
+    desc: "Gagnez la confiance des utilisateurs avec le badge ✅ sur votre profil",
+  },
 ];
 
 function generateUserRef(userId: string): string {
-  return ('UJA' + userId.replace(/-/g, '').slice(0, 12)).toUpperCase();
+  return ("UJA" + userId.replace(/-/g, "").slice(0, 12)).toUpperCase();
 }
 
 export default function ProPage() {
@@ -122,7 +158,7 @@ export default function ProPage() {
     setShowPayment(true);
   };
 
-  const handlePaymentSubmit = async (method: 'mvola' | 'cash' | 'card', reference: string) => {
+  const handlePaymentSubmit = async (method: "mvola" | "cash" | "card", reference: string) => {
     if (!user) return;
     const plan = PLANS.find((p) => p.id === selectedPlan);
     const { error } = await supabase.from("pro_subscription_requests" as any).insert({
@@ -139,7 +175,7 @@ export default function ProPage() {
   };
 
   const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
-  const userRef = user ? generateUserRef(user.id) : 'UJAMAAN';
+  const userRef = user ? generateUserRef(user.id) : "UJAMAAN";
 
   return (
     <div className="min-h-screen bg-background">
@@ -171,7 +207,9 @@ export default function ProPage() {
                 </div>
               )}
               <CardHeader className="text-center pb-2 pt-6">
-                <div className={`w-14 h-14 mx-auto rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-3`}>
+                <div
+                  className={`w-14 h-14 mx-auto rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-3`}
+                >
                   <plan.icon className="w-7 h-7 text-white" />
                 </div>
                 <CardTitle className="text-xl">{plan.name}</CardTitle>
