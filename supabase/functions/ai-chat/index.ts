@@ -17,12 +17,14 @@ async function getDynamicSiteData(authHeader: string | null) {
   });
 
   try {
-    const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes] = await Promise.all([
+    const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes, taxiRes, pharmacyRes] = await Promise.all([
       supabase.from('prices').select('id, product, price, unit, island, category, currency, market, city, vendor, trend, created_at, village, region').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
       supabase.from('events').select('id, title, description, date, end_date, location, island, category, price, currency').gte('date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
       supabase.from('content_items').select('id, title, description, category, type').eq('status', 'published').order('published_at', { ascending: false }).limit(20),
       supabase.from('freelancer_profiles').select('id, display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available, location').eq('is_visible', true).eq('is_available', true).limit(30),
       supabase.from('diaspora_projects').select('id, title, description, category, target_amount, current_amount, currency, island, location, min_investment, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
+      supabase.from('taxi_fares').select('id, from_location, to_location, island, price, currency, vehicle_type, notes').eq('is_active', true).order('island').limit(100),
+      supabase.from('pharmacy_guards').select('id, name, address, phone, island, city, is_on_duty, duty_start, duty_end, notes').eq('is_active', true).order('island').limit(50),
     ]);
 
     return {
@@ -31,10 +33,12 @@ async function getDynamicSiteData(authHeader: string | null) {
       announcements: announcementsRes.data || [],
       freelancers: freelancersRes.data || [],
       diasporaProjects: diasporaRes.data || [],
+      taxiFares: taxiRes.data || [],
+      pharmacies: pharmacyRes.data || [],
     };
   } catch (error) {
     console.error('Error fetching dynamic data:', error);
-    return { prices: [], events: [], announcements: [], freelancers: [], diasporaProjects: [] };
+    return { prices: [], events: [], announcements: [], freelancers: [], diasporaProjects: [], taxiFares: [], pharmacies: [] };
   }
 }
 
@@ -169,6 +173,34 @@ serve(async (req) => {
       dynamicContent += '\n';
     }
 
+    if (dynamicData.taxiFares && dynamicData.taxiFares.length > 0) {
+      dynamicContent += '🚕 TARIFS DE TAXI:\n';
+      dynamicData.taxiFares.forEach((t: any) => {
+        dynamicContent += `- ${t.from_location} → ${t.to_location} (${t.island}): ${t.price} ${t.currency || 'FC'} [${t.vehicle_type}]${t.notes ? ' — ' + t.notes : ''}\n`;
+      });
+      dynamicContent += 'Lien: [Voir tous les tarifs taxi](/infos-pratiques)\n\n';
+    }
+
+    if (dynamicData.pharmacies && dynamicData.pharmacies.length > 0) {
+      dynamicContent += '💊 PHARMACIES DE GARDE:\n';
+      const onDuty = dynamicData.pharmacies.filter((p: any) => p.is_on_duty);
+      const offDuty = dynamicData.pharmacies.filter((p: any) => !p.is_on_duty);
+      if (onDuty.length > 0) {
+        dynamicContent += 'Actuellement de garde:\n';
+        onDuty.forEach((p: any) => {
+          const dutyEnd = p.duty_end ? ' (jusqu\'au ' + new Date(p.duty_end).toLocaleDateString('fr-FR') + ')' : '';
+          dynamicContent += `- 🟢 ${p.name}${p.city ? ' — ' + p.city : ''} (${p.island})${p.phone ? ' — Tél: ' + p.phone : ''}${p.address ? ' — ' + p.address : ''}${dutyEnd}\n`;
+        });
+      }
+      if (offDuty.length > 0) {
+        dynamicContent += `Autres pharmacies (${offDuty.length}):\n`;
+        offDuty.slice(0, 10).forEach((p: any) => {
+          dynamicContent += `- ${p.name}${p.city ? ' — ' + p.city : ''} (${p.island})${p.phone ? ' — Tél: ' + p.phone : ''}\n`;
+        });
+      }
+      dynamicContent += 'Lien: [Voir toutes les pharmacies](/infos-pratiques)\n\n';
+    }
+
     // Build knowledge sources section
     let knowledgeSection = '';
     if (knowledgeSources.length > 0) {
@@ -219,6 +251,7 @@ PAGES INTERNES DU SITE:
 - /annonces → Annonces 📢
 - /annonces/:id → Détail d'une annonce
 - /tourisme → Tourisme 🏨
+- /infos-pratiques → Infos Pratiques (tarifs taxi, pharmacies de garde) 📋
 - /freelance → Missions freelance 💼
 - /freelancers → Répertoire des freelancers 👨‍💻
 - /investissement → Investissement Diaspora 🌍

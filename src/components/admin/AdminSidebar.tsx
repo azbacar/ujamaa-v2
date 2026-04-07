@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   BarChart3, Home, FileText, Clock, Users, Image, Settings,
   Shield, Activity, Bell, Database, ChevronRight, Crown,
-  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase, Globe, Building2, BadgeCheck
+  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase, Globe, Building2, BadgeCheck, Car
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ export default function AdminSidebar({
     { id: 'content', title: 'Contenu', icon: FileText, description: 'Articles et publications', available: true, category: 'content' },
     { id: 'events', title: 'Événements', icon: Calendar, description: 'Gestion des événements', available: isAdmin || isModerator, category: 'content' },
     { id: 'tourism', title: 'Tourisme', icon: Database, description: 'Gastronomie & hébergements', available: isAdmin, category: 'content' },
+    { id: 'infos-pratiques', title: 'Infos Pratiques', icon: Car, description: 'Taxis & Pharmacies de garde', available: isAdmin, category: 'content' },
     { id: 'ads', title: 'Publicités', icon: Crown, description: 'Espaces publicitaires', available: isAdmin, category: 'content' },
     { id: 'ad-stats', title: 'Stats Publicités', icon: BarChart3, description: 'Statistiques CTR', available: isAdmin, category: 'content' },
     { id: 'prices', title: 'Prix & Marchés', icon: DollarSign, description: 'Gestion des prix', available: isModerator || isAdmin, category: 'content' },

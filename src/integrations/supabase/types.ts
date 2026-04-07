@@ -1313,6 +1313,63 @@ export type Database = {
         }
         Relationships: []
       }
+      pharmacy_guards: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          created_by: string | null
+          duty_end: string | null
+          duty_start: string | null
+          id: string
+          is_active: boolean
+          is_on_duty: boolean
+          island: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          duty_end?: string | null
+          duty_start?: string | null
+          id?: string
+          is_active?: boolean
+          is_on_duty?: boolean
+          island?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          duty_end?: string | null
+          duty_start?: string | null
+          id?: string
+          is_active?: boolean
+          is_on_duty?: boolean
+          island?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       price_alerts: {
         Row: {
           category: string | null
@@ -1859,6 +1916,51 @@ export type Database = {
           title?: string
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      taxi_fares: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          from_location: string
+          id: string
+          is_active: boolean
+          island: string
+          notes: string | null
+          price: number
+          to_location: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          from_location: string
+          id?: string
+          is_active?: boolean
+          island?: string
+          notes?: string | null
+          price: number
+          to_location: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          from_location?: string
+          id?: string
+          is_active?: boolean
+          island?: string
+          notes?: string | null
+          price?: number
+          to_location?: string
+          updated_at?: string
+          vehicle_type?: string
         }
         Relationships: []
       }
