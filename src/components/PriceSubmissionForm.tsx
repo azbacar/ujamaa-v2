@@ -131,6 +131,11 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
       if (isAnnonceur() && formData.latitude && formData.longitude) {
         insertData.latitude = parseFloat(formData.latitude);
         insertData.longitude = parseFloat(formData.longitude);
+        insertData.merchant_type = formData.merchantType;
+        if (formData.merchantType === 'ambulant') {
+          const hours = parseInt(formData.geoExpiresHours);
+          insertData.geo_expires_at = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+        }
       }
 
       const { error } = await supabase.from('prices').insert(insertData);
