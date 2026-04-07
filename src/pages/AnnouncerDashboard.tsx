@@ -150,6 +150,34 @@ export default function AnnouncerDashboard() {
         });
         if (error) throw error;
         toast.success('Événement soumis pour modération');
+      } else if (newForm.type === 'tourisme') {
+        // gastronomy_items
+        const uploadedUrls: string[] = [];
+        for (const file of eventImages) {
+          const ext = file.name.split('.').pop();
+          const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from('event-images').upload(path, file, { upsert: false });
+          if (uploadError) throw new Error(`Erreur upload image: ${uploadError.message}`);
+          const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
+          uploadedUrls.push(urlData.publicUrl);
+        }
+        const { error } = await supabase.from('gastronomy_items').insert({
+          title: newForm.title,
+          description: newForm.description,
+          type: newForm.gastronomy_type as any,
+          category: newForm.category || null,
+          location: newForm.gastronomy_location || null,
+          price_min: newForm.price_min ? parseFloat(newForm.price_min) : null,
+          price_max: newForm.price_max ? parseFloat(newForm.price_max) : null,
+          contact_phone: newForm.contact_phone || null,
+          contact_email: newForm.contact_email || null,
+          contact_whatsapp: newForm.contact_whatsapp || null,
+          author_id: user.id,
+          status: 'draft',
+          images: uploadedUrls.length > 0 ? uploadedUrls : null,
+        });
+        if (error) throw error;
+        toast.success('Publication tourisme soumise pour modération');
       } else {
         // content_items: announcement, service, tender
         const { error } = await supabase.from('content_items').insert({
