@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AvatarCropDialog from '@/components/AvatarCropDialog';
+import VerificationRequestForm from '@/components/VerificationRequestForm';
 
 const PasswordChangeSection = () => {
   const [currentPassword, setCurrentPassword] = useState('');
