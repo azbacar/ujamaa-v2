@@ -70,7 +70,12 @@ const EventsPage = () => {
     }
   };
 
+  const now = new Date();
+
   const filteredEvents = events.filter(event => {
+    // Masquer les événements passés de la liste publique
+    if (new Date(event.date) < now) return false;
+
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesIsland = selectedIsland === 'all' || event.island === selectedIsland;
