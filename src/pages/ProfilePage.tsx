@@ -160,6 +160,14 @@ const ProfilePage = () => {
   useEffect(() => {
     if (user) {
       fetchUserData();
+      // Check verified status
+      supabase.from('announcer_privileges')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('privilege', 'verified')
+        .eq('is_active', true)
+        .maybeSingle()
+        .then(({ data }) => setIsVerified(!!data));
     }
   }, [user]);
 
