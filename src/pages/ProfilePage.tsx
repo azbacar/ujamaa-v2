@@ -677,6 +677,11 @@ const ProfilePage = () => {
               </Card>
             </TabsContent>
 
+            {/* Tab: Vérification */}
+            <TabsContent value="verification">
+              <VerificationRequestForm />
+            </TabsContent>
+
             {/* Tab: Mes contenus (annonceur+) */}
             {(isAnnonceur() || isModerator() || isAdmin()) && (
               <TabsContent value="content">
