@@ -277,10 +277,15 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
                   <CardTitle className="text-lg">📞 Contact</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center space-y-2">
-                    <Lock className="w-8 h-8 text-muted-foreground mx-auto" />
+                  <div className="text-center space-y-3">
+                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
+                      <span className="text-lg">⚠️</span>
+                    </div>
                     <p className="text-sm text-muted-foreground">
-                      Les coordonnées directes sont réservées aux annonceurs Pro.
+                      Cet appel d'offres est publié par un compte <strong>non vérifié</strong>. Les coordonnées ne sont pas disponibles.
+                    </p>
+                    <p className="text-xs text-muted-foreground/70">
+                      Seuls les annonceurs Pro ou Entreprise affichent leurs coordonnées vérifiées.
                     </p>
                   </div>
                 </CardContent>

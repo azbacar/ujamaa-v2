@@ -207,14 +207,16 @@ const AnnouncementDetail = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="text-center space-y-2">
-                      <Lock className="w-8 h-8 text-muted-foreground mx-auto" />
+                    <div className="text-center space-y-3">
+                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
+                        <span className="text-lg">⚠️</span>
+                      </div>
                       <p className="text-sm text-muted-foreground">
-                        Les coordonnées de contact sont disponibles uniquement pour les annonceurs Pro.
+                        Cette annonce est publiée par un compte <strong>non vérifié</strong>. Les coordonnées de contact ne sont pas disponibles.
                       </p>
-                      <Button variant="outline" size="sm" onClick={() => window.location.href = '/pro'}>
-                        Devenir Pro
-                      </Button>
+                      <p className="text-xs text-muted-foreground/70">
+                        Les annonceurs avec un forfait Pro ou Entreprise affichent leurs coordonnées vérifiées pour garantir la fiabilité de leurs publications.
+                      </p>
                     </div>
                   )}
                 </CardContent>
