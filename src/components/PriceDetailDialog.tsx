@@ -1,9 +1,14 @@
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { MapPin, User, Calendar, TrendingUp, TrendingDown, Store, Tag, Package, Navigation, Clock } from 'lucide-react';
 import SocialShareButtons from '@/components/SocialShareButtons';
+import PriceHistoryChart from '@/components/PriceHistoryChart';
+import ProFeaturesGate from '@/components/ProFeaturesGate';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PriceData {
   id: string;
