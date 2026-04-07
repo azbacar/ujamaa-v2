@@ -398,6 +398,59 @@ export default function AnnouncerDashboard() {
                   <Textarea value={newForm.description} onChange={e => updateForm('description', e.target.value)} rows={4} placeholder="Description détaillée..." />
                 </div>
 
+                {/* Tourisme-specific fields */}
+                {isTourisme && (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                    <h4 className="font-medium text-sm flex items-center gap-2">🏝️ Détails tourisme</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Type de tourisme *</Label>
+                        <Select value={newForm.gastronomy_type} onValueChange={v => updateForm('gastronomy_type', v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {GASTRONOMY_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Localisation</Label>
+                        <Input value={newForm.gastronomy_location} onChange={e => updateForm('gastronomy_location', e.target.value)} placeholder="Ex: Moroni, Grande Comore" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Prix minimum (KMF)</Label>
+                        <Input type="number" value={newForm.price_min} onChange={e => updateForm('price_min', e.target.value)} placeholder="0" />
+                      </div>
+                      <div>
+                        <Label>Prix maximum (KMF)</Label>
+                        <Input type="number" value={newForm.price_max} onChange={e => updateForm('price_max', e.target.value)} placeholder="0" />
+                      </div>
+                    </div>
+                    {/* Image upload for tourism */}
+                    <div>
+                      <Label className="flex items-center gap-2 mb-2"><ImagePlus className="h-4 w-4 text-primary" /> Photos (max 5, 5 Mo chacune)</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {imagePreviews.map((src, i) => (
+                          <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-border group">
+                            <img src={src} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                            <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {eventImages.length < 5 && (
+                          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                            <ImagePlus className="h-6 w-6 text-primary/60" />
+                            <span className="text-[10px] text-muted-foreground mt-1">Ajouter</span>
+                            <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Event-specific fields */}
                 {isEvent && (
                   <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
