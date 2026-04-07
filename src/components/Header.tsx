@@ -232,6 +232,9 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     <Link to="/tourisme" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🏝️ Tourisme
                     </Link>
+                    <Link to="/infos-pratiques" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
+                      📋 Infos Pratiques
+                    </Link>
                     <Link to="/investissement" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🌍 Invest
                     </Link>

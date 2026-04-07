@@ -136,6 +136,7 @@ const App = () => (
                 } 
               />
               <Route path="/tourisme" element={<Suspense fallback={<PageLoader />}><TourismePage /></Suspense>} />
+              <Route path="/infos-pratiques" element={<Suspense fallback={<PageLoader />}><InfosPratiquesPage /></Suspense>} />
               <Route path="/ile/:islandName" element={<Suspense fallback={<PageLoader />}><IslandDetailPage /></Suspense>} />
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
