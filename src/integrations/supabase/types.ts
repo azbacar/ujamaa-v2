@@ -801,61 +801,79 @@ export type Database = {
       }
       freelancer_profiles: {
         Row: {
+          avatar_url: string | null
           bio: string | null
           created_at: string
           currency: string
           display_name: string
           experience_years: number | null
+          facebook_url: string | null
           hourly_rate_max: number | null
           hourly_rate_min: number | null
           id: string
+          instagram_url: string | null
           is_available: boolean
           is_visible: boolean
           island: string | null
+          linkedin_url: string | null
           location: string | null
           portfolio_url: string | null
           skills: string[] | null
+          twitter_url: string | null
           updated_at: string
           user_id: string
           views: number
+          whatsapp: string | null
         }
         Insert: {
+          avatar_url?: string | null
           bio?: string | null
           created_at?: string
           currency?: string
           display_name: string
           experience_years?: number | null
+          facebook_url?: string | null
           hourly_rate_max?: number | null
           hourly_rate_min?: number | null
           id?: string
+          instagram_url?: string | null
           is_available?: boolean
           is_visible?: boolean
           island?: string | null
+          linkedin_url?: string | null
           location?: string | null
           portfolio_url?: string | null
           skills?: string[] | null
+          twitter_url?: string | null
           updated_at?: string
           user_id: string
           views?: number
+          whatsapp?: string | null
         }
         Update: {
+          avatar_url?: string | null
           bio?: string | null
           created_at?: string
           currency?: string
           display_name?: string
           experience_years?: number | null
+          facebook_url?: string | null
           hourly_rate_max?: number | null
           hourly_rate_min?: number | null
           id?: string
+          instagram_url?: string | null
           is_available?: boolean
           is_visible?: boolean
           island?: string | null
+          linkedin_url?: string | null
           location?: string | null
           portfolio_url?: string | null
           skills?: string[] | null
+          twitter_url?: string | null
           updated_at?: string
           user_id?: string
           views?: number
+          whatsapp?: string | null
         }
         Relationships: []
       }
