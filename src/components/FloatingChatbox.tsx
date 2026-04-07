@@ -38,7 +38,13 @@ const INTERNAL_LINK_LABELS: Record<string, string> = {
   '/tourisme': '🏨 Tourisme',
   '/freelance': '💼 Missions Freelance',
   '/freelancers': '👨‍💻 Répertoire Freelancers',
-  '/auth': '🔐 Inscription',
+  '/investissement': '🌍 Investissement Diaspora',
+  '/pro': '👑 UJAMAA Pro',
+  '/entreprise': '🏢 Espace Entreprise',
+  '/profil': '👤 Mon Profil',
+  '/messages': '✉️ Messages',
+  '/auth': '🔐 Inscription / Connexion',
+  '/installer': '📲 Installer l\'app',
 };
 
 const resolveInternalPath = (url: string): string | null => {
