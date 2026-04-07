@@ -19,8 +19,16 @@ export interface FreelancerProfile {
   is_available: boolean;
   is_visible: boolean;
   views: number;
+  avatar_url: string | null;
+  whatsapp: string | null;
+  facebook_url: string | null;
+  linkedin_url: string | null;
+  twitter_url: string | null;
+  instagram_url: string | null;
   created_at: string;
   updated_at: string;
+  // joined from users table
+  account_type?: string;
 }
 
 export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: string; search?: string }) => {
@@ -43,7 +51,18 @@ export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: st
 
       let results = (data || []) as FreelancerProfile[];
 
-      // Client-side skill filter (array overlap)
+      // Fetch account_type for each user to determine pro status
+      const userIds = [...new Set(results.map(r => r.user_id))];
+      if (userIds.length > 0) {
+        const { data: users } = await supabase
+          .from('users')
+          .select('id, account_type')
+          .in('id', userIds);
+        
+        const userMap = new Map((users || []).map(u => [u.id, u.account_type]));
+        results = results.map(r => ({ ...r, account_type: userMap.get(r.user_id) || 'free' }));
+      }
+
       if (filters?.skills?.length) {
         const searchSkills = filters.skills.map(s => s.toLowerCase());
         results = results.filter(p =>
@@ -51,12 +70,11 @@ export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: st
         );
       }
 
-      // Client-side search
       if (filters?.search) {
         const q = filters.search.toLowerCase();
         results = results.filter(p =>
           p.display_name.toLowerCase().includes(q) ||
-          p.bio.toLowerCase().includes(q) ||
+          (p.bio || '').toLowerCase().includes(q) ||
           p.skills.some(s => s.toLowerCase().includes(q))
         );
       }
@@ -95,8 +113,8 @@ export const useUpsertFreelancerProfile = () => {
   return useMutation({
     mutationFn: async (profile: Partial<FreelancerProfile>) => {
       const payload = { ...profile, user_id: user!.id };
+      delete (payload as any).account_type;
       
-      // Check if profile exists
       const { data: existing } = await supabase
         .from('freelancer_profiles')
         .select('id')
