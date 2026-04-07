@@ -10,13 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import {
   Building2, FileText, Users, BarChart3, Plus, Send,
-  CheckCircle, Clock, XCircle, Save, Trash2, Shield, Globe, Phone, Mail
+  CheckCircle, Clock, XCircle, Save, Trash2, Shield, Globe, Phone, Mail,
+  UserCircle, Receipt, Calculator
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnterprise, EnterpriseProfile } from '@/hooks/useEnterprise';
+import { useEnterpriseCRM } from '@/hooks/useEnterpriseCRM';
 import { supabase } from '@/integrations/supabase/client';
+import CRMClientsTab from '@/components/enterprise/CRMClientsTab';
+import CRMInvoicesTab from '@/components/enterprise/CRMInvoicesTab';
+import CRMAccountingTab from '@/components/enterprise/CRMAccountingTab';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { usePageSEO } from '@/hooks/usePageSEO';
@@ -38,6 +43,7 @@ export default function EnterpriseDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { enterprise, submissions, members, loading, createEnterprise, updateEnterprise, submitTender, addMember, removeMember, refresh } = useEnterprise();
+  const crm = useEnterpriseCRM(enterprise?.id);
 
   if (loading) {
     return (
@@ -99,8 +105,11 @@ export default function EnterpriseDashboard() {
           <TabsList className="w-full flex flex-wrap">
             <TabsTrigger value="profile" className="gap-1"><Building2 className="h-4 w-4" /> Profil</TabsTrigger>
             <TabsTrigger value="tenders" className="gap-1"><FileText className="h-4 w-4" /> Soumissions</TabsTrigger>
+            <TabsTrigger value="clients" className="gap-1"><UserCircle className="h-4 w-4" /> CRM</TabsTrigger>
+            <TabsTrigger value="invoices" className="gap-1"><Receipt className="h-4 w-4" /> Factures</TabsTrigger>
+            <TabsTrigger value="accounting" className="gap-1"><Calculator className="h-4 w-4" /> Comptabilité</TabsTrigger>
             <TabsTrigger value="team" className="gap-1"><Users className="h-4 w-4" /> Équipe</TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-1"><BarChart3 className="h-4 w-4" /> Statistiques</TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-1"><BarChart3 className="h-4 w-4" /> Stats</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -109,6 +118,18 @@ export default function EnterpriseDashboard() {
 
           <TabsContent value="tenders">
             <TenderSubmissionsTab submissions={submissions} onSubmit={submitTender} enterpriseId={enterprise.id} isVerified={enterprise.is_verified} />
+          </TabsContent>
+
+          <TabsContent value="clients">
+            <CRMClientsTab clients={crm.clients} onAdd={crm.addClient} onDelete={crm.deleteClient} />
+          </TabsContent>
+
+          <TabsContent value="invoices">
+            <CRMInvoicesTab invoices={crm.invoices} clients={crm.clients} onAdd={crm.addInvoice} onUpdate={crm.updateInvoice} onDelete={crm.deleteInvoice} />
+          </TabsContent>
+
+          <TabsContent value="accounting">
+            <CRMAccountingTab transactions={crm.transactions} totalIncome={crm.totalIncome} totalExpense={crm.totalExpense} balance={crm.balance} unpaidTotal={crm.unpaidTotal} onAdd={crm.addTransaction} onDelete={crm.deleteTransaction} />
           </TabsContent>
 
           <TabsContent value="team">
