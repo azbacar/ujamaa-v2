@@ -173,6 +173,34 @@ serve(async (req) => {
       dynamicContent += '\n';
     }
 
+    if (dynamicData.taxiFares && dynamicData.taxiFares.length > 0) {
+      dynamicContent += '🚕 TARIFS DE TAXI:\n';
+      dynamicData.taxiFares.forEach((t: any) => {
+        dynamicContent += `- ${t.from_location} → ${t.to_location} (${t.island}): ${t.price} ${t.currency || 'FC'} [${t.vehicle_type}]${t.notes ? ' — ' + t.notes : ''}\n`;
+      });
+      dynamicContent += 'Lien: [Voir tous les tarifs taxi](/infos-pratiques)\n\n';
+    }
+
+    if (dynamicData.pharmacies && dynamicData.pharmacies.length > 0) {
+      dynamicContent += '💊 PHARMACIES DE GARDE:\n';
+      const onDuty = dynamicData.pharmacies.filter((p: any) => p.is_on_duty);
+      const offDuty = dynamicData.pharmacies.filter((p: any) => !p.is_on_duty);
+      if (onDuty.length > 0) {
+        dynamicContent += 'Actuellement de garde:\n';
+        onDuty.forEach((p: any) => {
+          const dutyEnd = p.duty_end ? ' (jusqu\'au ' + new Date(p.duty_end).toLocaleDateString('fr-FR') + ')' : '';
+          dynamicContent += `- 🟢 ${p.name}${p.city ? ' — ' + p.city : ''} (${p.island})${p.phone ? ' — Tél: ' + p.phone : ''}${p.address ? ' — ' + p.address : ''}${dutyEnd}\n`;
+        });
+      }
+      if (offDuty.length > 0) {
+        dynamicContent += `Autres pharmacies (${offDuty.length}):\n`;
+        offDuty.slice(0, 10).forEach((p: any) => {
+          dynamicContent += `- ${p.name}${p.city ? ' — ' + p.city : ''} (${p.island})${p.phone ? ' — Tél: ' + p.phone : ''}\n`;
+        });
+      }
+      dynamicContent += 'Lien: [Voir toutes les pharmacies](/infos-pratiques)\n\n';
+    }
+
     // Build knowledge sources section
     let knowledgeSection = '';
     if (knowledgeSources.length > 0) {
