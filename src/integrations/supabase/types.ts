@@ -1132,12 +1132,14 @@ export type Database = {
           city: string
           created_at: string
           currency: string
+          geo_expires_at: string | null
           id: string
           image_url: string | null
           island: string
           latitude: number | null
           longitude: number | null
           market: string
+          merchant_type: string
           price: number
           product: string
           region: string | null
@@ -1155,12 +1157,14 @@ export type Database = {
           city: string
           created_at?: string
           currency?: string
+          geo_expires_at?: string | null
           id?: string
           image_url?: string | null
           island: string
           latitude?: number | null
           longitude?: number | null
           market: string
+          merchant_type?: string
           price: number
           product: string
           region?: string | null
@@ -1178,12 +1182,14 @@ export type Database = {
           city?: string
           created_at?: string
           currency?: string
+          geo_expires_at?: string | null
           id?: string
           image_url?: string | null
           island?: string
           latitude?: number | null
           longitude?: number | null
           market?: string
+          merchant_type?: string
           price?: number
           product?: string
           region?: string | null
