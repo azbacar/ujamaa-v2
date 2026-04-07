@@ -85,16 +85,18 @@ export default function AnnouncerDashboard() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
-    const [itemsRes, eventsRes, privRes] = await Promise.all([
+    const [itemsRes, eventsRes, gastroRes, privRes] = await Promise.all([
       supabase.from('content_items').select('id, title, description, type, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
       supabase.from('events').select('id, title, description, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('gastronomy_items').select('id, title, description, type, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
       supabase.from('announcer_privileges').select('*').eq('user_id', user.id),
     ]);
     
     const contentItems: ContentItem[] = (itemsRes.data || []).map(i => ({ ...i, source: 'content' as const }));
     const eventItems: ContentItem[] = (eventsRes.data || []).map(e => ({ ...e, type: 'event', views: e.views || 0, status: e.status || 'draft', source: 'event' as const }));
+    const gastroItems: ContentItem[] = (gastroRes.data || []).map(g => ({ ...g, type: 'tourisme', views: g.views || 0, status: g.status || 'draft', source: 'content' as const }));
     
-    const all = [...contentItems, ...eventItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const all = [...contentItems, ...eventItems, ...gastroItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     setItems(all);
     setPrivileges(privRes.data || []);
     setLoading(false);
