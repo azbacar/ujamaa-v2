@@ -40,6 +40,11 @@ interface Event {
   requires_payment: boolean;
   views: number;
   images: string[] | null;
+  author_id: string;
+}
+
+interface AuthorInfo {
+  account_type: string;
 }
 
 const EventDetail = () => {
