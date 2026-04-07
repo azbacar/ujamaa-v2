@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdSpace from '@/components/AdSpace';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, MapPin, User, Phone, MessageCircle, Lock } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, User, Phone, MessageCircle, Lock, Send } from 'lucide-react';
 import SocialShareButtons from '@/components/SocialShareButtons';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -15,6 +15,7 @@ import CommentSection from '@/components/CommentSection';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePageSEO } from '@/hooks/usePageSEO';
+import { useAuth } from '@/hooks/useAuth';
 
 // Hardcoded fallback announcements for legacy numeric IDs
 const legacyAnnouncements = [
