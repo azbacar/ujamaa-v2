@@ -70,7 +70,12 @@ const EventsPage = () => {
     }
   };
 
+  const now = new Date();
+
   const filteredEvents = events.filter(event => {
+    // Masquer les événements passés de la liste publique
+    if (new Date(event.date) < now) return false;
+
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesIsland = selectedIsland === 'all' || event.island === selectedIsland;
@@ -107,7 +112,6 @@ const EventsPage = () => {
     }
   };
 
-  const isUpcoming = (dateStr: string) => new Date(dateStr) > new Date();
   const isFull = (event: Event) => event.capacity && event.registered_count >= event.capacity;
 
   return (
@@ -189,10 +193,7 @@ const EventsPage = () => {
                       <p className="text-sm text-muted-foreground mt-1">{event.category || 'Général'}</p>
                     </div>
                   </div>
-                  {!isUpcoming(event.date) && (
-                    <Badge variant="secondary">Passé</Badge>
-                  )}
-                  {isFull(event) && isUpcoming(event.date) && (
+                  {isFull(event) && (
                     <Badge variant="destructive">Complet</Badge>
                   )}
                 </div>

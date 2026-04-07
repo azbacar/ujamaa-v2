@@ -39,7 +39,7 @@ const CategoriesSection = () => {
         ] = await Promise.all([
           supabase.from('prices').select('*', { count: 'exact', head: false }).eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
           supabase.from('content_items').select('*', { count: 'exact', head: false }).eq('type', 'tender').eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
-          supabase.from('events').select('*', { count: 'exact', head: false }).eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
+          supabase.from('events').select('*', { count: 'exact', head: false }).eq('status', 'published').gte('date', new Date().toISOString()).order('updated_at', { ascending: false }).limit(1),
           supabase.from('content_items').select('*', { count: 'exact', head: false }).eq('type', 'service').eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
           supabase.from('gastronomy_items').select('*', { count: 'exact', head: false }).eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
         ]);

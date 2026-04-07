@@ -19,7 +19,7 @@ const fetchLiveStats = async (): Promise<StatItem[]> => {
     { count: diasporaCount },
   ] = await Promise.all([
     supabase.from('prices').select('*', { count: 'exact', head: true }).eq('status', 'published'),
-    supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+    supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'published').gte('date', new Date().toISOString()),
     supabase.from('content_items').select('*', { count: 'exact', head: true }).eq('type', 'tender').eq('status', 'published'),
     supabase.from('freelance_jobs').select('*', { count: 'exact', head: true }).eq('status', 'published'),
     supabase.from('diaspora_projects').select('*', { count: 'exact', head: true }).eq('status', 'published'),

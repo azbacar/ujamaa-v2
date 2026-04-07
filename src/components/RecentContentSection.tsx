@@ -33,7 +33,7 @@ const RecentContentSection = () => {
         { data: tenders },
         { data: jobs },
       ] = await Promise.all([
-        supabase.from('events').select('id, title, created_at, island').eq('status', 'published').order('created_at', { ascending: false }).limit(3),
+        supabase.from('events').select('id, title, created_at, island').eq('status', 'published').gte('date', new Date().toISOString()).order('created_at', { ascending: false }).limit(3),
         supabase.from('prices').select('id, product, created_at, island, price, currency').eq('status', 'published').order('created_at', { ascending: false }).limit(3),
         supabase.from('content_items').select('id, title, created_at').eq('type', 'tender').eq('status', 'published').order('created_at', { ascending: false }).limit(3),
         supabase.from('freelance_jobs').select('id, title, created_at, category').eq('status', 'published').order('created_at', { ascending: false }).limit(3),
