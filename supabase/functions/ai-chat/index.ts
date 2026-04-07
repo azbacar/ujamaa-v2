@@ -17,12 +17,14 @@ async function getDynamicSiteData(authHeader: string | null) {
   });
 
   try {
-    const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes] = await Promise.all([
+    const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes, taxiRes, pharmacyRes] = await Promise.all([
       supabase.from('prices').select('id, product, price, unit, island, category, currency, market, city, vendor, trend, created_at, village, region').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
       supabase.from('events').select('id, title, description, date, end_date, location, island, category, price, currency').gte('date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
       supabase.from('content_items').select('id, title, description, category, type').eq('status', 'published').order('published_at', { ascending: false }).limit(20),
       supabase.from('freelancer_profiles').select('id, display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available, location').eq('is_visible', true).eq('is_available', true).limit(30),
       supabase.from('diaspora_projects').select('id, title, description, category, target_amount, current_amount, currency, island, location, min_investment, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
+      supabase.from('taxi_fares').select('id, from_location, to_location, island, price, currency, vehicle_type, notes').eq('is_active', true).order('island').limit(100),
+      supabase.from('pharmacy_guards').select('id, name, address, phone, island, city, is_on_duty, duty_start, duty_end, notes').eq('is_active', true).order('island').limit(50),
     ]);
 
     return {
