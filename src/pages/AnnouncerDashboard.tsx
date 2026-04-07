@@ -47,6 +47,12 @@ const PRIVILEGE_CONFIG: Record<string, { label: string; icon: any; color: string
 
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
 const EVENT_CATEGORIES = ['Culture', 'Sport', 'Musique', 'Conférence', 'Formation', 'Religieux', 'Associatif', 'Autre'];
+const GASTRONOMY_TYPES = [
+  { value: 'recipe', label: '🍳 Recette' },
+  { value: 'restaurant_dish', label: '🍽️ Plat de restaurant' },
+  { value: 'hotel_room', label: '🏨 Chambre d\'hôtel' },
+  { value: 'private_room', label: '🏠 Hébergement particulier' },
+];
 
 const initialForm = {
   title: '', description: '', type: 'announcement', category: '',
@@ -55,6 +61,9 @@ const initialForm = {
   date: '', end_date: '', location: '', island: '', organizer: '',
   capacity: '', price: '', currency: 'FC',
   requires_registration: false, requires_payment: false,
+  // Gastronomy-specific
+  gastronomy_type: 'recipe' as string,
+  price_min: '', price_max: '', gastronomy_location: '',
 };
 
 export default function AnnouncerDashboard() {
