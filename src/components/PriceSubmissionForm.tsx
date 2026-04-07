@@ -37,6 +37,8 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
     market: '',
     latitude: '',
     longitude: '',
+    merchantType: 'fixed' as 'fixed' | 'ambulant',
+    geoExpiresHours: '24',
   });
 
   const categories = [
@@ -129,6 +131,11 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
       if (isAnnonceur() && formData.latitude && formData.longitude) {
         insertData.latitude = parseFloat(formData.latitude);
         insertData.longitude = parseFloat(formData.longitude);
+        insertData.merchant_type = formData.merchantType;
+        if (formData.merchantType === 'ambulant') {
+          const hours = parseInt(formData.geoExpiresHours);
+          insertData.geo_expires_at = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+        }
       }
 
       const { error } = await supabase.from('prices').insert(insertData);
@@ -273,7 +280,7 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
 
               {/* Geolocation for pro announcers */}
               {isProAnnonceur && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
                       <Navigation className="w-4 h-4" />
@@ -283,6 +290,45 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
                       {geoLoading ? 'Détection...' : '📍 Détecter ma position'}
                     </Button>
                   </div>
+
+                  {/* Merchant type */}
+                  <div>
+                    <Label className="text-sm font-medium text-amber-800">Type de marchand</Label>
+                    <Select value={formData.merchantType} onValueChange={(v) => handleInputChange('merchantType', v)}>
+                      <SelectTrigger className="mt-1 border-amber-200">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="fixed">🏪 Point de vente fixe (boutique, marché)</SelectItem>
+                        <SelectItem value="ambulant">🚶 Marchand ambulant</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-amber-600 mt-1">
+                      {formData.merchantType === 'fixed' 
+                        ? "La position reste visible indéfiniment" 
+                        : "La position expirera automatiquement"}
+                    </p>
+                  </div>
+
+                  {/* Duration for ambulant */}
+                  {formData.merchantType === 'ambulant' && (
+                    <div>
+                      <Label className="text-sm font-medium text-amber-800">Durée de validité de la position</Label>
+                      <Select value={formData.geoExpiresHours} onValueChange={(v) => handleInputChange('geoExpiresHours', v)}>
+                        <SelectTrigger className="mt-1 border-amber-200">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="6">6 heures</SelectItem>
+                          <SelectItem value="12">12 heures</SelectItem>
+                          <SelectItem value="24">24 heures</SelectItem>
+                          <SelectItem value="48">48 heures (2 jours)</SelectItem>
+                          <SelectItem value="72">72 heures (3 jours)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs">Latitude</Label>
@@ -293,6 +339,20 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
                       <Input value={formData.longitude} onChange={(e) => handleInputChange('longitude', e.target.value)} placeholder="44.2678" className="mt-1 text-sm" />
                     </div>
                   </div>
+
+                  {/* Map preview */}
+                  {formData.latitude && formData.longitude && (
+                    <div className="rounded-lg overflow-hidden border border-amber-200">
+                      <iframe
+                        title="Aperçu position"
+                        width="100%"
+                        height="150"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(formData.longitude) - 0.005},${parseFloat(formData.latitude) - 0.005},${parseFloat(formData.longitude) + 0.005},${parseFloat(formData.latitude) + 0.005}&layer=mapnik&marker=${formData.latitude},${formData.longitude}`}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>

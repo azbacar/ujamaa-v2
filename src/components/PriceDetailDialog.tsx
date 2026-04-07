@@ -1,7 +1,8 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, User, Calendar, TrendingUp, TrendingDown, Store, Tag, Package, Navigation } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MapPin, User, Calendar, TrendingUp, TrendingDown, Store, Tag, Package, Navigation, Clock } from 'lucide-react';
 import SocialShareButtons from '@/components/SocialShareButtons';
 
 interface PriceData {
@@ -24,6 +25,8 @@ interface PriceData {
   image_url?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  merchant_type?: string | null;
+  geo_expires_at?: string | null;
 }
 
 interface PriceDetailDialogProps {
@@ -40,6 +43,20 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
   const trendIcon = price.trend === 'up' ? <TrendingUp className="w-5 h-5" /> : price.trend === 'down' ? <TrendingDown className="w-5 h-5" /> : null;
 
   const hasGeo = price.latitude && price.longitude;
+  const isAmbulant = price.merchant_type === 'ambulant';
+  const geoExpired = isAmbulant && price.geo_expires_at && new Date(price.geo_expires_at) < new Date();
+  const showGeo = hasGeo && !geoExpired;
+
+  const getGeoExpiryLabel = () => {
+    if (!isAmbulant || !price.geo_expires_at) return null;
+    const expires = new Date(price.geo_expires_at);
+    const now = new Date();
+    if (expires < now) return 'Position expirée';
+    const diffH = Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60));
+    if (diffH <= 1) return 'Expire dans moins d\'1h';
+    if (diffH < 24) return `Expire dans ${diffH}h`;
+    return `Expire dans ${Math.ceil(diffH / 24)} jour(s)`;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -49,6 +66,7 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
             <Package className="h-5 w-5 text-emerald-600" />
             {price.product}
           </DialogTitle>
+          <DialogDescription className="sr-only">Détail du prix de {price.product}</DialogDescription>
         </DialogHeader>
 
         {/* Product image */}
@@ -114,17 +132,66 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
             </div>
           </div>
 
-          {/* Geolocation link */}
-          {hasGeo && (
-            <a
-              href={`https://www.google.com/maps?q=${price.latitude},${price.longitude}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 bg-emerald-50 rounded-lg p-3 transition-colors"
-            >
-              <Navigation className="h-4 w-4" />
-              📍 Voir sur Google Maps ({price.latitude?.toFixed(4)}, {price.longitude?.toFixed(4)})
-            </a>
+          {/* Geolocation map preview */}
+          {showGeo && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-sm text-emerald-700 flex items-center gap-2">
+                  <Navigation className="h-4 w-4" />
+                  📍 {isAmbulant ? 'Position du marchand ambulant' : 'Emplacement du vendeur'}
+                </h4>
+                {isAmbulant && (
+                  <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 bg-amber-50 gap-1">
+                    <Clock className="h-3 w-3" />
+                    {getGeoExpiryLabel()}
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Map embed */}
+              <div className="rounded-xl overflow-hidden border-2 border-emerald-200 shadow-sm">
+                <iframe
+                  title="Position du vendeur"
+                  width="100%"
+                  height="200"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  src={`https://www.openstreetmap.org/export/embed.html?bbox=${price.longitude! - 0.008},${price.latitude! - 0.008},${price.longitude! + 0.008},${price.latitude! + 0.008}&layer=mapnik&marker=${price.latitude},${price.longitude}`}
+                />
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                  onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${price.latitude},${price.longitude}`, '_blank')}
+                >
+                  <Navigation className="h-4 w-4 mr-1" />
+                  Itinéraire
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 border-blue-200 text-blue-700 hover:bg-blue-50"
+                  onClick={() => window.open(`https://www.google.com/maps?q=${price.latitude},${price.longitude}`, '_blank')}
+                >
+                  <MapPin className="h-4 w-4 mr-1" />
+                  Google Maps
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Geo expired notice */}
+          {hasGeo && geoExpired && (
+            <div className="bg-muted/50 rounded-lg p-3 text-center">
+              <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                <Clock className="h-4 w-4" />
+                La position de ce marchand ambulant a expiré
+              </p>
+            </div>
           )}
 
           <SocialShareButtons title={`${price.product} — ${price.price} ${price.currency}/${price.unit}`} description={`Prix à ${price.location.island}`} className="pt-2" />

@@ -34,6 +34,8 @@ interface PriceData {
   image_url?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  merchant_type?: string | null;
+  geo_expires_at?: string | null;
 }
 
 const PricesPage = () => {
@@ -80,6 +82,8 @@ const PricesPage = () => {
           image_url: (item as any).image_url,
           latitude: (item as any).latitude,
           longitude: (item as any).longitude,
+          merchant_type: (item as any).merchant_type,
+          geo_expires_at: (item as any).geo_expires_at,
         }));
 
         setPricesData(mappedData);
