@@ -10,7 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle, BadgeCheck, Send } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { usePageSEO } from '@/hooks/usePageSEO';
 
 export default function DiasporaProjectDetail() {
