@@ -329,7 +329,7 @@ const PricesPage = () => {
                     <strong>Marché :</strong> {price.market}
                   </p>
                   <p className="text-xs text-gray-500">
-                    <strong>Région :</strong> {price.location.region}, {price.location.island}
+                    <strong>Région :</strong> {[price.location.region, price.location.island].filter(Boolean).join(', ')}
                   </p>
                 </div>
               </CardContent>

@@ -108,8 +108,40 @@ export const useDirectMessages = (partnerId?: string) => {
       return (data || []) as DirectMessage[];
     },
     enabled: !!user && !!partnerId,
-    refetchInterval: 5000, // Poll every 5s
+    refetchInterval: 3000,
   });
+};
+
+// Real-time hook for conversations & messages
+export const useRealtimeMessages = (partnerId?: string) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Subscribe to real-time inserts on direct_messages
+  if (typeof window !== 'undefined' && user) {
+    import('@/integrations/supabase/client').then(({ supabase }) => {
+      const channelName = `dm-realtime-${user.id}`;
+      // Only subscribe once
+      const existing = supabase.getChannels().find(c => c.topic === `realtime:${channelName}`);
+      if (!existing) {
+        supabase
+          .channel(channelName)
+          .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'direct_messages',
+            filter: `receiver_id=eq.${user.id}`,
+          }, () => {
+            queryClient.invalidateQueries({ queryKey: ['conversations'] });
+            queryClient.invalidateQueries({ queryKey: ['unread-messages-count'] });
+            if (partnerId) {
+              queryClient.invalidateQueries({ queryKey: ['direct-messages', user.id, partnerId] });
+            }
+          })
+          .subscribe();
+      }
+    });
+  }
 };
 
 export const useSendMessage = () => {
