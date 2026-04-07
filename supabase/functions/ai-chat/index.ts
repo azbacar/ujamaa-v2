@@ -251,6 +251,7 @@ PAGES INTERNES DU SITE:
 - /annonces → Annonces 📢
 - /annonces/:id → Détail d'une annonce
 - /tourisme → Tourisme 🏨
+- /infos-pratiques → Infos Pratiques (tarifs taxi, pharmacies de garde) 📋
 - /freelance → Missions freelance 💼
 - /freelancers → Répertoire des freelancers 👨‍💻
 - /investissement → Investissement Diaspora 🌍
