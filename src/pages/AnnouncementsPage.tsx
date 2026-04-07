@@ -54,10 +54,13 @@ const AnnouncementsPage = () => {
 
         if (error) throw error;
         
-        const mappedData: Announcement[] = (data || []).map((item: ContentItem) => ({
-          ...item,
-          type: 'normal'
-        }));
+        const mappedData: Announcement[] = (data || []).map((item: ContentItem) => {
+          const cat = (item.category || '').toLowerCase();
+          let announcementType: 'urgent' | 'normal' | 'featured' = 'normal';
+          if (cat.includes('urgent') || cat.includes('alerte')) announcementType = 'urgent';
+          else if (cat.includes('une') || cat.includes('featured')) announcementType = 'featured';
+          return { ...item, type: announcementType };
+        });
         
         setAnnouncements(mappedData);
       } catch (error) {

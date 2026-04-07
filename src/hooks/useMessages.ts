@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -108,8 +109,38 @@ export const useDirectMessages = (partnerId?: string) => {
       return (data || []) as DirectMessage[];
     },
     enabled: !!user && !!partnerId,
-    refetchInterval: 5000, // Poll every 5s
+    refetchInterval: 3000,
   });
+};
+
+// Real-time hook for conversations & messages
+export const useRealtimeMessages = (partnerId?: string) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`dm-realtime-${user.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'direct_messages',
+        filter: `receiver_id=eq.${user.id}`,
+      }, () => {
+        queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        queryClient.invalidateQueries({ queryKey: ['unread-messages-count'] });
+        if (partnerId) {
+          queryClient.invalidateQueries({ queryKey: ['direct-messages', user.id, partnerId] });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, partnerId, queryClient]);
 };
 
 export const useSendMessage = () => {

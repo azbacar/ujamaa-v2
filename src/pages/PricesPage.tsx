@@ -316,7 +316,7 @@ const PricesPage = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-emerald-600" />
-                    <span>{price.location.village}, {price.location.city}</span>
+                    <span>{[price.location.village, price.location.city].filter(Boolean).join(', ')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-emerald-600" />
@@ -329,7 +329,7 @@ const PricesPage = () => {
                     <strong>Marché :</strong> {price.market}
                   </p>
                   <p className="text-xs text-gray-500">
-                    <strong>Région :</strong> {price.location.region}, {price.location.island}
+                    <strong>Région :</strong> {[price.location.region, price.location.island].filter(Boolean).join(', ')}
                   </p>
                 </div>
               </CardContent>
