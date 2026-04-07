@@ -346,6 +346,45 @@ const PricesPage = () => {
           </div>
         )}
 
+        {/* Pro: Price alerts */}
+        {user && (
+          <div className="mt-8">
+            <ProFeaturesGate feature="Les alertes prix en temps réel" isPro={isPro}>
+              <PriceAlertsPanel />
+            </ProFeaturesGate>
+          </div>
+        )}
+
+        {/* Pro: Advanced stats */}
+        {user && (
+          <div className="mt-6">
+            <ProFeaturesGate feature="Les statistiques avancées des prix" isPro={isPro}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Crown className="h-5 w-5 text-amber-500" /> Statistiques avancées
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Prix moyen', value: `${Math.round(filteredPrices.reduce((a, b) => a + b.price, 0) / (filteredPrices.length || 1)).toLocaleString()} FC` },
+                      { label: 'Prix min', value: `${Math.min(...filteredPrices.map(p => p.price)).toLocaleString()} FC` },
+                      { label: 'Prix max', value: `${Math.max(...filteredPrices.map(p => p.price)).toLocaleString()} FC` },
+                      { label: 'En hausse', value: `${filteredPrices.filter(p => p.trend === 'up').length} produits` },
+                    ].map(stat => (
+                      <div key={stat.label} className="text-center p-3 rounded-lg bg-muted/50">
+                        <p className="text-lg font-bold text-foreground">{stat.value}</p>
+                        <p className="text-xs text-muted-foreground">{stat.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </ProFeaturesGate>
+          </div>
+        )}
+
         {/* Section d'action */}
         <div className="text-center mt-12 space-y-6">
           <div className="bg-gradient-to-r from-emerald-100 to-ocean-100 p-8 rounded-3xl">
