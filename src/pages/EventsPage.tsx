@@ -193,10 +193,7 @@ const EventsPage = () => {
                       <p className="text-sm text-muted-foreground mt-1">{event.category || 'Général'}</p>
                     </div>
                   </div>
-                  {!isUpcoming(event.date) && (
-                    <Badge variant="secondary">Passé</Badge>
-                  )}
-                  {isFull(event) && isUpcoming(event.date) && (
+                  {isFull(event) && (
                     <Badge variant="destructive">Complet</Badge>
                   )}
                 </div>
