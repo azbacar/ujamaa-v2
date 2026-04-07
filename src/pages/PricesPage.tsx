@@ -34,6 +34,8 @@ interface PriceData {
   image_url?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  merchant_type?: string | null;
+  geo_expires_at?: string | null;
 }
 
 const PricesPage = () => {
