@@ -13,7 +13,7 @@ import {
   BarChart3, Eye, FileText, Calendar, DollarSign,
   LogOut, Key, Star, Activity, Clock, ChevronRight,
   Edit3, Save, X, Utensils, Camera, Loader2,
-  Heart, Flag, Trash2
+  Heart, Flag, Trash2, BadgeCheck
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AvatarCropDialog from '@/components/AvatarCropDialog';
+import VerificationRequestForm from '@/components/VerificationRequestForm';
 
 const PasswordChangeSection = () => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -458,6 +459,7 @@ const ProfilePage = () => {
               <TabsTrigger value="security"><Key className="h-4 w-4 mr-1" /> Sécurité</TabsTrigger>
               <TabsTrigger value="favorites"><Heart className="h-4 w-4 mr-1" /> Favoris</TabsTrigger>
               <TabsTrigger value="reports"><Flag className="h-4 w-4 mr-1" /> Signalements</TabsTrigger>
+              <TabsTrigger value="verification"><BadgeCheck className="h-4 w-4 mr-1" /> Vérification</TabsTrigger>
               {(isAnnonceur() || isModerator() || isAdmin()) && (
                 <TabsTrigger value="content"><FileText className="h-4 w-4 mr-1" /> Mes contenus</TabsTrigger>
               )}
@@ -674,6 +676,11 @@ const ProfilePage = () => {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Tab: Vérification */}
+            <TabsContent value="verification">
+              <VerificationRequestForm />
             </TabsContent>
 
             {/* Tab: Mes contenus (annonceur+) */}

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdSpace from '@/components/AdSpace';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, MapPin, User, Phone, MessageCircle, Lock } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, User, Phone, MessageCircle, Lock, Send } from 'lucide-react';
 import SocialShareButtons from '@/components/SocialShareButtons';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -15,6 +15,7 @@ import CommentSection from '@/components/CommentSection';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePageSEO } from '@/hooks/usePageSEO';
+import { useAuth } from '@/hooks/useAuth';
 
 // Hardcoded fallback announcements for legacy numeric IDs
 const legacyAnnouncements = [
@@ -51,6 +52,7 @@ interface AuthorInfo {
 const AnnouncementDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [dbItem, setDbItem] = useState<DbAnnouncement | null>(null);
@@ -228,6 +230,24 @@ const AnnouncementDetail = () => {
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
                       Contacter via WhatsApp
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Chat interne - visible si auteur Pro */}
+              {isAuthorPro && dbItem.author_id && (
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="pt-6">
+                    <Button 
+                      className="w-full"
+                      onClick={() => {
+                        if (!user) { navigate('/auth'); return; }
+                        navigate(`/messages/${dbItem.author_id}`);
+                      }}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Envoyer un message
                     </Button>
                   </CardContent>
                 </Card>

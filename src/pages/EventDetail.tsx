@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AdSpace from '@/components/AdSpace';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, Clock, MapPin, Users, Ticket, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Users, Ticket, ChevronLeft, ChevronRight, Send } from 'lucide-react';
 import SocialShareButtons from '@/components/SocialShareButtons';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -40,6 +40,11 @@ interface Event {
   requires_payment: boolean;
   views: number;
   images: string[] | null;
+  author_id: string;
+}
+
+interface AuthorInfo {
+  account_type: string;
 }
 
 const EventDetail = () => {
@@ -52,6 +57,7 @@ const EventDetail = () => {
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [authorInfo, setAuthorInfo] = useState<AuthorInfo | null>(null);
 
   usePageSEO({
     title: event ? event.title : 'Événement',
@@ -78,6 +84,10 @@ const EventDetail = () => {
 
       if (error) throw error;
       setEvent(data);
+      if (data?.author_id) {
+        const { data: userData } = await supabase.from('users').select('account_type').eq('id', data.author_id).maybeSingle();
+        setAuthorInfo(userData);
+      }
     } catch (error) {
       console.error('Error fetching event:', error);
       toast.error('Événement non trouvé');
@@ -350,6 +360,21 @@ const EventDetail = () => {
                     <h4 className="font-semibold text-sm mb-2">Contact</h4>
                     {event.contact_phone && <p className="text-sm text-muted-foreground">{event.contact_phone}</p>}
                     {event.contact_email && <p className="text-sm text-blue-600">{event.contact_email}</p>}
+                  </div>
+                )}
+
+                {authorInfo?.account_type === 'pro' && event.author_id && (
+                  <div>
+                    <Button 
+                      className="w-full"
+                      onClick={() => {
+                        if (!user) { navigate('/auth'); return; }
+                        navigate(`/messages/${event.author_id}`);
+                      }}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Envoyer un message
+                    </Button>
                   </div>
                 )}
               </CardContent>

@@ -20,18 +20,13 @@ export const useRole = () => {
     const fetchRole = async () => {
       try {
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .order('role', { ascending: true })
-          .limit(1)
-          .single();
+          .rpc('get_user_role', { _user_id: user.id });
 
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
           logger.error('Error fetching user role', error);
           setRole('user');
         } else {
-          setRole(data?.role || 'user');
+          setRole((data as UserRole) || 'user');
         }
       } catch (error) {
         logger.error('Error fetching user role', error);

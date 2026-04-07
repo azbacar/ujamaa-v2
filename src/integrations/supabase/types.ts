@@ -1708,6 +1708,54 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_requests: {
+        Row: {
+          additional_info: string | null
+          business_name: string | null
+          created_at: string
+          document_type: string
+          document_url: string | null
+          id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_info?: string | null
+          business_name?: string | null
+          created_at?: string
+          document_type: string
+          document_url?: string | null
+          id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_info?: string | null
+          business_name?: string | null
+          created_at?: string
+          document_type?: string
+          document_url?: string | null
+          id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

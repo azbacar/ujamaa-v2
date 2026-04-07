@@ -10,13 +10,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Mail, Phone, TrendingUp, Clock, CheckCircle, XCircle, BadgeCheck, Send } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import { usePageSEO } from '@/hooks/usePageSEO';
 
 export default function DiasporaProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: project, isLoading } = useDiasporaProject(id);
+  const [isAuthorPro, setIsAuthorPro] = useState(false);
+
+  useEffect(() => {
+    if (!project?.author_id) return;
+    supabase.from('users').select('account_type').eq('id', project.author_id).maybeSingle()
+      .then(({ data }) => setIsAuthorPro(data?.account_type === 'pro'));
+  }, [project?.author_id]);
   const { data: investments } = useProjectInvestments(id);
   const { data: updates } = useProjectUpdates(id);
   const updateStatus = useUpdateInvestmentStatus();
@@ -211,6 +222,24 @@ export default function DiasporaProjectDetail() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Chat interne pour les porteurs Pro */}
+            {isAuthorPro && !isAuthor && (
+              <Card>
+                <CardContent className="pt-6">
+                  <Button 
+                    className="w-full"
+                    onClick={() => {
+                      if (!user) { navigate('/auth'); return; }
+                      navigate(`/messages/${project.author_id}`);
+                    }}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Contacter le porteur
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Investment form - only if not author and logged in */}
             {user && !isAuthor && (

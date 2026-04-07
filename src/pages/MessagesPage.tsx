@@ -59,8 +59,8 @@ export default function MessagesPage() {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ minHeight: '60vh' }}>
-          {/* Conversation list */}
-          <Card className="md:col-span-1">
+          {/* Conversation list - hidden on mobile when a conversation is selected */}
+          <Card className={`md:col-span-1 ${partnerId ? 'hidden md:block' : ''}`}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Conversations</CardTitle>
             </CardHeader>
