@@ -110,7 +110,7 @@ const AnnouncementDetail = () => {
   // Legacy numeric ID lookup
   const legacyItem = !isUuid ? legacyAnnouncements.find(a => a.id === parseInt(id || '0')) : null;
 
-  const isAuthorPro = authorInfo?.account_type === 'pro';
+  const isAuthorPro = authorInfo?.account_type === 'pro' || authorInfo?.account_type === 'enterprise';
   const formatPhone = (phone: string) => phone.replace(/\s+/g, '');
 
   const getRelativeTime = (dateString: string) => {

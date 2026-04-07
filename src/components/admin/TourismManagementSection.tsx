@@ -49,7 +49,7 @@ interface GastronomyItem {
   users?: {
     username: string;
     email: string;
-    account_type: 'free' | 'pro';
+    account_type: 'free' | 'pro' | 'enterprise';
   };
 }
 

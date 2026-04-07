@@ -81,7 +81,7 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
     fetchItem();
   }, [id, contentType]);
 
-  const isAuthorPro = authorInfo?.account_type === 'pro';
+  const isAuthorPro = authorInfo?.account_type === 'pro' || authorInfo?.account_type === 'enterprise';
 
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
