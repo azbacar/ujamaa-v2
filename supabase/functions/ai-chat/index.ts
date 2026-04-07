@@ -33,10 +33,12 @@ async function getDynamicSiteData(authHeader: string | null) {
       announcements: announcementsRes.data || [],
       freelancers: freelancersRes.data || [],
       diasporaProjects: diasporaRes.data || [],
+      taxiFares: taxiRes.data || [],
+      pharmacies: pharmacyRes.data || [],
     };
   } catch (error) {
     console.error('Error fetching dynamic data:', error);
-    return { prices: [], events: [], announcements: [], freelancers: [], diasporaProjects: [] };
+    return { prices: [], events: [], announcements: [], freelancers: [], diasporaProjects: [], taxiFares: [], pharmacies: [] };
   }
 }
 
