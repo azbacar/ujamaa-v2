@@ -443,10 +443,11 @@ const FullScreenSearch = ({ isOpen, onClose }: FullScreenSearchProps) => {
 
       const tasks: Array<Promise<{ source: string; items: SearchResult[]; failed: boolean }>> = [
         (async () => {
+          const nowISO = new Date().toISOString();
           const [byTitle, byDescription, byCategory] = await Promise.all([
-            supabase.from('events').select('id, title, description, category').eq('status', 'published').ilike('title', pattern).limit(5),
-            supabase.from('events').select('id, title, description, category').eq('status', 'published').ilike('description', pattern).limit(5),
-            supabase.from('events').select('id, title, description, category').eq('status', 'published').ilike('category', pattern).limit(5),
+            supabase.from('events').select('id, title, description, category').eq('status', 'published').gte('date', nowISO).ilike('title', pattern).limit(5),
+            supabase.from('events').select('id, title, description, category').eq('status', 'published').gte('date', nowISO).ilike('description', pattern).limit(5),
+            supabase.from('events').select('id, title, description, category').eq('status', 'published').gte('date', nowISO).ilike('category', pattern).limit(5),
           ]);
           const rows = [...(byTitle.data || []), ...(byDescription.data || []), ...(byCategory.data || [])];
           return {
