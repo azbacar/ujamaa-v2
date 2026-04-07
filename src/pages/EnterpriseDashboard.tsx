@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import {
   Building2, FileText, Users, BarChart3, Plus, Send,
-  CheckCircle, Clock, XCircle, Save, Trash2, Shield, Globe, Phone, Mail
+  CheckCircle, Clock, XCircle, Save, Trash2, Shield, Globe, Phone, Mail,
+  UserCircle, Receipt, Calculator
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
