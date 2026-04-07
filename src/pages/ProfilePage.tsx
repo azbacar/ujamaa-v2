@@ -419,6 +419,11 @@ const ProfilePage = () => {
                         <Crown className="h-3 w-3 mr-1" /> PRO
                       </Badge>
                     )}
+                    {isVerified && (
+                      <Badge className="bg-emerald-500 text-white border-0">
+                        <BadgeCheck className="h-3 w-3 mr-1" /> Vérifié
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{user.email}</p>
                   <p className="text-xs text-muted-foreground">
