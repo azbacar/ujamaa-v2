@@ -254,6 +254,7 @@ export default function AdminDashboard() {
       case 'diaspora': return <DiasporaManagementSection />;
       case 'carriers': return <CarrierManagementSection />;
       case 'enterprises': return <EnterpriseManagementSection />;
+      case 'verifications': return <VerificationManagementSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
