@@ -362,6 +362,21 @@ const EventDetail = () => {
                     {event.contact_email && <p className="text-sm text-blue-600">{event.contact_email}</p>}
                   </div>
                 )}
+
+                {authorInfo?.account_type === 'pro' && event.author_id && (
+                  <div>
+                    <Button 
+                      className="w-full"
+                      onClick={() => {
+                        if (!user) { navigate('/auth'); return; }
+                        navigate(`/messages/${event.author_id}`);
+                      }}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Envoyer un message
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

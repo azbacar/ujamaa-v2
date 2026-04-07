@@ -458,6 +458,7 @@ const ProfilePage = () => {
               <TabsTrigger value="security"><Key className="h-4 w-4 mr-1" /> Sécurité</TabsTrigger>
               <TabsTrigger value="favorites"><Heart className="h-4 w-4 mr-1" /> Favoris</TabsTrigger>
               <TabsTrigger value="reports"><Flag className="h-4 w-4 mr-1" /> Signalements</TabsTrigger>
+              <TabsTrigger value="verification"><BadgeCheck className="h-4 w-4 mr-1" /> Vérification</TabsTrigger>
               {(isAnnonceur() || isModerator() || isAdmin()) && (
                 <TabsTrigger value="content"><FileText className="h-4 w-4 mr-1" /> Mes contenus</TabsTrigger>
               )}

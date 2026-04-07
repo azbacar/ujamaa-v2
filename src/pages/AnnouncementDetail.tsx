@@ -235,6 +235,24 @@ const AnnouncementDetail = () => {
                 </Card>
               )}
 
+              {/* Chat interne - visible si auteur Pro */}
+              {isAuthorPro && dbItem.author_id && (
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="pt-6">
+                    <Button 
+                      className="w-full"
+                      onClick={() => {
+                        if (!user) { navigate('/auth'); return; }
+                        navigate(`/messages/${dbItem.author_id}`);
+                      }}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      Envoyer un message
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Actions</CardTitle>

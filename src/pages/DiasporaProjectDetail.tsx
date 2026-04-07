@@ -223,6 +223,24 @@ export default function DiasporaProjectDetail() {
               </CardContent>
             </Card>
 
+            {/* Chat interne pour les porteurs Pro */}
+            {isAuthorPro && !isAuthor && (
+              <Card>
+                <CardContent className="pt-6">
+                  <Button 
+                    className="w-full"
+                    onClick={() => {
+                      if (!user) { navigate('/auth'); return; }
+                      navigate(`/messages/${project.author_id}`);
+                    }}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Contacter le porteur
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Investment form - only if not author and logged in */}
             {user && !isAuthor && (
               <InvestmentForm project={project} />
