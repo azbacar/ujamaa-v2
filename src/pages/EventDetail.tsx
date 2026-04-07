@@ -57,6 +57,7 @@ const EventDetail = () => {
   const [showRegistrationDialog, setShowRegistrationDialog] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [authorInfo, setAuthorInfo] = useState<AuthorInfo | null>(null);
 
   usePageSEO({
     title: event ? event.title : 'Événement',
