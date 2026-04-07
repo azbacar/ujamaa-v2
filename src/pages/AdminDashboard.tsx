@@ -263,6 +263,7 @@ export default function AdminDashboard() {
       case 'carriers': return <CarrierManagementSection />;
       case 'enterprises': return <EnterpriseManagementSection />;
       case 'verifications': return <VerificationManagementSection />;
+      case 'infos-pratiques': return <InfosPratiquesManagementSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
