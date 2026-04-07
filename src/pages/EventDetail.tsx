@@ -84,6 +84,10 @@ const EventDetail = () => {
 
       if (error) throw error;
       setEvent(data);
+      if (data?.author_id) {
+        const { data: userData } = await supabase.from('users').select('account_type').eq('id', data.author_id).maybeSingle();
+        setAuthorInfo(userData);
+      }
     } catch (error) {
       console.error('Error fetching event:', error);
       toast.error('Événement non trouvé');
