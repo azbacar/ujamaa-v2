@@ -39,6 +39,7 @@ import DiasporaManagementSection from '@/components/admin/DiasporaManagementSect
 import CarrierManagementSection from '@/components/admin/CarrierManagementSection';
 import EnterpriseManagementSection from '@/components/admin/EnterpriseManagementSection';
 import VerificationManagementSection from '@/components/admin/VerificationManagementSection';
+import InfosPratiquesManagementSection from '@/components/admin/InfosPratiquesManagementSection';
 
 interface PendingModification {
   id: string;
