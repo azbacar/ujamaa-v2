@@ -112,7 +112,6 @@ const EventsPage = () => {
     }
   };
 
-  const isUpcoming = (dateStr: string) => new Date(dateStr) > new Date();
   const isFull = (event: Event) => event.capacity && event.registered_count >= event.capacity;
 
   return (
