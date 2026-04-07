@@ -37,6 +37,8 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
     market: '',
     latitude: '',
     longitude: '',
+    merchantType: 'fixed' as 'fixed' | 'ambulant',
+    geoExpiresHours: '24',
   });
 
   const categories = [
