@@ -52,6 +52,7 @@ interface AuthorInfo {
 const AnnouncementDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [dbItem, setDbItem] = useState<DbAnnouncement | null>(null);
