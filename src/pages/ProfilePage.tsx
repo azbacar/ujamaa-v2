@@ -154,6 +154,7 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [isVerified, setIsVerified] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
