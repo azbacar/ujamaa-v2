@@ -4,14 +4,17 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar } from 'lucide-react';
+import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar, Crown } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
 import PriceSubmissionForm from '@/components/PriceSubmissionForm';
 import PriceDetailDialog from '@/components/PriceDetailDialog';
+import PriceAlertsPanel from '@/components/PriceAlertsPanel';
+import ProFeaturesGate from '@/components/ProFeaturesGate';
 import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { usePageSEO } from '@/hooks/usePageSEO';
 
 interface PriceData {
