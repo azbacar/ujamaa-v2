@@ -28,6 +28,7 @@ const Footer = () => {
               <li><Link to="/services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏛️ Services Publics</Link></li>
               <li><Link to="/freelance" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💼 Missions</Link></li>
               <li><Link to="/freelancers" className="hover:text-emerald-400 transition-colors flex items-center gap-2">👨‍💻 Freelancers</Link></li>
+              <li><Link to="/tourisme" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏝️ Tourisme & Gastronomie</Link></li>
               <li><Link to="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌍 Investissement Diaspora</Link></li>
             </ul>
           </div>

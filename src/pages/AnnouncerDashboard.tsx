@@ -47,6 +47,12 @@ const PRIVILEGE_CONFIG: Record<string, { label: string; icon: any; color: string
 
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
 const EVENT_CATEGORIES = ['Culture', 'Sport', 'Musique', 'Conférence', 'Formation', 'Religieux', 'Associatif', 'Autre'];
+const GASTRONOMY_TYPES = [
+  { value: 'recipe', label: '🍳 Recette' },
+  { value: 'restaurant_dish', label: '🍽️ Plat de restaurant' },
+  { value: 'hotel_room', label: '🏨 Chambre d\'hôtel' },
+  { value: 'private_room', label: '🏠 Hébergement particulier' },
+];
 
 const initialForm = {
   title: '', description: '', type: 'announcement', category: '',
@@ -55,6 +61,9 @@ const initialForm = {
   date: '', end_date: '', location: '', island: '', organizer: '',
   capacity: '', price: '', currency: 'FC',
   requires_registration: false, requires_payment: false,
+  // Gastronomy-specific
+  gastronomy_type: 'recipe' as string,
+  price_min: '', price_max: '', gastronomy_location: '',
 };
 
 export default function AnnouncerDashboard() {
@@ -76,16 +85,18 @@ export default function AnnouncerDashboard() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
-    const [itemsRes, eventsRes, privRes] = await Promise.all([
+    const [itemsRes, eventsRes, gastroRes, privRes] = await Promise.all([
       supabase.from('content_items').select('id, title, description, type, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
       supabase.from('events').select('id, title, description, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('gastronomy_items').select('id, title, description, type, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
       supabase.from('announcer_privileges').select('*').eq('user_id', user.id),
     ]);
     
     const contentItems: ContentItem[] = (itemsRes.data || []).map(i => ({ ...i, source: 'content' as const }));
     const eventItems: ContentItem[] = (eventsRes.data || []).map(e => ({ ...e, type: 'event', views: e.views || 0, status: e.status || 'draft', source: 'event' as const }));
+    const gastroItems: ContentItem[] = (gastroRes.data || []).map(g => ({ ...g, type: 'tourisme', views: g.views || 0, status: g.status || 'draft', source: 'content' as const }));
     
-    const all = [...contentItems, ...eventItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const all = [...contentItems, ...eventItems, ...gastroItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     setItems(all);
     setPrivileges(privRes.data || []);
     setLoading(false);
@@ -139,6 +150,34 @@ export default function AnnouncerDashboard() {
         });
         if (error) throw error;
         toast.success('Événement soumis pour modération');
+      } else if (newForm.type === 'tourisme') {
+        // gastronomy_items
+        const uploadedUrls: string[] = [];
+        for (const file of eventImages) {
+          const ext = file.name.split('.').pop();
+          const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from('event-images').upload(path, file, { upsert: false });
+          if (uploadError) throw new Error(`Erreur upload image: ${uploadError.message}`);
+          const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
+          uploadedUrls.push(urlData.publicUrl);
+        }
+        const { error } = await supabase.from('gastronomy_items').insert({
+          title: newForm.title,
+          description: newForm.description,
+          type: newForm.gastronomy_type as any,
+          category: newForm.category || null,
+          location: newForm.gastronomy_location || null,
+          price_min: newForm.price_min ? parseFloat(newForm.price_min) : null,
+          price_max: newForm.price_max ? parseFloat(newForm.price_max) : null,
+          contact_phone: newForm.contact_phone || null,
+          contact_email: newForm.contact_email || null,
+          contact_whatsapp: newForm.contact_whatsapp || null,
+          author_id: user.id,
+          status: 'draft',
+          images: uploadedUrls.length > 0 ? uploadedUrls : null,
+        });
+        if (error) throw error;
+        toast.success('Publication tourisme soumise pour modération');
       } else {
         // content_items: announcement, service, tender
         const { error } = await supabase.from('content_items').insert({
@@ -208,6 +247,7 @@ export default function AnnouncerDashboard() {
   };
   const activePrivileges = privileges.filter(p => p.is_active);
   const isEvent = newForm.type === 'event';
+  const isTourisme = newForm.type === 'tourisme';
   const isTenderOrService = newForm.type === 'tender' || newForm.type === 'service';
 
   const typeLabels: Record<string, string> = {
@@ -215,6 +255,7 @@ export default function AnnouncerDashboard() {
     event: '🎉 Événement',
     service: '🏛️ Service',
     tender: '📋 Appel d\'offres',
+    tourisme: '🏝️ Tourisme',
   };
 
   return (
@@ -326,6 +367,7 @@ export default function AnnouncerDashboard() {
                       <SelectContent>
                         <SelectItem value="announcement">📢 Annonce</SelectItem>
                         <SelectItem value="event">🎉 Événement</SelectItem>
+                        <SelectItem value="tourisme">🏝️ Tourisme</SelectItem>
                         <SelectItem value="service">🏛️ Service</SelectItem>
                         <SelectItem value="tender">📋 Appel d'offres</SelectItem>
                       </SelectContent>
@@ -355,6 +397,59 @@ export default function AnnouncerDashboard() {
                   <Label>Description *</Label>
                   <Textarea value={newForm.description} onChange={e => updateForm('description', e.target.value)} rows={4} placeholder="Description détaillée..." />
                 </div>
+
+                {/* Tourisme-specific fields */}
+                {isTourisme && (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                    <h4 className="font-medium text-sm flex items-center gap-2">🏝️ Détails tourisme</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Type de tourisme *</Label>
+                        <Select value={newForm.gastronomy_type} onValueChange={v => updateForm('gastronomy_type', v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {GASTRONOMY_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Localisation</Label>
+                        <Input value={newForm.gastronomy_location} onChange={e => updateForm('gastronomy_location', e.target.value)} placeholder="Ex: Moroni, Grande Comore" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Prix minimum (KMF)</Label>
+                        <Input type="number" value={newForm.price_min} onChange={e => updateForm('price_min', e.target.value)} placeholder="0" />
+                      </div>
+                      <div>
+                        <Label>Prix maximum (KMF)</Label>
+                        <Input type="number" value={newForm.price_max} onChange={e => updateForm('price_max', e.target.value)} placeholder="0" />
+                      </div>
+                    </div>
+                    {/* Image upload for tourism */}
+                    <div>
+                      <Label className="flex items-center gap-2 mb-2"><ImagePlus className="h-4 w-4 text-primary" /> Photos (max 5, 5 Mo chacune)</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {imagePreviews.map((src, i) => (
+                          <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-border group">
+                            <img src={src} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                            <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {eventImages.length < 5 && (
+                          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                            <ImagePlus className="h-6 w-6 text-primary/60" />
+                            <span className="text-[10px] text-muted-foreground mt-1">Ajouter</span>
+                            <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Event-specific fields */}
                 {isEvent && (
@@ -449,8 +544,8 @@ export default function AnnouncerDashboard() {
                   </div>
                 )}
 
-                {/* Contact fields for service/tender/event */}
-                {(isTenderOrService || isEvent) && (
+                {/* Contact fields for service/tender/event/tourisme */}
+                {(isTenderOrService || isEvent || isTourisme) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
                     <div>
                       <Label className="flex items-center gap-2"><Phone className="h-4 w-4" /> Téléphone</Label>
