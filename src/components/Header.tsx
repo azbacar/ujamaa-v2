@@ -67,7 +67,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
           {/* Navigation desktop */}
           <nav className="hidden lg:flex items-center space-x-6">
             <Link to="/prix" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              💰 {t('nav.prices')}
+              💰 Prix
             </Link>
             <Link to="/annonces" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               📢 {t('nav.announcements')}
@@ -89,9 +89,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             </Link>
             <Link to="/tourisme" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🏝️ Tourisme
-            </Link>
-            <Link to="/infos-pratiques" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              📋 Infos
             </Link>
             <Link to="/investissement" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🌍 Invest
@@ -209,7 +206,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                 <div className="absolute right-0 top-14 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
                   <nav className="py-2">
                     <Link to="/prix" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      💰 {t('nav.prices')}
+                      💰 Prix
                     </Link>
                     <Link to="/annonces" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       📢 {t('nav.announcements')}
@@ -231,9 +228,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     </Link>
                     <Link to="/tourisme" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🏝️ Tourisme
-                    </Link>
-                    <Link to="/infos-pratiques" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      📋 Infos Pratiques
                     </Link>
                     <Link to="/investissement" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🌍 Invest
