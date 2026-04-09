@@ -206,7 +206,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                 <div className="absolute right-0 top-14 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
                   <nav className="py-2">
                     <Link to="/prix" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      💰 {t('nav.prices')}
+                      💰 Prix
                     </Link>
                     <Link to="/annonces" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       📢 {t('nav.announcements')}
