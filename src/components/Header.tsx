@@ -29,7 +29,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const [showFullScreenSearch, setShowFullScreenSearch] = useState(false);
   const { data: unreadCount } = useUnreadCount();
 
-  // Listen for openFullScreenSearch event from HeroSection
   useEffect(() => {
     const handler = () => setShowFullScreenSearch(true);
     window.addEventListener('openFullScreenSearch', handler);
@@ -45,7 +44,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
     <header className="sticky top-0 z-50 glass-effect border-b border-white/20 shadow-lg">
       <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between gap-2 sm:gap-6">
-          {/* Logo et Titre */}
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2 sm:gap-4 hover:opacity-80 transition-opacity flex-shrink-0">
             {settings?.site_logo_url ? (
               <img 
@@ -75,9 +74,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/evenements" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🎭 {t('nav.events')}
             </Link>
-            <Link to="/appels-offres" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              📋 {t('nav.tenders')}
-            </Link>
             <Link to="/services" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🏛️ {t('nav.services')}
             </Link>
@@ -95,12 +91,10 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             </Link>
           </nav>
 
-          {/* Spacer */}
           <div className="hidden lg:block flex-1" />
 
           {/* Actions */}
           <div className="flex items-center gap-1 sm:gap-3">
-            {/* Search */}
             <Button
               variant="ghost"
               size="icon"
@@ -110,7 +104,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               <Search className="w-5 h-5" />
             </Button>
 
-            {/* Messages */}
             {user && (
               <Button
                 variant="ghost"
@@ -127,10 +120,8 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               </Button>
             )}
 
-            {/* Notifications */}
             <NotificationSystemReal />
 
-            {/* Authentication */}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -213,9 +204,6 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     </Link>
                     <Link to="/evenements" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🎭 {t('nav.events')}
-                    </Link>
-                    <Link to="/appels-offres" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      📋 {t('nav.tenders')}
                     </Link>
                     <Link to="/services" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
                       🏛️ {t('nav.services')}
