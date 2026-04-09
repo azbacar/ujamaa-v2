@@ -67,7 +67,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
           {/* Navigation desktop */}
           <nav className="hidden lg:flex items-center space-x-6">
             <Link to="/prix" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
-              💰 {t('nav.prices')}
+              💰 Prix
             </Link>
             <Link to="/annonces" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               📢 {t('nav.announcements')}
