@@ -22,10 +22,10 @@ const Footer = () => {
           <div>
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Informations</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
-              <li><Link to="/prix" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 Prix & Marchés</Link></li>
-              <li><Link to="/appels-offres" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Appels d'Offres</Link></li>
+              <li><Link to="/prix" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 Prix</Link></li>
               <li><Link to="/evenements" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🎭 Événements</Link></li>
               <li><Link to="/services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏛️ Services Publics</Link></li>
+              <li><Link to="/appels-offres" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Appels d'Offres</Link></li>
               <li><Link to="/freelance" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💼 Missions</Link></li>
               <li><Link to="/freelancers" className="hover:text-emerald-400 transition-colors flex items-center gap-2">👨‍💻 Freelancers</Link></li>
               <li><Link to="/tourisme" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏝️ Tourisme & Gastronomie</Link></li>
@@ -50,14 +50,33 @@ const Footer = () => {
               <li><Link to="/install" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📲 Installer l'app</Link></li>
               <li><Link to="/pro" className="hover:text-emerald-400 transition-colors flex items-center gap-2">⭐ Devenir Pro</Link></li>
               <li><Link to="/page/contact" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📞 Contact</Link></li>
-              <li><Link to="/page/a-propos" className="hover:text-emerald-400 transition-colors flex items-center gap-2">ℹ️ À propos</Link></li>
-              <li><Link to="/page/confidentialite" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🔒 Confidentialité</Link></li>
               <li><Link to="/supprimer-compte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗑️ Supprimer mon compte</Link></li>
             </ul>
           </div>
         </div>
         
-        <div className="border-t border-gray-700 mt-8 sm:mt-12 pt-6 sm:pt-8 text-center">
+        {/* Barre de liens rapides */}
+        <div className="border-t border-gray-700 mt-8 sm:mt-12 pt-6 sm:pt-8">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-gray-400">
+            <Link to="/page/a-propos" className="hover:text-emerald-400 transition-colors">À propos</Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/tourisme" className="hover:text-emerald-400 transition-colors">Tourisme</Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/investissement" className="hover:text-emerald-400 transition-colors">Investissement</Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/freelancers" className="hover:text-emerald-400 transition-colors">Freelance</Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/freelance" className="hover:text-emerald-400 transition-colors">Missions</Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/infos-pratiques" className="hover:text-emerald-400 transition-colors">Infos Pratiques</Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/page/conditions" className="hover:text-emerald-400 transition-colors">Conditions d'utilisation</Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/page/confidentialite" className="hover:text-emerald-400 transition-colors">Confidentialité</Link>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-700 mt-6 pt-6 text-center">
           <p className="text-gray-400 text-sm sm:text-base">
             &copy; {new Date().getFullYear()} Ujamaan Call Center. Tous droits réservés. 
             <span className="ml-2 text-2xl">🇰🇲</span>
