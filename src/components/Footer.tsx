@@ -26,11 +26,8 @@ const Footer = () => {
               <li><Link to="/evenements" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🎭 Événements</Link></li>
               <li><Link to="/services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏛️ Services Publics</Link></li>
               <li><Link to="/appels-offres" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Appels d'Offres</Link></li>
-              <li><Link to="/freelance" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💼 Missions</Link></li>
-              <li><Link to="/freelancers" className="hover:text-emerald-400 transition-colors flex items-center gap-2">👨‍💻 Freelancers</Link></li>
-              <li><Link to="/tourisme" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏝️ Tourisme & Gastronomie</Link></li>
-              <li><Link to="/infos-pratiques" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Taxis & Pharmacies</Link></li>
-              <li><Link to="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌍 Investissement Diaspora</Link></li>
+              <li><Link to="/infos-pratiques" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Info pratique</Link></li>
+              <li><Link to="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌍 Investissement / Lever de fond</Link></li>
             </ul>
           </div>
           
@@ -67,6 +64,8 @@ const Footer = () => {
             <Link to="/freelancers" className="hover:text-emerald-400 transition-colors">Freelance</Link>
             <span className="hidden sm:inline text-gray-600">|</span>
             <Link to="/freelance" className="hover:text-emerald-400 transition-colors">Missions</Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/appels-offres" className="hover:text-emerald-400 transition-colors">Appels d'offres</Link>
             <span className="hidden sm:inline text-gray-600">|</span>
             <Link to="/infos-pratiques" className="hover:text-emerald-400 transition-colors">Infos Pratiques</Link>
             <span className="hidden sm:inline text-gray-600">|</span>
