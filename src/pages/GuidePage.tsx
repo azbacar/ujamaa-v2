@@ -110,7 +110,7 @@ export default function GuidePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white">
