@@ -152,7 +152,7 @@ const Footer = () => {
               Conditions d'utilisation
             </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/page/guide" className="hover:text-emerald-400 transition-colors">
+            <Link to="/guide" className="hover:text-emerald-400 transition-colors">
               FAQ
             </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
