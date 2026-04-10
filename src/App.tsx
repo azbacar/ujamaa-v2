@@ -49,6 +49,7 @@ const DiasporaProjectDetail = lazy(() => import("./pages/DiasporaProjectDetail")
 const EnterpriseDashboard = lazy(() => import("./pages/EnterpriseDashboard"));
 const TourismePage = lazy(() => import("./pages/TourismePage"));
 const InfosPratiquesPage = lazy(() => import("./pages/InfosPratiquesPage"));
+const GuidePage = lazy(() => import("./pages/GuidePage"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
