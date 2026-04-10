@@ -210,15 +210,15 @@ export default function PriceDetailDialog({ price, open, onOpenChange }: PriceDe
             </div>
           )}
 
-          {/* Price history chart - Pro feature */}
-          <ProFeaturesGate feature="L'historique complet des prix" isPro={isPro}>
+          {/* Price history chart - visible only to Pro users, hidden for others (no gate/friction) */}
+          {isPro && (
             <PriceHistoryChart
               priceId={price.id}
               productName={price.product}
               currentPrice={price.price}
               currency={price.currency}
             />
-          </ProFeaturesGate>
+          )}
 
           <SocialShareButtons title={`${price.product} — ${price.price} ${price.currency}/${price.unit}`} description={`Prix à ${price.location.island}`} className="pt-2" />
         </div>
