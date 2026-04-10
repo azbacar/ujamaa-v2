@@ -95,6 +95,8 @@ function FeatureCard({ icon, title, description, link, color }: FeatureCardProps
 export default function GuidePage() {
   const navigate = useNavigate();
 
+  const { currentLanguage, setCurrentLanguage } = useLanguage();
+
   const features: FeatureCardProps[] = [
     { icon: <ShoppingCart className="h-6 w-6 text-emerald-600" />, title: 'Prix du marché', description: 'Consultez les prix en temps réel sur toutes les îles', link: '/prix', color: 'bg-emerald-100 dark:bg-emerald-900/30' },
     { icon: <Calendar className="h-6 w-6 text-blue-600" />, title: 'Événements', description: 'Découvrez les événements à venir et inscrivez-vous', link: '/evenements', color: 'bg-blue-100 dark:bg-blue-900/30' },
