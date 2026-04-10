@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -18,66 +18,153 @@ const Footer = () => {
               L'information comorienne à portée de main
             </p>
           </div>
-          
+
           <div>
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Informations</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
-              <li><Link to="/prix" className="hover:text-emerald-400 transition-colors flex items-center gap-2">💰 Prix</Link></li>
-              <li><Link to="/evenements" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🎭 Événements</Link></li>
-              <li><Link to="/services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏛️ Services Publics</Link></li>
-              <li><Link to="/appels-offres" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Appels d'Offres</Link></li>
-              <li><Link to="/infos-pratiques" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📋 Info pratique</Link></li>
-              <li><Link to="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌍 Investissement / Lever de fond</Link></li>
+              <li>
+                <Link to="/prix" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  💰 Prix
+                </Link>
+              </li>
+              <li>
+                <Link to="/evenements" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  🎭 Événements
+                </Link>
+              </li>
+              <li>
+                <Link to="/services" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  🏛️ Services Publics
+                </Link>
+              </li>
+              <li>
+                <Link to="/appels-offres" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  📋 Appels d'Offres
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/infos-pratiques"
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-2"
+                >
+                  📋 Info pratique
+                </Link>
+              </li>
+              <li>
+                <Link to="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  🌍 Investissement / Lever de fond
+                </Link>
+              </li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Îles</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
-              <li><Link to="/ile/grande-comore" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏔️ Grande Comore</Link></li>
-              <li><Link to="/ile/anjouan" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🌺 Anjouan</Link></li>
-              <li><Link to="/ile/moheli" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🐢 Mohéli</Link></li>
-              <li><Link to="/ile/mayotte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🏝️ Mayotte</Link></li>
+              <li>
+                <Link
+                  to="/ile/grande-comore"
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-2"
+                >
+                  🏔️ Grande Comore
+                </Link>
+              </li>
+              <li>
+                <Link to="/ile/anjouan" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  🌺 Anjouan
+                </Link>
+              </li>
+              <li>
+                <Link to="/ile/moheli" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  🐢 Mohéli
+                </Link>
+              </li>
+              <li>
+                <Link to="/ile/mayotte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  🏝️ Mayotte
+                </Link>
+              </li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Support</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
-              <li><Link to="/install" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📲 Installer l'app</Link></li>
-              <li><Link to="/pro" className="hover:text-emerald-400 transition-colors flex items-center gap-2">⭐ Devenir Pro</Link></li>
-              <li><Link to="/page/contact" className="hover:text-emerald-400 transition-colors flex items-center gap-2">📞 Contact</Link></li>
-              <li><Link to="/supprimer-compte" className="hover:text-emerald-400 transition-colors flex items-center gap-2">🗑️ Supprimer mon compte</Link></li>
+              <li>
+                <Link to="/install" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  📲 Installer l'app
+                </Link>
+              </li>
+              <li>
+                <Link to="/pro" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  ⭐ Devenir Pro
+                </Link>
+              </li>
+              <li>
+                <Link to="/page/contact" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  📞 Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/supprimer-compte"
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-2"
+                >
+                  🗑️ Supprimer mon compte
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
-        
+
         {/* Barre de liens rapides */}
         <div className="border-t border-gray-700 mt-8 sm:mt-12 pt-6 sm:pt-8">
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-gray-400">
-            <Link to="/page/a-propos" className="hover:text-emerald-400 transition-colors">À propos</Link>
+            <Link to="/page/a-propos" className="hover:text-emerald-400 transition-colors">
+              À propos
+            </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/tourisme" className="hover:text-emerald-400 transition-colors">Tourisme</Link>
+            <Link to="/tourisme" className="hover:text-emerald-400 transition-colors">
+              Tourisme
+            </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/investissement" className="hover:text-emerald-400 transition-colors">Investissement</Link>
+            <Link to="/investissement" className="hover:text-emerald-400 transition-colors">
+              Investissement
+            </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/freelancers" className="hover:text-emerald-400 transition-colors">Freelance</Link>
+            <Link to="/freelancers" className="hover:text-emerald-400 transition-colors">
+              Freelance
+            </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/freelance" className="hover:text-emerald-400 transition-colors">Missions</Link>
+            <Link to="/freelance" className="hover:text-emerald-400 transition-colors">
+              Missions
+            </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/appels-offres" className="hover:text-emerald-400 transition-colors">Appels d'offres</Link>
+            <Link to="/appels-offres" className="hover:text-emerald-400 transition-colors">
+              Appels d'offres
+            </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/infos-pratiques" className="hover:text-emerald-400 transition-colors">Infos Pratiques</Link>
+            <Link to="/infos-pratiques" className="hover:text-emerald-400 transition-colors">
+              Infos Pratiques
+            </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/page/conditions" className="hover:text-emerald-400 transition-colors">Conditions d'utilisation</Link>
+            <Link to="/page/conditions" className="hover:text-emerald-400 transition-colors">
+              Conditions d'utilisation
+            </Link>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <Link to="/page/confidentialite" className="hover:text-emerald-400 transition-colors">Confidentialité</Link>
+            <Link to="/page/guide" className="hover:text-emerald-400 transition-colors">
+              FAQ
+            </Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <Link to="/page/confidentialite" className="hover:text-emerald-400 transition-colors">
+              Confidentialité
+            </Link>
           </div>
         </div>
 
         <div className="border-t border-gray-700 mt-6 pt-6 text-center">
           <p className="text-gray-400 text-sm sm:text-base">
-            &copy; {new Date().getFullYear()} Ujamaan Call Center. Tous droits réservés. 
+            &copy; {new Date().getFullYear()} Ujamaan Call Center. Tous droits réservés.
             <span className="ml-2 text-2xl">🇰🇲</span>
           </p>
         </div>
