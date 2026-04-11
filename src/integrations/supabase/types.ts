@@ -440,6 +440,13 @@ export type Database = {
             referencedRelation: "enterprise_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "enterprise_clients_enterprise_id_fkey"
+            columns: ["enterprise_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       enterprise_invoices: {
@@ -518,6 +525,13 @@ export type Database = {
             referencedRelation: "enterprise_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "enterprise_invoices_enterprise_id_fkey"
+            columns: ["enterprise_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       enterprise_members: {
@@ -548,6 +562,13 @@ export type Database = {
             columns: ["enterprise_id"]
             isOneToOne: false
             referencedRelation: "enterprise_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enterprise_members_enterprise_id_fkey"
+            columns: ["enterprise_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -673,6 +694,13 @@ export type Database = {
             columns: ["enterprise_id"]
             isOneToOne: false
             referencedRelation: "enterprise_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enterprise_transactions_enterprise_id_fkey"
+            columns: ["enterprise_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_profiles_public"
             referencedColumns: ["id"]
           },
           {
@@ -2019,6 +2047,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "tender_submissions_enterprise_id_fkey"
+            columns: ["enterprise_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "tender_submissions_tender_id_fkey"
             columns: ["tender_id"]
             isOneToOne: false
@@ -2131,7 +2166,84 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      enterprise_profiles_public: {
+        Row: {
+          city: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_verified: boolean | null
+          island: string | null
+          logo_url: string | null
+          name: string | null
+          sector: string | null
+          status: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          island?: string | null
+          logo_url?: string | null
+          name?: string | null
+          sector?: string | null
+          status?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          island?: string | null
+          logo_url?: string | null
+          name?: string | null
+          sector?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      project_carriers_public: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          is_active: boolean | null
+          is_verified: boolean | null
+          island: string | null
+          location: string | null
+          organization: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          island?: string | null
+          location?: string | null
+          organization?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          island?: string | null
+          location?: string | null
+          organization?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_ticket_code: { Args: never; Returns: string }
