@@ -1,15 +1,15 @@
-import { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Smartphone, Banknote, CreditCard, Lock, Phone, QrCode, Copy, CheckCircle } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { toast } from 'sonner';
-import { QRCodeSVG } from 'qrcode.react';
+import { useState, useMemo } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Smartphone, Banknote, CreditCard, Lock, Phone, QrCode, Copy, CheckCircle } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
+import { QRCodeSVG } from "qrcode.react";
 
 interface MvolaPaymentDialogProps {
   open: boolean;
@@ -19,13 +19,13 @@ interface MvolaPaymentDialogProps {
   label: string;
   description?: string;
   userRef: string; // max 15 chars, unique per user
-  onPaymentSubmit: (method: 'mvola' | 'cash' | 'card', reference: string) => Promise<void>;
+  onPaymentSubmit: (method: "mvola" | "cash" | "card", reference: string) => Promise<void>;
 }
 
-const MVOLA_MERCHANT = '4102122';
+const MVOLA_MERCHANT = "4102122";
 
 function generateUSSD(amount: number, userRef: string) {
-  const cleanRef = userRef.replace(/[^a-zA-Z0-9]/g, '').slice(0, 15);
+  const cleanRef = userRef.replace(/[^a-zA-Z0-9]/g, "").slice(0, 15);
   return `*444*1*2*${MVOLA_MERCHANT}*${amount}*${cleanRef}#`;
 }
 
@@ -33,33 +33,33 @@ export default function MvolaPaymentDialog({
   open,
   onOpenChange,
   amount,
-  currency = 'FC',
+  currency = "FC",
   label,
   description,
   userRef,
   onPaymentSubmit,
 }: MvolaPaymentDialogProps) {
   const isMobile = useIsMobile();
-  const [tab, setTab] = useState<string>(isMobile ? 'mvola' : 'mvola');
-  const [paymentRef, setPaymentRef] = useState('');
+  const [tab, setTab] = useState<string>(isMobile ? "mvola" : "mvola");
+  const [paymentRef, setPaymentRef] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const ussdCode = useMemo(() => generateUSSD(amount, userRef), [amount, userRef]);
   const telLink = `tel:${encodeURIComponent(ussdCode)}`;
 
-  const handleSubmit = async (method: 'mvola' | 'cash' | 'card') => {
-    if (method !== 'card' && !paymentRef.trim()) {
-      toast.error('Veuillez entrer la référence de paiement');
+  const handleSubmit = async (method: "mvola" | "cash" | "card") => {
+    if (method !== "card" && !paymentRef.trim()) {
+      toast.error("Veuillez entrer la référence de paiement");
       return;
     }
     setSubmitting(true);
     try {
       await onPaymentSubmit(method, paymentRef.trim());
-      setPaymentRef('');
+      setPaymentRef("");
       onOpenChange(false);
     } catch (e: any) {
-      toast.error(e?.message || 'Erreur lors du paiement');
+      toast.error(e?.message || "Erreur lors du paiement");
     } finally {
       setSubmitting(false);
     }
@@ -68,28 +68,28 @@ export default function MvolaPaymentDialog({
   const copyUSSD = () => {
     navigator.clipboard.writeText(ussdCode).then(() => {
       setCopied(true);
-      toast.success('Code USSD copié !');
+      toast.success("Code USSD copié !");
       setTimeout(() => setCopied(false), 2000);
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`${isMobile ? 'max-w-[95vw]' : 'max-w-lg'} max-h-[90vh] overflow-y-auto`}>
+      <DialogContent className={`${isMobile ? "max-w-[95vw]" : "max-w-lg"} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-primary" />
             {label}
           </DialogTitle>
-          <DialogDescription>
-            {description || `Montant : ${amount.toLocaleString()} ${currency}`}
-          </DialogDescription>
+          <DialogDescription>{description || `Montant : ${amount.toLocaleString()} ${currency}`}</DialogDescription>
         </DialogHeader>
 
         {/* Amount display */}
         <div className="bg-primary/10 rounded-lg p-4 text-center">
           <p className="text-sm text-muted-foreground">Montant à payer</p>
-          <p className="text-3xl font-bold text-primary">{amount.toLocaleString()} {currency}</p>
+          <p className="text-3xl font-bold text-primary">
+            {amount.toLocaleString()} {currency}
+          </p>
           <Badge variant="outline" className="mt-1 text-xs">
             Réf: {userRef.slice(0, 15)}
           </Badge>
@@ -121,9 +121,7 @@ export default function MvolaPaymentDialog({
                 <div className="bg-background rounded-lg p-4 border border-primary/30">
                   <p className="text-xs text-muted-foreground text-center mb-2">Code USSD à composer :</p>
                   <div className="text-center">
-                    <code className="text-lg sm:text-xl font-mono font-bold text-primary break-all">
-                      {ussdCode}
-                    </code>
+                    <code className="text-lg sm:text-xl font-mono font-bold text-primary break-all">{ussdCode}</code>
                   </div>
 
                   <div className="flex gap-2 mt-3 justify-center">
@@ -137,7 +135,7 @@ export default function MvolaPaymentDialog({
                     ) : (
                       <Button variant="outline" onClick={copyUSSD} className="gap-2">
                         {copied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        {copied ? 'Copié !' : 'Copier le code'}
+                        {copied ? "Copié !" : "Copier le code"}
                       </Button>
                     )}
                   </div>
@@ -168,7 +166,9 @@ export default function MvolaPaymentDialog({
 
                 {/* Steps */}
                 <div className="border-t border-border pt-3 space-y-1.5 text-sm text-muted-foreground">
-                  <p>1️⃣ {isMobile ? 'Appuyez sur "Composer maintenant"' : 'Scannez le QR code ou copiez le code USSD'}</p>
+                  <p>
+                    1️⃣ {isMobile ? 'Appuyez sur "Composer maintenant"' : "Scannez le QR code ou copiez le code USSD"}
+                  </p>
                   <p>2️⃣ Confirmez avec votre code PIN Mvola</p>
                   <p>3️⃣ Notez le numéro de transaction reçu par SMS</p>
                   <p>4️⃣ Entrez-le ci-dessous pour valider</p>
@@ -185,12 +185,10 @@ export default function MvolaPaymentDialog({
                 className="mt-1"
               />
             </div>
-            <Button className="w-full" onClick={() => handleSubmit('mvola')} disabled={submitting}>
-              {submitting ? 'Envoi...' : 'Confirmer le paiement Mvola'}
+            <Button className="w-full" onClick={() => handleSubmit("mvola")} disabled={submitting}>
+              {submitting ? "Envoi..." : "Confirmer le paiement Mvola"}
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              ⏱️ Validation sous 12h après vérification
-            </p>
+            <p className="text-xs text-muted-foreground text-center">⏱️ Validation sous 12h après vérification</p>
           </TabsContent>
 
           {/* Cash / Dépôt */}
@@ -199,17 +197,25 @@ export default function MvolaPaymentDialog({
               <CardContent className="p-4 space-y-3">
                 <h4 className="font-semibold text-sm text-foreground">📋 Dépôt en espèces</h4>
                 <div className="text-sm text-muted-foreground space-y-2">
-                  <p><strong>Virement bancaire :</strong></p>
-                  <p>🏦 Banque : BIC Comores</p>
-                  <p>👤 Titulaire : UJAMAA SARL</p>
+                  <p>
+                    <strong>Virement bancaire :</strong>
+                  </p>
+                  <p>🏦 Banque : EXIM BANK</p>
+                  <p>👤 Titulaire : AZZHY SAS</p>
                   <p>📝 IBAN : KM46 00006 00001 0 0010061829 73</p>
-                  <p className="border-t border-border pt-2 mt-2"><strong>Ou espèces :</strong></p>
+                  <p className="border-t border-border pt-2 mt-2">
+                    <strong>Ou espèces :</strong>
+                  </p>
                   <p>📍 Moroni : ESPACE BEINNOV, Rond Point Yemenia, Rue des Douanes à 10m de la DRS</p>
                   <p>📍 Mutsamudu : Bientôt</p>
                   <p>📍 Fomboni : Bientôt</p>
                   <p className="text-xs mt-2">🕐 Lun-Sam 8h-17h</p>
                   <p className="border-t border-border pt-2 mt-2 text-xs">
-                    <strong>Important :</strong> Mentionnez votre référence <Badge variant="outline" className="text-[10px]">{userRef.slice(0, 15)}</Badge> lors du dépôt
+                    <strong>Important :</strong> Mentionnez votre référence{" "}
+                    <Badge variant="outline" className="text-[10px]">
+                      {userRef.slice(0, 15)}
+                    </Badge>{" "}
+                    lors du dépôt
                   </p>
                 </div>
               </CardContent>
@@ -223,12 +229,10 @@ export default function MvolaPaymentDialog({
                 className="mt-1"
               />
             </div>
-            <Button className="w-full" onClick={() => handleSubmit('cash')} disabled={submitting}>
-              {submitting ? 'Envoi...' : 'Soumettre pour validation'}
+            <Button className="w-full" onClick={() => handleSubmit("cash")} disabled={submitting}>
+              {submitting ? "Envoi..." : "Soumettre pour validation"}
             </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              ⏱️ Validation sous 24h par notre équipe
-            </p>
+            <p className="text-xs text-muted-foreground text-center">⏱️ Validation sous 24h par notre équipe</p>
           </TabsContent>
 
           {/* Carte bancaire */}
@@ -250,8 +254,8 @@ export default function MvolaPaymentDialog({
 
         <div className="bg-accent/50 rounded-lg p-3 mt-2">
           <p className="text-xs text-muted-foreground">
-            🔒 Paiement sécurisé. Votre compte sera mis à jour après vérification.
-            En cas de problème : <strong>support@ujamaan.com</strong>
+            🔒 Paiement sécurisé. Votre compte sera mis à jour après vérification. En cas de problème :{" "}
+            <strong>support@azzhy.com</strong>
           </p>
         </div>
       </DialogContent>
