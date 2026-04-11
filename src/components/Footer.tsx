@@ -164,7 +164,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-700 mt-6 pt-6 text-center">
           <p className="text-gray-400 text-sm sm:text-base">
-            &copy; {new Date().getFullYear()} Ujamaan Call Center. Tous droits réservés.
+            &copy; {new Date().getFullYear()} Ujamaan Call Center. By AZZHY | Tous droits réservés.
             <span className="ml-2 text-2xl">🇰🇲</span>
           </p>
         </div>
