@@ -269,7 +269,7 @@ export default function ProPage() {
             <CardDescription>Contactez-nous pour un devis personnalisé</CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-3">
-            <p className="text-muted-foreground text-sm">📧 support@ujamaan.com</p>
+            <p className="text-muted-foreground text-sm">📧 support@azzhy.com</p>
             <p className="text-muted-foreground text-sm">📞 +269 733 2122</p>
             <Button variant="outline" onClick={() => (window.location.href = "mailto:contact@ujamaan.com")}>
               Envoyer un email <ArrowRight className="w-4 h-4 ml-2" />
