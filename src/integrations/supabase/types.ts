@@ -1095,6 +1095,7 @@ export type Database = {
       }
       gastronomy_items: {
         Row: {
+          accommodation_type: string | null
           author_id: string
           category: string | null
           contact_email: string | null
@@ -1102,12 +1103,17 @@ export type Database = {
           contact_whatsapp: string | null
           created_at: string
           description: string
+          dining_style: string | null
+          geo_expires_at: string | null
           id: string
           images: string[] | null
+          latitude: number | null
           location: string | null
+          longitude: number | null
           metadata: Json | null
           price_max: number | null
           price_min: number | null
+          room_types: Json | null
           status: Database["public"]["Enums"]["content_status"]
           title: string
           type: Database["public"]["Enums"]["gastronomy_type"]
@@ -1115,6 +1121,7 @@ export type Database = {
           views: number
         }
         Insert: {
+          accommodation_type?: string | null
           author_id: string
           category?: string | null
           contact_email?: string | null
@@ -1122,12 +1129,17 @@ export type Database = {
           contact_whatsapp?: string | null
           created_at?: string
           description: string
+          dining_style?: string | null
+          geo_expires_at?: string | null
           id?: string
           images?: string[] | null
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           metadata?: Json | null
           price_max?: number | null
           price_min?: number | null
+          room_types?: Json | null
           status?: Database["public"]["Enums"]["content_status"]
           title: string
           type: Database["public"]["Enums"]["gastronomy_type"]
@@ -1135,6 +1147,7 @@ export type Database = {
           views?: number
         }
         Update: {
+          accommodation_type?: string | null
           author_id?: string
           category?: string | null
           contact_email?: string | null
@@ -1142,12 +1155,17 @@ export type Database = {
           contact_whatsapp?: string | null
           created_at?: string
           description?: string
+          dining_style?: string | null
+          geo_expires_at?: string | null
           id?: string
           images?: string[] | null
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           metadata?: Json | null
           price_max?: number | null
           price_min?: number | null
+          room_types?: Json | null
           status?: Database["public"]["Enums"]["content_status"]
           title?: string
           type?: Database["public"]["Enums"]["gastronomy_type"]
@@ -1764,6 +1782,44 @@ export type Database = {
         }
         Relationships: []
       }
+      recipe_ingredients: {
+        Row: {
+          created_at: string
+          gastronomy_item_id: string
+          id: string
+          name: string
+          quantity: string
+          sort_order: number
+          unit: string
+        }
+        Insert: {
+          created_at?: string
+          gastronomy_item_id: string
+          id?: string
+          name: string
+          quantity?: string
+          sort_order?: number
+          unit?: string
+        }
+        Update: {
+          created_at?: string
+          gastronomy_item_id?: string
+          id?: string
+          name?: string
+          quantity?: string
+          sort_order?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_ingredients_gastronomy_item_id_fkey"
+            columns: ["gastronomy_item_id"]
+            isOneToOne: false
+            referencedRelation: "gastronomy_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reports: {
         Row: {
           content_id: string
@@ -1799,6 +1855,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      restaurant_menu_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          gastronomy_item_id: string
+          id: string
+          image_url: string | null
+          is_available: boolean
+          name: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          gastronomy_item_id: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          gastronomy_item_id?: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_menu_items_gastronomy_item_id_fkey"
+            columns: ["gastronomy_item_id"]
+            isOneToOne: false
+            referencedRelation: "gastronomy_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_analytics: {
         Row: {

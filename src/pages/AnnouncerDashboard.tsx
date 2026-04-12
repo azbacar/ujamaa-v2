@@ -54,6 +54,23 @@ const GASTRONOMY_TYPES = [
   { value: 'private_room', label: '🏠 Hébergement particulier' },
 ];
 
+const DINING_STYLES = [
+  { value: 'fast-food', label: '🍔 Fast-food' },
+  { value: 'sur-table', label: '🍽️ Sur table' },
+  { value: 'mixte', label: '🍔🍽️ Mixte' },
+  { value: 'buffet', label: '🍴 Buffet' },
+  { value: 'traiteur', label: '👨‍🍳 Traiteur' },
+];
+
+const ACCOMMODATION_TYPES = [
+  { value: 'hotel', label: '🏨 Hôtel' },
+  { value: 'villa', label: '🏡 Villa' },
+  { value: 'auberge', label: '🛏️ Auberge' },
+  { value: 'chambre-hote', label: '🏠 Chambre d\'hôte' },
+  { value: 'appartement', label: '🏢 Appartement' },
+  { value: 'bungalow', label: '🏖️ Bungalow' },
+];
+
 const initialForm = {
   title: '', description: '', type: 'announcement', category: '',
   contact_phone: '', contact_whatsapp: '', contact_email: '',
@@ -64,6 +81,11 @@ const initialForm = {
   // Gastronomy-specific
   gastronomy_type: 'recipe' as string,
   price_min: '', price_max: '', gastronomy_location: '',
+  dining_style: '',
+  accommodation_type: '',
+  room_types: [] as { name: string; description: string; price_min: number; price_max: number }[],
+  latitude: '',
+  longitude: '',
 };
 
 export default function AnnouncerDashboard() {
@@ -161,7 +183,7 @@ export default function AnnouncerDashboard() {
           const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
           uploadedUrls.push(urlData.publicUrl);
         }
-        const { error } = await supabase.from('gastronomy_items').insert({
+        const { data: insertedItem, error } = await supabase.from('gastronomy_items').insert({
           title: newForm.title,
           description: newForm.description,
           type: newForm.gastronomy_type as any,
@@ -175,7 +197,12 @@ export default function AnnouncerDashboard() {
           author_id: user.id,
           status: 'draft',
           images: uploadedUrls.length > 0 ? uploadedUrls : null,
-        });
+          dining_style: newForm.dining_style || null,
+          accommodation_type: newForm.accommodation_type || null,
+          room_types: newForm.room_types.length > 0 ? newForm.room_types : [],
+          latitude: newForm.latitude ? parseFloat(newForm.latitude) : null,
+          longitude: newForm.longitude ? parseFloat(newForm.longitude) : null,
+        } as any).select().single();
         if (error) throw error;
         toast.success('Publication tourisme soumise pour modération');
       } else {
@@ -413,10 +440,75 @@ export default function AnnouncerDashboard() {
                         </Select>
                       </div>
                       <div>
-                        <Label>Localisation</Label>
+                        <Label>Localisation (adresse)</Label>
                         <Input value={newForm.gastronomy_location} onChange={e => updateForm('gastronomy_location', e.target.value)} placeholder="Ex: Moroni, Grande Comore" />
                       </div>
                     </div>
+
+                    {/* Restaurant: dining style */}
+                    {newForm.gastronomy_type === 'restaurant_dish' && (
+                      <div>
+                        <Label>Style de restauration</Label>
+                        <Select value={newForm.dining_style} onValueChange={v => updateForm('dining_style', v)}>
+                          <SelectTrigger><SelectValue placeholder="Choisir le style" /></SelectTrigger>
+                          <SelectContent>
+                            {DINING_STYLES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {/* Hotel/Accommodation: type */}
+                    {(newForm.gastronomy_type === 'hotel_room' || newForm.gastronomy_type === 'private_room') && (
+                      <div>
+                        <Label>Type d'hébergement</Label>
+                        <Select value={newForm.accommodation_type} onValueChange={v => updateForm('accommodation_type', v)}>
+                          <SelectTrigger><SelectValue placeholder="Choisir le type" /></SelectTrigger>
+                          <SelectContent>
+                            {ACCOMMODATION_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {/* Room types for hotels/accommodations */}
+                    {(newForm.gastronomy_type === 'hotel_room' || newForm.gastronomy_type === 'private_room') && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label>Types de chambres / tarifs</Label>
+                          <Button variant="outline" size="sm" onClick={() => updateForm('room_types', [...newForm.room_types, { name: '', description: '', price_min: 0, price_max: 0 }])}>
+                            <Plus className="h-3 w-3 mr-1" /> Ajouter
+                          </Button>
+                        </div>
+                        {newForm.room_types.map((rt, idx) => (
+                          <div key={idx} className="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end p-3 border rounded-lg">
+                            <div className="col-span-2">
+                              <Input placeholder="Nom (ex: Suite, Standard)" value={rt.name} onChange={e => {
+                                const updated = [...newForm.room_types];
+                                updated[idx] = { ...updated[idx], name: e.target.value };
+                                updateForm('room_types', updated);
+                              }} className="h-8 text-sm" />
+                            </div>
+                            <Input type="number" placeholder="Prix min" value={rt.price_min || ''} onChange={e => {
+                              const updated = [...newForm.room_types];
+                              updated[idx] = { ...updated[idx], price_min: parseFloat(e.target.value) || 0 };
+                              updateForm('room_types', updated);
+                            }} className="h-8 text-sm" />
+                            <Input type="number" placeholder="Prix max" value={rt.price_max || ''} onChange={e => {
+                              const updated = [...newForm.room_types];
+                              updated[idx] = { ...updated[idx], price_max: parseFloat(e.target.value) || 0 };
+                              updateForm('room_types', updated);
+                            }} className="h-8 text-sm" />
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => {
+                              updateForm('room_types', newForm.room_types.filter((_, i) => i !== idx));
+                            }}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label>Prix minimum (KMF)</Label>
@@ -427,6 +519,25 @@ export default function AnnouncerDashboard() {
                         <Input type="number" value={newForm.price_max} onChange={e => updateForm('price_max', e.target.value)} placeholder="0" />
                       </div>
                     </div>
+
+                    {/* Geolocation */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Géolocalisation</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input type="number" step="any" placeholder="Latitude" value={newForm.latitude} onChange={e => updateForm('latitude', e.target.value)} className="text-sm" />
+                        <Input type="number" step="any" placeholder="Longitude" value={newForm.longitude} onChange={e => updateForm('longitude', e.target.value)} className="text-sm" />
+                      </div>
+                      <Button variant="outline" size="sm" type="button" onClick={() => {
+                        if (!navigator.geolocation) { toast.error('Géolocalisation non supportée'); return; }
+                        navigator.geolocation.getCurrentPosition(
+                          pos => { updateForm('latitude', pos.coords.latitude.toString()); updateForm('longitude', pos.coords.longitude.toString()); toast.success('Position obtenue'); },
+                          () => toast.error('Impossible d\'obtenir la position')
+                        );
+                      }}>
+                        <MapPin className="h-3 w-3 mr-1" /> Ma position actuelle
+                      </Button>
+                    </div>
+
                     {/* Image upload for tourism */}
                     <div>
                       <Label className="flex items-center gap-2 mb-2"><ImagePlus className="h-4 w-4 text-primary" /> Photos (max 5, 5 Mo chacune)</Label>
@@ -448,6 +559,24 @@ export default function AnnouncerDashboard() {
                         )}
                       </div>
                     </div>
+
+                    {/* Notice about menu management */}
+                    {newForm.gastronomy_type === 'restaurant_dish' && (
+                      <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-sm">
+                        <p className="font-medium text-primary">💡 Menu avec photos</p>
+                        <p className="text-muted-foreground text-xs mt-1">
+                          Après la création, vous pourrez ajouter les éléments de votre menu avec photos et prix depuis la fiche du restaurant.
+                        </p>
+                      </div>
+                    )}
+                    {newForm.gastronomy_type === 'recipe' && (
+                      <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-sm">
+                        <p className="font-medium text-primary">🧑‍🍳 Ingrédients & Dosages</p>
+                        <p className="text-muted-foreground text-xs mt-1">
+                          Après la création, vous pourrez ajouter les ingrédients avec leurs dosages précis (grammes, pincées, etc.).
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 

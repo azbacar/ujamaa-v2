@@ -10,9 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   UtensilsCrossed, Hotel, Home, ChefHat, Search, MapPin, Eye, 
-  Phone, MessageCircle, Mail, Star
+  Phone, MessageCircle, Mail, Star, Navigation
 } from 'lucide-react';
 import { usePageSEO } from '@/hooks/usePageSEO';
+import GastronomyDetailDialog from '@/components/tourism/GastronomyDetailDialog';
 
 interface GastronomyItem {
   id: string;
@@ -29,6 +30,11 @@ interface GastronomyItem {
   category?: string | null;
   views: number;
   created_at: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  dining_style?: string | null;
+  accommodation_type?: string | null;
+  room_types?: any[];
   users?: { username: string; account_type: string } | null;
 }
 
@@ -39,12 +45,28 @@ const TYPE_CONFIG: Record<string, { label: string; icon: typeof ChefHat; color: 
   private_room: { label: 'Hébergement', icon: Home, color: 'bg-purple-100 text-purple-700' },
 };
 
+const DINING_LABELS: Record<string, string> = {
+  'fast-food': '🍔 Fast-food',
+  'sur-table': '🍽️ Sur table',
+  'mixte': '🍔🍽️ Mixte',
+};
+
+const ACCOMMODATION_LABELS: Record<string, string> = {
+  'hotel': '🏨 Hôtel',
+  'villa': '🏡 Villa',
+  'auberge': '🛏️ Auberge',
+  'chambre-hote': '🏠 Chambre d\'hôte',
+  'appartement': '🏢 Appartement',
+  'bungalow': '🏖️ Bungalow',
+};
+
 export default function TourismePage() {
   const { currentLanguage, setLanguage } = useLanguage();
   const [items, setItems] = useState<GastronomyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
+  const [selectedItem, setSelectedItem] = useState<GastronomyItem | null>(null);
 
   usePageSEO({
     canonicalPath: '/tourisme',
@@ -56,7 +78,7 @@ export default function TourismePage() {
       setLoading(true);
       const { data } = await supabase
         .from('gastronomy_items')
-        .select('id, type, title, description, price_min, price_max, images, contact_phone, contact_email, contact_whatsapp, location, category, views, created_at, users:author_id(username, account_type)')
+        .select('id, type, title, description, price_min, price_max, images, contact_phone, contact_email, contact_whatsapp, location, category, views, created_at, latitude, longitude, dining_style, accommodation_type, room_types, users:author_id(username, account_type)')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
       setItems((data as any) || []);
@@ -159,9 +181,13 @@ export default function TourismePage() {
               const isPro = item.users?.account_type === 'pro' || item.users?.account_type === 'enterprise';
 
               return (
-                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card 
+                  key={item.id} 
+                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => setSelectedItem(item)}
+                >
                   {/* Image */}
-                  {item.images?.[0] && (
+                  {item.images?.[0] ? (
                     <div className="aspect-video relative overflow-hidden">
                       <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />
                       <Badge className={`absolute top-2 left-2 ${cfg.color}`}>
@@ -169,8 +195,7 @@ export default function TourismePage() {
                         {cfg.label}
                       </Badge>
                     </div>
-                  )}
-                  {!item.images?.[0] && (
+                  ) : (
                     <div className="aspect-video bg-muted flex items-center justify-center relative">
                       <Icon className="h-12 w-12 text-muted-foreground/20" />
                       <Badge className={`absolute top-2 left-2 ${cfg.color}`}>
@@ -193,6 +218,20 @@ export default function TourismePage() {
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{item.description}</p>
                     </div>
 
+                    {/* Extra badges */}
+                    <div className="flex flex-wrap gap-1">
+                      {item.dining_style && (
+                        <Badge variant="outline" className="text-xs">
+                          {DINING_LABELS[item.dining_style] || item.dining_style}
+                        </Badge>
+                      )}
+                      {item.accommodation_type && (
+                        <Badge variant="outline" className="text-xs">
+                          {ACCOMMODATION_LABELS[item.accommodation_type] || item.accommodation_type}
+                        </Badge>
+                      )}
+                    </div>
+
                     {/* Price */}
                     {(item.price_min || item.price_max) && (
                       <p className="text-sm font-semibold text-primary">
@@ -206,6 +245,9 @@ export default function TourismePage() {
                     {item.location && (
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <MapPin className="h-3 w-3" /> {item.location}
+                        {item.latitude && item.longitude && (
+                          <Navigation className="h-3 w-3 ml-1 text-primary" />
+                        )}
                       </p>
                     )}
 
@@ -213,17 +255,17 @@ export default function TourismePage() {
                     {isPro ? (
                       <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
                         {item.contact_phone && (
-                          <a href={`tel:${item.contact_phone}`} className="text-xs flex items-center gap-1 text-primary hover:underline">
+                          <a href={`tel:${item.contact_phone}`} onClick={e => e.stopPropagation()} className="text-xs flex items-center gap-1 text-primary hover:underline">
                             <Phone className="h-3 w-3" /> {item.contact_phone}
                           </a>
                         )}
                         {item.contact_whatsapp && (
-                          <a href={`https://wa.me/${item.contact_whatsapp}`} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center gap-1 text-green-600 hover:underline">
+                          <a href={`https://wa.me/${item.contact_whatsapp}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-xs flex items-center gap-1 text-green-600 hover:underline">
                             <MessageCircle className="h-3 w-3" /> WhatsApp
                           </a>
                         )}
                         {item.contact_email && (
-                          <a href={`mailto:${item.contact_email}`} className="text-xs flex items-center gap-1 text-blue-600 hover:underline">
+                          <a href={`mailto:${item.contact_email}`} onClick={e => e.stopPropagation()} className="text-xs flex items-center gap-1 text-blue-600 hover:underline">
                             <Mail className="h-3 w-3" /> Email
                           </a>
                         )}
@@ -247,6 +289,13 @@ export default function TourismePage() {
           </div>
         )}
       </main>
+
+      {/* Detail Dialog */}
+      <GastronomyDetailDialog 
+        item={selectedItem}
+        open={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+      />
 
       <Footer />
     </div>
