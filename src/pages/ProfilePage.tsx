@@ -23,6 +23,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AvatarCropDialog from '@/components/AvatarCropDialog';
 import VerificationRequestForm from '@/components/VerificationRequestForm';
+import MyPricesTab from '@/components/MyPricesTab';
 
 const PasswordChangeSection = () => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -473,6 +474,7 @@ const ProfilePage = () => {
               <TabsTrigger value="security"><Key className="h-4 w-4 mr-1" /> Sécurité</TabsTrigger>
               <TabsTrigger value="favorites"><Heart className="h-4 w-4 mr-1" /> Favoris</TabsTrigger>
               <TabsTrigger value="reports"><Flag className="h-4 w-4 mr-1" /> Signalements</TabsTrigger>
+              <TabsTrigger value="prices"><DollarSign className="h-4 w-4 mr-1" /> Mes Prix</TabsTrigger>
               <TabsTrigger value="verification"><BadgeCheck className="h-4 w-4 mr-1" /> Vérification</TabsTrigger>
               {(isAnnonceur() || isModerator() || isAdmin()) && (
                 <TabsTrigger value="content"><FileText className="h-4 w-4 mr-1" /> Mes contenus</TabsTrigger>
@@ -721,6 +723,11 @@ const ProfilePage = () => {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Tab: Mes Prix */}
+            <TabsContent value="prices">
+              <MyPricesTab />
             </TabsContent>
 
             {/* Tab: Vérification */}
