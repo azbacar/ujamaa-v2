@@ -183,7 +183,7 @@ export default function AnnouncerDashboard() {
           const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
           uploadedUrls.push(urlData.publicUrl);
         }
-        const { error } = await supabase.from('gastronomy_items').insert({
+        const { data: insertedItem, error } = await supabase.from('gastronomy_items').insert({
           title: newForm.title,
           description: newForm.description,
           type: newForm.gastronomy_type as any,
@@ -197,7 +197,12 @@ export default function AnnouncerDashboard() {
           author_id: user.id,
           status: 'draft',
           images: uploadedUrls.length > 0 ? uploadedUrls : null,
-        });
+          dining_style: newForm.dining_style || null,
+          accommodation_type: newForm.accommodation_type || null,
+          room_types: newForm.room_types.length > 0 ? newForm.room_types : [],
+          latitude: newForm.latitude ? parseFloat(newForm.latitude) : null,
+          longitude: newForm.longitude ? parseFloat(newForm.longitude) : null,
+        } as any).select().single();
         if (error) throw error;
         toast.success('Publication tourisme soumise pour modération');
       } else {
