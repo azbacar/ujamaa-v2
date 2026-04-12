@@ -54,6 +54,23 @@ const GASTRONOMY_TYPES = [
   { value: 'private_room', label: '🏠 Hébergement particulier' },
 ];
 
+const DINING_STYLES = [
+  { value: 'fast-food', label: '🍔 Fast-food' },
+  { value: 'sur-table', label: '🍽️ Sur table' },
+  { value: 'mixte', label: '🍔🍽️ Mixte' },
+  { value: 'buffet', label: '🍴 Buffet' },
+  { value: 'traiteur', label: '👨‍🍳 Traiteur' },
+];
+
+const ACCOMMODATION_TYPES = [
+  { value: 'hotel', label: '🏨 Hôtel' },
+  { value: 'villa', label: '🏡 Villa' },
+  { value: 'auberge', label: '🛏️ Auberge' },
+  { value: 'chambre-hote', label: '🏠 Chambre d\'hôte' },
+  { value: 'appartement', label: '🏢 Appartement' },
+  { value: 'bungalow', label: '🏖️ Bungalow' },
+];
+
 const initialForm = {
   title: '', description: '', type: 'announcement', category: '',
   contact_phone: '', contact_whatsapp: '', contact_email: '',
@@ -64,6 +81,11 @@ const initialForm = {
   // Gastronomy-specific
   gastronomy_type: 'recipe' as string,
   price_min: '', price_max: '', gastronomy_location: '',
+  dining_style: '',
+  accommodation_type: '',
+  room_types: [] as { name: string; description: string; price_min: number; price_max: number }[],
+  latitude: '',
+  longitude: '',
 };
 
 export default function AnnouncerDashboard() {
