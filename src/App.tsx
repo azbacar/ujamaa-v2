@@ -43,6 +43,7 @@ const DeleteAccountPage = lazy(() => import("./pages/DeleteAccountPage"));
 const FreelancePage = lazy(() => import("./pages/FreelancePage"));
 const FreelanceJobDetail = lazy(() => import("./pages/FreelanceJobDetail"));
 const FreelancerDirectoryPage = lazy(() => import("./pages/FreelancerDirectoryPage"));
+const FreelancerCRMPage = lazy(() => import("./pages/FreelancerCRMPage"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const DiasporaPage = lazy(() => import("./pages/DiasporaPage"));
 const DiasporaProjectDetail = lazy(() => import("./pages/DiasporaProjectDetail"));
