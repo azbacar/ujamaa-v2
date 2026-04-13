@@ -17,6 +17,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useEnterprise, EnterpriseProfile } from '@/hooks/useEnterprise';
+import { useMultiEnterprise } from '@/hooks/useMultiEnterprise';
 import { useEnterpriseCRM } from '@/hooks/useEnterpriseCRM';
 import { supabase } from '@/integrations/supabase/client';
 import CRMClientsTab from '@/components/enterprise/CRMClientsTab';
@@ -42,10 +43,18 @@ export default function EnterpriseDashboard() {
   usePageSEO({ title: 'Espace Entreprise — UJAMAA', description: 'Gérez votre profil entreprise, vos soumissions et vos collaborateurs' });
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { enterprise, submissions, members, loading, createEnterprise, updateEnterprise, submitTender, addMember, removeMember, refresh } = useEnterprise();
-  const crm = useEnterpriseCRM(enterprise?.id);
+  const searchParams = new URLSearchParams(window.location.search);
+  const [showNewForm, setShowNewForm] = useState(searchParams.get('new') === '1');
+  const { enterprises, loading: multiLoading, createEnterprise: createNew, refresh: refreshAll } = useMultiEnterprise();
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  
+  // Use the selected enterprise
+  const selectedEnterprise = enterprises[selectedIdx] || null;
+  const { enterprise, submissions, members, loading, updateEnterprise, submitTender, addMember, removeMember, refresh } = useEnterprise();
+  const activeEnterprise = selectedEnterprise || enterprise;
+  const crm = useEnterpriseCRM(activeEnterprise?.id);
 
-  if (loading) {
+  if (loading || multiLoading) {
     return (
       <>
         <Header currentLanguage="fr" onLanguageChange={() => {}} />
@@ -55,12 +64,17 @@ export default function EnterpriseDashboard() {
     );
   }
 
-  if (!enterprise) {
+  if (!activeEnterprise || showNewForm) {
     return (
       <>
         <Header currentLanguage="fr" onLanguageChange={() => {}} />
         <div className="container max-w-2xl mx-auto py-12 px-4">
-          <EnterpriseRegistrationForm onCreated={refresh} userId={user?.id || ''} />
+          {enterprises.length > 0 && (
+            <Button variant="ghost" className="mb-4" onClick={() => { setShowNewForm(false); navigate('/entreprise'); }}>
+              ← Retour à mes entreprises
+            </Button>
+          )}
+          <EnterpriseRegistrationForm onCreated={() => { refreshAll(); refresh(); setShowNewForm(false); navigate('/entreprise'); }} userId={user?.id || ''} />
         </div>
         <Footer />
       </>
@@ -71,26 +85,52 @@ export default function EnterpriseDashboard() {
     <>
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
       <div className="container max-w-6xl mx-auto py-8 px-4 space-y-6">
+        {/* Enterprise Selector (multi-enterprise) */}
+        {enterprises.length > 1 && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <Label className="text-sm font-medium">Entreprise :</Label>
+            <Select value={String(selectedIdx)} onValueChange={v => setSelectedIdx(Number(v))}>
+              <SelectTrigger className="w-[280px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {enterprises.map((e, idx) => (
+                  <SelectItem key={e.id} value={String(idx)}>{e.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" className="gap-1" onClick={() => {
+              // Show registration form by going to a state where no enterprise is selected
+              navigate('/entreprise?new=1');
+            }}>
+              <Plus className="h-4 w-4" /> Nouvelle entreprise
+            </Button>
+          </div>
+        )}
+
         {/* Enterprise Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="h-16 w-16 rounded-xl bg-primary/10 flex items-center justify-center text-3xl">
-            {enterprise.logo_url ? (
-              <img src={enterprise.logo_url} alt={enterprise.name} className="h-16 w-16 rounded-xl object-cover" />
+            {activeEnterprise.logo_url ? (
+              <img src={activeEnterprise.logo_url} alt={activeEnterprise.name} className="h-16 w-16 rounded-xl object-cover" />
             ) : (
               <Building2 className="h-8 w-8 text-primary" />
             )}
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold">{enterprise.name}</h1>
-              {enterprise.is_verified ? (
+              <h1 className="text-2xl font-bold">{activeEnterprise.name}</h1>
+              {activeEnterprise.is_verified ? (
                 <Badge className="bg-blue-500 text-white gap-1"><CheckCircle className="h-3 w-3" /> Vérifiée</Badge>
               ) : (
                 <Badge variant="secondary">En attente de vérification</Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">{enterprise.sector} • {enterprise.island || 'Non spécifié'}</p>
+            <p className="text-sm text-muted-foreground">{activeEnterprise.sector} • {activeEnterprise.island || 'Non spécifié'}</p>
           </div>
+          {enterprises.length <= 1 && (
+            <Button variant="outline" size="sm" className="gap-1" onClick={() => navigate('/entreprise?new=1')}>
+              <Plus className="h-4 w-4" /> Autre entreprise
+            </Button>
+          )}
         </div>
 
         {/* Stats row */}
@@ -98,7 +138,7 @@ export default function EnterpriseDashboard() {
           <StatCard icon={FileText} label="Soumissions" value={submissions.length} />
           <StatCard icon={CheckCircle} label="Acceptées" value={submissions.filter(s => s.status === 'accepted').length} />
           <StatCard icon={Users} label="Collaborateurs" value={members.length} />
-          <StatCard icon={Shield} label="Statut" value={enterprise.is_verified ? 'Vérifiée' : 'Non vérifiée'} />
+          <StatCard icon={Shield} label="Statut" value={activeEnterprise.is_verified ? 'Vérifiée' : 'Non vérifiée'} />
         </div>
 
         <Tabs defaultValue="profile" className="space-y-4">
@@ -113,11 +153,11 @@ export default function EnterpriseDashboard() {
           </TabsList>
 
           <TabsContent value="profile">
-            <EnterpriseProfileEditor enterprise={enterprise} onUpdate={updateEnterprise} />
+            <EnterpriseProfileEditor enterprise={activeEnterprise} onUpdate={updateEnterprise} />
           </TabsContent>
 
           <TabsContent value="tenders">
-            <TenderSubmissionsTab submissions={submissions} onSubmit={submitTender} enterpriseId={enterprise.id} isVerified={enterprise.is_verified} />
+            <TenderSubmissionsTab submissions={submissions} onSubmit={submitTender} enterpriseId={activeEnterprise.id} isVerified={activeEnterprise.is_verified} />
           </TabsContent>
 
           <TabsContent value="clients">

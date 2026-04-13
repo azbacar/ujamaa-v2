@@ -1015,6 +1015,125 @@ export type Database = {
           },
         ]
       }
+      freelancer_clients: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          freelancer_id: string
+          id: string
+          linked_user_id: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          freelancer_id: string
+          id?: string
+          linked_user_id?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          freelancer_id?: string
+          id?: string
+          linked_user_id?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      freelancer_invoices: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          currency: string
+          due_date: string | null
+          freelancer_id: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          items: Json
+          linked_user_id: string | null
+          notes: string | null
+          paid_at: string | null
+          payment_method: string | null
+          status: string
+          subtotal: number
+          tax_amount: number | null
+          tax_rate: number | null
+          total: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          freelancer_id: string
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          items?: Json
+          linked_user_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          tax_rate?: number | null
+          total?: number
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          freelancer_id?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          items?: Json
+          linked_user_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          tax_rate?: number | null
+          total?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freelancer_invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "freelancer_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       freelancer_profiles: {
         Row: {
           avatar_url: string | null
@@ -1092,6 +1211,62 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      freelancer_transactions: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          description: string
+          freelancer_id: string
+          id: string
+          invoice_id: string | null
+          payment_method: string | null
+          reference: string | null
+          transaction_date: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description: string
+          freelancer_id: string
+          id?: string
+          invoice_id?: string | null
+          payment_method?: string | null
+          reference?: string | null
+          transaction_date?: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          freelancer_id?: string
+          id?: string
+          invoice_id?: string | null
+          payment_method?: string | null
+          reference?: string | null
+          transaction_date?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freelancer_transactions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "freelancer_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gastronomy_items: {
         Row: {

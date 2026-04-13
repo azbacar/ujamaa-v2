@@ -43,6 +43,7 @@ const DeleteAccountPage = lazy(() => import("./pages/DeleteAccountPage"));
 const FreelancePage = lazy(() => import("./pages/FreelancePage"));
 const FreelanceJobDetail = lazy(() => import("./pages/FreelanceJobDetail"));
 const FreelancerDirectoryPage = lazy(() => import("./pages/FreelancerDirectoryPage"));
+const FreelancerCRMPage = lazy(() => import("./pages/FreelancerCRMPage"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const DiasporaPage = lazy(() => import("./pages/DiasporaPage"));
 const DiasporaProjectDetail = lazy(() => import("./pages/DiasporaProjectDetail"));
@@ -124,6 +125,7 @@ const App = () => (
               <Route path="/freelance" element={<Suspense fallback={<PageLoader />}><FreelancePage /></Suspense>} />
               <Route path="/freelance/:id" element={<Suspense fallback={<PageLoader />}><FreelanceJobDetail /></Suspense>} />
               <Route path="/freelancers" element={<Suspense fallback={<PageLoader />}><FreelancerDirectoryPage /></Suspense>} />
+              <Route path="/freelancer-crm" element={<Suspense fallback={<PageLoader />}><FreelancerCRMPage /></Suspense>} />
               <Route path="/messages" element={<Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>} />
               <Route path="/messages/:partnerId" element={<Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>} />
               <Route path="/investissement" element={<Suspense fallback={<PageLoader />}><DiasporaPage /></Suspense>} />

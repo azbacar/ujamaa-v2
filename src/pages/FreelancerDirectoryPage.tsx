@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FreelancerCard from '@/components/freelance/FreelancerCard';
@@ -7,8 +8,9 @@ import { useFreelancerProfiles } from '@/hooks/useFreelancerDirectory';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/components/LanguageProvider';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, Search, Briefcase } from 'lucide-react';
+import { Users, Search, Briefcase, BarChart3 } from 'lucide-react';
 import { COMOROS_ISLANDS } from '@/hooks/useFreelance';
 
 export default function FreelancerDirectoryPage() {
@@ -17,6 +19,7 @@ export default function FreelancerDirectoryPage() {
   const { data: profiles, isLoading } = useFreelancerProfiles({ search, island: island !== 'all' ? island : undefined });
   const { user } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,8 +38,11 @@ export default function FreelancerDirectoryPage() {
             {profiles?.length ?? 0} freelancer{(profiles?.length ?? 0) > 1 ? 's' : ''} disponible{(profiles?.length ?? 0) > 1 ? 's' : ''} aux Comores
           </p>
           {user && (
-            <div className="mt-4">
+            <div className="mt-4 flex gap-3 justify-center flex-wrap">
               <FreelancerProfileForm />
+              <Button variant="outline" className="gap-2" onClick={() => navigate('/freelancer-crm')}>
+                <BarChart3 className="h-4 w-4" /> Mon CRM Freelancer
+              </Button>
             </div>
           )}
         </div>
