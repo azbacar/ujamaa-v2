@@ -125,6 +125,7 @@ const App = () => (
               <Route path="/freelance" element={<Suspense fallback={<PageLoader />}><FreelancePage /></Suspense>} />
               <Route path="/freelance/:id" element={<Suspense fallback={<PageLoader />}><FreelanceJobDetail /></Suspense>} />
               <Route path="/freelancers" element={<Suspense fallback={<PageLoader />}><FreelancerDirectoryPage /></Suspense>} />
+              <Route path="/freelancer-crm" element={<Suspense fallback={<PageLoader />}><FreelancerCRMPage /></Suspense>} />
               <Route path="/messages" element={<Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>} />
               <Route path="/messages/:partnerId" element={<Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>} />
               <Route path="/investissement" element={<Suspense fallback={<PageLoader />}><DiasporaPage /></Suspense>} />
