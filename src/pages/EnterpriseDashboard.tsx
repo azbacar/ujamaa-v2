@@ -43,6 +43,8 @@ export default function EnterpriseDashboard() {
   usePageSEO({ title: 'Espace Entreprise — UJAMAA', description: 'Gérez votre profil entreprise, vos soumissions et vos collaborateurs' });
   const { user } = useAuth();
   const navigate = useNavigate();
+  const searchParams = new URLSearchParams(window.location.search);
+  const [showNewForm, setShowNewForm] = useState(searchParams.get('new') === '1');
   const { enterprises, loading: multiLoading, createEnterprise: createNew, refresh: refreshAll } = useMultiEnterprise();
   const [selectedIdx, setSelectedIdx] = useState(0);
   
@@ -62,12 +64,17 @@ export default function EnterpriseDashboard() {
     );
   }
 
-  if (!activeEnterprise) {
+  if (!activeEnterprise || showNewForm) {
     return (
       <>
         <Header currentLanguage="fr" onLanguageChange={() => {}} />
         <div className="container max-w-2xl mx-auto py-12 px-4">
-          <EnterpriseRegistrationForm onCreated={() => { refreshAll(); refresh(); }} userId={user?.id || ''} />
+          {enterprises.length > 0 && (
+            <Button variant="ghost" className="mb-4" onClick={() => { setShowNewForm(false); navigate('/entreprise'); }}>
+              ← Retour à mes entreprises
+            </Button>
+          )}
+          <EnterpriseRegistrationForm onCreated={() => { refreshAll(); refresh(); setShowNewForm(false); navigate('/entreprise'); }} userId={user?.id || ''} />
         </div>
         <Footer />
       </>
