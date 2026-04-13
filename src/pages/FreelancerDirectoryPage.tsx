@@ -20,7 +20,6 @@ export default function FreelancerDirectoryPage() {
   const { user } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
   const navigate = useNavigate();
-  const { currentLanguage, setLanguage } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background">
