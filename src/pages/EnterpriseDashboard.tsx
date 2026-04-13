@@ -131,7 +131,7 @@ export default function EnterpriseDashboard() {
           <StatCard icon={FileText} label="Soumissions" value={submissions.length} />
           <StatCard icon={CheckCircle} label="Acceptées" value={submissions.filter(s => s.status === 'accepted').length} />
           <StatCard icon={Users} label="Collaborateurs" value={members.length} />
-          <StatCard icon={Shield} label="Statut" value={enterprise.is_verified ? 'Vérifiée' : 'Non vérifiée'} />
+          <StatCard icon={Shield} label="Statut" value={activeEnterprise.is_verified ? 'Vérifiée' : 'Non vérifiée'} />
         </div>
 
         <Tabs defaultValue="profile" className="space-y-4">
@@ -146,11 +146,11 @@ export default function EnterpriseDashboard() {
           </TabsList>
 
           <TabsContent value="profile">
-            <EnterpriseProfileEditor enterprise={enterprise} onUpdate={updateEnterprise} />
+            <EnterpriseProfileEditor enterprise={activeEnterprise} onUpdate={updateEnterprise} />
           </TabsContent>
 
           <TabsContent value="tenders">
-            <TenderSubmissionsTab submissions={submissions} onSubmit={submitTender} enterpriseId={enterprise.id} isVerified={enterprise.is_verified} />
+            <TenderSubmissionsTab submissions={submissions} onSubmit={submitTender} enterpriseId={activeEnterprise.id} isVerified={activeEnterprise.is_verified} />
           </TabsContent>
 
           <TabsContent value="clients">
