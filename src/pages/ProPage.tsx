@@ -17,6 +17,7 @@ import {
   Search,
   FileText,
   Lock,
+  Tag,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -25,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import MvolaPaymentDialog from "@/components/MvolaPaymentDialog";
+import { Input } from "@/components/ui/input";
 
 const PLANS = [
   {
@@ -225,7 +227,7 @@ export default function ProPage() {
 
     // Increment promo code usage
     if (appliedPromo) {
-      await supabase.rpc('increment_promo_usage' as any, { _code: appliedPromo.code }).catch(() => {});
+      await supabase.from('promo_codes').update({ current_uses: (appliedPromo as any).current_uses + 1 } as any).eq('code', appliedPromo.code).then(() => {});
     }
 
     toast.success("Demande envoyée ! Vous recevrez une notification après validation.");
