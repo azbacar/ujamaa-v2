@@ -368,10 +368,12 @@ export default function ProPage() {
         <MvolaPaymentDialog
           open={showPayment}
           onOpenChange={setShowPayment}
-          amount={selectedPlanData.amount}
+          amount={getDiscountedAmount(selectedPlanData.amount)}
           currency="FC"
           label={`Souscrire au ${selectedPlanData.name}`}
-          description={`${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period}`}
+          description={appliedPromo
+            ? `${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period} → ${getDiscountedAmount(selectedPlanData.amount).toLocaleString()} FC (promo ${appliedPromo.code})`
+            : `${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period}`}
           userRef={userRef}
           onPaymentSubmit={handlePaymentSubmit}
         />
