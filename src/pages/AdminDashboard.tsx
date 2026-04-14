@@ -40,6 +40,7 @@ import CarrierManagementSection from '@/components/admin/CarrierManagementSectio
 import EnterpriseManagementSection from '@/components/admin/EnterpriseManagementSection';
 import VerificationManagementSection from '@/components/admin/VerificationManagementSection';
 import InfosPratiquesManagementSection from '@/components/admin/InfosPratiquesManagementSection';
+import PromoCodesSection from '@/components/admin/PromoCodesSection';
 
 interface PendingModification {
   id: string;

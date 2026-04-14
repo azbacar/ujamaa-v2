@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   BarChart3, Home, FileText, Clock, Users, Image, Settings,
   Shield, Activity, Bell, Database, ChevronRight, Crown,
-  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase, Globe, Building2, BadgeCheck, Car
+  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase, Globe, Building2, BadgeCheck, Car, Tag
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,6 +43,7 @@ export default function AdminSidebar({
     { id: 'static-pages', title: 'Pages statiques', icon: FileText, description: 'Contact, À propos...', available: isAdmin, category: 'content' },
     { id: 'users', title: 'Utilisateurs', icon: Users, description: 'Gestion des comptes', available: isAdmin, category: 'management' },
     { id: 'pro-subscriptions', title: 'Abonnements Pro', icon: Crown, description: 'Demandes d\'abonnement', available: isAdmin, category: 'management' },
+    { id: 'promo-codes', title: 'Codes Promo', icon: Tag, description: 'Réductions personnalisables', available: isAdmin, category: 'management' },
     { id: 'site-control', title: 'Contrôle du site', icon: Settings, description: 'Paramètres globaux', available: isAdmin, category: 'management' },
     { id: 'security', title: 'Sécurité', icon: Shield, description: 'Logs et permissions', available: isAdmin, category: 'management' },
     { id: 'analytics', title: 'Analytiques', icon: BarChart3, description: 'Statistiques avancées', available: isAdmin, category: 'management' },
