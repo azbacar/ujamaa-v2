@@ -7,10 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Send, MessageCircle, User } from 'lucide-react';
+import { ArrowLeft, Send, MessageCircle, User, Paperclip, FileIcon, Image as ImageIcon, X } from 'lucide-react';
 import { useConversations, useDirectMessages, useSendMessage, useRealtimeMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/components/LanguageProvider';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { maskSensitiveContent, containsSensitiveContent, canShareSensitiveContent, canSeeSensitiveContent } from '@/lib/chatFilter';
 
 export default function MessagesPage() {
   const { partnerId } = useParams<{ partnerId?: string }>();
@@ -20,8 +23,26 @@ export default function MessagesPage() {
   const { data: messages } = useDirectMessages(partnerId);
   const sendMessage = useSendMessage();
   const [newMessage, setNewMessage] = useState('');
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [myAccountType, setMyAccountType] = useState<string>('free');
+  const [partnerAccountType, setPartnerAccountType] = useState<string>('free');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   useRealtimeMessages(partnerId);
+
+  // Fetch account types
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('users').select('account_type').eq('id', user.id).single()
+      .then(({ data }) => setMyAccountType(data?.account_type || 'free'));
+  }, [user]);
+
+  useEffect(() => {
+    if (!partnerId) return;
+    supabase.from('users').select('account_type').eq('id', partnerId).single()
+      .then(({ data }) => setPartnerAccountType(data?.account_type || 'free'));
+  }, [partnerId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -29,12 +50,113 @@ export default function MessagesPage() {
     }
   }, [messages]);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Le fichier ne doit pas dépasser 10 Mo');
+      return;
+    }
+    setAttachment(file);
+    e.target.value = '';
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !partnerId) return;
+    if ((!newMessage.trim() && !attachment) || !partnerId) return;
+
+    // Check if non-pro user tries to send sensitive content
+    if (newMessage.trim() && containsSensitiveContent(newMessage) && !canShareSensitiveContent(myAccountType)) {
+      toast.error('Le partage de liens, emails et numéros de téléphone est réservé aux abonnés Pro');
+      return;
+    }
+
+    let attachmentUrl = '';
+    let attachmentName = '';
+    let attachmentType = '';
+
+    if (attachment) {
+      setUploading(true);
+      try {
+        const ext = attachment.name.split('.').pop();
+        const filePath = `${user!.id}/${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('chat-attachments')
+          .upload(filePath, attachment);
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage.from('chat-attachments').getPublicUrl(filePath);
+        attachmentUrl = publicUrl;
+        attachmentName = attachment.name;
+        attachmentType = attachment.type;
+      } catch (err: any) {
+        toast.error('Erreur upload: ' + err.message);
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
+
+    const content = attachmentUrl
+      ? `${newMessage.trim()}${newMessage.trim() ? '\n' : ''}📎 [${attachmentName}](${attachmentUrl})`
+      : newMessage.trim();
+
     sendMessage.mutate(
-      { receiverId: partnerId, content: newMessage.trim() },
-      { onSuccess: () => setNewMessage('') }
+      { receiverId: partnerId, content },
+      {
+        onSuccess: (data) => {
+          setNewMessage('');
+          setAttachment(null);
+          // Save attachment metadata
+          if (attachmentUrl && data) {
+            supabase.from('chat_attachments').insert({
+              message_id: data.id,
+              file_url: attachmentUrl,
+              file_name: attachmentName,
+              file_type: attachmentType,
+              file_size: attachment?.size || 0,
+            } as any).then(() => {});
+          }
+        }
+      }
+    );
+  };
+
+  // Process message content based on account types
+  const processMessageContent = (content: string, senderId: string) => {
+    const isMine = senderId === user?.id;
+    // If I sent it, show as-is
+    if (isMine) return content;
+    // If sender is not pro, content shouldn't have sensitive data (blocked at send)
+    // If sender is pro but I'm not pro, mask sensitive content
+    if (!canSeeSensitiveContent(myAccountType)) {
+      return maskSensitiveContent(content);
+    }
+    return content;
+  };
+
+  // Render attachment from message content
+  const renderContent = (content: string) => {
+    const attachmentMatch = content.match(/📎 \[(.+?)\]\((.+?)\)/);
+    const textPart = content.replace(/📎 \[.+?\]\(.+?\)/, '').trim();
+
+    return (
+      <>
+        {textPart && <p>{textPart}</p>}
+        {attachmentMatch && (
+          <a
+            href={attachmentMatch[2]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs underline mt-1 opacity-80 hover:opacity-100"
+          >
+            {attachmentMatch[2].match(/\.(jpg|jpeg|png|gif|webp)$/i)
+              ? <ImageIcon className="h-3 w-3" />
+              : <FileIcon className="h-3 w-3" />}
+            {attachmentMatch[1]}
+          </a>
+        )}
+      </>
     );
   };
 
@@ -60,7 +182,7 @@ export default function MessagesPage() {
         </h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ minHeight: '60vh' }}>
-          {/* Conversation list - hidden on mobile when a conversation is selected */}
+          {/* Conversation list */}
           <Card className={`md:col-span-1 ${partnerId ? 'hidden md:block' : ''}`}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Conversations</CardTitle>
@@ -111,6 +233,7 @@ export default function MessagesPage() {
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3" style={{ maxHeight: '50vh' }}>
                   {messages?.map(msg => {
                     const isMine = msg.sender_id === user.id;
+                    const displayContent = processMessageContent(msg.content, msg.sender_id);
                     return (
                       <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
@@ -118,7 +241,7 @@ export default function MessagesPage() {
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted text-foreground'
                         }`}>
-                          <p>{msg.content}</p>
+                          {renderContent(displayContent)}
                           <p className={`text-[10px] mt-1 ${isMine ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                             {new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
@@ -127,14 +250,42 @@ export default function MessagesPage() {
                     );
                   })}
                 </div>
+
+                {/* Attachment preview */}
+                {attachment && (
+                  <div className="px-3 pt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                    <Paperclip className="h-3 w-3" />
+                    <span className="truncate flex-1">{attachment.name}</span>
+                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachment(null)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+
                 <form onSubmit={handleSend} className="p-3 border-t border-border flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
                   <Input
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     placeholder="Écrire un message..."
                     className="flex-1"
                   />
-                  <Button type="submit" size="icon" disabled={sendMessage.isPending || !newMessage.trim()}>
+                  <Button type="submit" size="icon" disabled={sendMessage.isPending || uploading || (!newMessage.trim() && !attachment)}>
                     <Send className="h-4 w-4" />
                   </Button>
                 </form>

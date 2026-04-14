@@ -17,6 +17,7 @@ import {
   Search,
   FileText,
   Lock,
+  Tag,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -25,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import MvolaPaymentDialog from "@/components/MvolaPaymentDialog";
+import { Input } from "@/components/ui/input";
 
 const PLANS = [
   {
@@ -142,6 +144,51 @@ export default function ProPage() {
 
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("premium");
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [checkingPromo, setCheckingPromo] = useState(false);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setCheckingPromo(true);
+    try {
+      const { data, error } = await supabase
+        .from('promo_codes')
+        .select('*')
+        .eq('code', promoCode.toUpperCase().trim())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) { toast.error('Code promo invalide ou expiré'); setAppliedPromo(null); return; }
+
+      const promo = data as any;
+      if (promo.valid_until && new Date(promo.valid_until) < new Date()) {
+        toast.error('Ce code promo a expiré'); setAppliedPromo(null); return;
+      }
+      if (promo.max_uses && promo.current_uses >= promo.max_uses) {
+        toast.error('Ce code promo a atteint son nombre maximum d\'utilisations'); setAppliedPromo(null); return;
+      }
+      if (!promo.applicable_plans.includes(selectedPlan)) {
+        toast.error('Ce code ne s\'applique pas à ce plan'); setAppliedPromo(null); return;
+      }
+
+      setAppliedPromo({ code: promo.code, discount_type: promo.discount_type, discount_value: promo.discount_value });
+      toast.success(`Code "${promo.code}" appliqué ! ${promo.discount_type === 'percentage' ? `-${promo.discount_value}%` : `-${promo.discount_value.toLocaleString()} FC`}`);
+    } catch {
+      toast.error('Erreur lors de la vérification');
+    } finally {
+      setCheckingPromo(false);
+    }
+  };
+
+  const getDiscountedAmount = (baseAmount: number) => {
+    if (!appliedPromo) return baseAmount;
+    if (appliedPromo.discount_type === 'percentage') {
+      return Math.max(0, baseAmount - (baseAmount * appliedPromo.discount_value / 100));
+    }
+    return Math.max(0, baseAmount - appliedPromo.discount_value);
+  };
 
   const handleSelectPlan = (planId: string) => {
     if (planId === "basic") return;
@@ -161,16 +208,28 @@ export default function ProPage() {
   const handlePaymentSubmit = async (method: "mvola" | "cash" | "card", reference: string) => {
     if (!user) return;
     const plan = PLANS.find((p) => p.id === selectedPlan);
+    const baseAmount = plan?.amount || 0;
+    const finalAmount = getDiscountedAmount(baseAmount);
+    
     const { error } = await supabase.from("pro_subscription_requests" as any).insert({
       user_id: user.id,
       plan: selectedPlan,
       payment_method: method,
       payment_reference: reference,
-      amount: plan?.amount || 0,
+      amount: baseAmount,
       currency: "FC",
       status: "pending",
+      promo_code: appliedPromo?.code || null,
+      discount_amount: baseAmount - finalAmount,
+      final_amount: finalAmount,
     });
     if (error) throw error;
+
+    // Increment promo code usage
+    if (appliedPromo) {
+      await supabase.from('promo_codes').update({ current_uses: (appliedPromo as any).current_uses + 1 } as any).eq('code', appliedPromo.code).then(() => {});
+    }
+
     toast.success("Demande envoyée ! Vous recevrez une notification après validation.");
   };
 
@@ -242,6 +301,32 @@ export default function ProPage() {
           ))}
         </div>
 
+        {/* Promo Code Section */}
+        <Card className="max-w-md mx-auto mb-16">
+          <CardContent className="p-5">
+            <h3 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+              <Tag className="h-4 w-4 text-primary" /> Vous avez un code promo ?
+            </h3>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Entrez votre code"
+                value={promoCode}
+                onChange={e => setPromoCode(e.target.value.toUpperCase())}
+                className="font-mono flex-1"
+              />
+              <Button onClick={handleApplyPromo} disabled={checkingPromo} variant="outline">
+                {checkingPromo ? '...' : 'Appliquer'}
+              </Button>
+            </div>
+            {appliedPromo && (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-700 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Code "{appliedPromo.code}" appliqué : {appliedPromo.discount_type === 'percentage' ? `-${appliedPromo.discount_value}%` : `-${appliedPromo.discount_value.toLocaleString()} FC`}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Avantages Pro */}
         <div className="mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-8">Pourquoi passer au Pro ?</h2>
@@ -283,10 +368,12 @@ export default function ProPage() {
         <MvolaPaymentDialog
           open={showPayment}
           onOpenChange={setShowPayment}
-          amount={selectedPlanData.amount}
+          amount={getDiscountedAmount(selectedPlanData.amount)}
           currency="FC"
           label={`Souscrire au ${selectedPlanData.name}`}
-          description={`${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period}`}
+          description={appliedPromo
+            ? `${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period} → ${getDiscountedAmount(selectedPlanData.amount).toLocaleString()} FC (promo ${appliedPromo.code})`
+            : `${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period}`}
           userRef={userRef}
           onPaymentSubmit={handlePaymentSubmit}
         />

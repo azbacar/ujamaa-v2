@@ -40,6 +40,7 @@ import CarrierManagementSection from '@/components/admin/CarrierManagementSectio
 import EnterpriseManagementSection from '@/components/admin/EnterpriseManagementSection';
 import VerificationManagementSection from '@/components/admin/VerificationManagementSection';
 import InfosPratiquesManagementSection from '@/components/admin/InfosPratiquesManagementSection';
+import PromoCodesSection from '@/components/admin/PromoCodesSection';
 
 interface PendingModification {
   id: string;
@@ -264,6 +265,7 @@ export default function AdminDashboard() {
       case 'enterprises': return <EnterpriseManagementSection />;
       case 'verifications': return <VerificationManagementSection />;
       case 'infos-pratiques': return <InfosPratiquesManagementSection />;
+      case 'promo-codes': return <PromoCodesSection />;
       default: return <AdminOverview recentActions={adminActions.slice(0, 5)} onNavigate={setActiveSection} />;
     }
   };
