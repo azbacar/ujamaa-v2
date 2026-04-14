@@ -191,6 +191,44 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          message_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          message_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "direct_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -1751,10 +1789,13 @@ export type Database = {
           amount: number
           created_at: string
           currency: string
+          discount_amount: number | null
+          final_amount: number | null
           id: string
           payment_method: string
           payment_reference: string | null
           plan: string
+          promo_code: string | null
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -1766,10 +1807,13 @@ export type Database = {
           amount?: number
           created_at?: string
           currency?: string
+          discount_amount?: number | null
+          final_amount?: number | null
           id?: string
           payment_method: string
           payment_reference?: string | null
           plan?: string
+          promo_code?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1781,10 +1825,13 @@ export type Database = {
           amount?: number
           created_at?: string
           currency?: string
+          discount_amount?: number | null
+          final_amount?: number | null
           id?: string
           payment_method?: string
           payment_reference?: string | null
           plan?: string
+          promo_code?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1926,6 +1973,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      promo_codes: {
+        Row: {
+          applicable_plans: string[]
+          code: string
+          created_at: string
+          created_by: string
+          current_uses: number
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          applicable_plans?: string[]
+          code: string
+          created_at?: string
+          created_by: string
+          current_uses?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          applicable_plans?: string[]
+          code?: string
+          created_at?: string
+          created_by?: string
+          current_uses?: number
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
       }
       push_subscriptions: {
         Row: {
