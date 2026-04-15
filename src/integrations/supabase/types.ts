@@ -191,6 +191,48 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          permissions: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chat_attachments: {
         Row: {
           created_at: string
@@ -2663,6 +2705,7 @@ export type Database = {
         }
         Returns: string
       }
+      record_api_key_usage: { Args: { _key_id: string }; Returns: undefined }
       search_freelancers: {
         Args: { _island?: string; _limit?: number; _skills: string[] }
         Returns: {
@@ -2678,6 +2721,14 @@ export type Database = {
           location: string
           skills: string[]
           user_id: string
+        }[]
+      }
+      validate_api_key: {
+        Args: { _key_hash: string }
+        Returns: {
+          created_by: string
+          id: string
+          permissions: string[]
         }[]
       }
     }
