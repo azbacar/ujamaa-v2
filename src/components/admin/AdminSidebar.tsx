@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   BarChart3, Home, FileText, Clock, Users, Image, Settings,
   Shield, Activity, Bell, Database, ChevronRight, Crown,
-  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase, Globe, Building2, BadgeCheck, Car, Tag
+  UserCheck, DollarSign, Calendar, Brain, Menu, X, Search, Briefcase, Globe, Building2, BadgeCheck, Car, Tag, Code
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -51,6 +51,7 @@ export default function AdminSidebar({
     { id: 'actions', title: 'Journal d\'actions', icon: Bell, description: 'Historique des actions', available: isAdmin, category: 'monitoring' },
     { id: 'ai-analytics', title: 'Analyse IA', icon: Brain, description: 'Requêtes IA & tendances', available: isAdmin, category: 'monitoring' },
     { id: 'ai-knowledge', title: 'Sources IA', icon: Brain, description: 'Liens et sources de l\'IA', available: isAdmin, category: 'monitoring' },
+    { id: 'api-dev', title: 'API & Développeurs', icon: Code, description: 'Clés API mobile', available: isAdmin, category: 'monitoring' },
   ];
 
   const getCategory = (category: string) => {

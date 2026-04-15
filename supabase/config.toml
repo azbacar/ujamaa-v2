@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.notify-broadcast]
 verify_jwt = false
+
+[functions.mobile-api]
+verify_jwt = false
