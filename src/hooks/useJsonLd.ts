@@ -7,7 +7,7 @@ export const useJsonLd = () => {
   useEffect(() => {
     const siteName = settings?.site_name || 'Ujamaan';
     const siteUrl = 'https://ujamaan.com';
-    const logoUrl = settings?.site_logo_url || `${siteUrl}/pwa-512x512.png`;
+    const logoUrl = settings?.site_logo_url || `${siteUrl}/favicon.png`;
     const description = settings?.og_description || 'Plateforme centrale pour tous les prix, événements, services et informations officielles des îles Comores';
 
     // Organization schema

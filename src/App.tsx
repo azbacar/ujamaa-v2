@@ -16,7 +16,7 @@ import Index from "./pages/Index";
 
 // Lazy loaded: everything else
 const FloatingChatbox = lazy(() => import("@/components/FloatingChatbox"));
-const PushNotificationPrompt = lazy(() => import("@/components/PushNotificationPrompt"));
+
 const WelcomeDialog = lazy(() => import("@/components/WelcomeDialog").then(m => ({ default: m.WelcomeDialog })));
 const MaintenanceCheck = lazy(() => import("./components/MaintenanceCheck").then(m => ({ default: m.MaintenanceCheck })));
 
@@ -38,7 +38,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ProPage = lazy(() => import("./pages/ProPage"));
 const StaticPage = lazy(() => import("./pages/StaticPage"));
-const InstallPage = lazy(() => import("./pages/InstallPage"));
+
 const DeleteAccountPage = lazy(() => import("./pages/DeleteAccountPage"));
 const FreelancePage = lazy(() => import("./pages/FreelancePage"));
 const FreelanceJobDetail = lazy(() => import("./pages/FreelanceJobDetail"));
@@ -96,7 +96,7 @@ const App = () => (
               <Route path="/annonces/:id" element={<Suspense fallback={<PageLoader />}><AnnouncementDetail /></Suspense>} />
               <Route path="/pro" element={<Suspense fallback={<PageLoader />}><ProPage /></Suspense>} />
               <Route path="/page/:slug" element={<Suspense fallback={<PageLoader />}><StaticPage /></Suspense>} />
-              <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
+              
               <Route path="/supprimer-compte" element={<Suspense fallback={<PageLoader />}><DeleteAccountPage /></Suspense>} />
               <Route 
                 path="/profile" 
@@ -147,7 +147,7 @@ const App = () => (
             <Suspense fallback={null}>
               <WelcomeDialog />
               <FloatingChatbox />
-              <PushNotificationPrompt />
+              
             </Suspense>
             {import.meta.env.DEV && (
               <Suspense fallback={null}>
