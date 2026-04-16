@@ -4,6 +4,7 @@ import { MapPin, Phone, MessageCircle, Mail, Eye, Star, Navigation } from 'lucid
 import { Button } from '@/components/ui/button';
 import MenuItemsManager from './MenuItemsManager';
 import RecipeIngredientsManager from './RecipeIngredientsManager';
+import SocialShareButtons from '@/components/SocialShareButtons';
 
 interface GastronomyItem {
   id: string;
@@ -24,6 +25,7 @@ interface GastronomyItem {
   longitude?: number | null;
   dining_style?: string | null;
   accommodation_type?: string | null;
+  service_mode?: string | null;
   room_types?: any[];
   users?: { username: string; account_type: string } | null;
 }
@@ -40,6 +42,12 @@ const DINING_LABELS: Record<string, string> = {
   'mixte': '🍔🍽️ Mixte',
   'buffet': '🍴 Buffet',
   'traiteur': '👨‍🍳 Traiteur',
+};
+
+const SERVICE_MODE_LABELS: Record<string, string> = {
+  'sur-place': '🍽️ Sur place uniquement',
+  'emporter': '📦 À emporter uniquement',
+  'les-deux': '🍽️📦 Sur place & À emporter',
 };
 
 const ACCOMMODATION_LABELS: Record<string, string> = {
@@ -84,6 +92,9 @@ export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
             {item.category && <Badge variant="outline">{item.category}</Badge>}
             {item.dining_style && (
               <Badge variant="secondary">{DINING_LABELS[item.dining_style] || item.dining_style}</Badge>
+            )}
+            {item.service_mode && (
+              <Badge variant="secondary">{SERVICE_MODE_LABELS[item.service_mode] || item.service_mode}</Badge>
             )}
             {item.accommodation_type && (
               <Badge variant="secondary">{ACCOMMODATION_LABELS[item.accommodation_type] || item.accommodation_type}</Badge>
@@ -193,6 +204,9 @@ export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Eye className="h-3 w-3" /> {item.views} vues
           </p>
+
+          {/* Share buttons */}
+          <SocialShareButtons title={item.title} description={item.description} />
         </div>
       </DialogContent>
     </Dialog>

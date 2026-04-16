@@ -82,6 +82,7 @@ const initialForm = {
   gastronomy_type: 'recipe' as string,
   price_min: '', price_max: '', gastronomy_location: '',
   dining_style: '',
+  service_mode: '',
   accommodation_type: '',
   room_types: [] as { name: string; description: string; price_min: number; price_max: number }[],
   latitude: '',
@@ -198,6 +199,7 @@ export default function AnnouncerDashboard() {
           status: 'draft',
           images: uploadedUrls.length > 0 ? uploadedUrls : null,
           dining_style: newForm.dining_style || null,
+          service_mode: newForm.service_mode || null,
           accommodation_type: newForm.accommodation_type || null,
           room_types: newForm.room_types.length > 0 ? newForm.room_types : [],
           latitude: newForm.latitude ? parseFloat(newForm.latitude) : null,
@@ -458,6 +460,21 @@ export default function AnnouncerDashboard() {
                       </div>
                     )}
 
+                    {/* Restaurant: service mode (sur place / emporter) */}
+                    {newForm.gastronomy_type === 'restaurant_dish' && (
+                      <div>
+                        <Label>Mode de service</Label>
+                        <Select value={newForm.service_mode} onValueChange={v => updateForm('service_mode', v)}>
+                          <SelectTrigger><SelectValue placeholder="Sur place / À emporter" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="sur-place">🍽️ Sur place uniquement</SelectItem>
+                            <SelectItem value="emporter">📦 À emporter uniquement</SelectItem>
+                            <SelectItem value="les-deux">🍽️📦 Sur place & À emporter</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
                     {/* Hotel/Accommodation: type */}
                     {(newForm.gastronomy_type === 'hotel_room' || newForm.gastronomy_type === 'private_room') && (
                       <div>
@@ -540,7 +557,7 @@ export default function AnnouncerDashboard() {
 
                     {/* Image upload for tourism */}
                     <div>
-                      <Label className="flex items-center gap-2 mb-2"><ImagePlus className="h-4 w-4 text-primary" /> Photos (max 5, 5 Mo chacune)</Label>
+                      <Label className="flex items-center gap-2 mb-2"><ImagePlus className="h-4 w-4 text-primary" /> Photos (max 10, 5 Mo chacune)</Label>
                       <div className="flex flex-wrap gap-3">
                         {imagePreviews.map((src, i) => (
                           <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-border group">
@@ -550,7 +567,7 @@ export default function AnnouncerDashboard() {
                             </button>
                           </div>
                         ))}
-                        {eventImages.length < 5 && (
+                        {eventImages.length < 10 && (
                           <label className="w-24 h-24 rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
                             <ImagePlus className="h-6 w-6 text-primary/60" />
                             <span className="text-[10px] text-muted-foreground mt-1">Ajouter</span>
