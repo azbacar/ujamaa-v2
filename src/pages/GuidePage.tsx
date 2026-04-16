@@ -431,7 +431,7 @@ export default function GuidePage() {
               },
               {
                 q: "Comment fonctionne l'application mobile ?",
-                a: 'Ujamaan est une Progressive Web App (PWA). Vous pouvez l\'installer sur votre téléphone depuis la page "Installer" pour une expérience native.',
+                a: "Une application mobile native est en cours de développement. En attendant, vous pouvez accéder à Ujamaan depuis le navigateur de votre téléphone.",
               },
               {
                 q: "Comment signaler un contenu inapproprié ?",
