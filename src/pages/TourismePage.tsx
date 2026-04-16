@@ -34,6 +34,7 @@ interface GastronomyItem {
   longitude?: number | null;
   dining_style?: string | null;
   accommodation_type?: string | null;
+  service_mode?: string | null;
   room_types?: any[];
   users?: { username: string; account_type: string } | null;
 }
@@ -69,8 +70,10 @@ export default function TourismePage() {
   const [selectedItem, setSelectedItem] = useState<GastronomyItem | null>(null);
 
   usePageSEO({
+    title: 'Tourisme & Gastronomie aux Comores | UJAMAA',
+    description: 'Découvrez les restaurants, hôtels, recettes comoriennes et hébergements aux Comores. Réservez et explorez la gastronomie locale.',
     canonicalPath: '/tourisme',
-    keywords: 'tourisme Comores, restaurants, hôtels, hébergement, recettes comoriennes',
+    keywords: 'tourisme Comores, restaurants Comores, hôtels Comores, hébergement Comores, recettes comoriennes, gastronomie comorienne',
   });
 
   useEffect(() => {
@@ -78,7 +81,7 @@ export default function TourismePage() {
       setLoading(true);
       const { data } = await supabase
         .from('gastronomy_items')
-        .select('id, type, title, description, price_min, price_max, images, contact_phone, contact_email, contact_whatsapp, location, category, views, created_at, latitude, longitude, dining_style, accommodation_type, room_types, users:author_id(username, account_type)')
+        .select('id, type, title, description, price_min, price_max, images, contact_phone, contact_email, contact_whatsapp, location, category, views, created_at, latitude, longitude, dining_style, accommodation_type, service_mode, room_types, users:author_id(username, account_type)')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
       setItems((data as any) || []);
