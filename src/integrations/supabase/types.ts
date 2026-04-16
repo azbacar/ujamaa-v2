@@ -1369,6 +1369,7 @@ export type Database = {
           price_max: number | null
           price_min: number | null
           room_types: Json | null
+          service_mode: string | null
           status: Database["public"]["Enums"]["content_status"]
           title: string
           type: Database["public"]["Enums"]["gastronomy_type"]
@@ -1395,6 +1396,7 @@ export type Database = {
           price_max?: number | null
           price_min?: number | null
           room_types?: Json | null
+          service_mode?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           title: string
           type: Database["public"]["Enums"]["gastronomy_type"]
@@ -1421,6 +1423,7 @@ export type Database = {
           price_max?: number | null
           price_min?: number | null
           room_types?: Json | null
+          service_mode?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           title?: string
           type?: Database["public"]["Enums"]["gastronomy_type"]
