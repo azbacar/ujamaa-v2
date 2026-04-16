@@ -228,6 +228,11 @@ export default function TourismePage() {
                           {DINING_LABELS[item.dining_style] || item.dining_style}
                         </Badge>
                       )}
+                      {item.service_mode && (
+                        <Badge variant="outline" className="text-xs">
+                          {item.service_mode === 'sur-place' ? '🍽️ Sur place' : item.service_mode === 'emporter' ? '📦 À emporter' : '🍽️📦 Sur place & À emporter'}
+                        </Badge>
+                      )}
                       {item.accommodation_type && (
                         <Badge variant="outline" className="text-xs">
                           {ACCOMMODATION_LABELS[item.accommodation_type] || item.accommodation_type}
