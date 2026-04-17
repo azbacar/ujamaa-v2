@@ -83,6 +83,49 @@ Deno.serve(async (req) => {
   const method = req.method;
 
   try {
+    // ── PUBLIC ENDPOINT: AI CHAT (login permission, no admin) ──
+    if (resource === "ai-chat" && method === "POST") {
+      if (!hasPermission(keyInfo, "login")) return err("Permission denied", 403);
+      const body = await req.json();
+      const { message, sessionId } = body;
+      if (!message || !sessionId) return err("message and sessionId required");
+
+      // Forward authorization (optional bearer for personalized AI history)
+      const authHeader = req.headers.get("authorization") || "";
+      const aiRes = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          apikey: Deno.env.get("SUPABASE_ANON_KEY")!,
+        },
+        body: JSON.stringify({ message, sessionId, clientHistory: body.clientHistory || [] }),
+      });
+      const aiData = await aiRes.json();
+      return json(aiData, aiRes.status);
+    }
+
+    // ── PUBLIC ENDPOINT: PUBLIC CONTENT (no login needed beyond key) ──
+    if (resource === "public" && method === "GET") {
+      // Allows mobile app to fetch public listings without admin permission
+      if (!hasPermission(keyInfo, "login") && !hasPermission(keyInfo, "admin")) return err("Permission denied", 403);
+      const sub = id; // 'prices' | 'events' | 'content' | 'gastronomy' | 'freelancers' | 'diaspora'
+      const limit = parseInt(url.searchParams.get("limit") || "50");
+      const offset = parseInt(url.searchParams.get("offset") || "0");
+      const tableMap: Record<string, string> = {
+        prices: "prices", events: "events", content: "content_items",
+        gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", diaspora: "diaspora_projects",
+      };
+      const table = tableMap[sub || ""];
+      if (!table) return err("Unknown public resource", 404);
+      let q = supabase.from(table).select("*", { count: "exact" });
+      if (table !== "freelancer_profiles") q = q.eq("status", "published");
+      else q = q.eq("is_visible", true);
+      const { data, count, error: qErr } = await q.range(offset, offset + limit - 1).order("created_at", { ascending: false });
+      if (qErr) return err(qErr.message, 500);
+      return json({ data, total: count, limit, offset });
+    }
+
     // ── PUBLIC ENDPOINT: LOGIN ──
     if (resource === "auth" && method === "POST") {
       if (!hasPermission(keyInfo, "login")) return err("Permission denied", 403);

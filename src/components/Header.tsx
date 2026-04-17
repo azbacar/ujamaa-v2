@@ -221,8 +221,8 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                       🌍 Invest
                     </Link>
                     <div className="border-t border-gray-100 my-1" />
-                    <Link to="/install" className="block px-4 py-3 text-emerald-600 hover:bg-emerald-50 font-medium transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      📲 Installer l'app
+                    <Link to="/guide" className="block px-4 py-3 text-emerald-600 hover:bg-emerald-50 font-medium transition-colors" onClick={() => setShowMobileMenu(false)}>
+                      📚 Guide d'utilisation
                     </Link>
                   </nav>
                 </div>

@@ -91,8 +91,8 @@ const Footer = () => {
             <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-emerald-400">Support</h4>
             <ul className="space-y-2 sm:space-y-3 text-gray-300 text-sm sm:text-base">
               <li>
-                <Link to="/install" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
-                  📲 Installer l'app
+                <Link to="/guide" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  📚 Guide d'utilisation
                 </Link>
               </li>
               <li>
