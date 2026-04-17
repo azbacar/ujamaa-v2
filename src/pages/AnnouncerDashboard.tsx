@@ -381,6 +381,11 @@ export default function AnnouncerDashboard() {
             )}
           </TabsContent>
 
+          {/* My prices tab — same as profile, for usability */}
+          <TabsContent value="my-prices">
+            <MyPricesTab />
+          </TabsContent>
+
           {/* Create form */}
           <TabsContent value="create">
             <Card>
