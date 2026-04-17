@@ -14,6 +14,11 @@
     <link rel="alternate" hreflang="ar" href="https://ujamaan.com/" />
     <link rel="alternate" hreflang="x-default" href="https://ujamaan.com/" />
     
+    <!-- Cache control: force la revalidation pour éviter les pages blanches sur iPhone -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="theme-color" content="#0891b2" />
@@ -24,6 +29,24 @@
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+    <!-- Nettoyage des anciens Service Workers PWA (corrige les pages blanches iPhone post-PWA) -->
+    <script>
+      (function() {
+        try {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            }).catch(function() {});
+          }
+          if (window.caches && caches.keys) {
+            caches.keys().then(function(keys) {
+              keys.forEach(function(k) { caches.delete(k); });
+            }).catch(function() {});
+          }
+        } catch (e) {}
+      })();
+    </script>
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
