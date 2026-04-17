@@ -8,11 +8,12 @@ interface SocialShareButtonsProps {
   className?: string;
 }
 
-const PUBLISHED_URL = 'https://ujamaa-v2.lovable.app';
+// Domaine canonique officiel pour le partage social (toujours ujamaan.com)
+const CANONICAL_DOMAIN = 'https://ujamaan.com';
 
 export default function SocialShareButtons({ title, description, className = '' }: SocialShareButtonsProps) {
-  const currentPath = window.location.pathname;
-  const shareUrl = `${PUBLISHED_URL}${currentPath}`;
+  const currentPath = window.location.pathname + window.location.search;
+  const shareUrl = `${CANONICAL_DOMAIN}${currentPath}`;
   const text = `${title}${description ? ' — ' + description.slice(0, 100) : ''}`;
 
   const shareLinks = [
