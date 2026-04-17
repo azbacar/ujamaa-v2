@@ -21,6 +21,7 @@ const WelcomeDialog = lazy(() => import("@/components/WelcomeDialog").then(m => 
 const MaintenanceCheck = lazy(() => import("./components/MaintenanceCheck").then(m => ({ default: m.MaintenanceCheck })));
 
 const PricesPage = lazy(() => import("./pages/PricesPage"));
+const PriceDetailPage = lazy(() => import("./pages/PriceDetailPage"));
 const EventsPage = lazy(() => import("./pages/EventsPage"));
 const TendersPage = lazy(() => import("./pages/TendersPage"));
 const ServicesPage = lazy(() => import("./pages/ServicesPage"));
@@ -86,6 +87,7 @@ const App = () => (
               <Route path="/auth/forgot" element={<Suspense fallback={<PageLoader />}><ResetPasswordRequest /></Suspense>} />
               <Route path="/auth/reset" element={<Suspense fallback={<PageLoader />}><ResetPassword /></Suspense>} />
               <Route path="/prix" element={<Suspense fallback={<PageLoader />}><PricesPage /></Suspense>} />
+              <Route path="/prix/:id" element={<Suspense fallback={<PageLoader />}><PriceDetailPage /></Suspense>} />
               <Route path="/evenements" element={<Suspense fallback={<PageLoader />}><EventsPage /></Suspense>} />
               <Route path="/evenements/:id" element={<Suspense fallback={<PageLoader />}><EventDetail /></Suspense>} />
               <Route path="/appels-offres" element={<Suspense fallback={<PageLoader />}><TendersPage /></Suspense>} />
