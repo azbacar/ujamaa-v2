@@ -7,7 +7,6 @@ import PriceDetailDialog from '@/components/PriceDetailDialog';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { usePageSEO } from '@/hooks/usePageSEO';
-import { useJsonLd } from '@/hooks/useJsonLd';
 
 interface PriceData {
   id: string;
@@ -42,31 +41,37 @@ export default function PriceDetailPage() {
           title: `${price.product} — ${price.price.toLocaleString('fr-FR')} ${price.currency}/${price.unit}`,
           description: `Prix de ${price.product} chez ${price.vendor} au marché ${price.market}, ${price.location.city} (${price.location.island}). Consultez les détails et l'historique sur UJAMAA.`,
           canonicalPath: `/prix/${price.id}`,
-          image: price.image_url || undefined,
+          ogImage: price.image_url || undefined,
           keywords: `${price.product}, prix Comores, ${price.location.island}, ${price.market}, ${price.category}`,
         }
       : { title: 'Détail du prix', description: 'Détail d\'un prix sur UJAMAA', canonicalPath: `/prix/${id}` }
   );
 
-  useJsonLd(
-    price
-      ? {
-          '@context': 'https://schema.org',
-          '@type': 'Product',
-          name: price.product,
-          category: price.category,
-          image: price.image_url || undefined,
-          offers: {
-            '@type': 'Offer',
-            price: price.price,
-            priceCurrency: price.currency === 'FC' ? 'KMF' : price.currency,
-            availability: 'https://schema.org/InStock',
-            seller: { '@type': 'Organization', name: price.vendor },
-            areaServed: `${price.location.city}, ${price.location.island}`,
-          },
-        }
-      : null
-  );
+  // Inject Product JSON-LD for rich results
+  useEffect(() => {
+    if (!price) return;
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: price.product,
+      category: price.category,
+      image: price.image_url || undefined,
+      offers: {
+        '@type': 'Offer',
+        price: price.price,
+        priceCurrency: price.currency === 'FC' ? 'KMF' : price.currency,
+        availability: 'https://schema.org/InStock',
+        seller: { '@type': 'Organization', name: price.vendor },
+        areaServed: `${price.location.city}, ${price.location.island}`,
+      },
+    };
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.setAttribute('data-product-jsonld', price.id);
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+    return () => { script.remove(); };
+  }, [price]);
 
   useEffect(() => {
     if (!id) return;
