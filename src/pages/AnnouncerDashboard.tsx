@@ -345,8 +345,9 @@ export default function AnnouncerDashboard() {
         </div>
 
         <Tabs defaultValue="my-content">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Mes publications</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Publications</TabsTrigger>
+            <TabsTrigger value="my-prices"><DollarSign className="h-4 w-4 mr-1" /> Mes prix</TabsTrigger>
             <TabsTrigger value="create"><Plus className="h-4 w-4 mr-1" /> Créer</TabsTrigger>
           </TabsList>
 
