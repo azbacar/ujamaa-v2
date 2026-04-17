@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Megaphone, Plus, FileText, Eye, Crown, 
   CheckCircle, Zap, Phone, Save, Trash2, ChevronRight, MessageCircle,
-  Calendar, MapPin, Users, Clock, ImagePlus, X
+  Calendar, MapPin, Users, Clock, ImagePlus, X, DollarSign
 } from 'lucide-react';
+import MyPricesTab from '@/components/MyPricesTab';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
