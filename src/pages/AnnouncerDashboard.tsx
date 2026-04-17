@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Megaphone, Plus, FileText, Eye, Crown, 
   CheckCircle, Zap, Phone, Save, Trash2, ChevronRight, MessageCircle,
-  Calendar, MapPin, Users, Clock, ImagePlus, X
+  Calendar, MapPin, Users, Clock, ImagePlus, X, DollarSign
 } from 'lucide-react';
+import MyPricesTab from '@/components/MyPricesTab';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -344,8 +345,9 @@ export default function AnnouncerDashboard() {
         </div>
 
         <Tabs defaultValue="my-content">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Mes publications</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Publications</TabsTrigger>
+            <TabsTrigger value="my-prices"><DollarSign className="h-4 w-4 mr-1" /> Mes prix</TabsTrigger>
             <TabsTrigger value="create"><Plus className="h-4 w-4 mr-1" /> Créer</TabsTrigger>
           </TabsList>
 
@@ -377,6 +379,11 @@ export default function AnnouncerDashboard() {
                 </Card>
               ))
             )}
+          </TabsContent>
+
+          {/* My prices tab — same as profile, for usability */}
+          <TabsContent value="my-prices">
+            <MyPricesTab />
           </TabsContent>
 
           {/* Create form */}
