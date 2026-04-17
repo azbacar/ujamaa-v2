@@ -44,7 +44,7 @@ const INTERNAL_LINK_LABELS: Record<string, string> = {
   '/profil': '👤 Mon Profil',
   '/messages': '✉️ Messages',
   '/auth': '🔐 Inscription / Connexion',
-  '/installer': '📲 Installer l\'app',
+  '/guide': '📚 Guide',
 };
 
 const resolveInternalPath = (url: string): string | null => {
