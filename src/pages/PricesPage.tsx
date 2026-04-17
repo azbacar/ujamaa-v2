@@ -279,8 +279,9 @@ const PricesPage = () => {
             <p className="text-gray-600 mt-4">Chargement des prix...</p>
           </div>
         ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPrices.map(price => (
+          {filteredPrices.slice(0, visibleCount).map(price => (
             <Card key={price.id} className="feature-card card-hover group cursor-pointer overflow-hidden" onClick={() => setSelectedPrice(price)}>
               {price.image_url && (
                 <div className="h-36 overflow-hidden">
@@ -339,10 +340,39 @@ const PricesPage = () => {
                     <strong>Région :</strong> {[price.location.region, price.location.island].filter(Boolean).join(', ')}
                   </p>
                 </div>
+
+                {/* Lien unique partageable */}
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-4 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Link to={`/prix/${price.id}`}>
+                    <ExternalLink className="h-3.5 w-3.5 mr-1" /> Voir la fiche complète
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* Bouton "Voir plus" */}
+        {visibleCount < filteredPrices.length && (
+          <div className="flex justify-center mt-8">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+              className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 gap-2"
+            >
+              <ChevronDown className="h-5 w-5" />
+              Voir plus ({filteredPrices.length - visibleCount} restants)
+            </Button>
+          </div>
+        )}
+        </>
         )}
 
         {!loading && filteredPrices.length === 0 && (
