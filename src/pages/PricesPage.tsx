@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar, Crown } from 'lucide-react';
+import { Search, Filter, TrendingUp, TrendingDown, MapPin, User, Calendar, Crown, ExternalLink, ChevronDown } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AdSpace from '@/components/AdSpace';
@@ -16,6 +17,8 @@ import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { usePageSEO } from '@/hooks/usePageSEO';
+
+const PAGE_SIZE = 12;
 
 interface PriceData {
   id: string;
@@ -55,6 +58,10 @@ const PricesPage = () => {
   const [pricesData, setPricesData] = useState<PriceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPro, setIsPro] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Reset pagination when filters change
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [searchTerm, selectedCategory, selectedIsland, selectedVendor]);
 
   useEffect(() => {
     if (user) {
@@ -272,8 +279,9 @@ const PricesPage = () => {
             <p className="text-gray-600 mt-4">Chargement des prix...</p>
           </div>
         ) : (
+        <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPrices.map(price => (
+          {filteredPrices.slice(0, visibleCount).map(price => (
             <Card key={price.id} className="feature-card card-hover group cursor-pointer overflow-hidden" onClick={() => setSelectedPrice(price)}>
               {price.image_url && (
                 <div className="h-36 overflow-hidden">
@@ -332,10 +340,39 @@ const PricesPage = () => {
                     <strong>Région :</strong> {[price.location.region, price.location.island].filter(Boolean).join(', ')}
                   </p>
                 </div>
+
+                {/* Lien unique partageable */}
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-4 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Link to={`/prix/${price.id}`}>
+                    <ExternalLink className="h-3.5 w-3.5 mr-1" /> Voir la fiche complète
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* Bouton "Voir plus" */}
+        {visibleCount < filteredPrices.length && (
+          <div className="flex justify-center mt-8">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+              className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 gap-2"
+            >
+              <ChevronDown className="h-5 w-5" />
+              Voir plus ({filteredPrices.length - visibleCount} restants)
+            </Button>
+          </div>
+        )}
+        </>
         )}
 
         {!loading && filteredPrices.length === 0 && (
