@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ArrowLeft, MapPin, Clock, Banknote, MessageCircle, CheckCircle, ExternalLink, Globe, Briefcase, Eye } from 'lucide-react';
-import { useFreelancerProfile } from '@/hooks/useFreelancerDirectory';
+import { useFreelancerProfileById } from '@/hooks/useFreelancerDirectory';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/components/LanguageProvider';
 import { usePageSEO } from '@/hooks/usePageSEO';
