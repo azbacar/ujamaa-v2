@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ArrowLeft, MapPin, Clock, Banknote, MessageCircle, CheckCircle, ExternalLink, Globe, Briefcase, Eye } from 'lucide-react';
-import { useFreelancerProfile } from '@/hooks/useFreelancerDirectory';
+import { useFreelancerProfileById } from '@/hooks/useFreelancerDirectory';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/components/LanguageProvider';
 import { usePageSEO } from '@/hooks/usePageSEO';
@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function FreelancerProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const { data: profile, isLoading } = useFreelancerProfile(id);
+  const { data: profile, isLoading } = useFreelancerProfileById(id);
   const { user } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
   const navigate = useNavigate();
