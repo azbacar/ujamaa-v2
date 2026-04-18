@@ -127,7 +127,8 @@ export const ProtectedRoute = ({
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    const redirectPath = `${location.pathname}${location.search}`;
+    return <Navigate to={`/auth?redirect=${encodeURIComponent(redirectPath)}`} replace />;
   }
 
   // Check if user has required role
