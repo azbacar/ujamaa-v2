@@ -117,6 +117,7 @@ export const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading, hasRole } = useRole();
+  const location = useLocation();
 
   if (authLoading || roleLoading) {
     return (
