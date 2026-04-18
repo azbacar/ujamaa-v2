@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole, UserRole } from '@/hooks/useRole';
 import { Button } from '@/components/ui/button';
@@ -117,6 +117,7 @@ export const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading, hasRole } = useRole();
+  const location = useLocation();
 
   if (authLoading || roleLoading) {
     return (
@@ -127,7 +128,8 @@ export const ProtectedRoute = ({
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    const redirectPath = `${location.pathname}${location.search}`;
+    return <Navigate to={`/auth?redirect=${encodeURIComponent(redirectPath)}`} replace />;
   }
 
   // Check if user has required role

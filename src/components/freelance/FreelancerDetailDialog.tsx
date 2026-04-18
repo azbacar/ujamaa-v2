@@ -2,10 +2,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { MapPin, Clock, Banknote, MessageCircle, CheckCircle, ExternalLink, Globe, Briefcase } from 'lucide-react';
+import { MapPin, Clock, Banknote, MessageCircle, CheckCircle, ExternalLink, Globe, Briefcase, ArrowRight } from 'lucide-react';
 import { FreelancerProfile } from '@/hooks/useFreelancerDirectory';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import SocialShareButtons from '@/components/SocialShareButtons';
 
 interface Props {
   profile: FreelancerProfile;
@@ -30,7 +31,7 @@ export default function FreelancerDetailDialog({ profile, open, onOpenChange }: 
   };
 
   const handleContact = () => {
-    if (!user) { navigate('/auth'); return; }
+    if (!user) { navigate(`/auth?redirect=${encodeURIComponent(`/freelancer/${profile.id}`)}`); return; }
     navigate(`/messages/${profile.user_id}`);
     onOpenChange(false);
   };
@@ -147,6 +148,17 @@ export default function FreelancerDetailDialog({ profile, open, onOpenChange }: 
             <MessageCircle className="h-4 w-4" /> Contacter {profile.display_name.split(' ')[0]}
           </Button>
         )}
+
+        {/* Page complète + partage */}
+        <Link to={`/freelancer/${profile.id}`} onClick={() => onOpenChange(false)}>
+          <Button variant="outline" className="w-full mt-2 gap-2">
+            Voir la page complète <ArrowRight className="h-4 w-4" />
+          </Button>
+        </Link>
+
+        <div className="mt-3 pt-3 border-t border-border">
+          <SocialShareButtons title={`${profile.display_name} — Freelancer Comores`} description={profile.bio || ''} />
+        </div>
       </DialogContent>
     </Dialog>
   );

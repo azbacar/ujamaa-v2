@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, MapPin, Wifi, Calendar, Banknote, User, Eye } from 'lucide-react';
+import { ArrowLeft, MapPin, Wifi, Calendar, Banknote, User, Eye, LogIn } from 'lucide-react';
 import { useFreelanceJob, useJobReviews, FREELANCE_CATEGORIES } from '@/hooks/useFreelance';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -12,6 +12,7 @@ import FreelanceJobForm from '@/components/freelance/FreelanceJobForm';
 import FreelanceProposalForm from '@/components/freelance/FreelanceProposalForm';
 import FreelanceProposalList from '@/components/freelance/FreelanceProposalList';
 import FreelanceReviewCard from '@/components/freelance/FreelanceReviewCard';
+import SocialShareButtons from '@/components/SocialShareButtons';
 import { usePageSEO } from '@/hooks/usePageSEO';
 
 export default function FreelanceJobDetail() {
@@ -132,6 +133,10 @@ export default function FreelanceJobDetail() {
                 <p className="text-xs text-muted-foreground">
                   Publié le {new Date(job.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
+
+                <div className="pt-3 border-t border-border">
+                  <SocialShareButtons title={job.title} description={job.description} />
+                </div>
               </CardContent>
             </Card>
 
@@ -154,8 +159,13 @@ export default function FreelanceJobDetail() {
             {!isAuthor && user && <FreelanceProposalForm jobId={job.id} />}
             {!user && (
               <Card>
-                <CardContent className="p-4 text-center text-sm text-muted-foreground">
+                <CardContent className="p-4 text-center text-sm text-muted-foreground space-y-3">
                   <p>Connectez-vous pour postuler à cette mission</p>
+                  <Link to={`/auth?redirect=${encodeURIComponent(`/freelance/${job.id}`)}`}>
+                    <Button className="w-full gap-2">
+                      <LogIn className="h-4 w-4" /> Se connecter pour postuler
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             )}

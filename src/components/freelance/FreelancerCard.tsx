@@ -3,9 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { MapPin, Clock, Banknote, MessageCircle, CheckCircle, ExternalLink, Eye } from 'lucide-react';
+import { MapPin, Clock, Banknote, MessageCircle, CheckCircle, ExternalLink, Eye, ExternalLink as LinkIcon } from 'lucide-react';
 import { FreelancerProfile } from '@/hooks/useFreelancerDirectory';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import FreelancerDetailDialog from './FreelancerDetailDialog';
 
@@ -29,7 +29,7 @@ export default function FreelancerCard({ profile }: Props) {
   };
 
   const handleContact = () => {
-    if (!user) { navigate('/auth'); return; }
+    if (!user) { navigate(`/auth?redirect=${encodeURIComponent(`/freelancer/${profile.id}`)}`); return; }
     navigate(`/messages/${profile.user_id}`);
   };
 
@@ -130,9 +130,11 @@ export default function FreelancerCard({ profile }: Props) {
                   </div>
                 )}
 
-                <Button size="sm" variant="outline" className="gap-1 text-xs h-7 px-2.5" onClick={() => setDetailOpen(true)}>
-                  <Eye className="h-3.5 w-3.5" /> Voir plus
-                </Button>
+                <Link to={`/freelancer/${profile.id}`}>
+                  <Button size="sm" variant="outline" className="gap-1 text-xs h-7 px-2.5">
+                    <Eye className="h-3.5 w-3.5" /> Voir le profil
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

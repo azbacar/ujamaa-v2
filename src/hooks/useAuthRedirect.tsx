@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from './useAuth';
 import { useRole } from './useRole';
 
@@ -8,6 +8,7 @@ export const useAuthRedirect = () => {
   const { role, loading: roleLoading } = useRole();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     if (!user || !session || roleLoading) return;
@@ -17,12 +18,19 @@ export const useAuthRedirect = () => {
       return;
     }
 
-    // Redirect admins/moderators to admin dashboard
-    const redirectPath = role === 'admin' || role === 'moderator' ? '/admin' : '/';
+    // Priorité 1 : paramètre ?redirect=... (chemin où l'utilisateur voulait aller)
+    const redirectParam = searchParams.get('redirect');
+    let redirectPath: string;
+
+    if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
+      redirectPath = redirectParam;
+    } else {
+      // Priorité 2 : admins/moderators → /admin, sinon → /
+      redirectPath = role === 'admin' || role === 'moderator' ? '/admin' : '/';
+    }
 
     setTimeout(() => {
-      navigate(redirectPath);
-    }, 500);
-
-  }, [user, session, role, roleLoading, navigate, location.pathname]);
+      navigate(redirectPath, { replace: true });
+    }, 300);
+  }, [user, session, role, roleLoading, navigate, location.pathname, searchParams]);
 };
