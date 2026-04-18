@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole, UserRole } from '@/hooks/useRole';
 import { Button } from '@/components/ui/button';
