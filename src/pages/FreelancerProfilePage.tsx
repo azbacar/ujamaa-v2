@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function FreelancerProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const { data: profile, isLoading } = useFreelancerProfile(id);
+  const { data: profile, isLoading } = useFreelancerProfileById(id);
   const { user } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
   const navigate = useNavigate();
