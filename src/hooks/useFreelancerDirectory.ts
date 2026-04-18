@@ -95,9 +95,43 @@ export const useFreelancerProfile = (userId?: string) => {
         .maybeSingle();
 
       if (error) throw error;
-      return data as FreelancerProfile | null;
+      if (!data) return null;
+
+      // enrich with account_type
+      const { data: u } = await supabase
+        .from('users')
+        .select('account_type')
+        .eq('id', data.user_id)
+        .maybeSingle();
+
+      return { ...data, account_type: (u as any)?.account_type || 'free' } as FreelancerProfile;
     },
     enabled: !!userId,
+  });
+};
+
+export const useFreelancerProfileById = (profileId?: string) => {
+  return useQuery({
+    queryKey: ['freelancer-profile-by-id', profileId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('freelancer_profiles')
+        .select('*')
+        .eq('id', profileId!)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) return null;
+
+      const { data: u } = await supabase
+        .from('users')
+        .select('account_type')
+        .eq('id', data.user_id)
+        .maybeSingle();
+
+      return { ...data, account_type: (u as any)?.account_type || 'free' } as FreelancerProfile;
+    },
+    enabled: !!profileId,
   });
 };
 
