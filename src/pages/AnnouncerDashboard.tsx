@@ -13,6 +13,7 @@ import {
   Calendar, MapPin, Users, Clock, ImagePlus, X, DollarSign
 } from 'lucide-react';
 import MyPricesTab from '@/components/MyPricesTab';
+import VendorLocationShareCard from '@/components/VendorLocationShareCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -96,6 +97,7 @@ export default function AnnouncerDashboard() {
   const navigate = useNavigate();
   const [items, setItems] = useState<ContentItem[]>([]);
   const [privileges, setPrivileges] = useState<Privilege[]>([]);
+  const [accountType, setAccountType] = useState<string>('free');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [newForm, setNewForm] = useState(initialForm);
@@ -109,11 +111,12 @@ export default function AnnouncerDashboard() {
   const fetchData = async () => {
     if (!user) return;
     setLoading(true);
-    const [itemsRes, eventsRes, gastroRes, privRes] = await Promise.all([
+    const [itemsRes, eventsRes, gastroRes, privRes, userRes] = await Promise.all([
       supabase.from('content_items').select('id, title, description, type, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
       supabase.from('events').select('id, title, description, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
       supabase.from('gastronomy_items').select('id, title, description, type, status, views, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
       supabase.from('announcer_privileges').select('*').eq('user_id', user.id),
+      supabase.from('users').select('account_type').eq('id', user.id).maybeSingle(),
     ]);
     
     const contentItems: ContentItem[] = (itemsRes.data || []).map(i => ({ ...i, source: 'content' as const }));
@@ -123,6 +126,7 @@ export default function AnnouncerDashboard() {
     const all = [...contentItems, ...eventItems, ...gastroItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     setItems(all);
     setPrivileges(privRes.data || []);
+    setAccountType((userRes.data as any)?.account_type || 'free');
     setLoading(false);
   };
 
