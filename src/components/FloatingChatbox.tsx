@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import ReactMarkdown from 'react-markdown';
+import { safeStorage } from '@/lib/safeStorage';
 
 interface ChatLink {
   url: string;
@@ -162,19 +163,15 @@ const FloatingChatbox = () => {
   const scrollAreaRootRef = useRef<HTMLDivElement | null>(null);
 
   const [guestSessionId] = useState(() => {
-    try {
-      const existing = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
-      if (existing) return existing;
-      const array = new Uint8Array(16);
-      crypto.getRandomValues(array);
-      const next = `chat_${Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
-      localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, next);
-      return next;
-    } catch {
-      const array = new Uint8Array(16);
-      crypto.getRandomValues(array);
-      return `chat_${Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+    const existing = safeStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
+    if (existing) return existing;
+    const array = new Uint8Array(16);
+    try { crypto.getRandomValues(array); } catch {
+      for (let i = 0; i < array.length; i++) array[i] = Math.floor(Math.random() * 256);
     }
+    const next = `chat_${Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+    safeStorage.setItem(LOCAL_STORAGE_SESSION_KEY, next);
+    return next;
   });
 
   const sessionId = user?.id ?? guestSessionId;
@@ -210,18 +207,17 @@ const FloatingChatbox = () => {
     const handleOpenChat = () => {
       setIsOpen(true);
       setIsMinimized(false);
-      // Reload messages from localStorage to pick up any messages added by search chat
-      try {
-        const raw = localStorage.getItem(storageKey);
-        if (raw) {
+      const raw = safeStorage.getItem(storageKey);
+      if (raw) {
+        try {
           const parsed = JSON.parse(raw) as Array<Omit<Message, 'timestamp'> & { timestamp: string }>;
           const restored: Message[] = parsed.map((m) => ({ ...m, timestamp: new Date(m.timestamp) }));
           if (restored.length > 0) {
             setMessages(restored);
             setMessageCount(restored.filter((m) => m.isUser).length);
           }
-        }
-      } catch {}
+        } catch {}
+      }
     };
     window.addEventListener('openFloatingChat', handleOpenChat);
     return () => window.removeEventListener('openFloatingChat', handleOpenChat);
@@ -235,9 +231,9 @@ const FloatingChatbox = () => {
 
   // Load history
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
+    const raw = safeStorage.getItem(storageKey);
+    if (raw) {
+      try {
         const parsed = JSON.parse(raw) as Array<Omit<Message, 'timestamp'> & { timestamp: string }>;
         const restored: Message[] = parsed.map((m) => ({ ...m, timestamp: new Date(m.timestamp) }));
         if (restored.length > 0) {
@@ -245,9 +241,9 @@ const FloatingChatbox = () => {
           setMessageCount(restored.filter((m) => m.isUser).length);
           return;
         }
+      } catch (e) {
+        console.warn("Impossible de restaurer l'historique du chat:", e);
       }
-    } catch (e) {
-      console.warn("Impossible de restaurer l'historique du chat:", e);
     }
     setMessages([{ id: '1', text: welcomeMessage, isUser: false, timestamp: new Date() }]);
     setMessageCount(0);
@@ -255,10 +251,8 @@ const FloatingChatbox = () => {
 
   // Persist history
   useEffect(() => {
-    try {
-      const serializable = messages.map((m) => ({ ...m, timestamp: m.timestamp.toISOString() }));
-      localStorage.setItem(storageKey, JSON.stringify(serializable));
-    } catch { /* ignore */ }
+    const serializable = messages.map((m) => ({ ...m, timestamp: m.timestamp.toISOString() }));
+    safeStorage.setItem(storageKey, JSON.stringify(serializable));
   }, [messages, storageKey]);
 
   // Auto-scroll
