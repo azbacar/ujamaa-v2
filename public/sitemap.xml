@@ -46,7 +46,27 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://ujamaan.com/carte-vendeurs</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ujamaan.com/tourisme</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ujamaan.com/infos-pratiques</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://ujamaan.com/pro</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://ujamaan.com/partener</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

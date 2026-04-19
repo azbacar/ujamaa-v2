@@ -53,7 +53,8 @@ export const useJsonLd = () => {
         { '@type': 'ListItem', position: 3, name: 'Événements', item: `${siteUrl}/evenements` },
         { '@type': 'ListItem', position: 4, name: 'Annonces', item: `${siteUrl}/annonces` },
         { '@type': 'ListItem', position: 5, name: 'Services', item: `${siteUrl}/services` },
-        { '@type': 'ListItem', position: 6, name: 'Investissement', item: `${siteUrl}/investissement` },
+        { '@type': 'ListItem', position: 6, name: 'Carte des vendeurs', item: `${siteUrl}/carte-vendeurs` },
+        { '@type': 'ListItem', position: 7, name: 'Investissement', item: `${siteUrl}/investissement` },
       ],
     };
 

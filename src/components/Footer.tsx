@@ -51,6 +51,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/carte-vendeurs" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
+                  📍 Carte des vendeurs
+                </Link>
+              </li>
+              <li>
                 <Link to="/investissement" className="hover:text-emerald-400 transition-colors flex items-center gap-2">
                   🌍 Investissement / Lever de fond
                 </Link>
