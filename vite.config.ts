@@ -18,4 +18,8 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Version unique injectée à chaque build → permet la purge auto de cache côté client
+    __APP_VERSION__: JSON.stringify(`${Date.now()}`),
+  },
 }));
