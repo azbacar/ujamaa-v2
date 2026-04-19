@@ -54,6 +54,7 @@ const TourismePage = lazy(() => import("./pages/TourismePage"));
 const InfosPratiquesPage = lazy(() => import("./pages/InfosPratiquesPage"));
 const GuidePage = lazy(() => import("./pages/GuidePage"));
 const VendorMapPage = lazy(() => import("./pages/VendorMapPage"));
+const PartnerPage = lazy(() => import("./pages/PartnerPage"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -148,6 +149,7 @@ const App = () => (
               <Route path="/ile/:islandName" element={<Suspense fallback={<PageLoader />}><IslandDetailPage /></Suspense>} />
               <Route path="/guide" element={<Suspense fallback={<PageLoader />}><GuidePage /></Suspense>} />
               <Route path="/carte-vendeurs" element={<Suspense fallback={<PageLoader />}><VendorMapPage /></Suspense>} />
+              <Route path="/partener" element={<Suspense fallback={<PageLoader />}><PartnerPage /></Suspense>} />
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
             <Suspense fallback={null}>
