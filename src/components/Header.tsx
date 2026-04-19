@@ -86,6 +86,9 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             <Link to="/tourisme" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🏝️ Tourisme
             </Link>
+            <Link to="/carte-vendeurs" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
+              📍 Carte
+            </Link>
             <Link to="/investissement" className="text-gray-700 hover:text-emerald-600 font-medium transition-colors">
               🌍 Invest
             </Link>
