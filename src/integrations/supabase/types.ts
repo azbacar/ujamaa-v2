@@ -1575,6 +1575,149 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_accounts: {
+        Row: {
+          address: string | null
+          business_name: string
+          city: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          id: string
+          island: string | null
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          business_name: string
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          island?: string | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          business_name?: string
+          city?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          island?: string | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      partner_settings: {
+        Row: {
+          commission_type: string
+          commission_value: number
+          currency: string
+          id: string
+          is_active: boolean
+          pro_plan_price: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          commission_type?: string
+          commission_value?: number
+          currency?: string
+          id?: string
+          is_active?: boolean
+          pro_plan_price?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          commission_type?: string
+          commission_value?: number
+          currency?: string
+          id?: string
+          is_active?: boolean
+          pro_plan_price?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      partner_transactions: {
+        Row: {
+          amount_collected: number
+          client_email: string | null
+          client_phone: string | null
+          client_user_id: string
+          commission_amount: number
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          partner_id: string
+          plan: string
+          pro_request_id: string | null
+          reference: string | null
+          status: string
+        }
+        Insert: {
+          amount_collected: number
+          client_email?: string | null
+          client_phone?: string | null
+          client_user_id: string
+          commission_amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          partner_id: string
+          plan?: string
+          pro_request_id?: string | null
+          reference?: string | null
+          status?: string
+        }
+        Update: {
+          amount_collected?: number
+          client_email?: string | null
+          client_phone?: string | null
+          client_user_id?: string
+          commission_amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          partner_id?: string
+          plan?: string
+          pro_request_id?: string | null
+          reference?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_transactions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pending_modifications: {
         Row: {
           content: Json
@@ -2749,6 +2892,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_active_partner: { Args: { _user_id: string }; Returns: boolean }
       is_pro_annonceur: { Args: { _user_id: string }; Returns: boolean }
       is_pro_user: { Args: { _user_id: string }; Returns: boolean }
       is_project_carrier: { Args: { _user_id: string }; Returns: boolean }
@@ -2792,7 +2936,7 @@ export type Database = {
     Enums: {
       account_type: "free" | "pro" | "enterprise"
       announcement_kind: "info" | "warning" | "urgent" | "maintenance"
-      app_role: "admin" | "moderator" | "user" | "annonceur"
+      app_role: "admin" | "moderator" | "user" | "annonceur" | "partner"
       content_status: "published" | "draft" | "archived"
       content_type: "announcement" | "event" | "service" | "tender"
       gastronomy_type:
@@ -2929,7 +3073,7 @@ export const Constants = {
     Enums: {
       account_type: ["free", "pro", "enterprise"],
       announcement_kind: ["info", "warning", "urgent", "maintenance"],
-      app_role: ["admin", "moderator", "user", "annonceur"],
+      app_role: ["admin", "moderator", "user", "annonceur", "partner"],
       content_status: ["published", "draft", "archived"],
       content_type: ["announcement", "event", "service", "tender"],
       gastronomy_type: [
