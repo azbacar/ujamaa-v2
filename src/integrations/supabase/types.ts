@@ -2543,6 +2543,60 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_locations: {
+        Row: {
+          accuracy: number | null
+          category: string | null
+          created_at: string
+          expires_at: string
+          heading: number | null
+          id: string
+          is_active: boolean
+          island: string | null
+          label: string
+          last_seen_at: string
+          latitude: number
+          longitude: number
+          speed: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          category?: string | null
+          created_at?: string
+          expires_at: string
+          heading?: number | null
+          id?: string
+          is_active?: boolean
+          island?: string | null
+          label: string
+          last_seen_at?: string
+          latitude: number
+          longitude: number
+          speed?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          category?: string | null
+          created_at?: string
+          expires_at?: string
+          heading?: number | null
+          id?: string
+          is_active?: boolean
+          island?: string | null
+          label?: string
+          last_seen_at?: string
+          latitude?: number
+          longitude?: number
+          speed?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       verification_requests: {
         Row: {
           additional_info: string | null
