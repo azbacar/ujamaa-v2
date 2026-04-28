@@ -189,105 +189,21 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
               </Card>
             )}
 
-            {contentType === 'service' && (
+            {/* Contacts (auto-gating selon Pro viewer/auteur) */}
+            {(item.contact_phone || item.contact_whatsapp) && (
               <Card className="border-blue-200 bg-blue-50/50">
                 <CardHeader>
-                  <CardTitle className="text-lg">🏛️ Contacter le service</CardTitle>
+                  <CardTitle className="text-lg">
+                    {contentType === 'tender' ? '📞 Contact' : contentType === 'service' ? '🏛️ Contacter le service' : '📞 Contact'}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {isAuthorPro && item.contact_phone ? (
-                    <div className="space-y-3">
-                      {isMobile ? (
-                        <Button 
-                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
-                          onClick={() => window.open(`tel:${formatPhone(item.contact_phone!)}`, '_self')}
-                        >
-                          <Phone className="w-4 h-4 mr-2" />
-                          Appeler le service
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2 p-3 bg-background rounded-lg border">
-                          <Phone className="w-4 h-4 text-blue-600" />
-                          <span className="font-medium text-foreground">{item.contact_phone}</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-3">
-                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
-                        <span className="text-lg">⚠️</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Ce service est publié par un compte <strong>non vérifié</strong>. Les coordonnées ne sont pas disponibles.
-                      </p>
-                      <p className="text-xs text-muted-foreground/70">
-                        Les professionnels avec un forfait Pro ou Entreprise affichent leurs coordonnées vérifiées.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Contact WhatsApp - visible uniquement si Pro */}
-            {isAuthorPro && item.contact_whatsapp && (
-              <Card className="border-green-200 bg-green-50/50">
-                <CardContent className="pt-6">
-                  <Button 
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
-                    onClick={() => window.open(`https://wa.me/${formatPhone(item.contact_whatsapp!)}`, '_blank')}
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Contacter via WhatsApp
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Contact téléphone pour les appels d'offres Pro */}
-            {contentType === 'tender' && isAuthorPro && item.contact_phone && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">📞 Contact</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isMobile ? (
-                    <Button 
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => window.open(`tel:${formatPhone(item.contact_phone!)}`, '_self')}
-                    >
-                      <Phone className="w-4 h-4 mr-2" />
-                      Appeler
-                    </Button>
-                  ) : (
-                    <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium text-foreground">{item.contact_phone}</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Contact non-Pro pour tenders */}
-            {contentType === 'tender' && !isAuthorPro && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">📞 Contact</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center space-y-3">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
-                      <span className="text-lg">⚠️</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Cet appel d'offres est publié par un compte <strong>non vérifié</strong>. Les coordonnées ne sont pas disponibles.
-                    </p>
-                    <p className="text-xs text-muted-foreground/70">
-                      Seuls les annonceurs Pro ou Entreprise affichent leurs coordonnées vérifiées.
-                    </p>
-                  </div>
+                  <ContactDisplay
+                    authorId={item.author_id}
+                    phone={item.contact_phone}
+                    whatsapp={item.contact_whatsapp}
+                    variant="card"
+                  />
                 </CardContent>
               </Card>
             )}
