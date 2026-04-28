@@ -16,6 +16,8 @@ export interface VendorLocation {
   heading: number | null;
   speed: number | null;
   is_active: boolean;
+  is_mobile: boolean;
+  address: string | null;
   expires_at: string;
   last_seen_at: string;
 }
@@ -25,6 +27,8 @@ interface ShareOptions {
   category?: string;
   island?: string;
   durationMinutes: number; // 15..720
+  isMobile: boolean;       // true = ambulant (live tracking), false = fixe
+  address?: string;        // pour position fixe
 }
 
 const STORAGE_KEY = 'ujamaan_vendor_location_id';
@@ -34,36 +38,8 @@ export const useVendorLocation = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
+  const [isMobileActive, setIsMobileActive] = useState(false);
   const watchIdRef = useRef<number | null>(null);
-
-  // Restore session
-  useEffect(() => {
-    if (!user) return;
-    const restoreSession = async () => {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (!stored) return;
-        const { data } = await supabase
-          .from('vendor_locations')
-          .select('id, expires_at, is_active')
-          .eq('id', stored)
-          .eq('user_id', user.id)
-          .maybeSingle();
-        if (data && data.is_active && new Date(data.expires_at) > new Date()) {
-          setActiveId(data.id);
-          setExpiresAt(new Date(data.expires_at));
-          startWatching(data.id);
-        } else {
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      } catch (e) {
-        logger.error('restore vendor location failed', e);
-      }
-    };
-    restoreSession();
-    return () => stopWatching();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
 
   const stopWatching = useCallback(() => {
     if (watchIdRef.current !== null && navigator.geolocation) {
@@ -97,6 +73,37 @@ export const useVendorLocation = () => {
     );
   }, [stopWatching]);
 
+  // Restore session
+  useEffect(() => {
+    if (!user) return;
+    const restoreSession = async () => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return;
+        const { data } = await supabase
+          .from('vendor_locations')
+          .select('id, expires_at, is_active, is_mobile')
+          .eq('id', stored)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (data && data.is_active && new Date(data.expires_at) > new Date()) {
+          setActiveId(data.id);
+          setExpiresAt(new Date(data.expires_at));
+          setIsMobileActive(!!data.is_mobile);
+          // Only watch if mobile/ambulant
+          if (data.is_mobile) startWatching(data.id);
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      } catch (e) {
+        logger.error('restore vendor location failed', e);
+      }
+    };
+    restoreSession();
+    return () => stopWatching();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const startSharing = useCallback(async (opts: ShareOptions) => {
     if (!user) {
       toast.error('Vous devez être connecté');
@@ -108,7 +115,6 @@ export const useVendorLocation = () => {
     }
     setIsSharing(true);
     try {
-      // Get current position
       const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true, timeout: 15000, maximumAge: 0,
@@ -130,17 +136,21 @@ export const useVendorLocation = () => {
           heading: pos.coords.heading ?? null,
           speed: pos.coords.speed ?? null,
           is_active: true,
+          is_mobile: opts.isMobile,
+          address: opts.address || null,
           expires_at: expires.toISOString(),
         })
-        .select('id, expires_at')
+        .select('id, expires_at, is_mobile')
         .single();
 
       if (error) throw error;
       setActiveId(data.id);
       setExpiresAt(new Date(data.expires_at));
+      setIsMobileActive(!!data.is_mobile);
       localStorage.setItem(STORAGE_KEY, data.id);
-      startWatching(data.id);
-      toast.success('Position partagée en direct ✅');
+      // Live tracking only for ambulant
+      if (opts.isMobile) startWatching(data.id);
+      toast.success(opts.isMobile ? 'Position partagée en direct ✅' : 'Position fixe enregistrée ✅');
       return true;
     } catch (e: any) {
       logger.error('start sharing failed', e);
@@ -162,13 +172,14 @@ export const useVendorLocation = () => {
       localStorage.removeItem(STORAGE_KEY);
       setActiveId(null);
       setExpiresAt(null);
+      setIsMobileActive(false);
       toast.success('Partage de position arrêté');
     } catch (e) {
       logger.error('stop sharing failed', e);
     }
   }, [activeId, stopWatching]);
 
-  return { activeId, isSharing, expiresAt, isActive: !!activeId, startSharing, stopSharing };
+  return { activeId, isSharing, expiresAt, isActive: !!activeId, isMobileActive, startSharing, stopSharing };
 };
 
 export const useLiveVendorLocations = (island?: string) => {
