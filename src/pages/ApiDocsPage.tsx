@@ -99,6 +99,13 @@ const ApiDocsPage = () => {
   const { toast } = useToast();
   const [copied, setCopied] = useState<string | null>(null);
 
+  usePageSEO({
+    title: "Documentation API mobile",
+    description: "Documentation privée de l'API Ujamaan pour l'application mobile.",
+    noIndex: true,
+    canonicalPath: "/api-docs",
+  });
+
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth?redirect=/api-docs", { replace: true });
@@ -135,12 +142,6 @@ const ApiDocsPage = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Documentation API mobile – Ujamaan</title>
-        <meta name="description" content="Documentation privée de l'API Ujamaan pour l'application mobile." />
-        <meta name="robots" content="noindex,nofollow" />
-      </Helmet>
-
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
 
       <main className="min-h-screen bg-gradient-to-br from-emerald-50/40 via-white to-ocean-50/40 pb-24">
