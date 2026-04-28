@@ -105,8 +105,14 @@ export default function PriceDetailPage() {
         merchant_type: (data as any).merchant_type,
         geo_expires_at: (data as any).geo_expires_at,
       });
-      // Increment views (best-effort)
-      supabase.from('prices').update({ views: ((data as any).views || 0) + 1 }).eq('id', id).then(() => {});
+      // Increment views via RPC atomique (best-effort, dédupliqué par session)
+      const vKey = `view:price:${id}`;
+      if (!sessionStorage.getItem(vKey)) {
+        sessionStorage.setItem(vKey, '1');
+        supabase.rpc('increment_content_view', { _type: 'price', _id: id }).then(({ error }) => {
+          if (error) sessionStorage.removeItem(vKey);
+        });
+      }
       setLoading(false);
     })();
   }, [id]);
