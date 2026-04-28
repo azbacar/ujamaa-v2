@@ -9,6 +9,7 @@ import ContactDisplay from '@/components/ContactDisplay';
 
 interface GastronomyItem {
   id: string;
+  author_id?: string | null;
   type: string;
   title: string;
   description: string;
@@ -177,30 +178,16 @@ export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
             </div>
           )}
 
-          {/* Contact */}
-          {isPro ? (
-            <div className="flex flex-wrap gap-3 pt-3 border-t">
-              {item.contact_phone && (
-                <a href={`tel:${item.contact_phone}`} className="text-sm flex items-center gap-1 text-primary hover:underline">
-                  <Phone className="h-4 w-4" /> {item.contact_phone}
-                </a>
-              )}
-              {item.contact_whatsapp && (
-                <a href={`https://wa.me/${item.contact_whatsapp}`} target="_blank" rel="noopener noreferrer" className="text-sm flex items-center gap-1 text-green-600 hover:underline">
-                  <MessageCircle className="h-4 w-4" /> WhatsApp
-                </a>
-              )}
-              {item.contact_email && (
-                <a href={`mailto:${item.contact_email}`} className="text-sm flex items-center gap-1 text-blue-600 hover:underline">
-                  <Mail className="h-4 w-4" /> {item.contact_email}
-                </a>
-              )}
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground italic border-t pt-3">
-              Annonceur non vérifié — les annonceurs Pro affichent leurs coordonnées
-            </p>
-          )}
+          {/* Contact (gating unifié : visiteur → login, non-Pro → upgrade) */}
+          <div className="pt-3 border-t">
+            <ContactDisplay
+              authorId={item.author_id}
+              phone={item.contact_phone}
+              email={item.contact_email}
+              whatsapp={item.contact_whatsapp}
+              variant="card"
+            />
+          </div>
 
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <Eye className="h-3 w-3" /> {item.views} vues
