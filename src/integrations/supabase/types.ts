@@ -1438,6 +1438,13 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gastronomy_items_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users_pro_status"
+            referencedColumns: ["id"]
+          },
         ]
       }
       global_announcements: {
@@ -2865,6 +2872,21 @@ export type Database = {
           location?: string | null
           organization?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      users_pro_status: {
+        Row: {
+          id: string | null
+          is_pro: boolean | null
+        }
+        Insert: {
+          id?: string | null
+          is_pro?: never
+        }
+        Update: {
+          id?: string | null
+          is_pro?: never
         }
         Relationships: []
       }

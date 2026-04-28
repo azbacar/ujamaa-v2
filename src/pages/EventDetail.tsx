@@ -17,6 +17,7 @@ import FavoriteButton from '@/components/FavoriteButton';
 import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
 import { usePageSEO } from '@/hooks/usePageSEO';
+import ContactDisplay from '@/components/ContactDisplay';
 
 interface Event {
   id: string;
@@ -358,12 +359,16 @@ const EventDetail = () => {
                 {(event.contact_phone || event.contact_email) && (
                   <div>
                     <h4 className="font-semibold text-sm mb-2">Contact</h4>
-                    {event.contact_phone && <p className="text-sm text-muted-foreground">{event.contact_phone}</p>}
-                    {event.contact_email && <p className="text-sm text-blue-600">{event.contact_email}</p>}
+                    <ContactDisplay
+                      authorId={event.author_id}
+                      phone={event.contact_phone}
+                      email={event.contact_email}
+                      variant="card"
+                    />
                   </div>
                 )}
 
-                {(authorInfo?.account_type === 'pro' || authorInfo?.account_type === 'enterprise') && event.author_id && (
+                {event.author_id && (
                   <div>
                     <Button 
                       className="w-full"
