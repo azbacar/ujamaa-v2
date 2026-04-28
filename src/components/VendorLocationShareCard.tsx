@@ -10,6 +10,7 @@ import { MapPin, Radio, Square, Crown, Lock, Store, Truck } from 'lucide-react';
 import { useVendorLocation } from '@/hooks/useVendorLocation';
 import { useProStatus } from '@/hooks/useProStatus';
 import { Link } from 'react-router-dom';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
 const CATEGORIES = ['Fruits & légumes', 'Poissons', 'Viandes', 'Restauration', 'Boulangerie', 'Vêtements', 'Boissons', 'Autre'];
@@ -64,7 +65,7 @@ export default function VendorLocationShareCard(_props: Props) {
           </p>
           <div className="flex flex-wrap gap-2">
             <Button asChild className="bg-amber-600 hover:bg-amber-700">
-              <Link to="/pro"><Lock className="h-4 w-4 mr-2" /> Devenir Pro</Link>
+              <Link to={proPath()}><Lock className="h-4 w-4 mr-2" /> Devenir Pro</Link>
             </Button>
             {!isVerified && (
               <Button asChild variant="outline">

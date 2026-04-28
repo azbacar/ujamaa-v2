@@ -18,6 +18,7 @@ import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import ContactDisplay from '@/components/ContactDisplay';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface Event {
   id: string;
@@ -372,7 +373,7 @@ const EventDetail = () => {
                     <Button 
                       className="w-full"
                       onClick={() => {
-                        if (!user) { navigate('/auth'); return; }
+                        if (!user) { navigate(authPath()); return; }
                         navigate(`/messages/${event.author_id}`);
                       }}
                     >

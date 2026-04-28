@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface Event {
   id: string;
@@ -260,7 +261,7 @@ const EventsPage = () => {
                 <Button 
                   size="lg" 
                   onClick={() => {
-                    if (!user) { navigate('/auth'); return; }
+                    if (!user) { navigate(authPath()); return; }
                     if (!isAnnonceur()) { setShowUpgrade(true); return; }
                     navigate('/annonceur');
                   }}

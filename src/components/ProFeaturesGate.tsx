@@ -2,6 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Crown, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface Props {
   feature: string;
@@ -24,7 +25,7 @@ export default function ProFeaturesGate({ feature, children, isPro }: Props) {
           <h3 className="font-bold text-foreground mb-1">Fonctionnalité Pro</h3>
           <p className="text-sm text-muted-foreground mb-4">{feature} est réservé aux abonnés UJAMAA Pro</p>
           <Button
-            onClick={() => navigate('/pro')}
+            onClick={() => navigate(proPath())}
             className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
           >
             <Crown className="h-4 w-4 mr-2" /> Passer au Pro

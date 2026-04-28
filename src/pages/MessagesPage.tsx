@@ -14,6 +14,7 @@ import { useLanguage } from '@/components/LanguageProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { maskSensitiveContent, containsSensitiveContent, canShareSensitiveContent, canSeeSensitiveContent } from '@/lib/chatFilter';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 export default function MessagesPage() {
   const { partnerId } = useParams<{ partnerId?: string }>();
@@ -166,7 +167,7 @@ export default function MessagesPage() {
         <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
         <main className="container mx-auto px-4 py-8 text-center">
           <p className="text-muted-foreground">Connectez-vous pour accéder à vos messages</p>
-          <Link to="/auth"><Button className="mt-4">Se connecter</Button></Link>
+          <Link to={authPath()}><Button className="mt-4">Se connecter</Button></Link>
         </main>
         <Footer />
       </div>

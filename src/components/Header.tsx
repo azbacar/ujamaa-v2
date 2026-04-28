@@ -12,6 +12,7 @@ import NotificationSystemReal from './NotificationSystemReal';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import FullScreenSearch from './FullScreenSearch';
 import { useUnreadCount } from '@/hooks/useMessages';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface HeaderProps {
   currentLanguage: string;
@@ -178,7 +179,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                 variant="default" 
                 size="sm" 
                 className="h-10 sm:h-12 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-ocean-500 text-xs sm:text-sm"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate(authPath())}
               >
                 Connexion
               </Button>

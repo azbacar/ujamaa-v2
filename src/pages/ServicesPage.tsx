@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { usePageSEO } from '@/hooks/usePageSEO';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface Service {
   id: string;
@@ -220,7 +221,7 @@ const ServicesPage = () => {
                 <Button 
                   size="lg" 
                   onClick={() => {
-                    if (!user) { navigate('/auth'); return; }
+                    if (!user) { navigate(authPath()); return; }
                     if (!isAnnonceur()) { setShowUpgrade(true); return; }
                     navigate('/annonceur');
                   }}

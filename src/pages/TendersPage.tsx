@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { usePageSEO } from '@/hooks/usePageSEO';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface Tender {
   id: string;
@@ -242,7 +243,7 @@ const TendersPage = () => {
                 <Button 
                   size="lg" 
                   onClick={() => {
-                    if (!user) { navigate('/auth'); return; }
+                    if (!user) { navigate(authPath()); return; }
                     if (!isAnnonceur()) { setShowUpgrade(true); return; }
                     navigate('/annonceur');
                   }}
