@@ -79,12 +79,35 @@ export default function TourismePage() {
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('gastronomy_items')
-        .select('id, type, title, description, price_min, price_max, images, contact_phone, contact_email, contact_whatsapp, location, category, views, created_at, latitude, longitude, dining_style, accommodation_type, service_mode, room_types, users:author_id(username, account_type)')
+        .select('id, type, title, description, price_min, price_max, images, contact_phone, contact_email, contact_whatsapp, location, category, views, created_at, latitude, longitude, dining_style, accommodation_type, service_mode, room_types, author_id')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
-      setItems((data as any) || []);
+
+      if (error) {
+        console.error('[TourismePage] gastronomy_items fetch failed', error);
+      }
+
+      let rows = (data as any[]) || [];
+
+      // Enrich with author pro-status via the public view (anon-safe)
+      const authorIds = [...new Set(rows.map(r => r.author_id).filter(Boolean))];
+      if (authorIds.length > 0) {
+        const { data: pros } = await supabase
+          .from('users_pro_status' as any)
+          .select('id, username, is_pro')
+          .in('id', authorIds);
+        const map = new Map(((pros as any[]) || []).map(p => [p.id, p]));
+        rows = rows.map(r => ({
+          ...r,
+          users: map.get(r.author_id)
+            ? { username: (map.get(r.author_id) as any).username, account_type: (map.get(r.author_id) as any).is_pro ? 'pro' : 'free' }
+            : null,
+        }));
+      }
+
+      setItems(rows as any);
       setLoading(false);
     };
     fetchItems();
