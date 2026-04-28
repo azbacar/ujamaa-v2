@@ -35,10 +35,10 @@ export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: st
   return useQuery({
     queryKey: ['freelancer-profiles', filters],
     queryFn: async () => {
+      // Listing public : utilise la vue sans contacts (whatsapp/réseaux sociaux exclus)
       let query = supabase
-        .from('freelancer_profiles')
+        .from('freelancer_profiles_public' as any)
         .select('*')
-        .eq('is_visible', true)
         .eq('is_available', true)
         .order('created_at', { ascending: false });
 
