@@ -2870,6 +2870,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_share_public_location: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       generate_ticket_code: { Args: never; Returns: string }
       get_enterprise_id: { Args: { _user_id: string }; Returns: string }
       get_public_usernames: {
@@ -2896,6 +2900,7 @@ export type Database = {
       is_pro_annonceur: { Args: { _user_id: string }; Returns: boolean }
       is_pro_user: { Args: { _user_id: string }; Returns: boolean }
       is_project_carrier: { Args: { _user_id: string }; Returns: boolean }
+      is_verified_user: { Args: { _user_id: string }; Returns: boolean }
       log_admin_action: {
         Args: {
           _action_type: string
