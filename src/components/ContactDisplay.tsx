@@ -1,4 +1,4 @@
-import { Phone, Mail, MessageCircle, Lock, Crown } from 'lucide-react';
+import { Phone, Mail, MessageCircle, Lock, Crown, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useProStatus } from '@/hooks/useProStatus';
@@ -20,10 +20,12 @@ interface ContactDisplayProps {
 /**
  * Affichage centralisé des contacts d'une publication.
  *
- * Règles produit (UJAMAAN — Pro = global) :
- * 1. Le viewer est Pro → voit TOUS les contacts (toujours).
- * 2. L'auteur est Pro → ses contacts sont publics pour TOUT LE MONDE.
- * 3. Sinon → masqués + CTA upgrade pour le viewer.
+ * Règles produit (UJAMAAN — règle unifiée) :
+ * 1. Visiteur non connecté → TOUJOURS masqué + CTA "Se connecter pour contacter".
+ * 2. Connecté + (viewer Pro OU auteur Pro) → contacts visibles.
+ * 3. Connecté non-Pro + auteur non-Pro → masqué + CTA "Devenir Pro".
+ *
+ * Le statut "Vérifié" n'a AUCUN impact ici (uniquement géoloc publique).
  */
 export default function ContactDisplay({
   authorId,
@@ -41,8 +43,8 @@ export default function ContactDisplay({
   if (!hasAnyContact) return null;
 
   const loading = viewerLoading || authorLoading;
-  // Règle: viewer Pro OU auteur Pro
-  const canSeeContacts = viewerIsPro || !!authorIsPro;
+  // Règle stricte : doit être connecté ET (viewer Pro OU auteur Pro)
+  const canSeeContacts = !!user && (viewerIsPro || !!authorIsPro);
 
   if (loading) {
     return <div className="h-6 w-32 bg-muted/50 rounded animate-pulse" />;
@@ -50,23 +52,32 @@ export default function ContactDisplay({
 
   if (!canSeeContacts) {
     if (hideUpgradePrompt) return null;
+
+    // Cas 1 : visiteur non connecté
+    if (!user) {
+      return (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2 border border-border">
+          <Lock className="h-3.5 w-3.5 flex-shrink-0" />
+          <span className="flex-1">Connectez-vous pour contacter cet annonceur</span>
+          <Link to="/auth">
+            <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1">
+              <LogIn className="h-3 w-3" /> Se connecter
+            </Button>
+          </Link>
+        </div>
+      );
+    }
+
+    // Cas 2 : connecté mais non-Pro et auteur non-Pro
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2 border border-border">
         <Lock className="h-3.5 w-3.5 flex-shrink-0" />
-        <span className="flex-1">Contacts réservés aux comptes Pro</span>
-        {!user ? (
-          <Link to="/auth">
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">
-              Se connecter
-            </Button>
-          </Link>
-        ) : (
-          <Link to="/pro">
-            <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1">
-              <Crown className="h-3 w-3" /> Devenir Pro
-            </Button>
-          </Link>
-        )}
+        <span className="flex-1">Devenez Pro pour voir les contacts</span>
+        <Link to="/pro">
+          <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1">
+            <Crown className="h-3 w-3" /> Devenir Pro
+          </Button>
+        </Link>
       </div>
     );
   }
