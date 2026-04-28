@@ -63,6 +63,13 @@ const EventsPage = () => {
 
       if (error) throw error;
       setEvents(data || []);
+      // Validation cohérence dataset (checksum + version)
+      try {
+        const { trackDatasetCoherence } = await import('@/lib/datasetChecksum');
+        trackDatasetCoherence('events', (data || []).map((d: any) => ({
+          id: d.id, updated_at: d.updated_at, created_at: d.created_at,
+        })));
+      } catch {}
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Erreur lors du chargement des événements');

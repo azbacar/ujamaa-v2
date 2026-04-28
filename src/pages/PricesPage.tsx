@@ -107,6 +107,13 @@ const PricesPage = () => {
         }));
 
         setPricesData(mappedData);
+        // Validation cohérence dataset (checksum + version)
+        try {
+          const { trackDatasetCoherence } = await import('@/lib/datasetChecksum');
+          trackDatasetCoherence('prices', (data || []).map((d: any) => ({
+            id: d.id, updated_at: d.updated_at, created_at: d.created_at,
+          })));
+        } catch {}
       } catch (error) {
         console.error('Erreur lors du chargement des prix:', error);
       } finally {
