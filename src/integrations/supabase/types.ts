@@ -2946,16 +2946,22 @@ export type Database = {
       }
       users_pro_status: {
         Row: {
+          avatar_url: string | null
           id: string | null
           is_pro: boolean | null
+          username: string | null
         }
         Insert: {
+          avatar_url?: string | null
           id?: string | null
           is_pro?: never
+          username?: string | null
         }
         Update: {
+          avatar_url?: string | null
           id?: string | null
           is_pro?: never
+          username?: string | null
         }
         Relationships: []
       }
