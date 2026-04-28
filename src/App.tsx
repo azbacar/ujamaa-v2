@@ -57,6 +57,7 @@ const VendorMapPage = lazy(() => import("./pages/VendorMapPage"));
 const PartnerPage = lazy(() => import("./pages/PartnerPage"));
 const ApiDocsPage = lazy(() => import("./pages/ApiDocsPage"));
 const MobileBottomNav = lazy(() => import("./components/MobileBottomNav"));
+const DeepLinkRedirect = lazy(() => import("./components/DeepLinkRedirect"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -153,6 +154,16 @@ const App = () => (
               <Route path="/carte-vendeurs" element={<Suspense fallback={<PageLoader />}><VendorMapPage /></Suspense>} />
               <Route path="/partener" element={<Suspense fallback={<PageLoader />}><PartnerPage /></Suspense>} />
               <Route path="/api-docs" element={<Suspense fallback={<PageLoader />}><ApiDocsPage /></Suspense>} />
+
+              {/* Deep-links courts (notifications push, SMS, partages externes) */}
+              <Route path="/p/:id" element={<Suspense fallback={<PageLoader />}><DeepLinkRedirect prefix="p" /></Suspense>} />
+              <Route path="/e/:id" element={<Suspense fallback={<PageLoader />}><DeepLinkRedirect prefix="e" /></Suspense>} />
+              <Route path="/ao/:id" element={<Suspense fallback={<PageLoader />}><DeepLinkRedirect prefix="ao" /></Suspense>} />
+              <Route path="/s/:id" element={<Suspense fallback={<PageLoader />}><DeepLinkRedirect prefix="s" /></Suspense>} />
+              <Route path="/a/:id" element={<Suspense fallback={<PageLoader />}><DeepLinkRedirect prefix="a" /></Suspense>} />
+              <Route path="/i/:id" element={<Suspense fallback={<PageLoader />}><DeepLinkRedirect prefix="i" /></Suspense>} />
+              <Route path="/f/:id" element={<Suspense fallback={<PageLoader />}><DeepLinkRedirect prefix="f" /></Suspense>} />
+
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
             <Suspense fallback={null}>
