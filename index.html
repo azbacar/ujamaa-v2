@@ -2,7 +2,7 @@
 <html lang="fr" dir="ltr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Ujamaan - Centre d&#39;Information des Comores</title>
     <meta name="description" content="Plateforme centrale pour les prix, événements, services, annonces et investissements aux Comores. Suivez en temps réel les marchés de Grande Comore, Anjouan et Mohéli.">
     <meta name="author" content="Ujamaan" />
@@ -13,15 +13,18 @@
     <link rel="alternate" hreflang="fr" href="https://ujamaan.com/" />
     <link rel="alternate" hreflang="ar" href="https://ujamaan.com/" />
     <link rel="alternate" hreflang="x-default" href="https://ujamaan.com/" />
-    
+
     <!-- Cache control: force la revalidation pour éviter les pages blanches sur iPhone -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
-    <!-- Favicon -->
+    <!-- Favicon + Apple Touch Icon (compat iOS) -->
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="theme-color" content="#0891b2" />
+    <meta name="apple-mobile-web-app-capable" content="no" />
+    <meta name="format-detection" content="telephone=no" />
 
     <!-- Security Headers -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://vpibvgdpeiicczelbynf.supabase.co https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://vpibvgdpeiicczelbynf.supabase.co https://api.openai.com https://www.google-analytics.com https://analytics.google.com;">
@@ -30,21 +33,65 @@
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
 
-    <!-- Nettoyage des anciens Service Workers PWA (corrige les pages blanches iPhone post-PWA) -->
+    <!-- Désinscription forcée des Service Workers + purge caches (corrige page blanche iPhone) -->
     <script>
-      (function() {
+      (function () {
         try {
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              regs.forEach(function(r) { r.unregister(); });
-            }).catch(function() {});
-          }
-          if (window.caches && caches.keys) {
-            caches.keys().then(function(keys) {
-              keys.forEach(function(k) { caches.delete(k); });
-            }).catch(function() {});
+          if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              regs.forEach(function (r) { try { r.unregister(); } catch (e) {} });
+            }).catch(function () {});
           }
         } catch (e) {}
+        try {
+          if (typeof window.caches !== 'undefined' && window.caches.keys) {
+            window.caches.keys().then(function (keys) {
+              keys.forEach(function (k) { try { window.caches.delete(k); } catch (e) {} });
+            }).catch(function () {});
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Filet de sécurité iOS Safari : si l'app crash au boot (storage corrompu, vieux JS),
+         on affiche un bouton de réparation au lieu d'une page blanche -->
+    <script>
+      (function () {
+        var bootTimer = setTimeout(function () {
+          var root = document.getElementById('root');
+          if (root && root.childNodes.length === 0) {
+            root.innerHTML =
+              '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;background:#f8fafc;color:#0f172a">' +
+                '<div style="max-width:420px">' +
+                  '<div style="font-size:42px;margin-bottom:8px">🌴</div>' +
+                  '<h1 style="font-size:22px;margin:0 0 8px;color:#059669">Ujamaan</h1>' +
+                  '<p style="margin:0 0 20px;color:#475569;font-size:15px;line-height:1.5">Le chargement prend trop de temps. Essayez de vider le cache de votre navigateur pour récupérer la dernière version.</p>' +
+                  '<button id="ujRepair" style="background:#059669;color:#fff;border:0;padding:12px 22px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;width:100%;-webkit-appearance:none">🔄 Réinitialiser et recharger</button>' +
+                  '<p style="margin:14px 0 0;font-size:12px;color:#94a3b8">Si le problème persiste, ouvrez Réglages → Safari → Effacer historique et données.</p>' +
+                '</div>' +
+              '</div>';
+            var btn = document.getElementById('ujRepair');
+            if (btn) {
+              btn.addEventListener('click', function () {
+                try { localStorage.clear(); } catch (e) {}
+                try { sessionStorage.clear(); } catch (e) {}
+                try {
+                  if (window.caches && caches.keys) {
+                    caches.keys().then(function (k) { k.forEach(function (n) { caches.delete(n); }); });
+                  }
+                } catch (e) {}
+                try {
+                  if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+                    navigator.serviceWorker.getRegistrations().then(function (r) { r.forEach(function (x) { x.unregister(); }); });
+                  }
+                } catch (e) {}
+                setTimeout(function () { window.location.replace(window.location.origin + '/?_t=' + Date.now()); }, 200);
+              });
+            }
+          }
+        }, 8000);
+        // Annule le filet quand React monte
+        window.addEventListener('ujamaan:ready', function () { clearTimeout(bootTimer); });
       })();
     </script>
 
