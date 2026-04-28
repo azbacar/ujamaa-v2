@@ -184,59 +184,20 @@ const AnnouncementDetail = () => {
             </div>
 
             <div className="space-y-6">
-              {/* Contact téléphone */}
+              {/* Contacts (auto-gating selon Pro viewer/auteur) */}
               <Card className="border-blue-200 bg-blue-50/50">
                 <CardHeader>
                   <CardTitle className="text-lg">📞 Contact</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {isAuthorPro && dbItem.contact_phone ? (
-                    <div className="space-y-3">
-                      {isMobile ? (
-                        <Button 
-                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
-                          onClick={() => window.open(`tel:${formatPhone(dbItem.contact_phone!)}`, '_self')}
-                        >
-                          <Phone className="w-4 h-4 mr-2" />
-                          Appeler l'annonceur
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2 p-3 bg-background rounded-lg border">
-                          <Phone className="w-4 h-4 text-blue-600" />
-                          <span className="font-medium text-foreground">{dbItem.contact_phone}</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-3">
-                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
-                        <span className="text-lg">⚠️</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Cette annonce est publiée par un compte <strong>non vérifié</strong>. Les coordonnées de contact ne sont pas disponibles.
-                      </p>
-                      <p className="text-xs text-muted-foreground/70">
-                        Les annonceurs avec un forfait Pro ou Entreprise affichent leurs coordonnées vérifiées pour garantir la fiabilité de leurs publications.
-                      </p>
-                    </div>
-                  )}
+                  <ContactDisplay
+                    authorId={dbItem.author_id}
+                    phone={dbItem.contact_phone}
+                    whatsapp={dbItem.contact_whatsapp}
+                    variant="card"
+                  />
                 </CardContent>
               </Card>
-
-              {/* Contact WhatsApp - visible uniquement si Pro */}
-              {isAuthorPro && dbItem.contact_whatsapp && (
-                <Card className="border-green-200 bg-green-50/50">
-                  <CardContent className="pt-6">
-                    <Button 
-                      className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
-                      onClick={() => window.open(`https://wa.me/${formatPhone(dbItem.contact_whatsapp!)}`, '_blank')}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Contacter via WhatsApp
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
 
               {/* Chat interne - visible si auteur Pro */}
               {isAuthorPro && dbItem.author_id && (
