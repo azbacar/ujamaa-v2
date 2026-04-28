@@ -24,6 +24,7 @@ import Footer from '@/components/Footer';
 import AvatarCropDialog from '@/components/AvatarCropDialog';
 import VerificationRequestForm from '@/components/VerificationRequestForm';
 import MyPricesTab from '@/components/MyPricesTab';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 const PasswordChangeSection = () => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -328,7 +329,7 @@ const ProfilePage = () => {
             <CardContent className="p-6 text-center space-y-4">
               <User className="h-12 w-12 mx-auto text-muted-foreground" />
               <p className="text-muted-foreground">Vous devez être connecté pour accéder à cette page.</p>
-              <Button onClick={() => navigate('/auth')}>Se connecter</Button>
+              <Button onClick={() => navigate(authPath())}>Se connecter</Button>
             </CardContent>
           </Card>
         </div>
@@ -524,7 +525,7 @@ const ProfilePage = () => {
                           {userProfile?.account_type === 'pro' ? '⭐ PRO' : 'Gratuit'}
                         </Badge>
                         {userProfile?.account_type !== 'pro' && (
-                          <Button variant="link" size="sm" className="text-amber-600" onClick={() => navigate('/pro')}>
+                          <Button variant="link" size="sm" className="text-amber-600" onClick={() => navigate(proPath())}>
                             Passer à PRO <ChevronRight className="h-3 w-3" />
                           </Button>
                         )}

@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import MvolaPaymentDialog from "@/components/MvolaPaymentDialog";
 import { Input } from "@/components/ui/input";
+import { authPath, proPath } from '@/lib/authRedirect';
 
 const PLANS = [
   {
@@ -198,7 +199,7 @@ export default function ProPage() {
     }
     if (!user) {
       toast.error("Connectez-vous d'abord pour souscrire");
-      navigate("/auth");
+      navigate(authPath());
       return;
     }
     setSelectedPlan(planId);

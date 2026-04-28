@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { useViewTracker } from '@/hooks/useViewTracker';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 export default function DiasporaProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -230,7 +231,7 @@ export default function DiasporaProjectDetail() {
                   <Button 
                     className="w-full"
                     onClick={() => {
-                      if (!user) { navigate('/auth'); return; }
+                      if (!user) { navigate(authPath()); return; }
                       navigate(`/messages/${project.author_id}`);
                     }}
                   >
@@ -250,7 +251,7 @@ export default function DiasporaProjectDetail() {
               <Card>
                 <CardContent className="pt-6 text-center">
                   <p className="text-sm text-muted-foreground mb-3">Connectez-vous pour investir</p>
-                  <Button asChild className="w-full"><Link to="/auth">Se connecter</Link></Button>
+                  <Button asChild className="w-full"><Link to={authPath()}>Se connecter</Link></Button>
                 </CardContent>
               </Card>
             )}

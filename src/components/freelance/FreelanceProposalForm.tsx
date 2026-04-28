@@ -8,6 +8,7 @@ import { Send } from 'lucide-react';
 import { useCreateProposal } from '@/hooks/useFreelance';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface Props {
   jobId: string;
@@ -27,7 +28,7 @@ export default function FreelanceProposalForm({ jobId }: Props) {
       <Card>
         <CardContent className="py-6 text-center">
           <p className="text-muted-foreground mb-3">Connectez-vous pour postuler à cette mission</p>
-          <Link to="/auth">
+          <Link to={authPath()}>
             <Button>Se connecter</Button>
           </Link>
         </CardContent>

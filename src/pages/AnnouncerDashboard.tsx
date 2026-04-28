@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { toast } from 'sonner';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface ContentItem {
   id: string;
@@ -305,7 +306,7 @@ export default function AnnouncerDashboard() {
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">Gérez vos annonces, événements et appels d'offres</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate('/pro')}>
+          <Button variant="outline" size="sm" onClick={() => navigate(proPath())}>
             <Crown className="h-4 w-4 mr-2" /> Upgrade PRO
           </Button>
         </div>
@@ -332,7 +333,7 @@ export default function AnnouncerDashboard() {
             {activePrivileges.length === 0 && (
               <p className="text-sm text-muted-foreground mt-2">
                 Aucun privilège actif.{' '}
-                <Button variant="link" size="sm" className="p-0" onClick={() => navigate('/pro')}>
+                <Button variant="link" size="sm" className="p-0" onClick={() => navigate(proPath())}>
                   Découvrir les offres <ChevronRight className="h-3 w-3" />
                 </Button>
               </p>

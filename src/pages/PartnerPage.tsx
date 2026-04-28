@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { logger } from '@/lib/logger';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 export default function PartnerPage() {
   const { currentLanguage, setLanguage } = useLanguage();
@@ -139,7 +140,7 @@ export default function PartnerPage() {
               {!user && (
                 <p className="text-sm text-muted-foreground mt-6">
                   Vous êtes déjà partenaire ?{' '}
-                  <button onClick={() => navigate('/auth')} className="text-emerald-600 underline font-medium">
+                  <button onClick={() => navigate(authPath())} className="text-emerald-600 underline font-medium">
                     Connectez-vous
                   </button>
                 </p>

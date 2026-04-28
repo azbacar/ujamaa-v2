@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
+import { authPath, proPath } from '@/lib/authRedirect';
   User, Shield, ShieldCheck, Crown, Megaphone,
   CheckCircle, ArrowRight, Sparkles, Star
 } from 'lucide-react';
@@ -159,7 +160,7 @@ export const WelcomeDialog = () => {
                   size="sm"
                   variant="outline"
                   className="w-full border-amber-400 text-amber-700 hover:bg-amber-50"
-                  onClick={() => { setOpen(false); navigate('/pro'); }}
+                  onClick={() => { setOpen(false); navigate(proPath()); }}
                 >
                   Découvrir les offres Pro <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>

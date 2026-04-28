@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+import { authPath, proPath } from '@/lib/authRedirect';
   Search,
   ShoppingCart,
   Calendar,
@@ -192,7 +193,7 @@ export default function GuidePage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
               size="lg"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate(authPath())}
               className="bg-white text-emerald-700 hover:bg-white/90 font-bold"
             >
               <UserPlus className="h-5 w-5 mr-2" />
@@ -397,7 +398,7 @@ export default function GuidePage() {
               </ul>
               <Button
                 className="mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white w-full sm:w-auto"
-                onClick={() => navigate("/pro")}
+                onClick={() => navigate(proPath())}
               >
                 <Crown className="h-4 w-4 mr-2" /> Découvrir l'offre Pro
               </Button>
@@ -451,7 +452,7 @@ export default function GuidePage() {
           Rejoignez des milliers de Comoriens qui utilisent Ujamaan pour s'informer, acheter et vendre.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button size="lg" onClick={() => navigate("/auth")} className="font-bold">
+          <Button size="lg" onClick={() => navigate(authPath())} className="font-bold">
             <UserPlus className="h-5 w-5 mr-2" /> S'inscrire gratuitement
           </Button>
           <Button size="lg" variant="outline" onClick={() => navigate("/")}>

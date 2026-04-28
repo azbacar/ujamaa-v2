@@ -18,6 +18,7 @@ import { usePageSEO } from '@/hooks/usePageSEO';
 import { useAuth } from '@/hooks/useAuth';
 import ContactDisplay from '@/components/ContactDisplay';
 import { useViewTracker } from '@/hooks/useViewTracker';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 // Hardcoded fallback announcements for legacy numeric IDs
 const legacyAnnouncements = [
@@ -210,7 +211,7 @@ const AnnouncementDetail = () => {
                     <Button 
                       className="w-full"
                       onClick={() => {
-                        if (!user) { navigate('/auth'); return; }
+                        if (!user) { navigate(authPath()); return; }
                         navigate(`/messages/${dbItem.author_id}`);
                       }}
                     >

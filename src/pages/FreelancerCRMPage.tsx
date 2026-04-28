@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Briefcase, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 export default function FreelancerCRMPage() {
   usePageSEO({ title: 'Espace Freelancer — UJAMAA', description: 'Gérez vos clients, factures et comptabilité freelancer' });
@@ -52,7 +53,7 @@ export default function FreelancerCRMPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <p className="text-muted-foreground mb-4">Connectez-vous pour accéder à votre espace freelancer</p>
-              <Button onClick={() => navigate('/auth')}>Se connecter</Button>
+              <Button onClick={() => navigate(authPath())}>Se connecter</Button>
             </CardContent>
           </Card>
         ) : !freelancerId ? (

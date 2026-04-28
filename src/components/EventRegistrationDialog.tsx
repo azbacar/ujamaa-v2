@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Loader2, Ticket, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MvolaPaymentDialog from '@/components/MvolaPaymentDialog';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface EventRegistrationDialogProps {
   open: boolean;
@@ -40,7 +41,7 @@ const EventRegistrationDialog = ({ open, onOpenChange, event, onSuccess }: Event
   const handleRegister = async () => {
     if (!user) {
       toast.error('Vous devez être connecté pour vous inscrire');
-      navigate('/auth');
+      navigate(authPath());
       return;
     }
 

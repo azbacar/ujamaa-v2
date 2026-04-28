@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useProStatus } from '@/hooks/useProStatus';
 import { useAuthorProStatus } from '@/hooks/useAuthorProStatus';
 import { useAuth } from '@/hooks/useAuth';
+import { authPath, proPath, CTA_LABELS } from '@/lib/authRedirect';
 
 interface ContactDisplayProps {
   /** ID de l'auteur de la publication (clé pour savoir si c'est un Pro) */
@@ -59,9 +60,9 @@ export default function ContactDisplay({
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2 border border-border">
           <Lock className="h-3.5 w-3.5 flex-shrink-0" />
           <span className="flex-1">Connectez-vous pour contacter cet annonceur</span>
-          <Link to="/auth">
+          <Link to={authPath()}>
             <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1">
-              <LogIn className="h-3 w-3" /> Se connecter
+              <LogIn className="h-3 w-3" /> {CTA_LABELS.login}
             </Button>
           </Link>
         </div>
@@ -73,9 +74,9 @@ export default function ContactDisplay({
       <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2 border border-border">
         <Lock className="h-3.5 w-3.5 flex-shrink-0" />
         <span className="flex-1">Devenez Pro pour voir les contacts</span>
-        <Link to="/pro">
+        <Link to={proPath()}>
           <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1">
-            <Crown className="h-3 w-3" /> Devenir Pro
+            <Crown className="h-3 w-3" /> {CTA_LABELS.becomePro}
           </Button>
         </Link>
       </div>

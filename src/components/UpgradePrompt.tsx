@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Megaphone, CheckCircle, ArrowRight, LogIn, Crown, Sparkles, Users } from 'lucide-react';
+import { authPath, proPath } from '@/lib/authRedirect';
 
 interface UpgradePromptProps {
   /** What action the user tried to perform */
@@ -50,7 +51,7 @@ export const UpgradePrompt = ({ action = 'publier du contenu', compact = false }
               Connectez-vous pour {action}.
             </p>
           </div>
-          <Button onClick={() => navigate('/auth')} className="w-full">
+          <Button onClick={() => navigate(authPath())} className="w-full">
             Se connecter <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </CardContent>
@@ -112,7 +113,7 @@ export const UpgradePrompt = ({ action = 'publier du contenu', compact = false }
               variant="outline"
               size="sm"
               className="w-full border-amber-300 text-amber-700 hover:bg-amber-50"
-              onClick={() => navigate('/pro')}
+              onClick={() => navigate(proPath())}
             >
               <Crown className="h-4 w-4 mr-1" />
               <Sparkles className="h-3 w-3 mr-1" />
