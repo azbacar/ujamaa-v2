@@ -469,3 +469,83 @@ Deno.serve(async (req) => {
     return err("Internal server error", 500);
   }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OpenAPI 3.1 spec for the mobile API. Kept here so it stays in sync with the
+// route handlers above.
+// ─────────────────────────────────────────────────────────────────────────────
+function buildOpenApiSpec() {
+  const base = `${SUPABASE_URL}/functions/v1/mobile-api`;
+  return {
+    openapi: "3.1.0",
+    info: {
+      title: "Ujamaan Mobile API",
+      version: "1.0.0",
+      description:
+        "API privée alimentant l'application mobile Ujamaan. Toutes les routes (sauf /openapi.json et /warmup) requièrent l'en-tête `x-api-key`. Les routes utilisateur exigent en plus un Bearer token. Les fonctionnalités d'administration interne ne sont pas exposées.",
+    },
+    servers: [{ url: base }],
+    components: {
+      securitySchemes: {
+        ApiKey: { type: "apiKey", in: "header", name: "x-api-key" },
+        Bearer: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+      },
+    },
+    security: [{ ApiKey: [] }],
+    paths: {
+      "/auth/login": {
+        post: {
+          summary: "Connexion utilisateur",
+          requestBody: { required: true, content: { "application/json": { schema: { type: "object", properties: { email: { type: "string" }, password: { type: "string" } }, required: ["email", "password"] } } } },
+          responses: { "200": { description: "Session créée" }, "401": { description: "Identifiants invalides" } },
+        },
+      },
+      "/auth/refresh": {
+        post: { summary: "Rafraîchir le token", responses: { "200": { description: "OK" } } },
+      },
+      "/auth/me": {
+        get: { summary: "Profil de l'utilisateur connecté", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "Profil" } } },
+      },
+      "/ai-chat": {
+        post: {
+          summary: "Conversation avec l'assistant IA",
+          requestBody: { required: true, content: { "application/json": { schema: { type: "object", properties: { message: { type: "string" }, sessionId: { type: "string" } }, required: ["message", "sessionId"] } } } },
+          responses: { "200": { description: "Réponse de l'assistant" } },
+        },
+      },
+      "/public/{resource}": {
+        get: {
+          summary: "Lister du contenu public",
+          parameters: [
+            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "diaspora"] } },
+            { name: "limit", in: "query", schema: { type: "integer", default: 50 } },
+            { name: "offset", in: "query", schema: { type: "integer", default: 0 } },
+          ],
+          responses: { "200": { description: "Liste paginée" } },
+        },
+      },
+      "/users": { get: { summary: "Lister les utilisateurs (admin)", responses: { "200": { description: "Liste" } } } },
+      "/users/{id}": { get: { summary: "Détail utilisateur (admin)", parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }], responses: { "200": { description: "Profil" } } } },
+      "/prices": { get: { summary: "Lister les prix (admin)", responses: { "200": { description: "Liste" } } } },
+      "/prices/{id}": {
+        get: { summary: "Détail (admin)", responses: { "200": { description: "OK" } } },
+        put: { summary: "Mise à jour (admin)", responses: { "200": { description: "OK" } } },
+        delete: { summary: "Suppression (admin)", responses: { "200": { description: "OK" } } },
+      },
+      "/events": { get: { summary: "Liste (admin)", responses: { "200": { description: "OK" } } } },
+      "/events/{id}": {
+        get: { summary: "Détail (admin)", responses: { "200": { description: "OK" } } },
+        put: { summary: "Mise à jour (admin)", responses: { "200": { description: "OK" } } },
+        delete: { summary: "Suppression (admin)", responses: { "200": { description: "OK" } } },
+      },
+      "/content": { get: { summary: "Articles, services, annonces, AO (admin)", responses: { "200": { description: "OK" } } } },
+      "/content/{id}": {
+        get: { summary: "Détail (admin)", responses: { "200": { description: "OK" } } },
+        put: { summary: "Mise à jour (admin)", responses: { "200": { description: "OK" } } },
+        delete: { summary: "Suppression (admin)", responses: { "200": { description: "OK" } } },
+      },
+      "/warmup": { get: { summary: "Réchauffe le cache IA (utilisé par cron)", security: [], responses: { "200": { description: "OK" } } } },
+      "/openapi.json": { get: { summary: "Cette spec OpenAPI", security: [], responses: { "200": { description: "Spec OpenAPI 3.1" } } } },
+    },
+  };
+}
