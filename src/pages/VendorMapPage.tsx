@@ -21,7 +21,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const liveIcon = L.divIcon({
+const mobileIcon = L.divIcon({
   className: '',
   html: `<div style="position:relative;width:36px;height:36px;">
     <div style="position:absolute;inset:0;border-radius:50%;background:rgba(16,185,129,.25);animation:ujamaaPulse 2s infinite;"></div>
@@ -30,6 +30,13 @@ const liveIcon = L.divIcon({
   <style>@keyframes ujamaaPulse{0%{transform:scale(.8);opacity:1}100%{transform:scale(2);opacity:0}}</style>`,
   iconSize: [36, 36],
   iconAnchor: [18, 18],
+});
+
+const fixedIcon = L.divIcon({
+  className: '',
+  html: `<div style="width:30px;height:30px;border-radius:6px;background:#0ea5e9;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:14px;">⌂</div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
 });
 
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
@@ -119,17 +126,26 @@ export default function VendorMapPage() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   {locations.map((loc) => (
-                    <Marker key={loc.id} position={[loc.latitude, loc.longitude]} icon={liveIcon}>
+                    <Marker key={loc.id} position={[loc.latitude, loc.longitude]} icon={loc.is_mobile ? mobileIcon : fixedIcon}>
                       <Popup>
                         <div className="space-y-1">
                           <div className="font-semibold flex items-center gap-1">
                             <MapPin className="h-3 w-3 text-emerald-600" /> {loc.label}
                           </div>
-                          {loc.category && <Badge variant="outline">{loc.category}</Badge>}
-                          {loc.island && <p className="text-xs text-muted-foreground">📍 {loc.island}</p>}
+                          <Badge variant={loc.is_mobile ? 'default' : 'secondary'} className="text-[10px]">
+                            {loc.is_mobile ? '🚚 Ambulant — en direct' : '🏪 Position fixe'}
+                          </Badge>
+                          {loc.category && <Badge variant="outline" className="ml-1">{loc.category}</Badge>}
+                          {loc.address && <p className="text-xs text-muted-foreground">📍 {loc.address}</p>}
+                          {loc.island && <p className="text-xs text-muted-foreground">🏝️ {loc.island}</p>}
                           <p className="text-xs text-muted-foreground">
                             Mis à jour : {new Date(loc.last_seen_at).toLocaleTimeString('fr-FR')}
                           </p>
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-emerald-700 underline inline-block mt-1"
+                          >Itinéraire Google Maps →</a>
                         </div>
                       </Popup>
                     </Marker>
