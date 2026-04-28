@@ -17,6 +17,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { useAuth } from '@/hooks/useAuth';
 import ContactDisplay from '@/components/ContactDisplay';
+import { useViewTracker } from '@/hooks/useViewTracker';
 
 // Hardcoded fallback announcements for legacy numeric IDs
 const legacyAnnouncements = [
