@@ -2696,12 +2696,14 @@ export type Database = {
       vendor_locations: {
         Row: {
           accuracy: number | null
+          address: string | null
           category: string | null
           created_at: string
           expires_at: string
           heading: number | null
           id: string
           is_active: boolean
+          is_mobile: boolean
           island: string | null
           label: string
           last_seen_at: string
@@ -2713,12 +2715,14 @@ export type Database = {
         }
         Insert: {
           accuracy?: number | null
+          address?: string | null
           category?: string | null
           created_at?: string
           expires_at: string
           heading?: number | null
           id?: string
           is_active?: boolean
+          is_mobile?: boolean
           island?: string | null
           label: string
           last_seen_at?: string
@@ -2730,12 +2734,14 @@ export type Database = {
         }
         Update: {
           accuracy?: number | null
+          address?: string | null
           category?: string | null
           created_at?: string
           expires_at?: string
           heading?: number | null
           id?: string
           is_active?: boolean
+          is_mobile?: boolean
           island?: string | null
           label?: string
           last_seen_at?: string
