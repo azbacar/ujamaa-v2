@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import ReactMarkdown from 'react-markdown';
 import { safeStorage } from '@/lib/safeStorage';
+import { useAIRealtimeRefresh } from '@/hooks/useAIRealtimeRefresh';
 
 interface ChatLink {
   url: string;
@@ -159,6 +160,9 @@ const FloatingChatbox = () => {
     "🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀"
   );
   const [assistantEnabled, setAssistantEnabled] = useState(true);
+
+  // Auto-update IA : refetch session + realtime + warmup serveur
+  useAIRealtimeRefresh(isOpen);
 
   const scrollAreaRootRef = useRef<HTMLDivElement | null>(null);
 
