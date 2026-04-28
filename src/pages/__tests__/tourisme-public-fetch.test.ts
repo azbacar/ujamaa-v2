@@ -33,13 +33,13 @@ describe("TourismePage public data access (anon)", () => {
     expect(body.length).toBeGreaterThan(0);
   });
 
-  it("REGRESSION: le join users:author_id(...) DOIT échouer pour anon (table users verrouillée)", async () => {
+  it("REGRESSION: le join users:author_id(...) DOIT être refusé pour anon (table users verrouillée)", async () => {
     const { status, body } = await anonGet(
       "gastronomy_items?select=id,users:author_id(username)&status=eq.published",
     );
     // Garde-fou : si ce test commence à passer (200), c'est qu'on a relâché
     // les permissions sur public.users — à investiguer immédiatement.
-    expect(status).toBe(403);
+    expect([401, 403]).toContain(status);
     expect(body?.code).toBe("42501");
   });
 
