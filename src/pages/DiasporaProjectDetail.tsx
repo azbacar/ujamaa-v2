@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { usePageSEO } from '@/hooks/usePageSEO';
+import { useViewTracker } from '@/hooks/useViewTracker';
 
 export default function DiasporaProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -40,6 +41,8 @@ export default function DiasporaProjectDetail() {
     ogType: 'article',
     keywords: project ? `${project.category}, investissement, diaspora, comores` : undefined,
   });
+
+  useViewTracker('diaspora_project', project?.id);
 
   if (isLoading) {
     return (

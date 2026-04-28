@@ -35,10 +35,10 @@ export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: st
   return useQuery({
     queryKey: ['freelancer-profiles', filters],
     queryFn: async () => {
+      // Listing public : utilise la vue sans contacts (whatsapp/réseaux sociaux exclus)
       let query = supabase
-        .from('freelancer_profiles')
+        .from('freelancer_profiles_public' as any)
         .select('*')
-        .eq('is_visible', true)
         .eq('is_available', true)
         .order('created_at', { ascending: false });
 
@@ -49,7 +49,7 @@ export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: st
       const { data, error } = await query;
       if (error) throw error;
 
-      let results = (data || []) as FreelancerProfile[];
+      let results = ((data || []) as unknown) as FreelancerProfile[];
 
       // Fetch account_type for each user to determine pro status
       const userIds = [...new Set(results.map(r => r.user_id))];

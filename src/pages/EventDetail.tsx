@@ -116,14 +116,13 @@ const EventDetail = () => {
 
   const incrementViews = async () => {
     if (!id) return;
-    
-    try {
-      const { data } = await supabase.from('events').select('views').eq('id', id).single();
-      if (data) {
-        await supabase.from('events').update({ views: (data.views || 0) + 1 }).eq('id', id);
-      }
-    } catch (error) {
-      console.error('Error incrementing views:', error);
+    const key = `view:event:${id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    const { error } = await supabase.rpc('increment_content_view', { _type: 'event', _id: id });
+    if (error) {
+      console.warn('Error incrementing event views:', error);
+      sessionStorage.removeItem(key);
     }
   };
 

@@ -2842,6 +2842,69 @@ export type Database = {
         }
         Relationships: []
       }
+      freelancer_profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          currency: string | null
+          display_name: string | null
+          experience_years: number | null
+          hourly_rate_max: number | null
+          hourly_rate_min: number | null
+          id: string | null
+          is_available: boolean | null
+          is_visible: boolean | null
+          island: string | null
+          location: string | null
+          portfolio_url: string | null
+          skills: string[] | null
+          updated_at: string | null
+          user_id: string | null
+          views: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          currency?: string | null
+          display_name?: string | null
+          experience_years?: number | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
+          id?: string | null
+          is_available?: boolean | null
+          is_visible?: boolean | null
+          island?: string | null
+          location?: string | null
+          portfolio_url?: string | null
+          skills?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+          views?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          currency?: string | null
+          display_name?: string | null
+          experience_years?: number | null
+          hourly_rate_max?: number | null
+          hourly_rate_min?: number | null
+          id?: string | null
+          is_available?: boolean | null
+          is_visible?: boolean | null
+          island?: string | null
+          location?: string | null
+          portfolio_url?: string | null
+          skills?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
       project_carriers_public: {
         Row: {
           bio: string | null
@@ -2923,6 +2986,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_content_view: {
+        Args: { _id: string; _type: string }
+        Returns: undefined
       }
       is_active_partner: { Args: { _user_id: string }; Returns: boolean }
       is_pro_annonceur: { Args: { _user_id: string }; Returns: boolean }

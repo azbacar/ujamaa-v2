@@ -14,6 +14,7 @@ import FreelanceProposalList from '@/components/freelance/FreelanceProposalList'
 import FreelanceReviewCard from '@/components/freelance/FreelanceReviewCard';
 import SocialShareButtons from '@/components/SocialShareButtons';
 import { usePageSEO } from '@/hooks/usePageSEO';
+import { useViewTracker } from '@/hooks/useViewTracker';
 
 export default function FreelanceJobDetail() {
   const { id } = useParams<{ id: string }>();
@@ -29,6 +30,8 @@ export default function FreelanceJobDetail() {
     ogType: 'article',
     keywords: job ? `${job.category}, freelance, mission, comores` : undefined,
   });
+
+  useViewTracker('freelance_job', job?.id);
 
   if (isLoading) {
     return (
