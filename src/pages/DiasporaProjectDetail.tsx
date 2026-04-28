@@ -42,6 +42,8 @@ export default function DiasporaProjectDetail() {
     keywords: project ? `${project.category}, investissement, diaspora, comores` : undefined,
   });
 
+  useViewTracker('diaspora_project', project?.id);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">

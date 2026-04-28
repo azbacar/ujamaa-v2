@@ -51,6 +51,8 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
   const [loading, setLoading] = useState(true);
   const [isSubmissionOpen, setIsSubmissionOpen] = useState(false);
 
+  useViewTracker('content_item', item?.id);
+
   useEffect(() => {
     const fetchItem = async () => {
       if (!id) return;

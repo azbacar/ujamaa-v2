@@ -31,6 +31,8 @@ export default function FreelanceJobDetail() {
     keywords: job ? `${job.category}, freelance, mission, comores` : undefined,
   });
 
+  useViewTracker('freelance_job', job?.id);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">

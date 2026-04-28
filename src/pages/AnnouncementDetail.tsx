@@ -70,6 +70,9 @@ const AnnouncementDetail = () => {
     keywords: dbItem?.category ? `${dbItem.category}, annonce, comores` : undefined,
   });
 
+  // Compteur de vues (annonces, services, appels d'offres - polymorphique content_items)
+  useViewTracker('content_item', dbItem?.id);
+
   // Check if ID looks like a UUID
   const isUuid = id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
