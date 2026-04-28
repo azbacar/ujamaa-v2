@@ -66,6 +66,27 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  const url = new URL(req.url);
+  const path = url.pathname.replace(/^\/mobile-api\/?/, "");
+
+  // ── UNAUTHENTICATED UTILITY ENDPOINTS ──
+  // /openapi.json : machine-readable spec (no key required, but route is referenced
+  // only from the protected /api-docs page, so it stays effectively private).
+  if (path === "openapi.json" && req.method === "GET") {
+    return json(buildOpenApiSpec(), 200);
+  }
+  // /warmup : called by pg_cron every 5 min to keep AI knowledge cache hot.
+  if (path === "warmup" && (req.method === "GET" || req.method === "POST")) {
+    fetch(`${SUPABASE_URL}/functions/v1/ai-chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: Deno.env.get("SUPABASE_ANON_KEY")!,
+      },
+      body: JSON.stringify({ message: "__warmup__", sessionId: "warmup-cron", warmupOnly: true }),
+    }).catch((e) => console.error("warmup error", e));
+    return json({ ok: true, warmedAt: new Date().toISOString() });
+  }
 
   // Extract API key
   const apiKey = req.headers.get("x-api-key");
