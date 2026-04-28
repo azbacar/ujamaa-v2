@@ -1,10 +1,11 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Phone, MessageCircle, Mail, Eye, Star, Navigation } from 'lucide-react';
+import { MapPin, Eye, Star, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MenuItemsManager from './MenuItemsManager';
 import RecipeIngredientsManager from './RecipeIngredientsManager';
 import SocialShareButtons from '@/components/SocialShareButtons';
+import ContactDisplay from '@/components/ContactDisplay';
 
 interface GastronomyItem {
   id: string;
