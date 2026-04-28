@@ -12,6 +12,7 @@ import FavoriteButton from '@/components/FavoriteButton';
 import ReportButton from '@/components/ReportButton';
 import CommentSection from '@/components/CommentSection';
 import TenderSubmissionForm from '@/components/TenderSubmissionForm';
+import ContactDisplay from '@/components/ContactDisplay';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
