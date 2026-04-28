@@ -282,32 +282,16 @@ export default function TourismePage() {
                       </p>
                     )}
 
-                    {/* Contact - visible if author is pro */}
-                    {isPro ? (
-                      <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-                        {item.contact_phone && (
-                          <a href={`tel:${item.contact_phone}`} onClick={e => e.stopPropagation()} className="text-xs flex items-center gap-1 text-primary hover:underline">
-                            <Phone className="h-3 w-3" /> {item.contact_phone}
-                          </a>
-                        )}
-                        {item.contact_whatsapp && (
-                          <a href={`https://wa.me/${item.contact_whatsapp}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-xs flex items-center gap-1 text-green-600 hover:underline">
-                            <MessageCircle className="h-3 w-3" /> WhatsApp
-                          </a>
-                        )}
-                        {item.contact_email && (
-                          <a href={`mailto:${item.contact_email}`} onClick={e => e.stopPropagation()} className="text-xs flex items-center gap-1 text-blue-600 hover:underline">
-                            <Mail className="h-3 w-3" /> Email
-                          </a>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="pt-2 border-t border-border">
-                        <p className="text-xs text-muted-foreground italic">
-                          Annonceur non vérifié — les annonceurs Pro affichent leurs coordonnées
-                        </p>
-                      </div>
-                    )}
+                    {/* Contact (gating unifié : visiteur → login, non-Pro → upgrade) */}
+                    <div className="pt-2 border-t border-border" onClick={e => e.stopPropagation()}>
+                      <ContactDisplay
+                        authorId={item.author_id}
+                        phone={item.contact_phone}
+                        email={item.contact_email}
+                        whatsapp={item.contact_whatsapp}
+                        variant="compact"
+                      />
+                    </div>
 
                     {/* Views */}
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
