@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useProStatus } from '@/hooks/useProStatus';
 import { useAuthorProStatus } from '@/hooks/useAuthorProStatus';
 import { useAuth } from '@/hooks/useAuth';
+import { authPath, proPath, CTA_LABELS } from '@/lib/authRedirect';
 
 interface ContactDisplayProps {
   /** ID de l'auteur de la publication (clé pour savoir si c'est un Pro) */
