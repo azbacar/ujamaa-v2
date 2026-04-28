@@ -67,14 +67,14 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
         if (error) throw error;
         setItem(data);
 
-        // Fetch author account type to check Pro status
+        // Fetch author Pro status via vue publique
         if (data?.author_id) {
           const { data: userData } = await supabase
-            .from('users')
-            .select('account_type')
+            .from('users_pro_status' as any)
+            .select('is_pro')
             .eq('id', data.author_id)
             .maybeSingle();
-          setAuthorInfo(userData);
+          setAuthorInfo({ account_type: (userData as any)?.is_pro ? 'pro' : 'free' } as any);
         }
       } catch (error) {
         console.error('Erreur lors du chargement:', error);

@@ -27,8 +27,8 @@ export default function DiasporaProjectDetail() {
 
   useEffect(() => {
     if (!project?.author_id) return;
-    supabase.from('users').select('account_type').eq('id', project.author_id).maybeSingle()
-      .then(({ data }) => setIsAuthorPro(data?.account_type === 'pro' || data?.account_type === 'enterprise'));
+    supabase.from('users_pro_status' as any).select('is_pro').eq('id', project.author_id).maybeSingle()
+      .then(({ data }) => setIsAuthorPro(!!(data as any)?.is_pro));
   }, [project?.author_id]);
   const { data: investments } = useProjectInvestments(id);
   const { data: updates } = useProjectUpdates(id);
