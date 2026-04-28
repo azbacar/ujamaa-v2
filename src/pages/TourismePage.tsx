@@ -14,9 +14,11 @@ import {
 } from 'lucide-react';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import GastronomyDetailDialog from '@/components/tourism/GastronomyDetailDialog';
+import ContactDisplay from '@/components/ContactDisplay';
 
 interface GastronomyItem {
   id: string;
+  author_id?: string | null;
   type: string;
   title: string;
   description: string;
