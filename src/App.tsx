@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import ScrollToTop from "./components/ScrollToTop";
+import { useDatasetStaleListener } from "@/hooks/useDatasetStaleListener";
 
 // Eagerly loaded: homepage
 import Index from "./pages/Index";
@@ -76,8 +77,14 @@ const queryClient = new QueryClient({
 });
 
 
+const AppShell = ({ children }: { children: React.ReactNode }) => {
+  useDatasetStaleListener();
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <AppShell>
     <AuthProvider>
       <LanguageProvider>
         <TooltipProvider>
