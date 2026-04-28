@@ -99,7 +99,6 @@ Deno.serve(async (req) => {
     return err("Invalid or expired API key", 401);
   }
 
-  const url = new URL(req.url);
   const { resource, id, sub } = parseRoute(url);
   const method = req.method;
 
