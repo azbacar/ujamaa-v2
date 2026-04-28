@@ -49,7 +49,7 @@ export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: st
       const { data, error } = await query;
       if (error) throw error;
 
-      let results = (data || []) as FreelancerProfile[];
+      let results = ((data || []) as unknown) as FreelancerProfile[];
 
       // Fetch account_type for each user to determine pro status
       const userIds = [...new Set(results.map(r => r.user_id))];
