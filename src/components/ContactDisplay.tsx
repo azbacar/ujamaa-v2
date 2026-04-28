@@ -60,9 +60,9 @@ export default function ContactDisplay({
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2 border border-border">
           <Lock className="h-3.5 w-3.5 flex-shrink-0" />
           <span className="flex-1">Connectez-vous pour contacter cet annonceur</span>
-          <Link to="/auth">
+          <Link to={authPath()}>
             <Button size="sm" variant="default" className="h-7 px-2 text-xs gap-1">
-              <LogIn className="h-3 w-3" /> Se connecter
+              <LogIn className="h-3 w-3" /> {CTA_LABELS.login}
             </Button>
           </Link>
         </div>
