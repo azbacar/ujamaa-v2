@@ -199,8 +199,8 @@ const AnnouncementDetail = () => {
                 </CardContent>
               </Card>
 
-              {/* Chat interne - visible si auteur Pro */}
-              {isAuthorPro && dbItem.author_id && (
+              {/* Chat interne - dispo pour tous */}
+              {dbItem.author_id && (
                 <Card className="border-primary/20 bg-primary/5">
                   <CardContent className="pt-6">
                     <Button 
