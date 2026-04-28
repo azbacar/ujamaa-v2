@@ -126,17 +126,26 @@ export default function VendorMapPage() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   {locations.map((loc) => (
-                    <Marker key={loc.id} position={[loc.latitude, loc.longitude]} icon={liveIcon}>
+                    <Marker key={loc.id} position={[loc.latitude, loc.longitude]} icon={loc.is_mobile ? mobileIcon : fixedIcon}>
                       <Popup>
                         <div className="space-y-1">
                           <div className="font-semibold flex items-center gap-1">
                             <MapPin className="h-3 w-3 text-emerald-600" /> {loc.label}
                           </div>
-                          {loc.category && <Badge variant="outline">{loc.category}</Badge>}
-                          {loc.island && <p className="text-xs text-muted-foreground">📍 {loc.island}</p>}
+                          <Badge variant={loc.is_mobile ? 'default' : 'secondary'} className="text-[10px]">
+                            {loc.is_mobile ? '🚚 Ambulant — en direct' : '🏪 Position fixe'}
+                          </Badge>
+                          {loc.category && <Badge variant="outline" className="ml-1">{loc.category}</Badge>}
+                          {loc.address && <p className="text-xs text-muted-foreground">📍 {loc.address}</p>}
+                          {loc.island && <p className="text-xs text-muted-foreground">🏝️ {loc.island}</p>}
                           <p className="text-xs text-muted-foreground">
                             Mis à jour : {new Date(loc.last_seen_at).toLocaleTimeString('fr-FR')}
                           </p>
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-emerald-700 underline inline-block mt-1"
+                          >Itinéraire Google Maps →</a>
                         </div>
                       </Popup>
                     </Marker>
