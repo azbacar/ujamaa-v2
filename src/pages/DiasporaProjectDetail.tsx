@@ -118,21 +118,17 @@ export default function DiasporaProjectDetail() {
               </CardContent>
             </Card>
 
-            {/* Contact */}
+            {/* Contact (auto-gating Pro) */}
             {(project.contact_email || project.contact_phone) && (
               <Card>
                 <CardHeader><CardTitle className="text-base">📞 Contact</CardTitle></CardHeader>
-                <CardContent className="flex flex-wrap gap-4 text-sm">
-                  {project.contact_email && (
-                    <a href={`mailto:${project.contact_email}`} className="flex items-center gap-1 text-emerald-600 hover:underline">
-                      <Mail className="h-4 w-4" /> {project.contact_email}
-                    </a>
-                  )}
-                  {project.contact_phone && (
-                    <a href={`tel:${project.contact_phone}`} className="flex items-center gap-1 text-emerald-600 hover:underline">
-                      <Phone className="h-4 w-4" /> {project.contact_phone}
-                    </a>
-                  )}
+                <CardContent>
+                  <ContactDisplay
+                    authorId={project.author_id}
+                    phone={project.contact_phone}
+                    email={project.contact_email}
+                    variant="card"
+                  />
                 </CardContent>
               </Card>
             )}
