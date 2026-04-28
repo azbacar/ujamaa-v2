@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { useAuth } from '@/hooks/useAuth';
+import ContactDisplay from '@/components/ContactDisplay';
 
 // Hardcoded fallback announcements for legacy numeric IDs
 const legacyAnnouncements = [
