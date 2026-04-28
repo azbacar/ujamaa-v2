@@ -21,7 +21,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const liveIcon = L.divIcon({
+const mobileIcon = L.divIcon({
   className: '',
   html: `<div style="position:relative;width:36px;height:36px;">
     <div style="position:absolute;inset:0;border-radius:50%;background:rgba(16,185,129,.25);animation:ujamaaPulse 2s infinite;"></div>
@@ -30,6 +30,13 @@ const liveIcon = L.divIcon({
   <style>@keyframes ujamaaPulse{0%{transform:scale(.8);opacity:1}100%{transform:scale(2);opacity:0}}</style>`,
   iconSize: [36, 36],
   iconAnchor: [18, 18],
+});
+
+const fixedIcon = L.divIcon({
+  className: '',
+  html: `<div style="width:30px;height:30px;border-radius:6px;background:#0ea5e9;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:14px;">⌂</div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
 });
 
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
