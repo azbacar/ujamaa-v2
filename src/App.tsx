@@ -187,6 +187,7 @@ const App = () => (
         </TooltipProvider>
       </LanguageProvider>
     </AuthProvider>
+    </AppShell>
   </QueryClientProvider>
 );
 
