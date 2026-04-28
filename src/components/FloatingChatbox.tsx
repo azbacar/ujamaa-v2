@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import ReactMarkdown from 'react-markdown';
 import { safeStorage } from '@/lib/safeStorage';
+import { useAIRealtimeRefresh } from '@/hooks/useAIRealtimeRefresh';
 
 interface ChatLink {
   url: string;
