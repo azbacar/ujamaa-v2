@@ -94,14 +94,14 @@ const AnnouncementDetail = () => {
         console.log('AnnouncementDetail: item loaded', { id: data?.id, phone: data?.contact_phone, whatsapp: data?.contact_whatsapp });
         setDbItem(data);
 
-        // Fetch author account type to check Pro status
+        // Fetch author Pro status via vue publique (accessible aux visiteurs anonymes)
         if (data?.author_id) {
           const { data: userData } = await supabase
-            .from('users')
-            .select('account_type')
+            .from('users_pro_status' as any)
+            .select('is_pro')
             .eq('id', data.author_id)
             .maybeSingle();
-          setAuthorInfo(userData);
+          setAuthorInfo({ account_type: (userData as any)?.is_pro ? 'pro' : 'free' });
         }
       } catch (error) {
         console.error('Erreur:', error);
