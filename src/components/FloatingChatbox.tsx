@@ -161,6 +161,9 @@ const FloatingChatbox = () => {
   );
   const [assistantEnabled, setAssistantEnabled] = useState(true);
 
+  // Auto-update IA : refetch session + realtime + warmup serveur
+  useAIRealtimeRefresh(isOpen);
+
   const scrollAreaRootRef = useRef<HTMLDivElement | null>(null);
 
   const [guestSessionId] = useState(() => {
