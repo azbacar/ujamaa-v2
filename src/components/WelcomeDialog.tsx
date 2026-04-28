@@ -12,8 +12,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
 import { authPath, proPath } from '@/lib/authRedirect';
+import {
   User, Shield, ShieldCheck, Crown, Megaphone,
   CheckCircle, ArrowRight, Sparkles, Star
 } from 'lucide-react';

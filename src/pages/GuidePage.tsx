@@ -6,8 +6,8 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
 import { authPath, proPath } from '@/lib/authRedirect';
+import {
   Search,
   ShoppingCart,
   Calendar,
