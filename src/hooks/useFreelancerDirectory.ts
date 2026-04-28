@@ -54,12 +54,12 @@ export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: st
       // Fetch account_type for each user to determine pro status
       const userIds = [...new Set(results.map(r => r.user_id))];
       if (userIds.length > 0) {
-        const { data: users } = await supabase
-          .from('users')
-          .select('id, account_type')
+        const { data: usersPro } = await supabase
+          .from('users_pro_status' as any)
+          .select('id, is_pro')
           .in('id', userIds);
-        
-        const userMap = new Map((users || []).map(u => [u.id, u.account_type]));
+
+        const userMap = new Map(((usersPro || []) as any[]).map((u: any) => [u.id, u.is_pro ? 'pro' : 'free']));
         results = results.map(r => ({ ...r, account_type: userMap.get(r.user_id) || 'free' }));
       }
 
