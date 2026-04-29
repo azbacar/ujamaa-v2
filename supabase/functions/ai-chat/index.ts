@@ -17,14 +17,19 @@ async function getDynamicSiteData(authHeader: string | null) {
   });
 
   try {
-    const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes, taxiRes, pharmacyRes] = await Promise.all([
+    const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes, taxiRes, pharmacyRes, jobsRes, gastroRes, tendersRes, staticPagesRes, homepageCatsRes] = await Promise.all([
       supabase.from('prices').select('id, product, price, unit, island, category, currency, market, city, vendor, trend, created_at, village, region').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
       supabase.from('events').select('id, title, description, date, end_date, location, island, category, price, currency').gte('date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
-      supabase.from('content_items').select('id, title, description, category, type').eq('status', 'published').order('published_at', { ascending: false }).limit(20),
+      supabase.from('content_items').select('id, title, description, category, type').eq('status', 'published').eq('type', 'announcement').order('published_at', { ascending: false }).limit(20),
       supabase.from('freelancer_profiles').select('id, display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available, location').eq('is_visible', true).eq('is_available', true).limit(30),
       supabase.from('diaspora_projects').select('id, title, description, category, target_amount, current_amount, currency, island, location, min_investment, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
       supabase.from('taxi_fares').select('id, from_location, to_location, island, price, currency, vehicle_type, notes').eq('is_active', true).order('island').limit(100),
       supabase.from('pharmacy_guards').select('id, name, address, phone, island, city, is_on_duty, duty_start, duty_end, notes').eq('is_active', true).order('island').limit(50),
+      supabase.from('freelance_jobs').select('id, title, description, category, skills, budget_min, budget_max, currency, location, island, is_remote, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
+      supabase.from('gastronomy_items').select('id, title, description, type, category, location, price_min, price_max, dining_style, accommodation_type').eq('status', 'published').order('created_at', { ascending: false }).limit(30),
+      supabase.from('content_items').select('id, title, description, category').eq('status', 'published').eq('type', 'tender').order('published_at', { ascending: false }).limit(15),
+      supabase.from('static_pages').select('slug, title, meta_description, content').limit(30),
+      supabase.from('homepage_categories').select('title, description, link, icon').eq('is_active', true).order('sort_order').limit(20),
     ]);
 
     return {
@@ -35,10 +40,15 @@ async function getDynamicSiteData(authHeader: string | null) {
       diasporaProjects: diasporaRes.data || [],
       taxiFares: taxiRes.data || [],
       pharmacies: pharmacyRes.data || [],
+      jobs: jobsRes.data || [],
+      gastronomy: gastroRes.data || [],
+      tenders: tendersRes.data || [],
+      staticPages: staticPagesRes.data || [],
+      homepageCategories: homepageCatsRes.data || [],
     };
   } catch (error) {
     console.error('Error fetching dynamic data:', error);
-    return { prices: [], events: [], announcements: [], freelancers: [], diasporaProjects: [], taxiFares: [], pharmacies: [] };
+    return { prices: [], events: [], announcements: [], freelancers: [], diasporaProjects: [], taxiFares: [], pharmacies: [], jobs: [], gastronomy: [], tenders: [], staticPages: [], homepageCategories: [] };
   }
 }
 
