@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +31,17 @@ export default function MessagesPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useRealtimeMessages(partnerId);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Pré-remplit le message depuis ?prefill= (ex: bouton "Guidez-moi" carte)
+  useEffect(() => {
+    const prefill = searchParams.get('prefill');
+    if (prefill && partnerId) {
+      setNewMessage(prefill);
+      searchParams.delete('prefill');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [partnerId, searchParams, setSearchParams]);
 
   // Fetch account types
   useEffect(() => {
