@@ -49,7 +49,7 @@ export default function MvolaPaymentDialog({
 
   const ussdCode = useMemo(() => generateUSSD(amount, userRef), [amount, userRef]);
   const telLink = `tel:${encodeURIComponent(ussdCode)}`;
-
+  const { partners } = usePublicPartners();
   const handleSubmit = async (method: "mvola" | "cash" | "card") => {
     if (method !== "card" && !paymentRef.trim()) {
       toast.error("Veuillez entrer la référence de paiement");
