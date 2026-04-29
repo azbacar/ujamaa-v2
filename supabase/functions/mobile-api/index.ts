@@ -701,12 +701,30 @@ Deno.serve(async (req) => {
     // ── INFOS PRATIQUES (taxi, pharmacie) ──
     if (resource === "infos-pratiques" && method === "GET") {
       if (!hasPermission(keyInfo, "login") && !hasPermission(keyInfo, "admin")) return err("Permission denied", 403);
-      const type = url.searchParams.get("type");
-      let q = supabase.from("practical_info").select("*");
-      if (type) q = q.eq("type", type);
-      const { data, error: e } = await q;
-      if (e) return err(e.message, 500);
-      return json({ data });
+      const type = url.searchParams.get("type"); // 'taxi' | 'pharmacy' | null
+      const island = url.searchParams.get("island");
+
+      const tasks: Promise<unknown>[] = [];
+      const wantTaxi = !type || type === "taxi";
+      const wantPharma = !type || type === "pharmacy";
+
+      if (wantTaxi) {
+        let qt = supabase.from("taxi_fares").select("*").eq("is_active", true);
+        if (island) qt = qt.eq("island", island);
+        tasks.push(qt);
+      }
+      if (wantPharma) {
+        let qp = supabase.from("pharmacy_guards").select("*").eq("is_active", true);
+        if (island) qp = qp.eq("island", island);
+        tasks.push(qp);
+      }
+
+      const results = await Promise.all(tasks);
+      const out: Record<string, unknown> = {};
+      let i = 0;
+      if (wantTaxi)   out.taxi      = (results[i++] as { data: unknown[] }).data || [];
+      if (wantPharma) out.pharmacy  = (results[i++] as { data: unknown[] }).data || [];
+      return json({ data: out });
     }
 
     // ── PARTENAIRES ──
