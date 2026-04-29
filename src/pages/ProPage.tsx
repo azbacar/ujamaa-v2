@@ -53,8 +53,9 @@ const PLANS = [
   {
     id: "premium",
     name: "UJAMAA Pro",
-    price: "4 875",
-    amount: 4875,
+    // Le prix affiché est dynamique (mensuel/annuel) — voir billingCycle ci-dessous
+    price: "990",
+    amount: 990,
     currency: "FC",
     period: "/mois",
     description: "Pour les professionnels et commerçants",
