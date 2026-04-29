@@ -5,6 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AnimatedVendorMarker from '@/components/AnimatedVendorMarker';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ import { usePublicPartners } from '@/hooks/usePartner';
 import { useAuth } from '@/hooks/useAuth';
 import { authPath } from '@/lib/authRedirect';
 import { usePageSEO } from '@/hooks/usePageSEO';
-import { MapPin, Radio, Navigation, MessageCircle, LogIn, Handshake, Phone } from 'lucide-react';
+import { MapPin, Radio, Navigation, MessageCircle, LogIn, Handshake, Phone, Eye, EyeOff } from 'lucide-react';
 
 // Fix default marker icon in Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -61,6 +62,7 @@ const ISLAND_CENTER: Record<string, [number, number]> = {
 export default function VendorMapPage() {
   const { currentLanguage, setLanguage } = useLanguage();
   const [islandFilter, setIslandFilter] = useState<string>('all');
+  const [followId, setFollowId] = useState<string | null>(null);
   const { locations, loading } = useLiveVendorLocations(islandFilter === 'all' ? undefined : islandFilter);
   const { partners } = usePublicPartners(islandFilter === 'all' ? undefined : islandFilter);
   const { user } = useAuth();
@@ -124,6 +126,22 @@ export default function VendorMapPage() {
             </div>
           </div>
 
+          {followId && (() => {
+            const followed = locations.find(l => l.id === followId);
+            if (!followed) return null;
+            return (
+              <div className="mb-3 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm animate-fade-in">
+                <span className="flex items-center gap-2">
+                  <Radio className="h-4 w-4 animate-pulse text-emerald-600" />
+                  Suivi en direct : <strong>{followed.label}</strong> · MAJ {new Date(followed.last_seen_at).toLocaleTimeString('fr-FR')}
+                </span>
+                <Button size="sm" variant="ghost" onClick={() => setFollowId(null)} className="h-7 text-xs">
+                  <EyeOff className="h-3.5 w-3.5 mr-1" /> Arrêter
+                </Button>
+              </div>
+            );
+          })()}
+
           <Card className="overflow-hidden">
             <CardContent className="p-0">
               <div style={{ height: '70vh', minHeight: 400 }}>
@@ -144,8 +162,18 @@ export default function VendorMapPage() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  {locations.map((loc) => (
-                    <Marker key={loc.id} position={[loc.latitude, loc.longitude]} icon={loc.is_mobile ? mobileIcon : fixedIcon}>
+                  {locations.map((loc) => {
+                    const MarkerComp: any = loc.is_mobile ? AnimatedVendorMarker : Marker;
+                    const extraProps = loc.is_mobile
+                      ? { id: loc.id, follow: followId === loc.id, durationMs: 1500 }
+                      : {};
+                    return (
+                    <MarkerComp
+                      key={loc.id}
+                      position={[loc.latitude, loc.longitude] as [number, number]}
+                      icon={loc.is_mobile ? mobileIcon : fixedIcon}
+                      {...extraProps}
+                    >
                       <Popup>
                         <div className="space-y-1">
                           <div className="font-semibold flex items-center gap-1">
@@ -160,6 +188,22 @@ export default function VendorMapPage() {
                           <p className="text-xs text-muted-foreground">
                             Mis à jour : {new Date(loc.last_seen_at).toLocaleTimeString('fr-FR')}
                           </p>
+                          {loc.is_mobile && (
+                            <button
+                              onClick={() => setFollowId(followId === loc.id ? null : loc.id)}
+                              className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors ${
+                                followId === loc.id
+                                  ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                              }`}
+                            >
+                              {followId === loc.id ? (
+                                <><EyeOff className="h-3.5 w-3.5" /> Arrêter le suivi</>
+                              ) : (
+                                <><Eye className="h-3.5 w-3.5" /> Suivre en direct 🛰️</>
+                              )}
+                            </button>
+                          )}
                           <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40">
                             <a
                               href={`https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`}
@@ -192,8 +236,9 @@ export default function VendorMapPage() {
                           </div>
                         </div>
                       </Popup>
-                    </Marker>
-                  ))}
+                    </MarkerComp>
+                    );
+                  })}
                   {/* Concessionnaires (points de paiement cash) */}
                   {partners.filter(p => p.latitude && p.longitude).map((p) => (
                     <Marker key={`partner-${p.id}`} position={[p.latitude as number, p.longitude as number]} icon={partnerIcon}>
