@@ -62,6 +62,7 @@ const ISLAND_CENTER: Record<string, [number, number]> = {
 export default function VendorMapPage() {
   const { currentLanguage, setLanguage } = useLanguage();
   const [islandFilter, setIslandFilter] = useState<string>('all');
+  const [followId, setFollowId] = useState<string | null>(null);
   const { locations, loading } = useLiveVendorLocations(islandFilter === 'all' ? undefined : islandFilter);
   const { partners } = usePublicPartners(islandFilter === 'all' ? undefined : islandFilter);
   const { user } = useAuth();
