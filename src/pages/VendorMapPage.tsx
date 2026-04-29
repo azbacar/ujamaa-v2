@@ -5,6 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AnimatedVendorMarker from '@/components/AnimatedVendorMarker';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ import { usePublicPartners } from '@/hooks/usePartner';
 import { useAuth } from '@/hooks/useAuth';
 import { authPath } from '@/lib/authRedirect';
 import { usePageSEO } from '@/hooks/usePageSEO';
-import { MapPin, Radio, Navigation, MessageCircle, LogIn, Handshake, Phone } from 'lucide-react';
+import { MapPin, Radio, Navigation, MessageCircle, LogIn, Handshake, Phone, Eye, EyeOff } from 'lucide-react';
 
 // Fix default marker icon in Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
