@@ -162,7 +162,7 @@ export default function VendorMapPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0" />
-                  <span>Trouvez les points de paiement cash près de vous</span>
+                  <span>Trouver un concessionnaire pour payer votre abonnement</span>
                 </li>
               </ul>
               <div className="flex flex-col gap-2 pt-2">
