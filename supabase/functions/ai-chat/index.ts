@@ -11,6 +11,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Extrait les mots-clés significatifs du message utilisateur (>3 chars, sans stopwords)
+const STOPWORDS = new Set(['avec','pour','dans','sans','sur','les','des','une','est','que','qui','quoi','comment','quand','pourquoi','combien','votre','vous','nous','mais','donc','plus','tout','tous','cette','cela','mon','mes','ton','tes','son','ses','par','aux','aussi','bien','très','peu','être','avoir','faire','aller','the','and','for','from','with']);
+function extractKeywords(text: string): string[] {
+  return text.toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !STOPWORDS.has(w))
+    .slice(0, 8);
+}
+
+// Recherche full-text ciblée sur plusieurs tables selon la question
+async function searchSiteContent(query: string, authHeader: string | null) {
+  const keywords = extractKeywords(query);
+  if (keywords.length === 0) return { hits: [] };
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: authHeader ? { headers: { Authorization: authHeader } } : {},
+  });
+  const orFilter = keywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%`).join(',');
+  const orPrices = keywords.map(k => `product.ilike.%${k}%,city.ilike.%${k}%,village.ilike.%${k}%,market.ilike.%${k}%,vendor.ilike.%${k}%`).join(',');
+
+  try {
+    const [contentRes, pricesRes, eventsRes, gastroRes, jobsRes, freelRes, diasRes, staticRes] = await Promise.all([
+      supabase.from('content_items').select('id, title, description, type, category, slug').eq('status','published').or(orFilter).limit(15),
+      supabase.from('prices').select('id, product, price, currency, unit, island, city, village, market, vendor, created_at').eq('status','published').or(orPrices).limit(20),
+      supabase.from('events').select('id, title, description, date, location, island').eq('status','published').or(orFilter).limit(10),
+      supabase.from('gastronomy_items').select('id, title, description, type, location, price_min').eq('status','published').or(orFilter).limit(10),
+      supabase.from('freelance_jobs').select('id, title, description, budget_min, budget_max, currency, island').eq('status','published').or(orFilter).limit(10),
+      supabase.from('freelancer_profiles').select('id, display_name, bio, skills, island, hourly_rate_min, currency').eq('is_visible',true).or(`display_name.ilike.%${keywords[0]}%,bio.ilike.%${keywords[0]}%`).limit(10),
+      supabase.from('diaspora_projects').select('id, title, description, category, target_amount, currency, island').eq('status','published').or(orFilter).limit(10),
+      supabase.from('static_pages').select('slug, title, meta_description, content').or(`title.ilike.%${keywords[0]}%,meta_description.ilike.%${keywords[0]}%,content.ilike.%${keywords[0]}%`).limit(8),
+    ]);
+    return {
+      content: contentRes.data || [],
+      prices: pricesRes.data || [],
+      events: eventsRes.data || [],
+      gastronomy: gastroRes.data || [],
+      jobs: jobsRes.data || [],
+      freelancers: freelRes.data || [],
+      diaspora: diasRes.data || [],
+      staticPages: staticRes.data || [],
+      keywords,
+    };
+  } catch (e) {
+    console.error('searchSiteContent error:', e);
+    return { hits: [], keywords };
+  }
+}
+
 async function getDynamicSiteData(authHeader: string | null) {
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     global: authHeader ? { headers: { Authorization: authHeader } } : {},
