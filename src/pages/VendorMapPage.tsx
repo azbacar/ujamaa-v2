@@ -146,8 +146,18 @@ export default function VendorMapPage() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-                  {locations.map((loc) => (
-                    <Marker key={loc.id} position={[loc.latitude, loc.longitude]} icon={loc.is_mobile ? mobileIcon : fixedIcon}>
+                  {locations.map((loc) => {
+                    const MarkerComp: any = loc.is_mobile ? AnimatedVendorMarker : Marker;
+                    const extraProps = loc.is_mobile
+                      ? { id: loc.id, follow: followId === loc.id, durationMs: 1500 }
+                      : {};
+                    return (
+                    <MarkerComp
+                      key={loc.id}
+                      position={[loc.latitude, loc.longitude] as [number, number]}
+                      icon={loc.is_mobile ? mobileIcon : fixedIcon}
+                      {...extraProps}
+                    >
                       <Popup>
                         <div className="space-y-1">
                           <div className="font-semibold flex items-center gap-1">
@@ -162,6 +172,22 @@ export default function VendorMapPage() {
                           <p className="text-xs text-muted-foreground">
                             Mis à jour : {new Date(loc.last_seen_at).toLocaleTimeString('fr-FR')}
                           </p>
+                          {loc.is_mobile && (
+                            <button
+                              onClick={() => setFollowId(followId === loc.id ? null : loc.id)}
+                              className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors ${
+                                followId === loc.id
+                                  ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                              }`}
+                            >
+                              {followId === loc.id ? (
+                                <><EyeOff className="h-3.5 w-3.5" /> Arrêter le suivi</>
+                              ) : (
+                                <><Eye className="h-3.5 w-3.5" /> Suivre en direct 🛰️</>
+                              )}
+                            </button>
+                          )}
                           <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40">
                             <a
                               href={`https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`}
@@ -194,8 +220,9 @@ export default function VendorMapPage() {
                           </div>
                         </div>
                       </Popup>
-                    </Marker>
-                  ))}
+                    </MarkerComp>
+                    );
+                  })}
                   {/* Concessionnaires (points de paiement cash) */}
                   {partners.filter(p => p.latitude && p.longitude).map((p) => (
                     <Marker key={`partner-${p.id}`} position={[p.latitude as number, p.longitude as number]} icon={partnerIcon}>
