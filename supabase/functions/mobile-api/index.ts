@@ -135,13 +135,27 @@ Deno.serve(async (req) => {
       const tableMap: Record<string, string> = {
         prices: "prices", events: "events", content: "content_items",
         gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", diaspora: "diaspora_projects",
+        "vendor-locations": "vendor_locations",
+        enterprises: "enterprise_profiles_public",
+        partners: "partner_accounts",
       };
       const table = tableMap[sub || ""];
       if (!table) return err("Unknown public resource", 404);
       let q = supabase.from(table).select("*", { count: "exact" });
-      if (table !== "freelancer_profiles") q = q.eq("status", "published");
-      else q = q.eq("is_visible", true);
-      const { data, count, error: qErr } = await q.range(offset, offset + limit - 1).order("created_at", { ascending: false });
+      // Filtres spécifiques par table
+      if (table === "freelancer_profiles") {
+        q = q.eq("is_visible", true);
+      } else if (table === "vendor_locations") {
+        q = q.eq("is_active", true);
+      } else if (table === "enterprise_profiles_public") {
+        // vue publique : pas de colonne status
+      } else if (table === "partner_accounts") {
+        q = q.eq("status", "active");
+      } else {
+        q = q.eq("status", "published");
+      }
+      const orderCol = table === "vendor_locations" ? "last_seen_at" : "created_at";
+      const { data, count, error: qErr } = await q.range(offset, offset + limit - 1).order(orderCol, { ascending: false });
       if (qErr) return err(qErr.message, 500);
       return json({ data, total: count, limit, offset });
     }
