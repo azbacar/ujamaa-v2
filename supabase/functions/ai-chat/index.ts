@@ -388,7 +388,9 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
     const failures: string[] = [];
 
     // ---------- Helpers ----------
-    const callGemini = async (): Promise<string> => {
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+    const callGeminiModel = async (model: string): Promise<string> => {
       const systemMsg = aiMessages.find(m => m.role === 'system')?.content || '';
       const convo = aiMessages.filter(m => m.role !== 'system');
       const contents = convo.map((m, idx) => {
@@ -399,7 +401,7 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
         return { role, parts: [{ text }] };
       });
       const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -417,12 +419,38 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
       );
       if (!resp.ok) {
         const t = await resp.text();
-        throw new Error(`Gemini ${resp.status}: ${t.slice(0, 200)}`);
+        const err: any = new Error(`Gemini[${model}] ${resp.status}: ${t.slice(0, 200)}`);
+        err.status = resp.status;
+        throw err;
       }
       const data = await resp.json();
       const text = data.candidates?.[0]?.content?.parts?.map((p: any) => p.text).filter(Boolean).join('\n') || '';
-      if (!text) throw new Error(`Gemini empty (finish=${data.candidates?.[0]?.finishReason})`);
+      if (!text) throw new Error(`Gemini[${model}] empty (finish=${data.candidates?.[0]?.finishReason})`);
       return text;
+    };
+
+    // Tente plusieurs modèles + retries en cas de 503/429 (surcharge transitoire)
+    const callGemini = async (): Promise<string> => {
+      const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+      let lastErr: any = null;
+      for (const model of models) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            return await callGeminiModel(model);
+          } catch (e: any) {
+            lastErr = e;
+            const status = e?.status;
+            // Retry uniquement si surcharge/throttle
+            if (status === 503 || status === 429) {
+              await sleep(400 * (attempt + 1));
+              continue;
+            }
+            // Autre erreur → modèle suivant directement
+            break;
+          }
+        }
+      }
+      throw lastErr ?? new Error('Gemini: tous les modèles ont échoué');
     };
 
     const callKimi = async (): Promise<string> => {
