@@ -197,6 +197,26 @@ export const usePublicPartners = (island?: string) => {
   return { partners, loading, refresh };
 };
 
+export const usePartnerKycDocuments = (partnerId?: string) => {
+  const [documents, setDocuments] = useState<PartnerKycDocument[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    if (!partnerId) { setLoading(false); return; }
+    const { data } = await supabase
+      .from('partner_kyc_documents')
+      .select('*')
+      .eq('partner_id', partnerId)
+      .order('created_at', { ascending: false });
+    setDocuments((data as any) || []);
+    setLoading(false);
+  }, [partnerId]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  return { documents, loading, refresh };
+};
+
 export const computeCommission = (amount: number, settings: PartnerSettings | null): number => {
   if (!settings) return 0;
   if (settings.commission_type === 'percentage') {
