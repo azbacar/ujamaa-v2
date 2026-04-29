@@ -166,21 +166,59 @@ export default function VendorMapPage() {
             </div>
           </div>
 
-          {followId && (() => {
-            const followed = locations.find(l => l.id === followId);
-            if (!followed) return null;
-            return (
-              <div className="mb-3 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm animate-fade-in">
-                <span className="flex items-center gap-2">
+          {followIds.length > 0 && (
+            <div className="mb-3 px-3 py-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm animate-fade-in space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2 font-medium">
                   <Radio className="h-4 w-4 animate-pulse text-emerald-600" />
-                  Suivi en direct : <strong>{followed.label}</strong> · MAJ {new Date(followed.last_seen_at).toLocaleTimeString('fr-FR')}
+                  Suivi multi-annonceurs ({followIds.length}{followIds.length >= 2 ? ' · vue auto-ajustée' : ''})
                 </span>
-                <Button size="sm" variant="ghost" onClick={() => setFollowId(null)} className="h-7 text-xs">
-                  <EyeOff className="h-3.5 w-3.5 mr-1" /> Arrêter
-                </Button>
+                {followIds.length > 1 && (
+                  <Button size="sm" variant="ghost" onClick={stopAllFollow} className="h-7 text-xs">
+                    <EyeOff className="h-3.5 w-3.5 mr-1" /> Tout arrêter
+                  </Button>
+                )}
               </div>
-            );
-          })()}
+              <div className="flex flex-wrap gap-2">
+                {followIds.map(fid => {
+                  const loc = locations.find(l => l.id === fid);
+                  if (!loc) return null;
+                  const color = colorFor(fid);
+                  return (
+                    <div
+                      key={fid}
+                      className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-white border shadow-sm text-xs"
+                      style={{ borderColor: color }}
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: color }} />
+                      <strong className="max-w-[120px] truncate">{loc.label}</strong>
+                      <span className="text-muted-foreground hidden sm:inline">
+                        · {new Date(loc.last_seen_at).toLocaleTimeString('fr-FR')}
+                      </span>
+                      {user && user.id !== loc.user_id && (
+                        <Link
+                          to={`/messages/${loc.user_id}?prefill=${encodeURIComponent(
+                            `Bonjour ${loc.label}, je vous suis sur la carte en direct. Pouvez-vous me guider pour vous retrouver ? 📍`
+                          )}`}
+                          className="inline-flex items-center justify-center h-6 w-6 rounded-full hover:bg-emerald-100 text-emerald-700"
+                          title="Guidage live"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => toggleFollow(fid)}
+                        className="inline-flex items-center justify-center h-6 w-6 rounded-full hover:bg-rose-100 text-rose-600"
+                        title="Arrêter ce suivi"
+                      >
+                        <EyeOff className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <Card className="overflow-hidden">
             <CardContent className="p-0">
