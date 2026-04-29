@@ -211,6 +211,51 @@ serve(async (req) => {
       dynamicContent += 'Lien: [Voir toutes les pharmacies](/infos-pratiques)\n\n';
     }
 
+    if ((dynamicData as any).jobs && (dynamicData as any).jobs.length > 0) {
+      dynamicContent += '💼 MISSIONS FREELANCE OUVERTES:\n';
+      (dynamicData as any).jobs.forEach((j: any) => {
+        const budget = j.budget_min ? `${j.budget_min}${j.budget_max ? '-' + j.budget_max : '+'} ${j.currency || 'FC'}` : 'à négocier';
+        const skills = (j.skills || []).slice(0, 4).join(', ');
+        dynamicContent += `- [ID:${j.id}] ${j.title} (${j.category || 'général'}) — ${budget}${j.island ? ' - ' + j.island : ''}${j.is_remote ? ' [Remote]' : ''}${skills ? ' — Compétences: ' + skills : ''}\n`;
+      });
+      dynamicContent += 'Lien: [Voir toutes les missions](/freelance)\n\n';
+    }
+
+    if ((dynamicData as any).gastronomy && (dynamicData as any).gastronomy.length > 0) {
+      dynamicContent += '🍽️ TOURISME & GASTRONOMIE:\n';
+      (dynamicData as any).gastronomy.forEach((g: any) => {
+        const price = g.price_min ? ` - ${g.price_min}${g.price_max ? '-' + g.price_max : ''} FC` : '';
+        const extra = g.dining_style || g.accommodation_type || '';
+        dynamicContent += `- [ID:${g.id}] ${g.title} (${g.type}${extra ? ', ' + extra : ''})${g.location ? ' - ' + g.location : ''}${price}\n`;
+      });
+      dynamicContent += 'Lien: [Voir tourisme & gastronomie](/tourisme)\n\n';
+    }
+
+    if ((dynamicData as any).tenders && (dynamicData as any).tenders.length > 0) {
+      dynamicContent += '📋 APPELS D\'OFFRES PUBLIÉS:\n';
+      (dynamicData as any).tenders.forEach((t: any) => {
+        dynamicContent += `- [ID:${t.id}] ${t.title}${t.category ? ' (' + t.category + ')' : ''}\n`;
+      });
+      dynamicContent += 'Lien: [Voir les appels d\'offres](/appels-offres)\n\n';
+    }
+
+    if ((dynamicData as any).homepageCategories && (dynamicData as any).homepageCategories.length > 0) {
+      dynamicContent += '🗂️ CATÉGORIES PRINCIPALES DU SITE:\n';
+      (dynamicData as any).homepageCategories.forEach((c: any) => {
+        dynamicContent += `- ${c.title}: ${c.description || ''} → ${c.link}\n`;
+      });
+      dynamicContent += '\n';
+    }
+
+    if ((dynamicData as any).staticPages && (dynamicData as any).staticPages.length > 0) {
+      dynamicContent += '📄 PAGES INFORMATIVES DU SITE (CGU, FAQ, À propos, etc.):\n';
+      (dynamicData as any).staticPages.forEach((p: any) => {
+        const excerpt = (p.meta_description || (p.content || '').replace(/<[^>]+>/g, '').slice(0, 200)).trim();
+        dynamicContent += `- [/p/${p.slug}] ${p.title}: ${excerpt}\n`;
+      });
+      dynamicContent += '\n';
+    }
+
     // Build knowledge sources section
     let knowledgeSection = '';
     if (knowledgeSources.length > 0) {
