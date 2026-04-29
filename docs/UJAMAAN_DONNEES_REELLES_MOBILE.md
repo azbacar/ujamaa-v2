@@ -238,4 +238,166 @@ contenus publics, géoloc, paiements Mvola, abonnements Pro…).
 
 ---
 
+## 🔐 Endpoints publics vs authentifiés — Gestion des erreurs
+
+### Matrice des permissions
+
+| Endpoint | `x-api-key` | `Bearer` user | Code si manquant |
+|---|:---:|:---:|---|
+| `GET /openapi.json`, `/warmup` | ❌ | ❌ | — toujours OK |
+| `POST /auth/register` · `/login` · `/refresh` · `/reset-password` | ✅ | ❌ | 401 |
+| `GET /auth/me` · `POST /auth/logout` | ✅ | ✅ | **401** |
+| `GET /public/*` (prices, events, content, gastronomy, freelancers, diaspora, enterprises, vendor-locations, partners) | ✅ | ❌ | 403 si clé sans `login` |
+| `POST /ai-chat` | ✅ | ⚠️ optionnel (active l'historique perso) | 403 |
+| `GET/PUT/DELETE /profile` | ✅ | ✅ | **401** |
+| `GET/POST/DELETE /favorites` | ✅ | ✅ | **401** |
+| `GET/PUT /my-notifications` | ✅ | ✅ | **401** |
+| `GET/POST /messages` | ✅ | ✅ | **401** |
+| `POST/DELETE /push` | ✅ | ✅ | **401** |
+| `POST /price-submissions` · `/verification-requests` · `/pro-subscription-requests` | ✅ | ✅ | **401** |
+| `POST /partner-collects` | ✅ | ✅ + rôle `partner` | **403** |
+| `*/admin/*` | ✅ permission `admin` | ✅ rôle `admin` | **403** |
+
+> 📌 **Règle simple** :
+> - **401** = problème d'**identité** (token absent, expiré, invalide) → refresh ou re-login
+> - **403** = identité OK, **droits insuffisants** → message UX, pas de retry
+
+### Codes de réponse renvoyés par `mobile-api`
+
+| Code | Signification | Action côté app |
+|:---:|---|---|
+| `200` / `201` | OK | Continuer |
+| `400` | Body invalide / paramètres manquants | Toast d'erreur, ne PAS retry |
+| `401` | `x-api-key` ou Bearer absent / expiré | → tenter `auth/refresh` puis retry **1 seule fois** |
+| `403` | Pas le droit (rôle, permission, ownership) | Message UX clair, masquer la fonctionnalité |
+| `404` | Ressource ou route inexistante | Vérifier l'ID, fallback liste |
+| `405` | Méthode HTTP non supportée | Bug app — vérifier le client |
+| `500` | Erreur serveur | Retry avec backoff exponentiel (3 max) |
+
+Toutes les erreurs renvoient un body **JSON uniforme** :
+```json
+{ "error": "Message lisible expliquant le problème" }
+```
+
+### Wrapper `api()` robuste avec auto-refresh
+
+```typescript
+// src/lib/ujamaaApi.ts
+import { Preferences } from '@capacitor/preferences';
+import { router } from '@/router';
+
+const API_BASE = 'https://vpibvgdpeiicczelbynf.supabase.co/functions/v1/mobile-api';
+const API_KEY  = import.meta.env.VITE_UJAMAA_API_KEY;
+
+export class ApiError extends Error {
+  constructor(public status: number, message: string, public body?: unknown) {
+    super(message);
+  }
+}
+
+// Singleton : empêche plusieurs refresh simultanés
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshSession(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = (async () => {
+    const { value: refresh_token } = await Preferences.get({ key: 'refresh_token' });
+    if (!refresh_token) return false;
+    try {
+      const r = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
+        body: JSON.stringify({ refresh_token }),
+      });
+      if (!r.ok) return false;
+      const data = await r.json();
+      await Preferences.set({ key: 'access_token',  value: data.access_token });
+      await Preferences.set({ key: 'refresh_token', value: data.refresh_token });
+      return true;
+    } catch { return false; }
+    finally { setTimeout(() => { refreshPromise = null; }, 0); }
+  })();
+  return refreshPromise;
+}
+
+async function logoutLocal() {
+  await Preferences.remove({ key: 'access_token' });
+  await Preferences.remove({ key: 'refresh_token' });
+  router.replace('/login?reason=expired');
+}
+
+export async function api<T = unknown>(
+  path: string,
+  init: RequestInit = {},
+  _retried = false,
+): Promise<T> {
+  const { value: token } = await Preferences.get({ key: 'access_token' });
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'x-api-key': API_KEY,
+    ...(init.headers as Record<string, string>),
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${API_BASE}/${path}`, { ...init, headers });
+  if (res.ok) return res.json() as Promise<T>;
+
+  const body = await res.json().catch(() => ({ error: res.statusText }));
+  const message = (body as { error?: string }).error || res.statusText;
+
+  // 401 avec token → tente UN refresh puis retry
+  if (res.status === 401 && !_retried && token) {
+    const refreshed = await refreshSession();
+    if (refreshed) return api<T>(path, init, true);
+    await logoutLocal();
+    throw new ApiError(401, 'Session expirée, veuillez vous reconnecter.', body);
+  }
+
+  if (res.status === 401) {
+    throw new ApiError(401, 'Connexion requise pour accéder à cette ressource.', body);
+  }
+  if (res.status === 403) {
+    throw new ApiError(403, message || "Vous n'avez pas les droits nécessaires.", body);
+  }
+  throw new ApiError(res.status, message, body);
+}
+```
+
+### Exemple d'usage avec gestion UX
+
+```typescript
+import { api, ApiError } from '@/lib/ujamaaApi';
+import { toast } from '@/components/ui/sonner';
+
+async function loadFavorites() {
+  try {
+    return await api<{ data: Favorite[] }>('favorites');
+  } catch (e) {
+    if (e instanceof ApiError) {
+      if (e.status === 401) return { data: [] }; // déjà redirigé vers /login
+      if (e.status === 403) {
+        toast.error("Fonctionnalité réservée aux comptes vérifiés.");
+        return { data: [] };
+      }
+      if (e.status >= 500) {
+        toast.error("Service momentanément indisponible. Réessayez plus tard.");
+      }
+    }
+    throw e;
+  }
+}
+```
+
+### Checklist erreurs à tester sur device
+
+- [ ] App lancée sans réseau → erreur gérée (pas de crash)
+- [ ] Token expiré pendant l'utilisation → refresh transparent, pas de re-login visible
+- [ ] Refresh token expiré → redirection auto vers `/login?reason=expired`
+- [ ] POST `/messages` sans login → 401 propre, CTA "Se connecter"
+- [ ] Accès `/admin/*` avec compte user → 403 + message clair
+- [ ] `/public/prices` accessible **avant** login (mode visiteur)
+- [ ] Spam de requêtes après expiration → un seul refresh effectif (singleton)
+
+---
+
 *Dernière mise à jour : 29/04/2026 — données vérifiées en prod.*
