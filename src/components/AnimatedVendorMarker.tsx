@@ -7,10 +7,14 @@ interface Props {
   position: [number, number];
   icon: L.DivIcon | L.Icon;
   follow?: boolean;
+  /** When true, suppress individual panTo (parent handles fitBounds for multi-follow) */
+  suppressPan?: boolean;
   /** Animation duration in ms (matches typical update interval) */
   durationMs?: number;
   children?: React.ReactNode;
   onClick?: () => void;
+  /** Callback whenever the animated/displayed position changes (for parent fitBounds) */
+  onPositionChange?: (id: string, pos: [number, number]) => void;
 }
 
 /**
