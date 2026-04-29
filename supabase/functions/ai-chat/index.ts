@@ -11,6 +11,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Extrait les mots-clés significatifs du message utilisateur (>3 chars, sans stopwords)
+const STOPWORDS = new Set(['avec','pour','dans','sans','sur','les','des','une','est','que','qui','quoi','comment','quand','pourquoi','combien','votre','vous','nous','mais','donc','plus','tout','tous','cette','cela','mon','mes','ton','tes','son','ses','par','aux','aussi','bien','très','peu','être','avoir','faire','aller','the','and','for','from','with']);
+function extractKeywords(text: string): string[] {
+  return text.toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !STOPWORDS.has(w))
+    .slice(0, 8);
+}
+
+// Recherche full-text ciblée sur plusieurs tables selon la question
+async function searchSiteContent(query: string, authHeader: string | null) {
+  const keywords = extractKeywords(query);
+  if (keywords.length === 0) return { hits: [] };
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: authHeader ? { headers: { Authorization: authHeader } } : {},
+  });
+  const orFilter = keywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%`).join(',');
+  const orPrices = keywords.map(k => `product.ilike.%${k}%,city.ilike.%${k}%,village.ilike.%${k}%,market.ilike.%${k}%,vendor.ilike.%${k}%`).join(',');
+
+  try {
+    const [contentRes, pricesRes, eventsRes, gastroRes, jobsRes, freelRes, diasRes, staticRes] = await Promise.all([
+      supabase.from('content_items').select('id, title, description, type, category, slug').eq('status','published').or(orFilter).limit(15),
+      supabase.from('prices').select('id, product, price, currency, unit, island, city, village, market, vendor, created_at').eq('status','published').or(orPrices).limit(20),
+      supabase.from('events').select('id, title, description, date, location, island').eq('status','published').or(orFilter).limit(10),
+      supabase.from('gastronomy_items').select('id, title, description, type, location, price_min').eq('status','published').or(orFilter).limit(10),
+      supabase.from('freelance_jobs').select('id, title, description, budget_min, budget_max, currency, island').eq('status','published').or(orFilter).limit(10),
+      supabase.from('freelancer_profiles').select('id, display_name, bio, skills, island, hourly_rate_min, currency').eq('is_visible',true).or(`display_name.ilike.%${keywords[0]}%,bio.ilike.%${keywords[0]}%`).limit(10),
+      supabase.from('diaspora_projects').select('id, title, description, category, target_amount, currency, island').eq('status','published').or(orFilter).limit(10),
+      supabase.from('static_pages').select('slug, title, meta_description, content').or(`title.ilike.%${keywords[0]}%,meta_description.ilike.%${keywords[0]}%,content.ilike.%${keywords[0]}%`).limit(8),
+    ]);
+    return {
+      content: contentRes.data || [],
+      prices: pricesRes.data || [],
+      events: eventsRes.data || [],
+      gastronomy: gastroRes.data || [],
+      jobs: jobsRes.data || [],
+      freelancers: freelRes.data || [],
+      diaspora: diasRes.data || [],
+      staticPages: staticRes.data || [],
+      keywords,
+    };
+  } catch (e) {
+    console.error('searchSiteContent error:', e);
+    return { hits: [], keywords };
+  }
+}
+
 async function getDynamicSiteData(authHeader: string | null) {
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     global: authHeader ? { headers: { Authorization: authHeader } } : {},
@@ -120,11 +168,12 @@ serve(async (req) => {
       user = authUser;
     }
 
-    // Fetch all data in parallel
-    const [dynamicData, knowledgeSources, dbHistory] = await Promise.all([
+    // Fetch all data in parallel + recherche ciblée RAG
+    const [dynamicData, knowledgeSources, dbHistory, searchHits] = await Promise.all([
       getDynamicSiteData(authHeader),
       getKnowledgeSources(),
       getConversationHistory(sessionId, authHeader),
+      searchSiteContent(sanitizedMessage, authHeader),
     ]);
 
     // Use DB history for logged-in users, client-sent history for guests
@@ -267,9 +316,70 @@ serve(async (req) => {
       knowledgeSection += '\nQuand tu cites une source, écris par exemple: "Selon [Nom de la source]..." sans jamais montrer le lien.\n';
     }
 
+    // 🎯 Section RAG : résultats spécifiquement liés à la question posée
+    let searchSection = '';
+    const sh: any = searchHits || {};
+    const totalHits = (sh.content?.length || 0) + (sh.prices?.length || 0) + (sh.events?.length || 0) + (sh.gastronomy?.length || 0) + (sh.jobs?.length || 0) + (sh.freelancers?.length || 0) + (sh.diaspora?.length || 0) + (sh.staticPages?.length || 0);
+    if (totalHits > 0) {
+      searchSection = `\n\n🎯 RÉSULTATS PERTINENTS POUR CETTE QUESTION (mots-clés: ${(sh.keywords || []).join(', ')}):\n`;
+      searchSection += '⚠️ Utilise ces résultats EN PRIORITÉ — ils correspondent directement à ce que demande l\'utilisateur.\n\n';
+      if (sh.prices?.length) {
+        searchSection += '💰 Prix correspondants:\n';
+        sh.prices.forEach((p: any) => {
+          const loc = [p.village, p.city, p.market].filter(Boolean).join(', ');
+          searchSection += `- [ID:${p.id}] ${p.product}: ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}${loc ? ', ' + loc : ''}${p.vendor ? ' (vendeur: ' + p.vendor + ')' : ''}\n`;
+        });
+      }
+      if (sh.content?.length) {
+        searchSection += '\n📄 Contenus correspondants:\n';
+        sh.content.forEach((c: any) => {
+          const path = c.type === 'announcement' ? `/annonces/${c.id}` : c.type === 'tender' ? `/appels-offres` : `/${c.type || 'contenu'}/${c.id}`;
+          searchSection += `- [${c.title}](${path}) — ${c.type || 'contenu'}: ${(c.description || '').slice(0, 120)}\n`;
+        });
+      }
+      if (sh.events?.length) {
+        searchSection += '\n🎉 Événements correspondants:\n';
+        sh.events.forEach((e: any) => {
+          searchSection += `- [${e.title}](/evenements/${e.id}) — ${new Date(e.date).toLocaleDateString('fr-FR')} à ${e.location} (${e.island})\n`;
+        });
+      }
+      if (sh.gastronomy?.length) {
+        searchSection += '\n🍽️ Tourisme/Restos correspondants:\n';
+        sh.gastronomy.forEach((g: any) => {
+          searchSection += `- [ID:${g.id}] ${g.title} (${g.type})${g.location ? ' - ' + g.location : ''}${g.price_min ? ' - dès ' + g.price_min + ' FC' : ''}\n`;
+        });
+      }
+      if (sh.jobs?.length) {
+        searchSection += '\n💼 Missions correspondantes:\n';
+        sh.jobs.forEach((j: any) => {
+          searchSection += `- [ID:${j.id}] ${j.title} — ${j.budget_min || '?'}-${j.budget_max || '?'} ${j.currency || 'FC'} (${j.island || 'partout'})\n`;
+        });
+      }
+      if (sh.freelancers?.length) {
+        searchSection += '\n👨‍💻 Freelancers correspondants:\n';
+        sh.freelancers.forEach((f: any) => {
+          searchSection += `- [ID:${f.id}] ${f.display_name} — ${(f.skills || []).slice(0, 4).join(', ')} (${f.island || 'n/a'})\n`;
+        });
+      }
+      if (sh.diaspora?.length) {
+        searchSection += '\n🌍 Projets diaspora correspondants:\n';
+        sh.diaspora.forEach((d: any) => {
+          searchSection += `- [${d.title}](/investissement/${d.id}) — ${d.category} (objectif ${d.target_amount} ${d.currency})\n`;
+        });
+      }
+      if (sh.staticPages?.length) {
+        searchSection += '\n📘 Pages du site correspondantes:\n';
+        sh.staticPages.forEach((p: any) => {
+          const excerpt = (p.meta_description || (p.content || '').replace(/<[^>]+>/g, '').slice(0, 200)).trim();
+          searchSection += `- [${p.title}](/p/${p.slug}) — ${excerpt}\n`;
+        });
+      }
+    }
+
     const systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel de la plateforme ujamaan.com pour l'archipel des Comores (4 îles).
 
 ${comorosKnowledge}
+${searchSection}
 ${dynamicContent}
 ${knowledgeSection}
 
@@ -413,8 +523,23 @@ TOURISME & GASTRONOMIE (/tourisme):
 - Si tu ne trouves PAS l'information dans les données fournies, dis-le franchement : "Je n'ai pas encore cette information sur ujamaan.com 😊"
 - Propose des PISTES CONCRÈTES : oriente vers la page interne la plus pertinente avec un lien direct.
 - Ne JAMAIS inventer de données. Mieux vaut dire "je ne sais pas" que donner une fausse info.
-- Ton amical et empathique. Parle comme un ami comorien serviable.
-- Sois naturel et humain dans tes formulations, évite le ton robotique.
+- Ton chaleureux, amical et humain. Parle comme un ami comorien serviable, pas comme un robot.
+- Utilise "tu" si l'utilisateur te tutoie, "vous" sinon. Adapte ton registre à celui de l'utilisateur.
+- Évite le jargon technique. Donne des exemples concrets quand c'est utile.
+- Tu peux utiliser des expressions naturelles : "tiens", "écoute", "regarde", "voilà", "d'accord", "pas de souci", "avec plaisir".
+
+🧠 PROCESSUS DE RAISONNEMENT (à appliquer SILENCIEUSEMENT avant de répondre):
+1. **Comprendre l'intention** : Que cherche vraiment l'utilisateur ? (info, action, comparaison, conseil ?)
+2. **Vérifier le contexte** : Y a-t-il des messages précédents qui éclairent la question ?
+3. **Chercher dans les données** : Commence par "🎯 RÉSULTATS PERTINENTS" (RAG ciblé), puis les listes générales si besoin.
+4. **Croiser les sources** : Si plusieurs données concordent, mentionne-le. Si elles divergent, signale-le honnêtement.
+5. **Construire la réponse** : Information principale → contexte → liens directs → suggestion d'action suivante.
+6. **Vérifier la qualité** : Réponse précise ? Liens fournis ? Ton humain ? Pas d'invention ?
+
+🔍 EN CAS D'INFO MANQUANTE:
+- Reconnais-le franchement : "Je n'ai pas trouvé ça précisément dans nos données 😊"
+- MAIS propose toujours une piste : page la plus proche, action à faire, ou demande de précision.
+- Exemple : "Je n'ai pas le prix exact du poisson à Mutsamudu aujourd'hui, mais [voir tous les prix poisson](/prix?q=poisson) ou tu peux signaler un prix toi-même via [Mes prix](/profil)."
 ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les données de la plateforme et donne des liens directs vers les résultats pertinents.` : ''}`;
 
     // Build messages array with history
@@ -462,7 +587,7 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents,
-            generationConfig: { temperature: 0.3, maxOutputTokens: 2048, topP: 0.95 },
+            generationConfig: { temperature: 0.6, maxOutputTokens: 3000, topP: 0.95 },
             safetySettings: [
               { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
               { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
@@ -519,8 +644,8 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
         body: JSON.stringify({
           model: 'moonshot-v1-8k',
           messages: aiMessages,
-          temperature: 0.3,
-          max_tokens: 2000,
+          temperature: 0.6,
+          max_tokens: 3000,
         }),
       });
       if (!resp.ok) {
@@ -543,9 +668,9 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
         body: JSON.stringify({
           model: 'google/gemini-3-flash-preview',
           messages: aiMessages,
-          temperature: 0.3,
-          max_tokens: 2000,
-          reasoning: { effort: 'medium' },
+          temperature: 0.6,
+          max_tokens: 3000,
+          reasoning: { effort: 'high' },
         }),
       });
       if (!resp.ok) {
