@@ -68,9 +68,9 @@ export default function VendorMapPage() {
   const { user } = useAuth();
 
   usePageSEO({
-    title: 'Carte des vendeurs en direct',
-    description: 'Suivez en temps réel la position des vendeurs ambulants et commerçants Pro de l\'archipel des Comores. Trouvez le marché ou le vendeur le plus proche de vous.',
-    keywords: 'carte vendeurs Comores, géolocalisation, vendeurs ambulants, marché en direct, Mohéli, Anjouan, Grande Comore, Mayotte',
+    title: 'Carte des annonceurs en direct',
+    description: 'Suivez en temps réel la position des annonceurs ambulants et commerçants Pro de l\'archipel des Comores. Contactez-les en live pour qu\'ils vous guident.',
+    keywords: 'carte annonceurs Comores, géolocalisation, annonceurs ambulants, marché en direct, Mohéli, Anjouan, Grande Comore, Mayotte',
     canonicalPath: '/carte-vendeurs',
   });
 
