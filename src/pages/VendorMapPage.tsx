@@ -62,6 +62,7 @@ export default function VendorMapPage() {
   const { currentLanguage, setLanguage } = useLanguage();
   const [islandFilter, setIslandFilter] = useState<string>('all');
   const { locations, loading } = useLiveVendorLocations(islandFilter === 'all' ? undefined : islandFilter);
+  const { partners } = usePublicPartners(islandFilter === 'all' ? undefined : islandFilter);
   const { user } = useAuth();
 
   usePageSEO({
