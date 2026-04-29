@@ -1596,6 +1596,10 @@ export type Database = {
           id: string
           is_visible_on_map: boolean
           island: string | null
+          kyc_rejection_reason: string | null
+          kyc_reviewed_at: string | null
+          kyc_reviewed_by: string | null
+          kyc_status: string
           latitude: number | null
           longitude: number | null
           notes: string | null
@@ -1617,6 +1621,10 @@ export type Database = {
           id?: string
           is_visible_on_map?: boolean
           island?: string | null
+          kyc_rejection_reason?: string | null
+          kyc_reviewed_at?: string | null
+          kyc_reviewed_by?: string | null
+          kyc_status?: string
           latitude?: number | null
           longitude?: number | null
           notes?: string | null
@@ -1638,6 +1646,10 @@ export type Database = {
           id?: string
           is_visible_on_map?: boolean
           island?: string | null
+          kyc_rejection_reason?: string | null
+          kyc_reviewed_at?: string | null
+          kyc_reviewed_by?: string | null
+          kyc_status?: string
           latitude?: number | null
           longitude?: number | null
           notes?: string | null
@@ -1703,6 +1715,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "partner_deposits_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_kyc_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_name: string
+          file_path: string
+          id: string
+          notes: string | null
+          partner_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          file_name: string
+          file_path: string
+          id?: string
+          notes?: string | null
+          partner_id: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          notes?: string | null
+          partner_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_kyc_documents_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partner_accounts"

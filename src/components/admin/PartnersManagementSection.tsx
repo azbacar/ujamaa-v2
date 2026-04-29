@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Handshake, Plus, Save, Trash2, Settings } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Handshake, Plus, Save, Trash2, Settings, ShieldCheck, Eye, CheckCircle2, XCircle, Clock, FileText, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -23,6 +25,19 @@ interface Partner {
   island: string | null;
   city: string | null;
   status: string;
+  created_at: string;
+  kyc_status: 'pending' | 'submitted' | 'approved' | 'rejected';
+  kyc_rejection_reason: string | null;
+  kyc_reviewed_at: string | null;
+}
+
+interface KycDoc {
+  id: string;
+  partner_id: string;
+  document_type: string;
+  file_path: string;
+  file_name: string;
+  notes: string | null;
   created_at: string;
 }
 
@@ -49,6 +64,56 @@ export default function PartnersManagementSection() {
 
   // Settings form
   const [savingSettings, setSavingSettings] = useState(false);
+
+  // KYC review state
+  const [kycPartner, setKycPartner] = useState<Partner | null>(null);
+  const [kycDocs, setKycDocs] = useState<KycDoc[]>([]);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [reviewing, setReviewing] = useState(false);
+
+  const openKycReview = async (p: Partner) => {
+    setKycPartner(p);
+    setRejectionReason(p.kyc_rejection_reason || '');
+    const { data } = await supabase
+      .from('partner_kyc_documents')
+      .select('*')
+      .eq('partner_id', p.id)
+      .order('created_at', { ascending: false });
+    setKycDocs((data as any) || []);
+  };
+
+  const handleViewDoc = async (path: string) => {
+    const { data, error } = await supabase.storage
+      .from('verification-documents')
+      .createSignedUrl(path, 600);
+    if (error || !data?.signedUrl) { toast.error('Impossible d\'ouvrir le document'); return; }
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const reviewKyc = async (decision: 'approved' | 'rejected') => {
+    if (!kycPartner) return;
+    if (decision === 'rejected' && !rejectionReason.trim()) {
+      toast.error('Indiquez un motif de rejet'); return;
+    }
+    setReviewing(true);
+    try {
+      const { error } = await supabase
+        .from('partner_accounts')
+        .update({
+          kyc_status: decision,
+          kyc_rejection_reason: decision === 'rejected' ? rejectionReason.trim() : null,
+        })
+        .eq('id', kycPartner.id);
+      if (error) throw error;
+      toast.success(decision === 'approved' ? 'KYC approuvé ✅' : 'KYC rejeté');
+      setKycPartner(null);
+      fetchAll();
+    } catch (e: any) {
+      toast.error(e?.message || 'Erreur');
+    } finally {
+      setReviewing(false);
+    }
+  };
 
   const fetchAll = async () => {
     setLoading(true);
@@ -134,8 +199,36 @@ export default function PartnersManagementSection() {
     }
   };
 
+  const pendingKyc = partners.filter(p => p.kyc_status === 'submitted');
+
   return (
     <div className="space-y-6">
+      {/* KYC à examiner */}
+      {pendingKyc.length > 0 && (
+        <Card className="border-amber-200 bg-amber-50/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-800">
+              <ShieldCheck className="h-5 w-5" /> Dossiers KYC à examiner
+              <Badge className="bg-amber-100 text-amber-800 border-amber-200 ml-1">{pendingKyc.length}</Badge>
+            </CardTitle>
+            <CardDescription>Validez l'identité avant que ces concessionnaires puissent reverser des dépôts à AZZHY.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pendingKyc.map(p => (
+              <div key={p.id} className="flex justify-between items-center p-3 border bg-background rounded-lg">
+                <div>
+                  <p className="font-medium">{p.business_name}</p>
+                  <p className="text-xs text-muted-foreground">{p.contact_email} · {p.city || '—'} {p.island || ''}</p>
+                </div>
+                <Button size="sm" onClick={() => openKycReview(p)}>
+                  <Eye className="h-4 w-4 mr-1" /> Examiner
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Commission Settings */}
       <Card>
         <CardHeader>
@@ -240,7 +333,19 @@ export default function PartnersManagementSection() {
                   </p>
                   <p className="text-xs text-muted-foreground">📍 {p.city || '—'} {p.island || ''}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {p.kyc_status === 'approved' ? (
+                    <Badge className="bg-emerald-100 text-emerald-700"><CheckCircle2 className="h-3 w-3 mr-1" /> KYC OK</Badge>
+                  ) : p.kyc_status === 'submitted' ? (
+                    <Badge className="bg-ocean-100 text-ocean-700"><Clock className="h-3 w-3 mr-1" /> KYC à examiner</Badge>
+                  ) : p.kyc_status === 'rejected' ? (
+                    <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> KYC rejeté</Badge>
+                  ) : (
+                    <Badge variant="outline">KYC en attente</Badge>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => openKycReview(p)}>
+                    <ShieldCheck className="h-4 w-4 mr-1" /> KYC
+                  </Button>
                   <Badge className={p.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}>
                     {p.status === 'active' ? 'Actif' : 'Suspendu'}
                   </Badge>
@@ -254,6 +359,59 @@ export default function PartnersManagementSection() {
           ))}
         </CardContent>
       </Card>
+
+      {/* KYC Review Dialog */}
+      <Dialog open={!!kycPartner} onOpenChange={(o) => !o && setKycPartner(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" /> KYC — {kycPartner?.business_name}
+            </DialogTitle>
+            <DialogDescription>
+              Statut actuel : <strong>{kycPartner?.kyc_status}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm font-medium">Documents fournis ({kycDocs.length})</p>
+            {kycDocs.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Aucun document soumis.</p>
+            ) : kycDocs.map(d => (
+              <div key={d.id} className="flex items-center justify-between p-2.5 border rounded-lg">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{d.document_type}</p>
+                    <p className="text-xs text-muted-foreground truncate">{d.file_name}</p>
+                    {d.notes && <p className="text-xs italic text-muted-foreground truncate">{d.notes}</p>}
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => handleViewDoc(d.file_path)}>
+                  <ExternalLink className="h-4 w-4 mr-1" /> Voir
+                </Button>
+              </div>
+            ))}
+
+            <div>
+              <Label>Motif (en cas de rejet)</Label>
+              <Textarea
+                placeholder="Ex: pièce d'identité illisible, justificatif manquant..."
+                value={rejectionReason}
+                onChange={e => setRejectionReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end pt-2 border-t">
+              <Button variant="destructive" onClick={() => reviewKyc('rejected')} disabled={reviewing}>
+                <XCircle className="h-4 w-4 mr-1" /> Rejeter
+              </Button>
+              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => reviewKyc('approved')} disabled={reviewing}>
+                <CheckCircle2 className="h-4 w-4 mr-1" /> Approuver
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

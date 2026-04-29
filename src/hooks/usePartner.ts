@@ -20,6 +20,20 @@ export interface PartnerAccount {
   is_visible_on_map?: boolean;
   opening_hours?: string | null;
   accepted_methods?: string[];
+  kyc_status?: 'pending' | 'submitted' | 'approved' | 'rejected';
+  kyc_reviewed_at?: string | null;
+  kyc_rejection_reason?: string | null;
+}
+
+export interface PartnerKycDocument {
+  id: string;
+  partner_id: string;
+  document_type: 'id_card' | 'passport' | 'business_license' | 'tax_certificate' | 'other';
+  file_path: string;
+  file_name: string;
+  notes: string | null;
+  uploaded_by: string;
+  created_at: string;
 }
 
 export interface PartnerSettings {
@@ -181,6 +195,26 @@ export const usePublicPartners = (island?: string) => {
   useEffect(() => { refresh(); }, [refresh]);
 
   return { partners, loading, refresh };
+};
+
+export const usePartnerKycDocuments = (partnerId?: string) => {
+  const [documents, setDocuments] = useState<PartnerKycDocument[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    if (!partnerId) { setLoading(false); return; }
+    const { data } = await supabase
+      .from('partner_kyc_documents')
+      .select('*')
+      .eq('partner_id', partnerId)
+      .order('created_at', { ascending: false });
+    setDocuments((data as any) || []);
+    setLoading(false);
+  }, [partnerId]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  return { documents, loading, refresh };
 };
 
 export const computeCommission = (amount: number, settings: PartnerSettings | null): number => {

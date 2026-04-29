@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Handshake, Banknote, Users, ShieldCheck, Crown, Loader2, Plus, Receipt, Phone, Mail,
-  MapPin, Wallet, Building2, CheckCircle2, Clock, XCircle,
+  MapPin, Wallet, Building2, CheckCircle2, Clock, XCircle, Lock,
 } from 'lucide-react';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { logger } from '@/lib/logger';
 import { authPath } from '@/lib/authRedirect';
+import PartnerKycSection from '@/components/PartnerKycSection';
 
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
 const ALL_METHODS = [
@@ -342,6 +343,15 @@ export default function PartnerPage() {
                 <MapPin className="h-3 w-3 mr-1" /> Visible sur la carte
               </Badge>
             )}
+            {account!.kyc_status === 'approved' ? (
+              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" /> KYC validé</Badge>
+            ) : account!.kyc_status === 'submitted' ? (
+              <Badge className="bg-ocean-100 text-ocean-700 border-ocean-200"><Clock className="h-3 w-3 mr-1" /> KYC en examen</Badge>
+            ) : account!.kyc_status === 'rejected' ? (
+              <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> KYC rejeté</Badge>
+            ) : (
+              <Badge variant="outline" className="border-amber-300 text-amber-700"><Lock className="h-3 w-3 mr-1" /> KYC requis</Badge>
+            )}
             {account!.island && <span className="text-sm text-muted-foreground">📍 {account!.city || ''} {account!.island}</span>}
           </div>
         </div>
@@ -374,13 +384,37 @@ export default function PartnerPage() {
           </Card>
         </div>
 
-        <Tabs defaultValue="collect">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="collect"><Plus className="h-4 w-4 mr-1" /> Encaisser</TabsTrigger>
-            <TabsTrigger value="deposit"><Wallet className="h-4 w-4 mr-1" /> Dépôts AZZHY</TabsTrigger>
-            <TabsTrigger value="history"><Receipt className="h-4 w-4 mr-1" /> Historique</TabsTrigger>
-            <TabsTrigger value="profile"><Building2 className="h-4 w-4 mr-1" /> Profil</TabsTrigger>
+        {account!.kyc_status !== 'approved' && (
+          <Alert className="border-amber-200 bg-amber-50">
+            <AlertDescription className="text-sm">
+              🔒 <strong>Vérification d'identité requise.</strong> Vous ne pouvez pas encore reverser de dépôts à AZZHY
+              tant que votre dossier KYC n'est pas approuvé.{' '}
+              {account!.kyc_status === 'submitted'
+                ? 'Votre dossier est en cours d\'examen.'
+                : 'Téléversez vos documents dans l\'onglet « Vérification ».'}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <Tabs defaultValue={account!.kyc_status === 'approved' ? 'collect' : 'kyc'}>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1 h-auto">
+            <TabsTrigger value="collect" className="text-xs sm:text-sm"><Plus className="h-4 w-4 mr-1" /> Encaisser</TabsTrigger>
+            <TabsTrigger value="deposit" className="text-xs sm:text-sm" disabled={account!.kyc_status !== 'approved'}>
+              {account!.kyc_status !== 'approved' ? <Lock className="h-4 w-4 mr-1" /> : <Wallet className="h-4 w-4 mr-1" />}
+              Dépôts AZZHY
+            </TabsTrigger>
+            <TabsTrigger value="kyc" className="text-xs sm:text-sm">
+              <ShieldCheck className="h-4 w-4 mr-1" /> Vérification
+            </TabsTrigger>
+            <TabsTrigger value="history" className="text-xs sm:text-sm"><Receipt className="h-4 w-4 mr-1" /> Historique</TabsTrigger>
+            <TabsTrigger value="profile" className="text-xs sm:text-sm"><Building2 className="h-4 w-4 mr-1" /> Profil</TabsTrigger>
           </TabsList>
+
+          {/* KYC */}
+          <TabsContent value="kyc">
+            <PartnerKycSection account={account!} onUpdated={refreshAccount} />
+          </TabsContent>
+
 
           {/* ENCAISSER */}
           <TabsContent value="collect">
