@@ -274,52 +274,104 @@ export default function ProPage() {
           </p>
         </div>
 
+        {/* Sélecteur cycle de facturation (mois / année -10%) */}
+        <div className="flex justify-center mb-8">
+          <div
+            role="tablist"
+            aria-label="Cycle de facturation"
+            className="inline-flex items-center bg-muted rounded-full p-1 shadow-sm"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={billingCycle === "monthly"}
+              onClick={() => setBillingCycle("monthly")}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+                billingCycle === "monthly"
+                  ? "bg-background text-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Mensuel
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={billingCycle === "yearly"}
+              onClick={() => setBillingCycle("yearly")}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2 ${
+                billingCycle === "yearly"
+                  ? "bg-background text-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Annuel
+              <Badge className="bg-primary text-primary-foreground text-[10px] px-2 py-0">−10 %</Badge>
+            </button>
+          </div>
+        </div>
+
         {/* Plans */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          {PLANS.map((plan) => (
-            <Card
-              key={plan.id}
-              className={`relative transition-all hover:shadow-lg ${plan.popular ? "border-primary ring-2 ring-primary/20 scale-[1.02]" : "border-border"}`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground px-4 py-1 shadow-md">⭐ Populaire</Badge>
-                </div>
-              )}
-              <CardHeader className="text-center pb-2 pt-6">
-                <div
-                  className={`w-14 h-14 mx-auto rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-3`}
-                >
-                  <plan.icon className="w-7 h-7 text-white" />
-                </div>
-                <CardTitle className="text-xl">{plan.name}</CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-                <div className="mt-3">
-                  <span className="text-3xl sm:text-4xl font-bold text-foreground">{plan.price}</span>
-                  {plan.currency && <span className="text-muted-foreground ml-1">{plan.currency}</span>}
-                  <span className="text-muted-foreground text-sm">{plan.period}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <ul className="space-y-2.5 mb-6">
-                  {plan.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm">
-                      <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-foreground">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  className="w-full"
-                  variant={plan.popular ? "default" : "outline"}
-                  disabled={plan.disabled}
-                  onClick={() => handleSelectPlan(plan.id)}
-                >
-                  {plan.cta} <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {PLANS.map((plan) => {
+            const isPro = plan.id === "premium";
+            const displayPrice = isPro ? proDisplayPrice.toLocaleString("fr-FR") : plan.price;
+            const displayPeriod = isPro ? proDisplayPeriod : plan.period;
+            return (
+              <Card
+                key={plan.id}
+                className={`relative transition-all hover:shadow-lg ${plan.popular ? "border-primary ring-2 ring-primary/20 scale-[1.02]" : "border-border"}`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground px-4 py-1 shadow-md">⭐ Populaire</Badge>
+                  </div>
+                )}
+                <CardHeader className="text-center pb-2 pt-6">
+                  <div
+                    className={`w-14 h-14 mx-auto rounded-full bg-gradient-to-br ${plan.gradient} flex items-center justify-center mb-3`}
+                  >
+                    <plan.icon className="w-7 h-7 text-white" />
+                  </div>
+                  <CardTitle className="text-xl">{plan.name}</CardTitle>
+                  <CardDescription>{plan.description}</CardDescription>
+                  <div className="mt-3">
+                    <span className="text-3xl sm:text-4xl font-bold text-foreground">{displayPrice}</span>
+                    {plan.currency && <span className="text-muted-foreground ml-1">{plan.currency}</span>}
+                    <span className="text-muted-foreground text-sm">{displayPeriod}</span>
+                  </div>
+                  {isPro && billingCycle === "yearly" && (
+                    <p className="text-xs text-emerald-600 font-medium mt-1">
+                      Économisez {PRO_YEARLY_SAVINGS.toLocaleString("fr-FR")} FC / an
+                    </p>
+                  )}
+                  {isPro && billingCycle === "monthly" && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ou {PRO_YEARLY_AMOUNT.toLocaleString("fr-FR")} FC/an (−10 %)
+                    </p>
+                  )}
+                </CardHeader>
+                <CardContent className="pt-2">
+                  <ul className="space-y-2.5 mb-6">
+                    {plan.features.map((f, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm">
+                        <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <span className="text-foreground">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className="w-full"
+                    variant={plan.popular ? "default" : "outline"}
+                    disabled={plan.disabled}
+                    onClick={() => handleSelectPlan(plan.id)}
+                  >
+                    {plan.cta} <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Promo Code Section */}
