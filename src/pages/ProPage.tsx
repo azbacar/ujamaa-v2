@@ -403,6 +403,68 @@ export default function ProPage() {
           </CardContent>
         </Card>
 
+        {/* Comment payer avec Mvola ? */}
+        <Card className="max-w-4xl mx-auto mb-16 border-emerald-200 bg-gradient-to-br from-emerald-50/60 to-ocean-50/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-emerald-800">
+              <Smartphone className="w-6 h-6" /> Comment payer avec Mvola ?
+            </CardTitle>
+            <CardDescription>
+              Mvola est le service de paiement mobile de Telma Madagascar, accepté partout aux Comores via les agents partenaires.
+              Aucun compte bancaire n'est nécessaire.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white/80 rounded-xl p-4 border border-emerald-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center">1</span>
+                  <h4 className="font-semibold text-foreground">Choisissez votre plan</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Sélectionnez Pro mensuel (990 FC) ou annuel (10 692 FC, soit −10 %), puis cliquez sur <em>Passer au Pro</em>.
+                </p>
+              </div>
+              <div className="bg-white/80 rounded-xl p-4 border border-emerald-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center">2</span>
+                  <h4 className="font-semibold text-foreground flex items-center gap-1"><Phone className="w-4 h-4" /> Sur mobile</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Le bouton <strong>Composer le code USSD</strong> ouvre directement votre clavier avec :
+                  <code className="block mt-1 bg-muted px-2 py-1 rounded text-xs font-mono">
+                    *444*1*2*4102122*MONTANT*VOTRE-REF#
+                  </code>
+                </p>
+              </div>
+              <div className="bg-white/80 rounded-xl p-4 border border-emerald-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-7 h-7 rounded-full bg-emerald-600 text-white text-sm font-bold flex items-center justify-center">3</span>
+                  <h4 className="font-semibold text-foreground flex items-center gap-1"><QrCode className="w-4 h-4" /> Sur ordinateur</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Un <strong>QR code dynamique</strong> s'affiche : scannez-le avec votre téléphone pour ouvrir automatiquement le code USSD pré-rempli.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white/80 rounded-xl p-4 border border-emerald-100">
+              <h4 className="font-semibold text-foreground mb-2">📋 Détails importants</h4>
+              <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-5">
+                <li><strong>Numéro marchand Ujamaan</strong> : <code className="bg-muted px-1.5 py-0.5 rounded font-mono">4102122</code></li>
+                <li><strong>Référence personnelle</strong> : générée automatiquement (commence par <code>UJA…</code>) — ne la modifiez pas, elle permet de retrouver votre paiement.</li>
+                <li><strong>Confirmation</strong> : après le paiement, vous recevez un SMS Mvola avec un <strong>numéro de référence</strong>. Collez-le dans le champ <em>Référence Mvola</em> et validez.</li>
+                <li><strong>Activation</strong> : un administrateur valide votre paiement (généralement sous <strong>24 h</strong>). Vous recevez ensuite une notification dans l'app dès l'activation du compte Pro.</li>
+                <li><strong>Pas de Mvola ?</strong> Vous pouvez payer en <strong>espèces</strong> auprès d'un partenaire Ujamaan, ou par <strong>carte bancaire</strong> via Stripe (à venir).</li>
+              </ul>
+            </div>
+
+            <div className="text-center text-xs text-muted-foreground pt-1">
+              Besoin d'aide ? Contactez le support : <a href="mailto:support@azzhy.com" className="text-emerald-700 underline">support@azzhy.com</a> · 📞 +269 733 2122
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Avantages Pro */}
         <div className="mb-16">
           <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-8">Pourquoi passer au Pro ?</h2>
