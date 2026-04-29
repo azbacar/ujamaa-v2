@@ -374,39 +374,104 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
     
     aiMessages.push({ role: 'user', content: sanitizedMessage });
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: aiMessages,
-        temperature: 0.3,
-        max_tokens: 2000,
-        reasoning: { effort: 'medium' },
-      }),
-    });
+    // ============================================================
+    // ROUTAGE IA : priorité à GEMINI_API_KEY (gratuit, 1500 req/jour)
+    // Fallback automatique sur Lovable AI Gateway si non configuré
+    // ============================================================
+    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+    let aiResponse: string;
 
-    if (response.status === 429) {
-      return new Response(JSON.stringify({ error: 'Service surchargé. Réessayez.', code: 'RATE_LIMIT' }), {
-        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    if (GEMINI_API_KEY) {
+      // ----- Appel direct Google Gemini API (gratuit) -----
+      const systemMsg = aiMessages.find(m => m.role === 'system')?.content || '';
+      const convo = aiMessages.filter(m => m.role !== 'system');
+      // Gemini : on convertit assistant->model et on préfixe le system au 1er user
+      const contents = convo.map((m, idx) => {
+        const role = m.role === 'assistant' ? 'model' : 'user';
+        const text = idx === 0 && role === 'user' && systemMsg
+          ? `${systemMsg}\n\n---\n\nQuestion utilisateur :\n${m.content}`
+          : m.content;
+        return { role, parts: [{ text }] };
       });
-    }
-    if (response.status === 402) {
-      return new Response(JSON.stringify({ error: 'Crédit IA insuffisant.', code: 'PAYMENT_REQUIRED' }), {
-        status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      throw new Error(`AI Gateway error: ${response.status}`);
-    }
 
-    const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+      const geminiResp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents,
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 2048,
+              topP: 0.95,
+            },
+            safetySettings: [
+              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+              { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+            ],
+          }),
+        }
+      );
+
+      if (geminiResp.status === 429) {
+        return new Response(JSON.stringify({ error: 'Quota Gemini atteint pour aujourd\'hui (1500 req/jour). Réessayez demain.', code: 'RATE_LIMIT' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (!geminiResp.ok) {
+        const errorText = await geminiResp.text();
+        console.error('Gemini API error:', geminiResp.status, errorText);
+        throw new Error(`Gemini API error: ${geminiResp.status}`);
+      }
+
+      const geminiData = await geminiResp.json();
+      const candidate = geminiData.candidates?.[0];
+      const finishReason = candidate?.finishReason;
+      aiResponse = candidate?.content?.parts?.map((p: any) => p.text).filter(Boolean).join('\n') || '';
+
+      if (!aiResponse) {
+        console.error('Gemini empty response. Finish reason:', finishReason, 'Full:', JSON.stringify(geminiData).slice(0, 500));
+        aiResponse = "Désolé, je n'ai pas pu générer de réponse. Reformulez votre question s'il vous plaît.";
+      }
+    } else {
+      // ----- Fallback Lovable AI Gateway -----
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-3-flash-preview',
+          messages: aiMessages,
+          temperature: 0.3,
+          max_tokens: 2000,
+          reasoning: { effort: 'medium' },
+        }),
+      });
+
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Service surchargé. Réessayez.', code: 'RATE_LIMIT' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: 'Crédit IA insuffisant. Configurez GEMINI_API_KEY pour un usage gratuit.', code: 'PAYMENT_REQUIRED' }), {
+          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('AI Gateway error:', response.status, errorText);
+        throw new Error(`AI Gateway error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      aiResponse = data.choices[0].message.content;
+    }
 
     // Store conversation for analytics
     try {
