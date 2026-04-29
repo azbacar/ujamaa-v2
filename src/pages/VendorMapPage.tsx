@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -10,8 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useLiveVendorLocations } from '@/hooks/useVendorLocation';
+import { useAuth } from '@/hooks/useAuth';
+import { authPath } from '@/lib/authRedirect';
 import { usePageSEO } from '@/hooks/usePageSEO';
-import { MapPin, Radio, Navigation } from 'lucide-react';
+import { MapPin, Radio, Navigation, MessageCircle, LogIn } from 'lucide-react';
 
 // Fix default marker icon in Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -51,6 +54,7 @@ export default function VendorMapPage() {
   const { currentLanguage, setLanguage } = useLanguage();
   const [islandFilter, setIslandFilter] = useState<string>('all');
   const { locations, loading } = useLiveVendorLocations(islandFilter === 'all' ? undefined : islandFilter);
+  const { user } = useAuth();
 
   usePageSEO({
     title: 'Carte des vendeurs en direct',
@@ -141,11 +145,36 @@ export default function VendorMapPage() {
                           <p className="text-xs text-muted-foreground">
                             Mis à jour : {new Date(loc.last_seen_at).toLocaleTimeString('fr-FR')}
                           </p>
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`}
-                            target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-emerald-700 underline inline-block mt-1"
-                          >Itinéraire Google Maps →</a>
+                          <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40">
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`}
+                              target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-emerald-700 underline inline-flex items-center gap-1"
+                            >
+                              <Navigation className="h-3 w-3" /> Itinéraire Google Maps
+                            </a>
+                            {user ? (
+                              user.id !== loc.user_id ? (
+                                <Link
+                                  to={`/messages/${loc.user_id}`}
+                                  className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-md transition-colors"
+                                >
+                                  <MessageCircle className="h-3.5 w-3.5" />
+                                  Demander la position exacte
+                                </Link>
+                              ) : (
+                                <span className="text-[11px] text-muted-foreground italic">C'est votre annonce</span>
+                              )
+                            ) : (
+                              <Link
+                                to={authPath('/carte-vendeurs')}
+                                className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-md transition-colors"
+                              >
+                                <LogIn className="h-3.5 w-3.5" />
+                                Se connecter pour contacter
+                              </Link>
+                            )}
+                          </div>
                         </div>
                       </Popup>
                     </Marker>
