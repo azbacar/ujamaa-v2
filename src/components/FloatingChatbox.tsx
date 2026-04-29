@@ -543,7 +543,7 @@ const FloatingChatbox = () => {
                           <div className="flex items-center gap-1.5 mb-1.5">
                             <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
                             <span className="text-[11px] font-semibold text-destructive">
-                              {message.errorType === 'rate_limit' ? 'Service surchargé' : message.errorType === 'payment' ? 'Crédit insuffisant' : 'Erreur'}
+                              {message.errorType === 'rate_limit' ? 'Service surchargé' : message.errorType === 'payment' ? 'Crédit insuffisant' : message.errorType === 'unavailable' ? 'Service indisponible' : 'Erreur'}
                             </span>
                           </div>
                         )}
