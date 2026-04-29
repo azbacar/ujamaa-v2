@@ -11,6 +11,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// 🌍 Détection automatique de l'île/ville mentionnée dans la question
+const ISLAND_ALIASES: Record<string, string[]> = {
+  'Grande Comore': ['grande comore','grande-comore','ngazidja','ndzuani'],
+  'Anjouan': ['anjouan','ndzuwani','ndzouani'],
+  'Mohéli': ['moheli','mohéli','mwali'],
+  'Mayotte': ['mayotte','maore','maoré'],
+};
+const KNOWN_CITIES = [
+  // Grande Comore
+  'moroni','mitsamiouli','foumbouni','mbeni','iconi','mitsoudje','ouellah','volo-volo','volo volo',
+  // Anjouan
+  'mutsamudu','domoni','sima','ouani','bambao','tsembehou',
+  // Mohéli
+  'fomboni','nioumachoua','wanani','djoiezi',
+  // Mayotte
+  'mamoudzou','dzaoudzi','sada','koungou','dembéni','dembeni','tsingoni','bandraboua',
+];
+function detectLocation(text: string): { island: string | null; city: string | null; raw: string[] } {
+  const lower = text.toLowerCase();
+  let island: string | null = null;
+  for (const [canon, aliases] of Object.entries(ISLAND_ALIASES)) {
+    if (aliases.some(a => lower.includes(a))) { island = canon; break; }
+  }
+  let city: string | null = null;
+  const matches: string[] = [];
+  for (const c of KNOWN_CITIES) {
+    if (lower.includes(c)) { matches.push(c); if (!city) city = c; }
+  }
+  // Inférer l'île si on a une ville mais pas d'île
+  if (!island && city) {
+    if (['moroni','mitsamiouli','foumbouni','mbeni','iconi','mitsoudje','ouellah','volo-volo','volo volo'].includes(city)) island = 'Grande Comore';
+    else if (['mutsamudu','domoni','sima','ouani','bambao','tsembehou'].includes(city)) island = 'Anjouan';
+    else if (['fomboni','nioumachoua','wanani','djoiezi'].includes(city)) island = 'Mohéli';
+    else if (['mamoudzou','dzaoudzi','sada','koungou','dembéni','dembeni','tsingoni','bandraboua'].includes(city)) island = 'Mayotte';
+  }
+  return { island, city, raw: matches };
+}
+
 // Extrait les mots-clés significatifs du message utilisateur (>3 chars, sans stopwords)
 const STOPWORDS = new Set(['avec','pour','dans','sans','sur','les','des','une','est','que','qui','quoi','comment','quand','pourquoi','combien','votre','vous','nous','mais','donc','plus','tout','tous','cette','cela','mon','mes','ton','tes','son','ses','par','aux','aussi','bien','très','peu','être','avoir','faire','aller','the','and','for','from','with']);
 function extractKeywords(text: string): string[] {
@@ -22,36 +60,55 @@ function extractKeywords(text: string): string[] {
 }
 
 // Recherche full-text ciblée sur plusieurs tables selon la question
-async function searchSiteContent(query: string, authHeader: string | null) {
+async function searchSiteContent(query: string, authHeader: string | null, location: { island: string | null; city: string | null }) {
   const keywords = extractKeywords(query);
-  if (keywords.length === 0) return { hits: [] };
+  if (keywords.length === 0 && !location.island && !location.city) return { hits: [], keywords };
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     global: authHeader ? { headers: { Authorization: authHeader } } : {},
   });
-  const orFilter = keywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%`).join(',');
-  const orPrices = keywords.map(k => `product.ilike.%${k}%,city.ilike.%${k}%,village.ilike.%${k}%,market.ilike.%${k}%,vendor.ilike.%${k}%`).join(',');
+  const safeKeywords = keywords.length > 0 ? keywords : [location.city || location.island || ''].filter(Boolean);
+  const orFilter = safeKeywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%`).join(',');
+  const orPrices = safeKeywords.map(k => `product.ilike.%${k}%,city.ilike.%${k}%,village.ilike.%${k}%,market.ilike.%${k}%,vendor.ilike.%${k}%`).join(',');
+
+  // Helper pour re-trier par pertinence géographique
+  const rerank = <T extends Record<string, any>>(rows: T[], islandKey = 'island', cityKey = 'location'): T[] => {
+    if (!location.island && !location.city) return rows;
+    return [...rows].sort((a, b) => {
+      const score = (r: any) => {
+        let s = 0;
+        if (location.island && r[islandKey] && String(r[islandKey]).toLowerCase().includes(location.island.toLowerCase())) s += 10;
+        if (location.city) {
+          const fields = [r[cityKey], r.city, r.village, r.market].filter(Boolean).map((x: any) => String(x).toLowerCase());
+          if (fields.some(f => f.includes(location.city!.toLowerCase()))) s += 20;
+        }
+        return s;
+      };
+      return score(b) - score(a);
+    });
+  };
 
   try {
     const [contentRes, pricesRes, eventsRes, gastroRes, jobsRes, freelRes, diasRes, staticRes] = await Promise.all([
       supabase.from('content_items').select('id, title, description, type, category, slug').eq('status','published').or(orFilter).limit(15),
-      supabase.from('prices').select('id, product, price, currency, unit, island, city, village, market, vendor, created_at').eq('status','published').or(orPrices).limit(20),
-      supabase.from('events').select('id, title, description, date, location, island').eq('status','published').or(orFilter).limit(10),
-      supabase.from('gastronomy_items').select('id, title, description, type, location, price_min').eq('status','published').or(orFilter).limit(10),
-      supabase.from('freelance_jobs').select('id, title, description, budget_min, budget_max, currency, island').eq('status','published').or(orFilter).limit(10),
-      supabase.from('freelancer_profiles').select('id, display_name, bio, skills, island, hourly_rate_min, currency').eq('is_visible',true).or(`display_name.ilike.%${keywords[0]}%,bio.ilike.%${keywords[0]}%`).limit(10),
-      supabase.from('diaspora_projects').select('id, title, description, category, target_amount, currency, island').eq('status','published').or(orFilter).limit(10),
-      supabase.from('static_pages').select('slug, title, meta_description, content').or(`title.ilike.%${keywords[0]}%,meta_description.ilike.%${keywords[0]}%,content.ilike.%${keywords[0]}%`).limit(8),
+      supabase.from('prices').select('id, product, price, currency, unit, island, city, village, market, vendor, created_at').eq('status','published').or(orPrices).limit(40),
+      supabase.from('events').select('id, title, description, date, location, island').eq('status','published').or(orFilter).limit(15),
+      supabase.from('gastronomy_items').select('id, title, description, type, location, price_min').eq('status','published').or(orFilter).limit(15),
+      supabase.from('freelance_jobs').select('id, title, description, budget_min, budget_max, currency, island').eq('status','published').or(orFilter).limit(15),
+      supabase.from('freelancer_profiles').select('id, display_name, bio, skills, island, location, hourly_rate_min, currency').eq('is_visible',true).or(`display_name.ilike.%${safeKeywords[0]}%,bio.ilike.%${safeKeywords[0]}%`).limit(15),
+      supabase.from('diaspora_projects').select('id, title, description, category, target_amount, currency, island, location').eq('status','published').or(orFilter).limit(15),
+      supabase.from('static_pages').select('slug, title, meta_description, content').or(`title.ilike.%${safeKeywords[0]}%,meta_description.ilike.%${safeKeywords[0]}%,content.ilike.%${safeKeywords[0]}%`).limit(8),
     ]);
     return {
       content: contentRes.data || [],
-      prices: pricesRes.data || [],
-      events: eventsRes.data || [],
-      gastronomy: gastroRes.data || [],
-      jobs: jobsRes.data || [],
-      freelancers: freelRes.data || [],
-      diaspora: diasRes.data || [],
+      prices: rerank(pricesRes.data || []).slice(0, 20),
+      events: rerank(eventsRes.data || []).slice(0, 10),
+      gastronomy: rerank(gastroRes.data || []).slice(0, 10),
+      jobs: rerank(jobsRes.data || []).slice(0, 10),
+      freelancers: rerank(freelRes.data || []).slice(0, 10),
+      diaspora: rerank(diasRes.data || []).slice(0, 10),
       staticPages: staticRes.data || [],
       keywords,
+      location,
     };
   } catch (e) {
     console.error('searchSiteContent error:', e);
@@ -168,12 +225,17 @@ serve(async (req) => {
       user = authUser;
     }
 
-    // Fetch all data in parallel + recherche ciblée RAG
+    // 🌍 Détecter automatiquement la localisation (île/ville) dans la question
+    // Utilise aussi l'historique récent pour gérer les follow-ups ("et là-bas ?")
+    const recentContext = (Array.isArray(clientHistory) ? clientHistory.slice(-3).map((m: any) => m.content || m.text || '').join(' ') : '');
+    const detectedLocation = detectLocation(sanitizedMessage + ' ' + recentContext);
+
+    // Fetch all data in parallel + recherche ciblée RAG (avec filtre géographique)
     const [dynamicData, knowledgeSources, dbHistory, searchHits] = await Promise.all([
       getDynamicSiteData(authHeader),
       getKnowledgeSources(),
       getConversationHistory(sessionId, authHeader),
-      searchSiteContent(sanitizedMessage, authHeader),
+      searchSiteContent(sanitizedMessage, authHeader, detectedLocation),
     ]);
 
     // Use DB history for logged-in users, client-sent history for guests
@@ -376,9 +438,19 @@ serve(async (req) => {
       }
     }
 
+    // 📍 Section localisation détectée
+    let locationSection = '';
+    if (detectedLocation.island || detectedLocation.city) {
+      locationSection = `\n\n📍 LOCALISATION DÉTECTÉE DANS LA QUESTION:\n`;
+      if (detectedLocation.city) locationSection += `- Ville/zone: **${detectedLocation.city}**\n`;
+      if (detectedLocation.island) locationSection += `- Île: **${detectedLocation.island}**\n`;
+      locationSection += `\n⚠️ PRIORITÉ ABSOLUE: filtre et présente d'abord les résultats correspondant à cette localisation. Si rien n'existe pour ce lieu, dis-le clairement puis propose les résultats des zones voisines (même île d'abord, puis archipel).\n`;
+    }
+
     const systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel de la plateforme ujamaan.com pour l'archipel des Comores (4 îles).
 
 ${comorosKnowledge}
+${locationSection}
 ${searchSection}
 ${dynamicContent}
 ${knowledgeSection}
