@@ -28,6 +28,11 @@ import {
   MessageCircle,
   Crown,
   Compass,
+  ShieldCheck,
+  Sparkles,
+  Wallet,
+  Bot,
+  Navigation,
 } from "lucide-react";
 
 interface StepProps {
