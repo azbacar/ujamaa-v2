@@ -1584,6 +1584,7 @@ export type Database = {
       }
       partner_accounts: {
         Row: {
+          accepted_methods: string[]
           address: string | null
           business_name: string
           city: string | null
@@ -1593,13 +1594,18 @@ export type Database = {
           created_at: string
           created_by: string
           id: string
+          is_visible_on_map: boolean
           island: string | null
+          latitude: number | null
+          longitude: number | null
           notes: string | null
+          opening_hours: string | null
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          accepted_methods?: string[]
           address?: string | null
           business_name: string
           city?: string | null
@@ -1609,13 +1615,18 @@ export type Database = {
           created_at?: string
           created_by: string
           id?: string
+          is_visible_on_map?: boolean
           island?: string | null
+          latitude?: number | null
+          longitude?: number | null
           notes?: string | null
+          opening_hours?: string | null
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          accepted_methods?: string[]
           address?: string | null
           business_name?: string
           city?: string | null
@@ -1625,16 +1636,83 @@ export type Database = {
           created_at?: string
           created_by?: string
           id?: string
+          is_visible_on_map?: boolean
           island?: string | null
+          latitude?: number | null
+          longitude?: number | null
           notes?: string | null
+          opening_hours?: string | null
           status?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
+      partner_deposits: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          currency: string
+          deposit_method: string
+          id: string
+          net_deposited: number
+          notes: string | null
+          partner_id: string
+          reference: string | null
+          status: string
+          total_collected: number
+          updated_at: string
+        }
+        Insert: {
+          commission_amount?: number
+          commission_rate?: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          currency?: string
+          deposit_method?: string
+          id?: string
+          net_deposited?: number
+          notes?: string | null
+          partner_id: string
+          reference?: string | null
+          status?: string
+          total_collected: number
+          updated_at?: string
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          currency?: string
+          deposit_method?: string
+          id?: string
+          net_deposited?: number
+          notes?: string | null
+          partner_id?: string
+          reference?: string | null
+          status?: string
+          total_collected?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_deposits_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_settings: {
         Row: {
+          azzhy_deposit_commission_rate: number
           commission_type: string
           commission_value: number
           currency: string
@@ -1645,6 +1723,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          azzhy_deposit_commission_rate?: number
           commission_type?: string
           commission_value?: number
           currency?: string
@@ -1655,6 +1734,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          azzhy_deposit_commission_rate?: number
           commission_type?: string
           commission_value?: number
           currency?: string

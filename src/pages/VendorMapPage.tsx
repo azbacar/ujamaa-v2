@@ -11,10 +11,11 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useLiveVendorLocations } from '@/hooks/useVendorLocation';
+import { usePublicPartners } from '@/hooks/usePartner';
 import { useAuth } from '@/hooks/useAuth';
 import { authPath } from '@/lib/authRedirect';
 import { usePageSEO } from '@/hooks/usePageSEO';
-import { MapPin, Radio, Navigation, MessageCircle, LogIn } from 'lucide-react';
+import { MapPin, Radio, Navigation, MessageCircle, LogIn, Handshake, Phone } from 'lucide-react';
 
 // Fix default marker icon in Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -42,6 +43,13 @@ const fixedIcon = L.divIcon({
   iconAnchor: [15, 15],
 });
 
+const partnerIcon = L.divIcon({
+  className: '',
+  html: `<div style="width:34px;height:34px;border-radius:50%;background:#f59e0b;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:16px;">€</div>`,
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
+});
+
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
 const ISLAND_CENTER: Record<string, [number, number]> = {
   'Grande Comore': [-11.7, 43.25],
@@ -54,6 +62,7 @@ export default function VendorMapPage() {
   const { currentLanguage, setLanguage } = useLanguage();
   const [islandFilter, setIslandFilter] = useState<string>('all');
   const { locations, loading } = useLiveVendorLocations(islandFilter === 'all' ? undefined : islandFilter);
+  const { partners } = usePublicPartners(islandFilter === 'all' ? undefined : islandFilter);
   const { user } = useAuth();
 
   usePageSEO({
@@ -92,8 +101,14 @@ export default function VendorMapPage() {
                 Carte des vendeurs en direct
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {locations.length} vendeur{locations.length > 1 ? 's' : ''} actuellement en ligne
+                {locations.length} vendeur{locations.length > 1 ? 's' : ''} en ligne
+                {partners.length > 0 && <> · <span className="text-amber-700 font-medium">{partners.length} concessionnaire{partners.length > 1 ? 's' : ''} de paiement</span></>}
               </p>
+              <div className="flex flex-wrap gap-2 mt-2 text-[11px]">
+                <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" /> Ambulant</span>
+                <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-sky-500 inline-block" /> Position fixe</span>
+                <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-500 inline-block" /> Concessionnaire (paiement cash)</span>
+              </div>
             </div>
             <div className="flex gap-2">
               <Select value={islandFilter} onValueChange={setIslandFilter}>
@@ -173,6 +188,48 @@ export default function VendorMapPage() {
                                 <LogIn className="h-3.5 w-3.5" />
                                 Se connecter pour contacter
                               </Link>
+                            )}
+                          </div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
+                  {/* Concessionnaires (points de paiement cash) */}
+                  {partners.filter(p => p.latitude && p.longitude).map((p) => (
+                    <Marker key={`partner-${p.id}`} position={[p.latitude as number, p.longitude as number]} icon={partnerIcon}>
+                      <Popup>
+                        <div className="space-y-1.5 min-w-[180px]">
+                          <div className="font-semibold flex items-center gap-1">
+                            <Handshake className="h-3.5 w-3.5 text-amber-600" /> {p.business_name}
+                          </div>
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px]">
+                            Concessionnaire UJAMAA
+                          </Badge>
+                          {p.address && <p className="text-xs text-muted-foreground">📍 {p.address}</p>}
+                          {(p.city || p.island) && <p className="text-xs text-muted-foreground">🏝️ {p.city} {p.island}</p>}
+                          {p.opening_hours && <p className="text-xs text-muted-foreground">🕐 {p.opening_hours}</p>}
+                          {p.accepted_methods && p.accepted_methods.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.accepted_methods.includes('cash') && <Badge variant="outline" className="text-[9px]">💵 Cash</Badge>}
+                              {p.accepted_methods.includes('bank_transfer') && <Badge variant="outline" className="text-[9px]">🏦 Virement</Badge>}
+                              {p.accepted_methods.includes('mobile_money') && <Badge variant="outline" className="text-[9px]">📱 Mvola</Badge>}
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40">
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
+                              target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-amber-700 underline inline-flex items-center gap-1"
+                            >
+                              <Navigation className="h-3 w-3" /> Itinéraire Google Maps
+                            </a>
+                            {p.contact_phone && (
+                              <a
+                                href={`tel:${p.contact_phone}`}
+                                className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1.5 rounded-md transition-colors"
+                              >
+                                <Phone className="h-3.5 w-3.5" /> {p.contact_phone}
+                              </a>
                             )}
                           </div>
                         </div>
