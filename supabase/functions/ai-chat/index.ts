@@ -97,6 +97,62 @@ async function searchSiteContent(query: string, authHeader: string | null) {
   }
 }
 
+async function searchSiteContent(query: string, authHeader: string | null, location: { island: string | null; city: string | null }) {
+  const keywords = extractKeywords(query);
+  if (keywords.length === 0 && !location.island && !location.city) return { hits: [], keywords };
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: authHeader ? { headers: { Authorization: authHeader } } : {},
+  });
+  const safeKeywords = keywords.length > 0 ? keywords : [location.city || location.island || ''].filter(Boolean);
+  const orFilter = safeKeywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%`).join(',');
+  const orPrices = safeKeywords.map(k => `product.ilike.%${k}%,city.ilike.%${k}%,village.ilike.%${k}%,market.ilike.%${k}%,vendor.ilike.%${k}%`).join(',');
+
+  // Helper pour re-trier par pertinence géographique
+  const rerank = <T extends Record<string, any>>(rows: T[], islandKey = 'island', cityKey = 'location'): T[] => {
+    if (!location.island && !location.city) return rows;
+    return [...rows].sort((a, b) => {
+      const score = (r: any) => {
+        let s = 0;
+        if (location.island && r[islandKey] && String(r[islandKey]).toLowerCase().includes(location.island.toLowerCase())) s += 10;
+        if (location.city) {
+          const fields = [r[cityKey], r.city, r.village, r.market].filter(Boolean).map((x: any) => String(x).toLowerCase());
+          if (fields.some(f => f.includes(location.city!.toLowerCase()))) s += 20;
+        }
+        return s;
+      };
+      return score(b) - score(a);
+    });
+  };
+
+  try {
+    const [contentRes, pricesRes, eventsRes, gastroRes, jobsRes, freelRes, diasRes, staticRes] = await Promise.all([
+      supabase.from('content_items').select('id, title, description, type, category, slug').eq('status','published').or(orFilter).limit(15),
+      supabase.from('prices').select('id, product, price, currency, unit, island, city, village, market, vendor, created_at').eq('status','published').or(orPrices).limit(40),
+      supabase.from('events').select('id, title, description, date, location, island').eq('status','published').or(orFilter).limit(15),
+      supabase.from('gastronomy_items').select('id, title, description, type, location, price_min').eq('status','published').or(orFilter).limit(15),
+      supabase.from('freelance_jobs').select('id, title, description, budget_min, budget_max, currency, island').eq('status','published').or(orFilter).limit(15),
+      supabase.from('freelancer_profiles').select('id, display_name, bio, skills, island, location, hourly_rate_min, currency').eq('is_visible',true).or(`display_name.ilike.%${safeKeywords[0]}%,bio.ilike.%${safeKeywords[0]}%`).limit(15),
+      supabase.from('diaspora_projects').select('id, title, description, category, target_amount, currency, island, location').eq('status','published').or(orFilter).limit(15),
+      supabase.from('static_pages').select('slug, title, meta_description, content').or(`title.ilike.%${safeKeywords[0]}%,meta_description.ilike.%${safeKeywords[0]}%,content.ilike.%${safeKeywords[0]}%`).limit(8),
+    ]);
+    return {
+      content: contentRes.data || [],
+      prices: rerank(pricesRes.data || []).slice(0, 20),
+      events: rerank(eventsRes.data || []).slice(0, 10),
+      gastronomy: rerank(gastroRes.data || []).slice(0, 10),
+      jobs: rerank(jobsRes.data || []).slice(0, 10),
+      freelancers: rerank(freelRes.data || []).slice(0, 10),
+      diaspora: rerank(diasRes.data || []).slice(0, 10),
+      staticPages: staticRes.data || [],
+      keywords,
+      location,
+    };
+  } catch (e) {
+    console.error('searchSiteContent error:', e);
+    return { hits: [], keywords };
+  }
+}
+
 async function getDynamicSiteData(authHeader: string | null) {
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     global: authHeader ? { headers: { Authorization: authHeader } } : {},
