@@ -316,9 +316,70 @@ serve(async (req) => {
       knowledgeSection += '\nQuand tu cites une source, écris par exemple: "Selon [Nom de la source]..." sans jamais montrer le lien.\n';
     }
 
+    // 🎯 Section RAG : résultats spécifiquement liés à la question posée
+    let searchSection = '';
+    const sh: any = searchHits || {};
+    const totalHits = (sh.content?.length || 0) + (sh.prices?.length || 0) + (sh.events?.length || 0) + (sh.gastronomy?.length || 0) + (sh.jobs?.length || 0) + (sh.freelancers?.length || 0) + (sh.diaspora?.length || 0) + (sh.staticPages?.length || 0);
+    if (totalHits > 0) {
+      searchSection = `\n\n🎯 RÉSULTATS PERTINENTS POUR CETTE QUESTION (mots-clés: ${(sh.keywords || []).join(', ')}):\n`;
+      searchSection += '⚠️ Utilise ces résultats EN PRIORITÉ — ils correspondent directement à ce que demande l\'utilisateur.\n\n';
+      if (sh.prices?.length) {
+        searchSection += '💰 Prix correspondants:\n';
+        sh.prices.forEach((p: any) => {
+          const loc = [p.village, p.city, p.market].filter(Boolean).join(', ');
+          searchSection += `- [ID:${p.id}] ${p.product}: ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}${loc ? ', ' + loc : ''}${p.vendor ? ' (vendeur: ' + p.vendor + ')' : ''}\n`;
+        });
+      }
+      if (sh.content?.length) {
+        searchSection += '\n📄 Contenus correspondants:\n';
+        sh.content.forEach((c: any) => {
+          const path = c.type === 'announcement' ? `/annonces/${c.id}` : c.type === 'tender' ? `/appels-offres` : `/${c.type || 'contenu'}/${c.id}`;
+          searchSection += `- [${c.title}](${path}) — ${c.type || 'contenu'}: ${(c.description || '').slice(0, 120)}\n`;
+        });
+      }
+      if (sh.events?.length) {
+        searchSection += '\n🎉 Événements correspondants:\n';
+        sh.events.forEach((e: any) => {
+          searchSection += `- [${e.title}](/evenements/${e.id}) — ${new Date(e.date).toLocaleDateString('fr-FR')} à ${e.location} (${e.island})\n`;
+        });
+      }
+      if (sh.gastronomy?.length) {
+        searchSection += '\n🍽️ Tourisme/Restos correspondants:\n';
+        sh.gastronomy.forEach((g: any) => {
+          searchSection += `- [ID:${g.id}] ${g.title} (${g.type})${g.location ? ' - ' + g.location : ''}${g.price_min ? ' - dès ' + g.price_min + ' FC' : ''}\n`;
+        });
+      }
+      if (sh.jobs?.length) {
+        searchSection += '\n💼 Missions correspondantes:\n';
+        sh.jobs.forEach((j: any) => {
+          searchSection += `- [ID:${j.id}] ${j.title} — ${j.budget_min || '?'}-${j.budget_max || '?'} ${j.currency || 'FC'} (${j.island || 'partout'})\n`;
+        });
+      }
+      if (sh.freelancers?.length) {
+        searchSection += '\n👨‍💻 Freelancers correspondants:\n';
+        sh.freelancers.forEach((f: any) => {
+          searchSection += `- [ID:${f.id}] ${f.display_name} — ${(f.skills || []).slice(0, 4).join(', ')} (${f.island || 'n/a'})\n`;
+        });
+      }
+      if (sh.diaspora?.length) {
+        searchSection += '\n🌍 Projets diaspora correspondants:\n';
+        sh.diaspora.forEach((d: any) => {
+          searchSection += `- [${d.title}](/investissement/${d.id}) — ${d.category} (objectif ${d.target_amount} ${d.currency})\n`;
+        });
+      }
+      if (sh.staticPages?.length) {
+        searchSection += '\n📘 Pages du site correspondantes:\n';
+        sh.staticPages.forEach((p: any) => {
+          const excerpt = (p.meta_description || (p.content || '').replace(/<[^>]+>/g, '').slice(0, 200)).trim();
+          searchSection += `- [${p.title}](/p/${p.slug}) — ${excerpt}\n`;
+        });
+      }
+    }
+
     const systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel de la plateforme ujamaan.com pour l'archipel des Comores (4 îles).
 
 ${comorosKnowledge}
+${searchSection}
 ${dynamicContent}
 ${knowledgeSection}
 
