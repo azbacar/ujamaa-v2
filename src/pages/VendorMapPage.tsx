@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -10,8 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useLiveVendorLocations } from '@/hooks/useVendorLocation';
+import { useAuth } from '@/hooks/useAuth';
+import { authPath } from '@/lib/authRedirect';
 import { usePageSEO } from '@/hooks/usePageSEO';
-import { MapPin, Radio, Navigation } from 'lucide-react';
+import { MapPin, Radio, Navigation, MessageCircle, LogIn } from 'lucide-react';
 
 // Fix default marker icon in Leaflet + Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
