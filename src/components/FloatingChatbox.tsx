@@ -483,7 +483,7 @@ const FloatingChatbox = () => {
 
   return (
     <Card
-      className={`fixed bottom-0 right-0 sm:bottom-6 sm:right-6 w-full sm:w-[360px] md:w-[400px] shadow-2xl z-50 transition-all duration-300 border-0 sm:rounded-2xl overflow-hidden ${
+      className={`fixed bottom-0 right-0 sm:bottom-24 sm:right-6 w-full sm:w-[360px] md:w-[400px] shadow-2xl z-50 transition-all duration-300 border-0 sm:rounded-2xl overflow-hidden ${
         isMinimized ? 'h-[56px]' : 'h-[85vh] sm:h-[480px]'
       }`}
     >
