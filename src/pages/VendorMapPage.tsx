@@ -93,7 +93,7 @@ export default function VendorMapPage() {
   const stopAllFollow = useCallback(() => setFollowIds([]), []);
 
   usePageSEO({
-    title: 'Carte des annonceurs en direct',
+    title: user ? 'Carte des annonceurs en direct' : 'Connexion requise — Carte des annonceurs',
     description: 'Suivez en temps réel la position des annonceurs ambulants et commerçants Pro de l\'archipel des Comores. Suivez plusieurs annonceurs simultanément avec un guidage personnalisé.',
     keywords: 'carte annonceurs Comores, géolocalisation, multi-suivi, annonceurs ambulants, marché en direct, Mohéli, Anjouan, Grande Comore, Mayotte',
     canonicalPath: '/carte-vendeurs',
@@ -130,6 +130,63 @@ export default function VendorMapPage() {
       () => {}
     );
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
+        <main className="flex-1 flex items-center justify-center px-4 py-10">
+          <Card className="max-w-md w-full overflow-hidden border-emerald-200 shadow-lg">
+            <div className="bg-gradient-to-br from-emerald-500 to-sky-600 p-6 text-white text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm mb-3">
+                <Radio className="h-8 w-8 animate-pulse" />
+              </div>
+              <h1 className="text-2xl font-bold">Connexion requise</h1>
+              <p className="text-sm text-white/90 mt-1">
+                Pour localiser les vendeurs et annonceurs en direct
+              </p>
+            </div>
+            <CardContent className="p-6 space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                La carte interactive permet de suivre en temps réel les annonceurs ambulants,
+                les commerçants Pro et les concessionnaires de paiement de l'archipel des Comores.
+              </p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                  <span>Suivez plusieurs annonceurs simultanément</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-2 h-2 rounded-full bg-sky-500 mt-1.5 shrink-0" />
+                  <span>Écrivez en live pour être guidé jusqu'à eux</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                  <span>Trouvez les points de paiement cash près de vous</span>
+                </li>
+              </ul>
+              <div className="flex flex-col gap-2 pt-2">
+                <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
+                  <Link to={authPath('/carte-vendeurs')}>
+                    <LogIn className="h-4 w-4 mr-2" /> Se connecter
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/auth?mode=signup&redirect=/carte-vendeurs">
+                    Créer un compte gratuit
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/">Retour à l'accueil</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
