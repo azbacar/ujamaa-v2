@@ -59,26 +59,66 @@ const ISLAND_CENTER: Record<string, [number, number]> = {
   'Mayotte': [-12.83, 45.17],
 };
 
+// Palette de couleurs distinctes pour le multi-suivi (jusqu'à 8 annonceurs en simultané)
+const FOLLOW_COLORS = [
+  '#10b981', // emerald
+  '#3b82f6', // blue
+  '#f97316', // orange
+  '#a855f7', // purple
+  '#ef4444', // red
+  '#06b6d4', // cyan
+  '#eab308', // yellow
+  '#ec4899', // pink
+];
+
 export default function VendorMapPage() {
   const { currentLanguage, setLanguage } = useLanguage();
   const [islandFilter, setIslandFilter] = useState<string>('all');
-  const [followId, setFollowId] = useState<string | null>(null);
+  const [followIds, setFollowIds] = useState<string[]>([]);
+  const livePositionsRef = useRef<Map<string, [number, number]>>(new Map());
   const { locations, loading } = useLiveVendorLocations(islandFilter === 'all' ? undefined : islandFilter);
   const { partners } = usePublicPartners(islandFilter === 'all' ? undefined : islandFilter);
   const { user } = useAuth();
 
+  // Couleur stable par id suivi (basée sur l'ordre d'ajout)
+  const colorFor = useCallback((id: string) => {
+    const idx = followIds.indexOf(id);
+    return idx >= 0 ? FOLLOW_COLORS[idx % FOLLOW_COLORS.length] : '#10b981';
+  }, [followIds]);
+
+  const toggleFollow = useCallback((id: string) => {
+    setFollowIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }, []);
+
+  const stopAllFollow = useCallback(() => setFollowIds([]), []);
+
   usePageSEO({
     title: 'Carte des annonceurs en direct',
-    description: 'Suivez en temps réel la position des annonceurs ambulants et commerçants Pro de l\'archipel des Comores. Contactez-les en live pour qu\'ils vous guident.',
-    keywords: 'carte annonceurs Comores, géolocalisation, annonceurs ambulants, marché en direct, Mohéli, Anjouan, Grande Comore, Mayotte',
+    description: 'Suivez en temps réel la position des annonceurs ambulants et commerçants Pro de l\'archipel des Comores. Suivez plusieurs annonceurs simultanément avec un guidage personnalisé.',
+    keywords: 'carte annonceurs Comores, géolocalisation, multi-suivi, annonceurs ambulants, marché en direct, Mohéli, Anjouan, Grande Comore, Mayotte',
     canonicalPath: '/carte-vendeurs',
   });
 
   const center = useMemo<[number, number]>(() => {
     if (islandFilter !== 'all' && ISLAND_CENTER[islandFilter]) return ISLAND_CENTER[islandFilter];
     if (locations.length > 0) return [locations[0].latitude, locations[0].longitude];
-    return [-11.875, 43.872]; // centre archipel
+    return [-11.875, 43.872];
   }, [islandFilter, locations]);
+
+  // Auto fitBounds quand >=2 annonceurs sont suivis
+  const handlePositionChange = useCallback((id: string, pos: [number, number]) => {
+    livePositionsRef.current.set(id, pos);
+    if (followIds.length < 2) return;
+    const map = (window as any).__ujamaaMap as L.Map | undefined;
+    if (!map) return;
+    const pts = followIds
+      .map(fid => livePositionsRef.current.get(fid))
+      .filter((p): p is [number, number] => !!p);
+    if (pts.length >= 2) {
+      const bounds = L.latLngBounds(pts.map(p => L.latLng(p[0], p[1])));
+      map.fitBounds(bounds, { padding: [60, 60], animate: true, maxZoom: 16 });
+    }
+  }, [followIds]);
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) return;
