@@ -62,6 +62,7 @@ export const useVendorLocation = () => {
               accuracy: pos.coords.accuracy ?? null,
               heading: pos.coords.heading ?? null,
               speed: pos.coords.speed ?? null,
+              last_seen_at: new Date().toISOString(),
             })
             .eq('id', locationId);
         } catch (e) {
