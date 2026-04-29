@@ -168,11 +168,12 @@ serve(async (req) => {
       user = authUser;
     }
 
-    // Fetch all data in parallel
-    const [dynamicData, knowledgeSources, dbHistory] = await Promise.all([
+    // Fetch all data in parallel + recherche ciblée RAG
+    const [dynamicData, knowledgeSources, dbHistory, searchHits] = await Promise.all([
       getDynamicSiteData(authHeader),
       getKnowledgeSources(),
       getConversationHistory(sessionId, authHeader),
+      searchSiteContent(sanitizedMessage, authHeader),
     ]);
 
     // Use DB history for logged-in users, client-sent history for guests
