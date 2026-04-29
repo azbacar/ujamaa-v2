@@ -240,6 +240,80 @@ export default function MvolaPaymentDialog({
             <p className="text-xs text-muted-foreground text-center">⏱️ Validation sous 24h par notre équipe</p>
           </TabsContent>
 
+          {/* Concessionnaire */}
+          <TabsContent value="partner" className="space-y-3 mt-4">
+            <Card className="bg-muted/50">
+              <CardContent className="p-4 space-y-2">
+                <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                  <Handshake className="w-4 h-4 text-primary" /> Payer chez un concessionnaire
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Rendez-vous chez un concessionnaire UJAMAA agréé près de chez vous, payez en espèces le
+                  montant de <strong>{amount.toLocaleString()} {currency}</strong> et présentez votre référence{" "}
+                  <Badge variant="outline" className="text-[10px]">{userRef.slice(0, 15)}</Badge>.
+                  Votre Pro sera activé dès l'enregistrement par le concessionnaire.
+                </p>
+              </CardContent>
+            </Card>
+
+            {partners.length === 0 ? (
+              <p className="text-xs text-center text-muted-foreground py-4">
+                Aucun concessionnaire actif pour l'instant. Utilisez Mvola ou un dépôt à AZZHY.
+              </p>
+            ) : (
+              <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                {partners.map((p) => (
+                  <Card key={p.id} className="hover:border-primary/50 transition-colors">
+                    <CardContent className="p-3 space-y-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{p.business_name}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">
+                            📍 {p.city || ''} {p.island || ''}{p.address ? ` — ${p.address}` : ''}
+                          </p>
+                          {p.opening_hours && (
+                            <p className="text-[11px] text-muted-foreground">🕐 {p.opening_hours}</p>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1 items-end shrink-0">
+                          {p.accepted_methods?.includes('cash') && (
+                            <Badge variant="outline" className="text-[9px] py-0">💵 Cash</Badge>
+                          )}
+                          {p.accepted_methods?.includes('mobile_money') && (
+                            <Badge variant="outline" className="text-[9px] py-0">📱 Mvola</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 pt-1.5 border-t">
+                        {p.contact_phone && (
+                          <Button asChild size="sm" variant="outline" className="h-7 text-[11px] gap-1">
+                            <a href={`tel:${p.contact_phone}`}><Phone className="w-3 h-3" /> {p.contact_phone}</a>
+                          </Button>
+                        )}
+                        {p.latitude && p.longitude && (
+                          <Button asChild size="sm" variant="outline" className="h-7 text-[11px] gap-1">
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
+                              target="_blank" rel="noopener noreferrer"
+                            >
+                              <Navigation className="w-3 h-3" /> Itinéraire
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            <Button asChild variant="outline" className="w-full gap-2" size="sm">
+              <Link to="/carte-vendeurs" onClick={() => onOpenChange(false)}>
+                <MapPin className="w-3.5 h-3.5" /> Voir tous les points sur la carte
+              </Link>
+            </Button>
+          </TabsContent>
+
           {/* Carte bancaire */}
           <TabsContent value="card" className="space-y-4 mt-4">
             <Card className="bg-muted/50">
