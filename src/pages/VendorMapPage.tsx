@@ -43,6 +43,13 @@ const fixedIcon = L.divIcon({
   iconAnchor: [15, 15],
 });
 
+const partnerIcon = L.divIcon({
+  className: '',
+  html: `<div style="width:34px;height:34px;border-radius:50%;background:#f59e0b;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:16px;">€</div>`,
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
+});
+
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
 const ISLAND_CENTER: Record<string, [number, number]> = {
   'Grande Comore': [-11.7, 43.25],
