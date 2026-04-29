@@ -93,7 +93,7 @@ export default function VendorMapPage() {
   const stopAllFollow = useCallback(() => setFollowIds([]), []);
 
   usePageSEO({
-    title: 'Carte des annonceurs en direct',
+    title: user ? 'Carte des annonceurs en direct' : 'Connexion requise — Carte des annonceurs',
     description: 'Suivez en temps réel la position des annonceurs ambulants et commerçants Pro de l\'archipel des Comores. Suivez plusieurs annonceurs simultanément avec un guidage personnalisé.',
     keywords: 'carte annonceurs Comores, géolocalisation, multi-suivi, annonceurs ambulants, marché en direct, Mohéli, Anjouan, Grande Comore, Mayotte',
     canonicalPath: '/carte-vendeurs',
