@@ -20,6 +20,20 @@ export interface PartnerAccount {
   is_visible_on_map?: boolean;
   opening_hours?: string | null;
   accepted_methods?: string[];
+  kyc_status?: 'pending' | 'submitted' | 'approved' | 'rejected';
+  kyc_reviewed_at?: string | null;
+  kyc_rejection_reason?: string | null;
+}
+
+export interface PartnerKycDocument {
+  id: string;
+  partner_id: string;
+  document_type: 'id_card' | 'passport' | 'business_license' | 'tax_certificate' | 'other';
+  file_path: string;
+  file_name: string;
+  notes: string | null;
+  uploaded_by: string;
+  created_at: string;
 }
 
 export interface PartnerSettings {
