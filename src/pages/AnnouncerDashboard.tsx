@@ -306,9 +306,11 @@ export default function AnnouncerDashboard() {
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">Gérez vos annonces, événements et appels d'offres</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate(proPath())}>
-            <Crown className="h-4 w-4 mr-2" /> Upgrade PRO
-          </Button>
+          {accountType !== 'pro' && accountType !== 'enterprise' && (
+            <Button variant="outline" size="sm" onClick={() => navigate(proPath())}>
+              <Crown className="h-4 w-4 mr-2" /> Upgrade PRO
+            </Button>
+          )}
         </div>
 
         {/* Privilege badges */}
