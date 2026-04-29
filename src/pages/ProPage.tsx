@@ -213,15 +213,26 @@ export default function ProPage() {
     setShowPayment(true);
   };
 
+  // Montant de base du plan sélectionné en tenant compte du cycle (mois/année)
+  const getPlanBaseAmount = (planId: string) => {
+    if (planId !== "premium") return PLANS.find((p) => p.id === planId)?.amount || 0;
+    return billingCycle === "yearly" ? PRO_YEARLY_AMOUNT : PRO_MONTHLY_AMOUNT;
+  };
+
+  // Identifiant de plan envoyé à la BDD (pro_monthly | pro_yearly | basic | enterprise)
+  const getPlanDbId = (planId: string) => {
+    if (planId !== "premium") return planId;
+    return billingCycle === "yearly" ? "pro_yearly" : "pro_monthly";
+  };
+
   const handlePaymentSubmit = async (method: "mvola" | "cash" | "card", reference: string) => {
     if (!user) return;
-    const plan = PLANS.find((p) => p.id === selectedPlan);
-    const baseAmount = plan?.amount || 0;
+    const baseAmount = getPlanBaseAmount(selectedPlan);
     const finalAmount = getDiscountedAmount(baseAmount);
-    
+
     const { error } = await supabase.from("pro_subscription_requests" as any).insert({
       user_id: user.id,
-      plan: selectedPlan,
+      plan: getPlanDbId(selectedPlan),
       payment_method: method,
       payment_reference: reference,
       amount: baseAmount,
@@ -243,6 +254,8 @@ export default function ProPage() {
 
   const selectedPlanData = PLANS.find((p) => p.id === selectedPlan);
   const userRef = user ? generateUserRef(user.id) : "UJAMAAN";
+  const proDisplayPrice = billingCycle === "yearly" ? PRO_YEARLY_AMOUNT : PRO_MONTHLY_AMOUNT;
+  const proDisplayPeriod = billingCycle === "yearly" ? "/an" : "/mois";
 
   return (
     <div className="min-h-screen bg-background">
