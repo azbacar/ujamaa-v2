@@ -101,8 +101,14 @@ export default function VendorMapPage() {
                 Carte des vendeurs en direct
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {locations.length} vendeur{locations.length > 1 ? 's' : ''} actuellement en ligne
+                {locations.length} vendeur{locations.length > 1 ? 's' : ''} en ligne
+                {partners.length > 0 && <> · <span className="text-amber-700 font-medium">{partners.length} concessionnaire{partners.length > 1 ? 's' : ''} de paiement</span></>}
               </p>
+              <div className="flex flex-wrap gap-2 mt-2 text-[11px]">
+                <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" /> Ambulant</span>
+                <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-sky-500 inline-block" /> Position fixe</span>
+                <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-500 inline-block" /> Concessionnaire (paiement cash)</span>
+              </div>
             </div>
             <div className="flex gap-2">
               <Select value={islandFilter} onValueChange={setIslandFilter}>
