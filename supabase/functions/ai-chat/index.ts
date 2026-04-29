@@ -11,6 +11,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// 🌍 Détection automatique de l'île/ville mentionnée dans la question
+const ISLAND_ALIASES: Record<string, string[]> = {
+  'Grande Comore': ['grande comore','grande-comore','ngazidja','ndzuani'],
+  'Anjouan': ['anjouan','ndzuwani','ndzouani'],
+  'Mohéli': ['moheli','mohéli','mwali'],
+  'Mayotte': ['mayotte','maore','maoré'],
+};
+const KNOWN_CITIES = [
+  // Grande Comore
+  'moroni','mitsamiouli','foumbouni','mbeni','iconi','mitsoudje','ouellah','volo-volo','volo volo',
+  // Anjouan
+  'mutsamudu','domoni','sima','ouani','bambao','tsembehou',
+  // Mohéli
+  'fomboni','nioumachoua','wanani','djoiezi',
+  // Mayotte
+  'mamoudzou','dzaoudzi','sada','koungou','dembéni','dembeni','tsingoni','bandraboua',
+];
+function detectLocation(text: string): { island: string | null; city: string | null; raw: string[] } {
+  const lower = text.toLowerCase();
+  let island: string | null = null;
+  for (const [canon, aliases] of Object.entries(ISLAND_ALIASES)) {
+    if (aliases.some(a => lower.includes(a))) { island = canon; break; }
+  }
+  let city: string | null = null;
+  const matches: string[] = [];
+  for (const c of KNOWN_CITIES) {
+    if (lower.includes(c)) { matches.push(c); if (!city) city = c; }
+  }
+  // Inférer l'île si on a une ville mais pas d'île
+  if (!island && city) {
+    if (['moroni','mitsamiouli','foumbouni','mbeni','iconi','mitsoudje','ouellah','volo-volo','volo volo'].includes(city)) island = 'Grande Comore';
+    else if (['mutsamudu','domoni','sima','ouani','bambao','tsembehou'].includes(city)) island = 'Anjouan';
+    else if (['fomboni','nioumachoua','wanani','djoiezi'].includes(city)) island = 'Mohéli';
+    else if (['mamoudzou','dzaoudzi','sada','koungou','dembéni','dembeni','tsingoni','bandraboua'].includes(city)) island = 'Mayotte';
+  }
+  return { island, city, raw: matches };
+}
+
 // Extrait les mots-clés significatifs du message utilisateur (>3 chars, sans stopwords)
 const STOPWORDS = new Set(['avec','pour','dans','sans','sur','les','des','une','est','que','qui','quoi','comment','quand','pourquoi','combien','votre','vous','nous','mais','donc','plus','tout','tous','cette','cela','mon','mes','ton','tes','son','ses','par','aux','aussi','bien','très','peu','être','avoir','faire','aller','the','and','for','from','with']);
 function extractKeywords(text: string): string[] {
