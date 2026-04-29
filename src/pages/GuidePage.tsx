@@ -235,6 +235,7 @@ export default function GuidePage() {
               'Cliquez sur "Créer un compte"',
               "Renseignez votre email et un mot de passe sécurisé",
               "Confirmez votre email via le lien reçu",
+              "Un rôle « Utilisateur » vous est automatiquement attribué",
             ]}
           />
           <Step
@@ -247,32 +248,171 @@ export default function GuidePage() {
               "Utilisez les filtres pour trouver un produit spécifique",
               "Cliquez sur un prix pour voir les détails et la localisation du vendeur",
               "Les marchands ambulants affichent leur position GPS en temps réel",
+              "Historique d'évolution disponible pour les abonnés Pro",
             ]}
           />
           <Step
             number={3}
+            title="Utilisez la carte des vendeurs"
+            description="Visualisez les marchands ambulants et fixes sur la carte interactive et contactez-les."
+            icon={<Navigation className="h-4 w-4 text-emerald-600" />}
+            details={[
+              'Accédez à "/vendeurs/carte" depuis le menu',
+              "Les marchands ambulants se déplacent en temps réel sur la carte",
+              'Cliquez sur "Demander la position exacte" pour ouvrir une conversation',
+              "La messagerie filtre automatiquement les numéros pour les non-Pro",
+              "Connectez-vous pour pouvoir contacter les vendeurs",
+            ]}
+          />
+          <Step
+            number={4}
+            title="Discutez avec l'assistant IA"
+            description="Posez vos questions sur les prix, événements, lieux ou démarches — l'IA répond avec les vraies données de la plateforme."
+            icon={<Bot className="h-4 w-4 text-emerald-600" />}
+            details={[
+              "Utilisez le chat flottant en bas à droite ou la recherche plein écran",
+              "L'IA couvre les 4 îles : Grande Comore, Anjouan, Mohéli, Mayotte",
+              "Réponses en français avec liens cliquables vers les sections",
+              "Historique synchronisé entre le chat et la recherche",
+            ]}
+          />
+          <Step
+            number={5}
             title="Activez les notifications"
             description="Recevez les alertes prix, événements et annonces urgentes directement sur votre appareil."
             icon={<Bell className="h-4 w-4 text-emerald-600" />}
             details={[
               "Acceptez les notifications push quand la popup apparaît",
               "Configurez vos alertes prix dans la section Prix",
-              "Vous recevrez les notifications même hors de la plateforme",
+              "Recevez aussi les alertes en temps réel sur l'application mobile",
             ]}
           />
           <Step
-            number={4}
-            title="Devenez annonceur"
-            description="Publiez vos propres annonces, événements et prix. Contribuez à la communauté !"
+            number={6}
+            title="Devenez annonceur ou Pro"
+            description="Publiez vos contenus, ou passez Pro pour rendre vos coordonnées visibles à tous."
             icon={<Star className="h-4 w-4 text-emerald-600" />}
             details={[
-              'Depuis votre profil, demandez le statut "Annonceur"',
-              "Acceptez la charte de publication UJAMAA",
-              "Votre demande sera validée par un administrateur",
-              "Une fois approuvé, accédez au tableau de bord annonceur",
-              "Publiez des annonces, événements, prix et services",
+              'Demandez le statut "Annonceur" depuis votre profil (validation admin)',
+              "Une fois annonceur, accédez au tableau de bord /annonceur",
+              "Publiez prix, annonces, événements (5 images max), missions, appels d'offres",
+              "Passez Pro (990 FC/mois ou annuel -10%) pour débloquer tous les contacts",
+              "Paiement Mvola, Stripe, virement ou cash via partenaire",
             ]}
           />
+        </div>
+      </section>
+
+      {/* App mobile */}
+      <section className="max-w-4xl mx-auto px-4 py-12">
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <Smartphone className="h-6 w-6 text-primary" />
+          Application mobile Ujamaan
+        </h2>
+        <p className="text-muted-foreground mb-6">
+          Profitez d'Ujamaan sur Android et iOS, avec la même puissance que sur le web.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Card className="border-border/50">
+            <CardContent className="p-5 space-y-2">
+              <div className="flex items-center gap-2">
+                <Smartphone className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">Connexion sécurisée</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Authentification par email + mot de passe. Vos sessions sont stockées de façon sécurisée
+                (Keychain iOS / Keystore Android) et renouvelées automatiquement.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-5 space-y-2">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">Notifications push</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Recevez les alertes urgentes, messages, factures et nouveautés directement sur votre téléphone,
+                même application fermée.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-5 space-y-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">GPS temps réel</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Pour les vendeurs Pro vérifiés : partagez votre position en mode ambulant. La carte se
+                met à jour automatiquement chez vos clients.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-5 space-y-2">
+              <div className="flex items-center gap-2">
+                <Wallet className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-foreground">Paiement Mvola intégré</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Lien <code>tel:</code> direct depuis l'app : ouvrez le code USSD, validez le paiement,
+                votre abonnement Pro est confirmé sous quelques minutes.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Paiement Mvola */}
+      <section className="bg-muted/30 py-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+            <Wallet className="h-6 w-6 text-primary" />
+            Comment payer avec Mvola
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Méthode la plus rapide pour activer votre abonnement Pro depuis votre téléphone.
+          </p>
+          <Card className="border-border/50">
+            <CardContent className="p-5">
+              <ol className="space-y-3 text-sm">
+                <li className="flex gap-3">
+                  <span className="font-bold text-primary">1.</span>
+                  <span className="text-muted-foreground">
+                    Sur la page Pro, choisissez la formule <strong>Mensuelle (990 FC)</strong> ou
+                    <strong> Annuelle (-10 %)</strong>.
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-bold text-primary">2.</span>
+                  <span className="text-muted-foreground">
+                    Cliquez sur <strong>« Payer avec Mvola »</strong> — sur mobile, votre composeur
+                    s'ouvre avec le code USSD pré-rempli. Sur desktop, scannez le QR code dynamique.
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-bold text-primary">3.</span>
+                  <span className="text-muted-foreground">
+                    Validez la transaction avec votre code secret Mvola. Conservez la référence du SMS.
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="font-bold text-primary">4.</span>
+                  <span className="text-muted-foreground">
+                    Renseignez la référence dans le formulaire de confirmation. Votre statut Pro est
+                    activé automatiquement après vérification (généralement &lt; 1h).
+                  </span>
+                </li>
+              </ol>
+              <div className="mt-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
+                <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                  💡 Vous pouvez aussi payer en <strong>cash via un partenaire agréé</strong> : votre
+                  abonnement Pro est créé automatiquement à l'encaissement.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
