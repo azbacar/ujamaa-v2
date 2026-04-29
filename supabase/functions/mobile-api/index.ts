@@ -999,6 +999,21 @@ function buildOpenApiSpec() {
       "/auth/me": {
         get: { summary: "Profil de l'utilisateur connecté", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "Profil" } } },
       },
+      "/auth/register": {
+        post: {
+          summary: "Inscription (email + mot de passe)",
+          requestBody: { required: true, content: { "application/json": { schema: { type: "object", properties: { email: { type: "string" }, password: { type: "string" }, username: { type: "string" } }, required: ["email", "password"] } } } },
+          responses: { "201": { description: "Compte créé (peut nécessiter confirmation email)" } },
+        },
+      },
+      "/auth/logout": { post: { summary: "Déconnexion (révoque le token)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/auth/reset-password": {
+        post: {
+          summary: "Demande de reset par email",
+          requestBody: { required: true, content: { "application/json": { schema: { type: "object", properties: { email: { type: "string" }, redirectTo: { type: "string" } }, required: ["email"] } } } },
+          responses: { "200": { description: "Email envoyé" } },
+        },
+      },
       "/ai-chat": {
         post: {
           summary: "Conversation avec l'assistant IA",
@@ -1017,6 +1032,70 @@ function buildOpenApiSpec() {
           responses: { "200": { description: "Liste paginée" } },
         },
       },
+      "/profile": {
+        get: { summary: "Profil de l'utilisateur connecté", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "Profil" } } },
+        put: { summary: "Mettre à jour son profil", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        delete: { summary: "Demander la suppression du compte", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "Demande enregistrée" } } },
+      },
+      "/favorites": {
+        get: { summary: "Mes favoris", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        post: { summary: "Ajouter un favori", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+      },
+      "/favorites/{id}": { delete: { summary: "Retirer un favori", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/my-notifications": { get: { summary: "Mes notifications", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/my-notifications/{id}": { put: { summary: "Marquer une notification lue", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/my-notifications/read-all": { put: { summary: "Tout marquer lu", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages": {
+        get: { summary: "Mes conversations", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        post: { summary: "Envoyer un message", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+      },
+      "/messages/{conversation_id}": { get: { summary: "Messages d'une conversation", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/push": {
+        post: { summary: "Enregistrer un endpoint push", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+        delete: { summary: "Désinscrire un endpoint push", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+      },
+      "/vendor-location": {
+        get: { summary: "Ma position vendeur (Pro)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        put: { summary: "Mettre à jour ma position", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        delete: { summary: "Supprimer ma position", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+      },
+      "/pro-request": {
+        get: { summary: "Mes demandes Pro", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        post: { summary: "Soumettre une demande Pro (Stripe/Mvola/Cash)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+      },
+      "/submit/{type}": {
+        post: {
+          summary: "Soumettre un contenu (price, content, event, modification, report)",
+          security: [{ ApiKey: [] }, { Bearer: [] }],
+          parameters: [{ name: "type", in: "path", required: true, schema: { type: "string", enum: ["price", "content", "event", "modification", "report"] } }],
+          responses: { "201": { description: "Créé" } },
+        },
+      },
+      "/event-registration": {
+        get: { summary: "Mes inscriptions", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        post: { summary: "S'inscrire à un événement", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+      },
+      "/freelance-action/{action}": {
+        post: { summary: "Actions freelance (proposal | job)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+        get: { summary: "Mes propositions (action=my-proposals)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+      },
+      "/diaspora-action/{action}": {
+        post: { summary: "Actions diaspora (investment | project)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+        get: { summary: "Mes investissements (action=my-investments)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+      },
+      "/enterprise-action/{action}": {
+        get: { summary: "CRM entreprise (clients | invoices)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        post: { summary: "Créer client | invoice", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+      },
+      "/comments": {
+        get: { summary: "Commentaires (params content_type, content_id)", responses: { "200": { description: "OK" } } },
+        post: { summary: "Publier un commentaire", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+      },
+      "/search": { get: { summary: "Recherche globale (param q)", responses: { "200": { description: "Résultats agrégés" } } } },
+      "/view": { post: { summary: "Incrémenter le compteur de vues", responses: { "200": { description: "OK" } } } },
+      "/infos-pratiques": { get: { summary: "Infos pratiques (taxi, pharmacie)", responses: { "200": { description: "OK" } } } },
+      "/partners": { get: { summary: "Partenaires actifs", responses: { "200": { description: "OK" } } } },
+      "/public-stats": { get: { summary: "Compteurs publics homepage", responses: { "200": { description: "OK" } } } },
       "/users": { get: { summary: "Lister les utilisateurs (admin)", responses: { "200": { description: "Liste" } } } },
       "/users/{id}": { get: { summary: "Détail utilisateur (admin)", parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }], responses: { "200": { description: "Profil" } } } },
       "/prices": { get: { summary: "Lister les prix (admin)", responses: { "200": { description: "Liste" } } } },
