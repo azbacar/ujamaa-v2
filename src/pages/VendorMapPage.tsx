@@ -194,6 +194,48 @@ export default function VendorMapPage() {
                       </Popup>
                     </Marker>
                   ))}
+                  {/* Concessionnaires (points de paiement cash) */}
+                  {partners.filter(p => p.latitude && p.longitude).map((p) => (
+                    <Marker key={`partner-${p.id}`} position={[p.latitude as number, p.longitude as number]} icon={partnerIcon}>
+                      <Popup>
+                        <div className="space-y-1.5 min-w-[180px]">
+                          <div className="font-semibold flex items-center gap-1">
+                            <Handshake className="h-3.5 w-3.5 text-amber-600" /> {p.business_name}
+                          </div>
+                          <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px]">
+                            Concessionnaire UJAMAA
+                          </Badge>
+                          {p.address && <p className="text-xs text-muted-foreground">📍 {p.address}</p>}
+                          {(p.city || p.island) && <p className="text-xs text-muted-foreground">🏝️ {p.city} {p.island}</p>}
+                          {p.opening_hours && <p className="text-xs text-muted-foreground">🕐 {p.opening_hours}</p>}
+                          {p.accepted_methods && p.accepted_methods.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.accepted_methods.includes('cash') && <Badge variant="outline" className="text-[9px]">💵 Cash</Badge>}
+                              {p.accepted_methods.includes('bank_transfer') && <Badge variant="outline" className="text-[9px]">🏦 Virement</Badge>}
+                              {p.accepted_methods.includes('mobile_money') && <Badge variant="outline" className="text-[9px]">📱 Mvola</Badge>}
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-border/40">
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`}
+                              target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-amber-700 underline inline-flex items-center gap-1"
+                            >
+                              <Navigation className="h-3 w-3" /> Itinéraire Google Maps
+                            </a>
+                            {p.contact_phone && (
+                              <a
+                                href={`tel:${p.contact_phone}`}
+                                className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1.5 rounded-md transition-colors"
+                              >
+                                <Phone className="h-3.5 w-3.5" /> {p.contact_phone}
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  ))}
                 </MapContainer>
               </div>
             </CardContent>
