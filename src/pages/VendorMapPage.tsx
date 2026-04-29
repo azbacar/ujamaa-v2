@@ -126,6 +126,22 @@ export default function VendorMapPage() {
             </div>
           </div>
 
+          {followId && (() => {
+            const followed = locations.find(l => l.id === followId);
+            if (!followed) return null;
+            return (
+              <div className="mb-3 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm animate-fade-in">
+                <span className="flex items-center gap-2">
+                  <Radio className="h-4 w-4 animate-pulse text-emerald-600" />
+                  Suivi en direct : <strong>{followed.label}</strong> · MAJ {new Date(followed.last_seen_at).toLocaleTimeString('fr-FR')}
+                </span>
+                <Button size="sm" variant="ghost" onClick={() => setFollowId(null)} className="h-7 text-xs">
+                  <EyeOff className="h-3.5 w-3.5 mr-1" /> Arrêter
+                </Button>
+              </div>
+            );
+          })()}
+
           <Card className="overflow-hidden">
             <CardContent className="p-0">
               <div style={{ height: '70vh', minHeight: 400 }}>
