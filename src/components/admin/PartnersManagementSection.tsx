@@ -24,6 +24,19 @@ interface Partner {
   city: string | null;
   status: string;
   created_at: string;
+  kyc_status: 'pending' | 'submitted' | 'approved' | 'rejected';
+  kyc_rejection_reason: string | null;
+  kyc_reviewed_at: string | null;
+}
+
+interface KycDoc {
+  id: string;
+  partner_id: string;
+  document_type: string;
+  file_path: string;
+  file_name: string;
+  notes: string | null;
+  created_at: string;
 }
 
 interface Settings {
