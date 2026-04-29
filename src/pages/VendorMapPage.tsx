@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -59,26 +59,66 @@ const ISLAND_CENTER: Record<string, [number, number]> = {
   'Mayotte': [-12.83, 45.17],
 };
 
+// Palette de couleurs distinctes pour le multi-suivi (jusqu'à 8 annonceurs en simultané)
+const FOLLOW_COLORS = [
+  '#10b981', // emerald
+  '#3b82f6', // blue
+  '#f97316', // orange
+  '#a855f7', // purple
+  '#ef4444', // red
+  '#06b6d4', // cyan
+  '#eab308', // yellow
+  '#ec4899', // pink
+];
+
 export default function VendorMapPage() {
   const { currentLanguage, setLanguage } = useLanguage();
   const [islandFilter, setIslandFilter] = useState<string>('all');
-  const [followId, setFollowId] = useState<string | null>(null);
+  const [followIds, setFollowIds] = useState<string[]>([]);
+  const livePositionsRef = useRef<Map<string, [number, number]>>(new Map());
   const { locations, loading } = useLiveVendorLocations(islandFilter === 'all' ? undefined : islandFilter);
   const { partners } = usePublicPartners(islandFilter === 'all' ? undefined : islandFilter);
   const { user } = useAuth();
 
+  // Couleur stable par id suivi (basée sur l'ordre d'ajout)
+  const colorFor = useCallback((id: string) => {
+    const idx = followIds.indexOf(id);
+    return idx >= 0 ? FOLLOW_COLORS[idx % FOLLOW_COLORS.length] : '#10b981';
+  }, [followIds]);
+
+  const toggleFollow = useCallback((id: string) => {
+    setFollowIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }, []);
+
+  const stopAllFollow = useCallback(() => setFollowIds([]), []);
+
   usePageSEO({
     title: 'Carte des annonceurs en direct',
-    description: 'Suivez en temps réel la position des annonceurs ambulants et commerçants Pro de l\'archipel des Comores. Contactez-les en live pour qu\'ils vous guident.',
-    keywords: 'carte annonceurs Comores, géolocalisation, annonceurs ambulants, marché en direct, Mohéli, Anjouan, Grande Comore, Mayotte',
+    description: 'Suivez en temps réel la position des annonceurs ambulants et commerçants Pro de l\'archipel des Comores. Suivez plusieurs annonceurs simultanément avec un guidage personnalisé.',
+    keywords: 'carte annonceurs Comores, géolocalisation, multi-suivi, annonceurs ambulants, marché en direct, Mohéli, Anjouan, Grande Comore, Mayotte',
     canonicalPath: '/carte-vendeurs',
   });
 
   const center = useMemo<[number, number]>(() => {
     if (islandFilter !== 'all' && ISLAND_CENTER[islandFilter]) return ISLAND_CENTER[islandFilter];
     if (locations.length > 0) return [locations[0].latitude, locations[0].longitude];
-    return [-11.875, 43.872]; // centre archipel
+    return [-11.875, 43.872];
   }, [islandFilter, locations]);
+
+  // Auto fitBounds quand >=2 annonceurs sont suivis
+  const handlePositionChange = useCallback((id: string, pos: [number, number]) => {
+    livePositionsRef.current.set(id, pos);
+    if (followIds.length < 2) return;
+    const map = (window as any).__ujamaaMap as L.Map | undefined;
+    if (!map) return;
+    const pts = followIds
+      .map(fid => livePositionsRef.current.get(fid))
+      .filter((p): p is [number, number] => !!p);
+    if (pts.length >= 2) {
+      const bounds = L.latLngBounds(pts.map(p => L.latLng(p[0], p[1])));
+      map.fitBounds(bounds, { padding: [60, 60], animate: true, maxZoom: 16 });
+    }
+  }, [followIds]);
 
   const handleLocateMe = () => {
     if (!navigator.geolocation) return;
@@ -126,21 +166,59 @@ export default function VendorMapPage() {
             </div>
           </div>
 
-          {followId && (() => {
-            const followed = locations.find(l => l.id === followId);
-            if (!followed) return null;
-            return (
-              <div className="mb-3 flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm animate-fade-in">
-                <span className="flex items-center gap-2">
+          {followIds.length > 0 && (
+            <div className="mb-3 px-3 py-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm animate-fade-in space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2 font-medium">
                   <Radio className="h-4 w-4 animate-pulse text-emerald-600" />
-                  Suivi en direct : <strong>{followed.label}</strong> · MAJ {new Date(followed.last_seen_at).toLocaleTimeString('fr-FR')}
+                  Suivi multi-annonceurs ({followIds.length}{followIds.length >= 2 ? ' · vue auto-ajustée' : ''})
                 </span>
-                <Button size="sm" variant="ghost" onClick={() => setFollowId(null)} className="h-7 text-xs">
-                  <EyeOff className="h-3.5 w-3.5 mr-1" /> Arrêter
-                </Button>
+                {followIds.length > 1 && (
+                  <Button size="sm" variant="ghost" onClick={stopAllFollow} className="h-7 text-xs">
+                    <EyeOff className="h-3.5 w-3.5 mr-1" /> Tout arrêter
+                  </Button>
+                )}
               </div>
-            );
-          })()}
+              <div className="flex flex-wrap gap-2">
+                {followIds.map(fid => {
+                  const loc = locations.find(l => l.id === fid);
+                  if (!loc) return null;
+                  const color = colorFor(fid);
+                  return (
+                    <div
+                      key={fid}
+                      className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded-full bg-white border shadow-sm text-xs"
+                      style={{ borderColor: color }}
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: color }} />
+                      <strong className="max-w-[120px] truncate">{loc.label}</strong>
+                      <span className="text-muted-foreground hidden sm:inline">
+                        · {new Date(loc.last_seen_at).toLocaleTimeString('fr-FR')}
+                      </span>
+                      {user && user.id !== loc.user_id && (
+                        <Link
+                          to={`/messages/${loc.user_id}?prefill=${encodeURIComponent(
+                            `Bonjour ${loc.label}, je vous suis sur la carte en direct. Pouvez-vous me guider pour vous retrouver ? 📍`
+                          )}`}
+                          className="inline-flex items-center justify-center h-6 w-6 rounded-full hover:bg-emerald-100 text-emerald-700"
+                          title="Guidage live"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => toggleFollow(fid)}
+                        className="inline-flex items-center justify-center h-6 w-6 rounded-full hover:bg-rose-100 text-rose-600"
+                        title="Arrêter ce suivi"
+                      >
+                        <EyeOff className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <Card className="overflow-hidden">
             <CardContent className="p-0">
@@ -163,21 +241,49 @@ export default function VendorMapPage() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   {locations.map((loc) => {
+                    const isFollowed = followIds.includes(loc.id);
+                    const followColor = isFollowed ? colorFor(loc.id) : null;
+                    // Icône colorée distincte pour chaque annonceur suivi
+                    const icon = loc.is_mobile
+                      ? (isFollowed
+                          ? L.divIcon({
+                              className: '',
+                              html: `<div style="position:relative;width:40px;height:40px;">
+                                <div style="position:absolute;inset:0;border-radius:50%;background:${followColor}40;animation:ujamaaPulse 1.5s infinite;"></div>
+                                <div style="position:absolute;top:5px;left:5px;width:30px;height:30px;border-radius:50%;background:${followColor};border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;">${followIds.indexOf(loc.id) + 1}</div>
+                              </div>`,
+                              iconSize: [40, 40],
+                              iconAnchor: [20, 20],
+                            })
+                          : mobileIcon)
+                      : fixedIcon;
                     const MarkerComp: any = loc.is_mobile ? AnimatedVendorMarker : Marker;
                     const extraProps = loc.is_mobile
-                      ? { id: loc.id, follow: followId === loc.id, durationMs: 1500 }
+                      ? {
+                          id: loc.id,
+                          follow: isFollowed,
+                          // En multi-suivi, on désactive le panTo individuel : le parent fait fitBounds
+                          suppressPan: followIds.length >= 2,
+                          onPositionChange: handlePositionChange,
+                          durationMs: 1500,
+                        }
                       : {};
                     return (
                     <MarkerComp
                       key={loc.id}
                       position={[loc.latitude, loc.longitude] as [number, number]}
-                      icon={loc.is_mobile ? mobileIcon : fixedIcon}
+                      icon={icon}
                       {...extraProps}
                     >
                       <Popup>
                         <div className="space-y-1">
                           <div className="font-semibold flex items-center gap-1">
                             <MapPin className="h-3 w-3 text-emerald-600" /> {loc.label}
+                            {isFollowed && (
+                              <span className="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-[10px] font-bold" style={{ background: followColor! }}>
+                                {followIds.indexOf(loc.id) + 1}
+                              </span>
+                            )}
                           </div>
                           <Badge variant={loc.is_mobile ? 'default' : 'secondary'} className="text-[10px]">
                             {loc.is_mobile ? '🚚 Ambulant — en direct' : '🏪 Position fixe'}
@@ -190,17 +296,14 @@ export default function VendorMapPage() {
                           </p>
                           {loc.is_mobile && (
                             <button
-                              onClick={() => setFollowId(followId === loc.id ? null : loc.id)}
-                              className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors ${
-                                followId === loc.id
-                                  ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                              }`}
+                              onClick={() => toggleFollow(loc.id)}
+                              className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors text-white`}
+                              style={{ background: isFollowed ? '#e11d48' : '#059669' }}
                             >
-                              {followId === loc.id ? (
-                                <><EyeOff className="h-3.5 w-3.5" /> Arrêter le suivi</>
+                              {isFollowed ? (
+                                <><EyeOff className="h-3.5 w-3.5" /> Arrêter ce suivi</>
                               ) : (
-                                <><Eye className="h-3.5 w-3.5" /> Suivre en direct 🛰️</>
+                                <><Eye className="h-3.5 w-3.5" /> {followIds.length > 0 ? `Ajouter au suivi (#${followIds.length + 1})` : 'Suivre en direct 🛰️'}</>
                               )}
                             </button>
                           )}

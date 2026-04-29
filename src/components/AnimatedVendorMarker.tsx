@@ -7,10 +7,14 @@ interface Props {
   position: [number, number];
   icon: L.DivIcon | L.Icon;
   follow?: boolean;
+  /** When true, suppress individual panTo (parent handles fitBounds for multi-follow) */
+  suppressPan?: boolean;
   /** Animation duration in ms (matches typical update interval) */
   durationMs?: number;
   children?: React.ReactNode;
   onClick?: () => void;
+  /** Callback whenever the animated/displayed position changes (for parent fitBounds) */
+  onPositionChange?: (id: string, pos: [number, number]) => void;
 }
 
 /**
@@ -18,12 +22,15 @@ interface Props {
  * If `follow` is true, the map pans to keep the marker centered after each move.
  */
 export default function AnimatedVendorMarker({
+  id,
   position,
   icon,
   follow = false,
+  suppressPan = false,
   durationMs = 1500,
   children,
   onClick,
+  onPositionChange,
 }: Props) {
   const map = useMap();
   const markerRef = useRef<L.Marker | null>(null);
@@ -34,7 +41,6 @@ export default function AnimatedVendorMarker({
   const startRef = useRef<number>(0);
 
   useEffect(() => {
-    // If position barely changed, skip animation
     const [lat0, lng0] = displayPos;
     const [lat1, lng1] = position;
     const dist = Math.hypot(lat1 - lat0, lng1 - lng0);
@@ -48,12 +54,12 @@ export default function AnimatedVendorMarker({
 
     const step = (now: number) => {
       const t = Math.min(1, (now - startRef.current) / durationMs);
-      // ease-out cubic
-      const e = 1 - Math.pow(1 - t, 3);
+      const e = 1 - Math.pow(1 - t, 3); // ease-out cubic
       const lat = fromRef.current[0] + (toRef.current[0] - fromRef.current[0]) * e;
       const lng = fromRef.current[1] + (toRef.current[1] - fromRef.current[1]) * e;
       setDisplayPos([lat, lng]);
-      if (follow) {
+      onPositionChange?.(id, [lat, lng]);
+      if (follow && !suppressPan) {
         map.panTo([lat, lng], { animate: false });
       }
       if (t < 1) {
@@ -68,7 +74,7 @@ export default function AnimatedVendorMarker({
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position[0], position[1], follow]);
+  }, [position[0], position[1], follow, suppressPan]);
 
   return (
     <Marker
