@@ -644,8 +644,8 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
         body: JSON.stringify({
           model: 'moonshot-v1-8k',
           messages: aiMessages,
-          temperature: 0.3,
-          max_tokens: 2000,
+          temperature: 0.6,
+          max_tokens: 3000,
         }),
       });
       if (!resp.ok) {
