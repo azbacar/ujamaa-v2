@@ -26,7 +26,7 @@ interface Message {
   isUser: boolean;
   timestamp: Date;
   links?: ChatLink[];
-  errorType?: 'rate_limit' | 'payment' | 'generic';
+  errorType?: 'rate_limit' | 'payment' | 'unavailable' | 'generic';
 }
 
 const LOCAL_STORAGE_SESSION_KEY = 'floating_chat_session_id';
@@ -337,20 +337,27 @@ const FloatingChatbox = () => {
         body: { message: sanitizedMessage, sessionId, context: 'floating_chat', clientHistory: recentHistory },
       });
 
-      // Handle edge function errors (429, 402 etc.)
+      // Handle edge function errors (429, 402, 503 etc.)
       if (error) {
         // supabase functions.invoke wraps non-2xx as FunctionsHttpError
         const status = (error as any)?.context?.status || (error as any)?.status;
-        if (status === 429 || String(error.message).includes('429')) {
+        const errMsg = String(error.message || '');
+        if (status === 503 || errMsg.includes('503') || errMsg.includes('ALL_PROVIDERS_FAILED')) {
+          throw { code: 'ALL_PROVIDERS_FAILED', message: 'Service IA indisponible' };
+        }
+        if (status === 429 || errMsg.includes('429')) {
           throw { code: 'RATE_LIMIT', message: 'Service surchargé' };
         }
-        if (status === 402 || String(error.message).includes('402')) {
+        if (status === 402 || errMsg.includes('402')) {
           throw { code: 'PAYMENT_REQUIRED', message: 'Crédit insuffisant' };
         }
         throw error;
       }
 
       // Check if the response itself contains an error code
+      if (data?.code === 'ALL_PROVIDERS_FAILED') {
+        throw { code: 'ALL_PROVIDERS_FAILED', message: data.error };
+      }
       if (data?.code === 'RATE_LIMIT' || data?.error?.includes?.('surchargé')) {
         throw { code: 'RATE_LIMIT', message: data.error };
       }
@@ -404,7 +411,10 @@ const FloatingChatbox = () => {
       let errorType: Message['errorType'] = 'generic';
       let errorText = 'Désolé, une erreur est survenue. Veuillez réessayer.';
 
-      if (error?.code === 'RATE_LIMIT') {
+      if (error?.code === 'ALL_PROVIDERS_FAILED') {
+        errorType = 'unavailable';
+        errorText = "🔌 Service IA temporairement indisponible. Nos assistants sont en pause technique — réessayez dans quelques minutes.";
+      } else if (error?.code === 'RATE_LIMIT') {
         errorType = 'rate_limit';
         errorText = '⏳ Le service est temporairement surchargé. Veuillez patienter quelques secondes puis réessayer.';
       } else if (error?.code === 'PAYMENT_REQUIRED') {
