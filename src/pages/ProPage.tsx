@@ -437,20 +437,28 @@ export default function ProPage() {
       </main>
 
       {/* Payment Dialog */}
-      {selectedPlanData && (
-        <MvolaPaymentDialog
-          open={showPayment}
-          onOpenChange={setShowPayment}
-          amount={getDiscountedAmount(selectedPlanData.amount)}
-          currency="FC"
-          label={`Souscrire au ${selectedPlanData.name}`}
-          description={appliedPromo
-            ? `${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period} → ${getDiscountedAmount(selectedPlanData.amount).toLocaleString()} FC (promo ${appliedPromo.code})`
-            : `${selectedPlanData.price} ${selectedPlanData.currency}${selectedPlanData.period}`}
-          userRef={userRef}
-          onPaymentSubmit={handlePaymentSubmit}
-        />
-      )}
+      {selectedPlanData && (() => {
+        const baseAmount = getPlanBaseAmount(selectedPlan);
+        const finalAmount = getDiscountedAmount(baseAmount);
+        const cycleLabel = selectedPlan === "premium"
+          ? (billingCycle === "yearly" ? "Pro annuel" : "Pro mensuel")
+          : selectedPlanData.name;
+        const periodLabel = selectedPlan === "premium" ? proDisplayPeriod : selectedPlanData.period;
+        return (
+          <MvolaPaymentDialog
+            open={showPayment}
+            onOpenChange={setShowPayment}
+            amount={finalAmount}
+            currency="FC"
+            label={`Souscrire au ${cycleLabel}`}
+            description={appliedPromo
+              ? `${baseAmount.toLocaleString("fr-FR")} FC${periodLabel} → ${finalAmount.toLocaleString("fr-FR")} FC (promo ${appliedPromo.code})`
+              : `${baseAmount.toLocaleString("fr-FR")} FC${periodLabel}`}
+            userRef={userRef}
+            onPaymentSubmit={handlePaymentSubmit}
+          />
+        );
+      })()}
 
       <Footer />
     </div>
