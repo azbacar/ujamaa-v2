@@ -668,9 +668,9 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
         body: JSON.stringify({
           model: 'google/gemini-3-flash-preview',
           messages: aiMessages,
-          temperature: 0.3,
-          max_tokens: 2000,
-          reasoning: { effort: 'medium' },
+          temperature: 0.6,
+          max_tokens: 3000,
+          reasoning: { effort: 'high' },
         }),
       });
       if (!resp.ok) {
