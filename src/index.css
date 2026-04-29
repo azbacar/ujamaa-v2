@@ -3,6 +3,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Empêche Leaflet (z-index par défaut très élevé) de passer au-dessus des
+   boutons flottants, du header sticky et de la nav mobile (z-40/50). */
+.leaflet-container { z-index: 0 !important; isolation: isolate; }
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom { z-index: 1 !important; }
+.leaflet-popup-pane,
+.leaflet-tooltip-pane { z-index: 5 !important; }
+.leaflet-control { z-index: 2 !important; }
+
 @layer base {
   :root {
     --background: 214 100% 99%;
