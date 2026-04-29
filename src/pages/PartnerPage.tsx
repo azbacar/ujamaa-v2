@@ -384,13 +384,37 @@ export default function PartnerPage() {
           </Card>
         </div>
 
-        <Tabs defaultValue="collect">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="collect"><Plus className="h-4 w-4 mr-1" /> Encaisser</TabsTrigger>
-            <TabsTrigger value="deposit"><Wallet className="h-4 w-4 mr-1" /> Dépôts AZZHY</TabsTrigger>
-            <TabsTrigger value="history"><Receipt className="h-4 w-4 mr-1" /> Historique</TabsTrigger>
-            <TabsTrigger value="profile"><Building2 className="h-4 w-4 mr-1" /> Profil</TabsTrigger>
+        {account!.kyc_status !== 'approved' && (
+          <Alert className="border-amber-200 bg-amber-50">
+            <AlertDescription className="text-sm">
+              🔒 <strong>Vérification d'identité requise.</strong> Vous ne pouvez pas encore reverser de dépôts à AZZHY
+              tant que votre dossier KYC n'est pas approuvé.{' '}
+              {account!.kyc_status === 'submitted'
+                ? 'Votre dossier est en cours d\'examen.'
+                : 'Téléversez vos documents dans l\'onglet « Vérification ».'}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <Tabs defaultValue={account!.kyc_status === 'approved' ? 'collect' : 'kyc'}>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1 h-auto">
+            <TabsTrigger value="collect" className="text-xs sm:text-sm"><Plus className="h-4 w-4 mr-1" /> Encaisser</TabsTrigger>
+            <TabsTrigger value="deposit" className="text-xs sm:text-sm" disabled={account!.kyc_status !== 'approved'}>
+              {account!.kyc_status !== 'approved' ? <Lock className="h-4 w-4 mr-1" /> : <Wallet className="h-4 w-4 mr-1" />}
+              Dépôts AZZHY
+            </TabsTrigger>
+            <TabsTrigger value="kyc" className="text-xs sm:text-sm">
+              <ShieldCheck className="h-4 w-4 mr-1" /> Vérification
+            </TabsTrigger>
+            <TabsTrigger value="history" className="text-xs sm:text-sm"><Receipt className="h-4 w-4 mr-1" /> Historique</TabsTrigger>
+            <TabsTrigger value="profile" className="text-xs sm:text-sm"><Building2 className="h-4 w-4 mr-1" /> Profil</TabsTrigger>
           </TabsList>
+
+          {/* KYC */}
+          <TabsContent value="kyc">
+            <PartnerKycSection account={account!} onUpdated={refreshAccount} />
+          </TabsContent>
+
 
           {/* ENCAISSER */}
           <TabsContent value="collect">
