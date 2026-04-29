@@ -225,12 +225,17 @@ serve(async (req) => {
       user = authUser;
     }
 
-    // Fetch all data in parallel + recherche ciblée RAG
+    // 🌍 Détecter automatiquement la localisation (île/ville) dans la question
+    // Utilise aussi l'historique récent pour gérer les follow-ups ("et là-bas ?")
+    const recentContext = (Array.isArray(clientHistory) ? clientHistory.slice(-3).map((m: any) => m.content || m.text || '').join(' ') : '');
+    const detectedLocation = detectLocation(sanitizedMessage + ' ' + recentContext);
+
+    // Fetch all data in parallel + recherche ciblée RAG (avec filtre géographique)
     const [dynamicData, knowledgeSources, dbHistory, searchHits] = await Promise.all([
       getDynamicSiteData(authHeader),
       getKnowledgeSources(),
       getConversationHistory(sessionId, authHeader),
-      searchSiteContent(sanitizedMessage, authHeader),
+      searchSiteContent(sanitizedMessage, authHeader, detectedLocation),
     ]);
 
     // Use DB history for logged-in users, client-sent history for guests
