@@ -86,14 +86,16 @@ export const MaintenanceCheck = ({ showInProduction = false }: MaintenanceCheckP
     }
   };
 
-  // Ne jamais afficher en production sauf pour le debug explicite
-  if (!import.meta.env.DEV && !showInProduction) {
+  // Affichage uniquement si explicitement demandé via ?debug=ready
+  // (sinon ce panneau pollue l'UI mobile et bloque la navigation)
+  const debugRequested = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('debug') === 'ready';
+
+  if (!debugRequested && !showInProduction) {
     return null;
   }
-  
-  // En production, même avec showInProduction=true, limiter l'affichage
-  if (!import.meta.env.DEV && showInProduction) {
-    // Affichage minimal pour la production si nécessaire
+
+  if (!import.meta.env.DEV && showInProduction && !debugRequested) {
     return (
       <div className="fixed bottom-4 right-4 z-50 opacity-50">
         <Badge variant="secondary" className="text-xs">
