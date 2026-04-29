@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Handshake, Banknote, Users, ShieldCheck, Crown, Loader2, Plus, Receipt, Phone, Mail,
-  MapPin, Wallet, Building2, CheckCircle2, Clock, XCircle,
+  MapPin, Wallet, Building2, CheckCircle2, Clock, XCircle, Lock,
 } from 'lucide-react';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { logger } from '@/lib/logger';
 import { authPath } from '@/lib/authRedirect';
+import PartnerKycSection from '@/components/PartnerKycSection';
 
 const ISLANDS = ['Grande Comore', 'Anjouan', 'Mohéli', 'Mayotte'];
 const ALL_METHODS = [
