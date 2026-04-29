@@ -333,7 +333,19 @@ export default function PartnersManagementSection() {
                   </p>
                   <p className="text-xs text-muted-foreground">📍 {p.city || '—'} {p.island || ''}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {p.kyc_status === 'approved' ? (
+                    <Badge className="bg-emerald-100 text-emerald-700"><CheckCircle2 className="h-3 w-3 mr-1" /> KYC OK</Badge>
+                  ) : p.kyc_status === 'submitted' ? (
+                    <Badge className="bg-ocean-100 text-ocean-700"><Clock className="h-3 w-3 mr-1" /> KYC à examiner</Badge>
+                  ) : p.kyc_status === 'rejected' ? (
+                    <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> KYC rejeté</Badge>
+                  ) : (
+                    <Badge variant="outline">KYC en attente</Badge>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => openKycReview(p)}>
+                    <ShieldCheck className="h-4 w-4 mr-1" /> KYC
+                  </Button>
                   <Badge className={p.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}>
                     {p.status === 'active' ? 'Actif' : 'Suspendu'}
                   </Badge>
@@ -347,6 +359,59 @@ export default function PartnersManagementSection() {
           ))}
         </CardContent>
       </Card>
+
+      {/* KYC Review Dialog */}
+      <Dialog open={!!kycPartner} onOpenChange={(o) => !o && setKycPartner(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-emerald-600" /> KYC — {kycPartner?.business_name}
+            </DialogTitle>
+            <DialogDescription>
+              Statut actuel : <strong>{kycPartner?.kyc_status}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm font-medium">Documents fournis ({kycDocs.length})</p>
+            {kycDocs.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Aucun document soumis.</p>
+            ) : kycDocs.map(d => (
+              <div key={d.id} className="flex items-center justify-between p-2.5 border rounded-lg">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{d.document_type}</p>
+                    <p className="text-xs text-muted-foreground truncate">{d.file_name}</p>
+                    {d.notes && <p className="text-xs italic text-muted-foreground truncate">{d.notes}</p>}
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => handleViewDoc(d.file_path)}>
+                  <ExternalLink className="h-4 w-4 mr-1" /> Voir
+                </Button>
+              </div>
+            ))}
+
+            <div>
+              <Label>Motif (en cas de rejet)</Label>
+              <Textarea
+                placeholder="Ex: pièce d'identité illisible, justificatif manquant..."
+                value={rejectionReason}
+                onChange={e => setRejectionReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end pt-2 border-t">
+              <Button variant="destructive" onClick={() => reviewKyc('rejected')} disabled={reviewing}>
+                <XCircle className="h-4 w-4 mr-1" /> Rejeter
+              </Button>
+              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => reviewKyc('approved')} disabled={reviewing}>
+                <CheckCircle2 className="h-4 w-4 mr-1" /> Approuver
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
