@@ -288,7 +288,7 @@ export default function VendorMapPage() {
 
           {!loading && locations.length === 0 && (
             <p className="text-center text-muted-foreground mt-6">
-              Aucun vendeur en direct pour le moment. Revenez bientôt !
+              Aucun annonceur en direct pour le moment. Revenez bientôt !
             </p>
           )}
         </div>
