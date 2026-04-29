@@ -510,6 +510,40 @@ export default function GuidePage() {
             </CardContent>
           </Card>
 
+          <Card className="border-blue-200 dark:border-blue-800">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <ShieldCheck className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Vérifié (KYC)</h3>
+                  <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                    Gratuit
+                  </Badge>
+                </div>
+              </div>
+              <ul className="space-y-1.5 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                  Pour annonceurs, freelancers et entreprises
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                  Badge bleu de confiance affiché publiquement
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                  Débloque la géolocalisation publique sur la carte vendeurs
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />
+                  Sur formulaire KYC validé par l'administration
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+
           <Card className="border-amber-200 dark:border-amber-800 sm:col-span-2">
             <CardContent className="p-5">
               <div className="flex items-center gap-3 mb-3">
@@ -519,26 +553,34 @@ export default function GuidePage() {
                 <div>
                   <h3 className="font-semibold text-foreground">Pro</h3>
                   <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-700">
-                    Abonnement
+                    990 FC/mois · Annuel -10 %
                   </Badge>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                <Sparkles className="inline h-3 w-3 text-amber-500 mr-1" />
+                <strong>Pro = avantage GLOBAL</strong> : un seul abonnement débloque tout, peu importe votre rôle.
+              </p>
               <ul className="space-y-1.5 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
-                  Tous les avantages annonceur
+                  Voir les coordonnées (téléphone, email, WhatsApp) de <strong>tous</strong> les contenus
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
-                  Historique complet des prix et graphiques d'évolution
+                  Vos publications affichent vos contacts à tout le monde
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
-                  Alertes prix personnalisées
+                  Messagerie sans filtrage (partage de numéros et liens autorisé)
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
-                  Badge vérifié et visibilité accrue
+                  Historique complet des prix, alertes personnalisées, stats avancées
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 shrink-0" />
+                  Badge Pro doré, support prioritaire, codes promo
                 </li>
               </ul>
               <Button
