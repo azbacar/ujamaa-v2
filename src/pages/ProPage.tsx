@@ -139,6 +139,11 @@ function generateUserRef(userId: string): string {
   return ("UJA" + userId.replace(/-/g, "").slice(0, 12)).toUpperCase();
 }
 
+// Tarification Pro : 990 FC/mois, ou 990 × 12 × 0,90 = 10 692 FC/an (-10%)
+const PRO_MONTHLY_AMOUNT = 990;
+const PRO_YEARLY_AMOUNT = Math.round(PRO_MONTHLY_AMOUNT * 12 * 0.9); // 10 692
+const PRO_YEARLY_SAVINGS = PRO_MONTHLY_AMOUNT * 12 - PRO_YEARLY_AMOUNT; // 1 188
+
 export default function ProPage() {
   const [currentLanguage, setCurrentLanguage] = useState("fr");
   const { user } = useAuth();
@@ -146,6 +151,7 @@ export default function ProPage() {
 
   const [showPayment, setShowPayment] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("premium");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
   const [checkingPromo, setCheckingPromo] = useState(false);
