@@ -65,6 +65,56 @@ export default function PartnersManagementSection() {
   // Settings form
   const [savingSettings, setSavingSettings] = useState(false);
 
+  // KYC review state
+  const [kycPartner, setKycPartner] = useState<Partner | null>(null);
+  const [kycDocs, setKycDocs] = useState<KycDoc[]>([]);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [reviewing, setReviewing] = useState(false);
+
+  const openKycReview = async (p: Partner) => {
+    setKycPartner(p);
+    setRejectionReason(p.kyc_rejection_reason || '');
+    const { data } = await supabase
+      .from('partner_kyc_documents')
+      .select('*')
+      .eq('partner_id', p.id)
+      .order('created_at', { ascending: false });
+    setKycDocs((data as any) || []);
+  };
+
+  const handleViewDoc = async (path: string) => {
+    const { data, error } = await supabase.storage
+      .from('verification-documents')
+      .createSignedUrl(path, 600);
+    if (error || !data?.signedUrl) { toast.error('Impossible d\'ouvrir le document'); return; }
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const reviewKyc = async (decision: 'approved' | 'rejected') => {
+    if (!kycPartner) return;
+    if (decision === 'rejected' && !rejectionReason.trim()) {
+      toast.error('Indiquez un motif de rejet'); return;
+    }
+    setReviewing(true);
+    try {
+      const { error } = await supabase
+        .from('partner_accounts')
+        .update({
+          kyc_status: decision,
+          kyc_rejection_reason: decision === 'rejected' ? rejectionReason.trim() : null,
+        })
+        .eq('id', kycPartner.id);
+      if (error) throw error;
+      toast.success(decision === 'approved' ? 'KYC approuvé ✅' : 'KYC rejeté');
+      setKycPartner(null);
+      fetchAll();
+    } catch (e: any) {
+      toast.error(e?.message || 'Erreur');
+    } finally {
+      setReviewing(false);
+    }
+  };
+
   const fetchAll = async () => {
     setLoading(true);
     const [pRes, sRes] = await Promise.all([
