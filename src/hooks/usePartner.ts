@@ -15,6 +15,11 @@ export interface PartnerAccount {
   status: string;
   notes: string | null;
   created_at: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  is_visible_on_map?: boolean;
+  opening_hours?: string | null;
+  accepted_methods?: string[];
 }
 
 export interface PartnerSettings {
@@ -24,6 +29,24 @@ export interface PartnerSettings {
   currency: string;
   pro_plan_price: number;
   is_active: boolean;
+  azzhy_deposit_commission_rate?: number;
+}
+
+export interface PartnerDeposit {
+  id: string;
+  partner_id: string;
+  total_collected: number;
+  commission_rate: number;
+  commission_amount: number;
+  net_deposited: number;
+  currency: string;
+  deposit_method: 'cash' | 'bank_transfer' | 'mobile_money';
+  reference: string | null;
+  notes: string | null;
+  status: 'pending' | 'confirmed' | 'rejected';
+  confirmed_by: string | null;
+  confirmed_at: string | null;
+  created_at: string;
 }
 
 export interface PartnerTransaction {
