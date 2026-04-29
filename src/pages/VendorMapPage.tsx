@@ -241,21 +241,49 @@ export default function VendorMapPage() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
                   {locations.map((loc) => {
+                    const isFollowed = followIds.includes(loc.id);
+                    const followColor = isFollowed ? colorFor(loc.id) : null;
+                    // Icône colorée distincte pour chaque annonceur suivi
+                    const icon = loc.is_mobile
+                      ? (isFollowed
+                          ? L.divIcon({
+                              className: '',
+                              html: `<div style="position:relative;width:40px;height:40px;">
+                                <div style="position:absolute;inset:0;border-radius:50%;background:${followColor}40;animation:ujamaaPulse 1.5s infinite;"></div>
+                                <div style="position:absolute;top:5px;left:5px;width:30px;height:30px;border-radius:50%;background:${followColor};border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:12px;">${followIds.indexOf(loc.id) + 1}</div>
+                              </div>`,
+                              iconSize: [40, 40],
+                              iconAnchor: [20, 20],
+                            })
+                          : mobileIcon)
+                      : fixedIcon;
                     const MarkerComp: any = loc.is_mobile ? AnimatedVendorMarker : Marker;
                     const extraProps = loc.is_mobile
-                      ? { id: loc.id, follow: followId === loc.id, durationMs: 1500 }
+                      ? {
+                          id: loc.id,
+                          follow: isFollowed,
+                          // En multi-suivi, on désactive le panTo individuel : le parent fait fitBounds
+                          suppressPan: followIds.length >= 2,
+                          onPositionChange: handlePositionChange,
+                          durationMs: 1500,
+                        }
                       : {};
                     return (
                     <MarkerComp
                       key={loc.id}
                       position={[loc.latitude, loc.longitude] as [number, number]}
-                      icon={loc.is_mobile ? mobileIcon : fixedIcon}
+                      icon={icon}
                       {...extraProps}
                     >
                       <Popup>
                         <div className="space-y-1">
                           <div className="font-semibold flex items-center gap-1">
                             <MapPin className="h-3 w-3 text-emerald-600" /> {loc.label}
+                            {isFollowed && (
+                              <span className="ml-auto inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-[10px] font-bold" style={{ background: followColor! }}>
+                                {followIds.indexOf(loc.id) + 1}
+                              </span>
+                            )}
                           </div>
                           <Badge variant={loc.is_mobile ? 'default' : 'secondary'} className="text-[10px]">
                             {loc.is_mobile ? '🚚 Ambulant — en direct' : '🏪 Position fixe'}
@@ -268,17 +296,14 @@ export default function VendorMapPage() {
                           </p>
                           {loc.is_mobile && (
                             <button
-                              onClick={() => setFollowId(followId === loc.id ? null : loc.id)}
-                              className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors ${
-                                followId === loc.id
-                                  ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                              }`}
+                              onClick={() => toggleFollow(loc.id)}
+                              className={`w-full inline-flex items-center justify-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md transition-colors text-white`}
+                              style={{ background: isFollowed ? '#e11d48' : '#059669' }}
                             >
-                              {followId === loc.id ? (
-                                <><EyeOff className="h-3.5 w-3.5" /> Arrêter le suivi</>
+                              {isFollowed ? (
+                                <><EyeOff className="h-3.5 w-3.5" /> Arrêter ce suivi</>
                               ) : (
-                                <><Eye className="h-3.5 w-3.5" /> Suivre en direct 🛰️</>
+                                <><Eye className="h-3.5 w-3.5" /> {followIds.length > 0 ? `Ajouter au suivi (#${followIds.length + 1})` : 'Suivre en direct 🛰️'}</>
                               )}
                             </button>
                           )}
