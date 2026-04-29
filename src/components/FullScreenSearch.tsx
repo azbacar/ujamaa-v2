@@ -152,6 +152,29 @@ const AISearchChat = ({ onClose }: { onClose: () => void }) => {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: { message: sanitized, sessionId, context: 'fullscreen_search' },
       });
+
+      // Detect "all providers down" (status 503)
+      const status = (error as any)?.context?.status || (error as any)?.status;
+      const errMsg = String((error as any)?.message || '');
+      const allDown =
+        data?.code === 'ALL_PROVIDERS_FAILED' ||
+        status === 503 ||
+        errMsg.includes('503') ||
+        errMsg.includes('ALL_PROVIDERS_FAILED');
+
+      if (allDown) {
+        const downMsg: AIChatMessage = {
+          id: (Date.now() + 1).toString(),
+          text: "🔌 Service IA temporairement indisponible. Nos assistants sont en pause technique — réessayez dans quelques minutes.",
+          isUser: false,
+          timestamp: new Date(),
+        };
+        const updatedMessages = [...newMessages, downMsg];
+        setMessages(updatedMessages);
+        syncToLocalStorage(updatedMessages);
+        return;
+      }
+
       if (error) throw error;
 
       const responseText = data?.response || "Désolé, je n'ai pas pu traiter votre demande.";

@@ -24,7 +24,7 @@ interface Message {
   timestamp: Date;
   type?: 'info' | 'suggestion' | 'answer';
   links?: Link[];
-  errorType?: 'rate_limit' | 'payment' | 'generic';
+  errorType?: 'rate_limit' | 'payment' | 'unavailable' | 'generic';
 }
 
 const AIAssistantSection = () => {
@@ -70,15 +70,20 @@ const AIAssistantSection = () => {
 
     if (error) {
       const status = (error as any)?.context?.status || (error as any)?.status;
-      if (status === 429 || String(error.message).includes('429')) {
+      const errMsg = String(error.message || '');
+      if (status === 503 || errMsg.includes('503') || errMsg.includes('ALL_PROVIDERS_FAILED')) {
+        throw { code: 'ALL_PROVIDERS_FAILED' };
+      }
+      if (status === 429 || errMsg.includes('429')) {
         throw { code: 'RATE_LIMIT' };
       }
-      if (status === 402 || String(error.message).includes('402')) {
+      if (status === 402 || errMsg.includes('402')) {
         throw { code: 'PAYMENT_REQUIRED' };
       }
       throw error;
     }
 
+    if (data?.code === 'ALL_PROVIDERS_FAILED') throw { code: 'ALL_PROVIDERS_FAILED' };
     if (data?.code === 'RATE_LIMIT') throw { code: 'RATE_LIMIT' };
     if (data?.code === 'PAYMENT_REQUIRED') throw { code: 'PAYMENT_REQUIRED' };
 
@@ -152,7 +157,10 @@ const AIAssistantSection = () => {
       let errorType: Message['errorType'] = 'generic';
       let errorContent = "Désolé, je rencontre des difficultés techniques. Veuillez réessayer dans quelques instants.";
 
-      if (error?.code === 'RATE_LIMIT') {
+      if (error?.code === 'ALL_PROVIDERS_FAILED') {
+        errorType = 'unavailable';
+        errorContent = "🔌 Service IA temporairement indisponible. Nos assistants sont en pause technique — réessayez dans quelques minutes.";
+      } else if (error?.code === 'RATE_LIMIT') {
         errorType = 'rate_limit';
         errorContent = "⏳ Le service est temporairement surchargé. Veuillez patienter quelques secondes puis réessayer.";
       } else if (error?.code === 'PAYMENT_REQUIRED') {
@@ -362,7 +370,7 @@ const AIAssistantSection = () => {
             <div className="flex items-center gap-2 mb-1.5">
               <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
               <span className="text-xs font-semibold text-destructive">
-                {message.errorType === 'rate_limit' ? 'Service surchargé' : message.errorType === 'payment' ? 'Crédit insuffisant' : 'Erreur'}
+                {message.errorType === 'rate_limit' ? 'Service surchargé' : message.errorType === 'payment' ? 'Crédit insuffisant' : message.errorType === 'unavailable' ? 'Service indisponible' : 'Erreur'}
               </span>
             </div>
           )}
