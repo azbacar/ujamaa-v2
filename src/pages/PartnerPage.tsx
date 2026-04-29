@@ -343,6 +343,15 @@ export default function PartnerPage() {
                 <MapPin className="h-3 w-3 mr-1" /> Visible sur la carte
               </Badge>
             )}
+            {account!.kyc_status === 'approved' ? (
+              <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle2 className="h-3 w-3 mr-1" /> KYC validé</Badge>
+            ) : account!.kyc_status === 'submitted' ? (
+              <Badge className="bg-ocean-100 text-ocean-700 border-ocean-200"><Clock className="h-3 w-3 mr-1" /> KYC en examen</Badge>
+            ) : account!.kyc_status === 'rejected' ? (
+              <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> KYC rejeté</Badge>
+            ) : (
+              <Badge variant="outline" className="border-amber-300 text-amber-700"><Lock className="h-3 w-3 mr-1" /> KYC requis</Badge>
+            )}
             {account!.island && <span className="text-sm text-muted-foreground">📍 {account!.city || ''} {account!.island}</span>}
           </div>
         </div>
