@@ -215,11 +215,15 @@ export default function VendorMapPage() {
                             {user ? (
                               user.id !== loc.user_id ? (
                                 <Link
-                                  to={`/messages/${loc.user_id}`}
-                                  className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-md transition-colors"
+                                  to={`/messages/${loc.user_id}?prefill=${encodeURIComponent(
+                                    loc.is_mobile
+                                      ? `Bonjour ${loc.label}, je vous suis sur la carte en direct. Pouvez-vous me guider pour vous retrouver ? 📍`
+                                      : `Bonjour ${loc.label}, pouvez-vous me communiquer votre position exacte ?`
+                                  )}`}
+                                  className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-md transition-colors animate-pulse"
                                 >
                                   <MessageCircle className="h-3.5 w-3.5" />
-                                  Demander la position exacte
+                                  {loc.is_mobile ? '💬 Écrire en live · Guidez-moi' : 'Demander la position exacte'}
                                 </Link>
                               ) : (
                                 <span className="text-[11px] text-muted-foreground italic">C'est votre annonce</span>
@@ -230,7 +234,7 @@ export default function VendorMapPage() {
                                 className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded-md transition-colors"
                               >
                                 <LogIn className="h-3.5 w-3.5" />
-                                Se connecter pour contacter
+                                Se connecter pour écrire à l'annonceur
                               </Link>
                             )}
                           </div>
