@@ -66,6 +66,25 @@ export default function UserManagementSection({
   const togglePrivilege = async (privilege: string, active: boolean) => {
     if (!privilegeUser || !currentUser) return;
     try {
+      // Garde-fou : "Vérifié" exige une demande KYC approuvée (verification_requests)
+      if (privilege === 'verified' && active) {
+        const { data: req } = await supabase
+          .from('verification_requests')
+          .select('id')
+          .eq('user_id', privilegeUser)
+          .eq('status', 'approved')
+          .limit(1)
+          .maybeSingle();
+        if (!req) {
+          const ok = window.confirm(
+            "⚠️ Cet utilisateur n'a AUCUNE demande de vérification approuvée (KYC).\n\n" +
+            "Activer manuellement le badge « Vérifié » sans pièce justificative est déconseillé.\n\n" +
+            "Voulez-vous vraiment continuer ?"
+          );
+          if (!ok) return;
+        }
+      }
+
       const { data: existing } = await supabase
         .from('announcer_privileges')
         .select('id')
