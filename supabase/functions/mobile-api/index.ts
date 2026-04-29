@@ -146,9 +146,57 @@ Deno.serve(async (req) => {
       return json({ data, total: count, limit, offset });
     }
 
-    // ── PUBLIC ENDPOINT: LOGIN ──
+    // ─────────────────────────────────────────────────────────────────────
+    // Helper : récupère l'utilisateur connecté à partir du Bearer token.
+    // Retourne null si absent/invalide.
+    // ─────────────────────────────────────────────────────────────────────
+    const getBearerUser = async () => {
+      const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+      if (!bearer) return null;
+      const { data, error } = await supabase.auth.getUser(bearer);
+      if (error || !data?.user) return null;
+      return data.user;
+    };
+
+    // ── PUBLIC ENDPOINT: AUTH ──
     if (resource === "auth" && method === "POST") {
       if (!hasPermission(keyInfo, "login")) return err("Permission denied", 403);
+
+      if (id === "register") {
+        const body = await req.json();
+        const { email, password, username } = body;
+        if (!email || !password) return err("email and password required");
+        const { data, error: authErr } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username: username || email.split("@")[0] } },
+        });
+        if (authErr) return err(authErr.message, 400);
+        return json({
+          user_id: data.user?.id,
+          email: data.user?.email,
+          needs_email_confirmation: !data.session,
+          access_token: data.session?.access_token || null,
+          refresh_token: data.session?.refresh_token || null,
+        }, 201);
+      }
+
+      if (id === "logout") {
+        const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+        if (!bearer) return err("Authorization bearer required", 401);
+        const { error: e } = await supabase.auth.admin.signOut(bearer);
+        if (e) return err(e.message, 400);
+        return json({ success: true });
+      }
+
+      if (id === "reset-password") {
+        const body = await req.json();
+        if (!body.email) return err("email required");
+        const redirectTo = body.redirectTo || "https://ujamaan.com/reset-password";
+        const { error: e } = await supabase.auth.resetPasswordForEmail(body.email, { redirectTo });
+        if (e) return err(e.message, 400);
+        return json({ success: true });
+      }
 
       if (id === "login") {
         const body = await req.json();
