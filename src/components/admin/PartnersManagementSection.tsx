@@ -199,8 +199,36 @@ export default function PartnersManagementSection() {
     }
   };
 
+  const pendingKyc = partners.filter(p => p.kyc_status === 'submitted');
+
   return (
     <div className="space-y-6">
+      {/* KYC à examiner */}
+      {pendingKyc.length > 0 && (
+        <Card className="border-amber-200 bg-amber-50/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-800">
+              <ShieldCheck className="h-5 w-5" /> Dossiers KYC à examiner
+              <Badge className="bg-amber-100 text-amber-800 border-amber-200 ml-1">{pendingKyc.length}</Badge>
+            </CardTitle>
+            <CardDescription>Validez l'identité avant que ces concessionnaires puissent reverser des dépôts à AZZHY.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {pendingKyc.map(p => (
+              <div key={p.id} className="flex justify-between items-center p-3 border bg-background rounded-lg">
+                <div>
+                  <p className="font-medium">{p.business_name}</p>
+                  <p className="text-xs text-muted-foreground">{p.contact_email} · {p.city || '—'} {p.island || ''}</p>
+                </div>
+                <Button size="sm" onClick={() => openKycReview(p)}>
+                  <Eye className="h-4 w-4 mr-1" /> Examiner
+                </Button>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Commission Settings */}
       <Card>
         <CardHeader>
