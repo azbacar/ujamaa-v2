@@ -375,17 +375,22 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
     aiMessages.push({ role: 'user', content: sanitizedMessage });
 
     // ============================================================
-    // ROUTAGE IA : priorité à GEMINI_API_KEY (gratuit, 1500 req/jour)
-    // Fallback automatique sur Lovable AI Gateway si non configuré
+    // CHAÎNE DE FALLBACK IA (cascade automatique sur erreur/quota)
+    //   1. GEMINI_API_KEY        → Google Gemini direct (1500 req/jour gratuites)
+    //   2. KIMI_API_KEY          → Moonshot Kimi (relais si Gemini KO/quota)
+    //   3. LOVABLE_API_KEY       → Lovable AI Gateway (dernier recours, payant)
     // ============================================================
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-    let aiResponse: string;
+    const KIMI_API_KEY = Deno.env.get('KIMI_API_KEY');
 
-    if (GEMINI_API_KEY) {
-      // ----- Appel direct Google Gemini API (gratuit) -----
+    let aiResponse = '';
+    let providerUsed = '';
+    const failures: string[] = [];
+
+    // ---------- Helpers ----------
+    const callGemini = async (): Promise<string> => {
       const systemMsg = aiMessages.find(m => m.role === 'system')?.content || '';
       const convo = aiMessages.filter(m => m.role !== 'system');
-      // Gemini : on convertit assistant->model et on préfixe le system au 1er user
       const contents = convo.map((m, idx) => {
         const role = m.role === 'assistant' ? 'model' : 'user';
         const text = idx === 0 && role === 'user' && systemMsg
@@ -393,19 +398,14 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
           : m.content;
         return { role, parts: [{ text }] };
       });
-
-      const geminiResp = await fetch(
+      const resp = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents,
-            generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 2048,
-              topP: 0.95,
-            },
+            generationConfig: { temperature: 0.3, maxOutputTokens: 2048, topP: 0.95 },
             safetySettings: [
               { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
               { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
@@ -415,30 +415,43 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
           }),
         }
       );
-
-      if (geminiResp.status === 429) {
-        return new Response(JSON.stringify({ error: 'Quota Gemini atteint pour aujourd\'hui (1500 req/jour). Réessayez demain.', code: 'RATE_LIMIT' }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      if (!resp.ok) {
+        const t = await resp.text();
+        throw new Error(`Gemini ${resp.status}: ${t.slice(0, 200)}`);
       }
-      if (!geminiResp.ok) {
-        const errorText = await geminiResp.text();
-        console.error('Gemini API error:', geminiResp.status, errorText);
-        throw new Error(`Gemini API error: ${geminiResp.status}`);
-      }
+      const data = await resp.json();
+      const text = data.candidates?.[0]?.content?.parts?.map((p: any) => p.text).filter(Boolean).join('\n') || '';
+      if (!text) throw new Error(`Gemini empty (finish=${data.candidates?.[0]?.finishReason})`);
+      return text;
+    };
 
-      const geminiData = await geminiResp.json();
-      const candidate = geminiData.candidates?.[0];
-      const finishReason = candidate?.finishReason;
-      aiResponse = candidate?.content?.parts?.map((p: any) => p.text).filter(Boolean).join('\n') || '';
-
-      if (!aiResponse) {
-        console.error('Gemini empty response. Finish reason:', finishReason, 'Full:', JSON.stringify(geminiData).slice(0, 500));
-        aiResponse = "Désolé, je n'ai pas pu générer de réponse. Reformulez votre question s'il vous plaît.";
+    const callKimi = async (): Promise<string> => {
+      // Kimi Moonshot — API compatible OpenAI
+      const resp = await fetch('https://api.moonshot.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${KIMI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'moonshot-v1-8k',
+          messages: aiMessages,
+          temperature: 0.3,
+          max_tokens: 2000,
+        }),
+      });
+      if (!resp.ok) {
+        const t = await resp.text();
+        throw new Error(`Kimi ${resp.status}: ${t.slice(0, 200)}`);
       }
-    } else {
-      // ----- Fallback Lovable AI Gateway -----
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      const data = await resp.json();
+      const text = data.choices?.[0]?.message?.content || '';
+      if (!text) throw new Error('Kimi empty response');
+      return text;
+    };
+
+    const callLovableAI = async (): Promise<string> => {
+      const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${LOVABLE_API_KEY}`,
@@ -452,26 +465,49 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
           reasoning: { effort: 'medium' },
         }),
       });
+      if (!resp.ok) {
+        const t = await resp.text();
+        throw new Error(`LovableAI ${resp.status}: ${t.slice(0, 200)}`);
+      }
+      const data = await resp.json();
+      return data.choices?.[0]?.message?.content || '';
+    };
 
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Service surchargé. Réessayez.', code: 'RATE_LIMIT' }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'Crédit IA insuffisant. Configurez GEMINI_API_KEY pour un usage gratuit.', code: 'PAYMENT_REQUIRED' }), {
-          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('AI Gateway error:', response.status, errorText);
-        throw new Error(`AI Gateway error: ${response.status}`);
-      }
+    // ---------- Cascade ----------
+    const providers: Array<{ name: string; enabled: boolean; fn: () => Promise<string> }> = [
+      { name: 'gemini', enabled: !!GEMINI_API_KEY, fn: callGemini },
+      { name: 'kimi',   enabled: !!KIMI_API_KEY,   fn: callKimi },
+      { name: 'lovable', enabled: !!LOVABLE_API_KEY, fn: callLovableAI },
+    ];
 
-      const data = await response.json();
-      aiResponse = data.choices[0].message.content;
+    for (const p of providers) {
+      if (!p.enabled) continue;
+      try {
+        aiResponse = await p.fn();
+        providerUsed = p.name;
+        if (failures.length > 0) {
+          console.warn(`[ai-chat] Provider ${p.name} took over after failures: ${failures.join(' | ')}`);
+        }
+        break;
+      } catch (err) {
+        const msg = (err as Error).message;
+        console.error(`[ai-chat] Provider ${p.name} failed:`, msg);
+        failures.push(`${p.name}: ${msg}`);
+      }
     }
+
+    if (!aiResponse) {
+      return new Response(
+        JSON.stringify({
+          error: 'Tous les services IA sont temporairement indisponibles. Réessayez dans quelques minutes.',
+          code: 'ALL_PROVIDERS_FAILED',
+          details: failures,
+        }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`[ai-chat] Response served by: ${providerUsed}`);
 
     // Store conversation for analytics
     try {
