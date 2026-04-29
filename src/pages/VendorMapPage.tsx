@@ -100,10 +100,10 @@ export default function VendorMapPage() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
                 <Radio className="h-7 w-7 text-emerald-600 animate-pulse" />
-                Carte des vendeurs en direct
+                Carte des annonceurs en direct
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {locations.length} vendeur{locations.length > 1 ? 's' : ''} en ligne
+                {locations.length} annonceur{locations.length > 1 ? 's' : ''} en ligne
                 {partners.length > 0 && <> · <span className="text-amber-700 font-medium">{partners.length} concessionnaire{partners.length > 1 ? 's' : ''} de paiement</span></>}
               </p>
               <div className="flex flex-wrap gap-2 mt-2 text-[11px]">
