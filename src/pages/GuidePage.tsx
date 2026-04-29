@@ -607,23 +607,43 @@ export default function GuidePage() {
             {[
               {
                 q: "Ujamaan est-il gratuit ?",
-                a: "Oui ! L'inscription et l'accès aux prix, événements, annonces et services sont entièrement gratuits. Seules certaines fonctionnalités avancées nécessitent un abonnement Pro.",
+                a: "Oui ! L'inscription et l'accès aux prix, événements, annonces et services sont entièrement gratuits. Seules certaines fonctionnalités avancées (voir tous les contacts, historique complet des prix, alertes personnalisées) nécessitent un abonnement Pro à 990 FC/mois (ou annuel avec -10 %).",
+              },
+              {
+                q: "Quelle différence entre Vérifié et Pro ?",
+                a: "Vérifié (KYC) est gratuit et réservé aux annonceurs/freelancers/entreprises : il donne le badge bleu et débloque la géolocalisation publique. Pro est un abonnement payant qui débloque la visibilité de TOUS les contacts sur la plateforme et rend vos coordonnées publiques.",
               },
               {
                 q: "Comment publier une annonce ?",
-                a: 'Demandez le statut "Annonceur" depuis votre profil. Une fois approuvé, vous pourrez publier des annonces, événements et prix depuis votre tableau de bord.',
+                a: 'Demandez le statut "Annonceur" depuis votre profil. Une fois approuvé par un administrateur, vous accédez au tableau de bord /annonceur où vous pouvez publier prix, annonces, événements (jusqu\'à 5 images), missions freelance et appels d\'offres.',
+              },
+              {
+                q: "Comment payer mon abonnement Pro avec Mvola ?",
+                a: "Sur la page Pro, choisissez votre formule puis cliquez sur « Payer avec Mvola ». Sur mobile, le code USSD s'ouvre automatiquement dans votre composeur. Sur desktop, scannez le QR code dynamique. Validez avec votre code secret Mvola, renseignez la référence du SMS reçu, et votre statut Pro est activé sous 1h.",
               },
               {
                 q: "Les prix affichés sont-ils fiables ?",
-                a: "Les prix sont soumis par des vendeurs vérifiés et passent par une modération. Chaque prix indique le vendeur, le marché et la date de mise à jour.",
+                a: "Les prix sont soumis par des vendeurs et passent par une modération. Chaque prix indique le vendeur, le marché (jusqu'au village), la date de mise à jour, et l'historique d'évolution est disponible pour les abonnés Pro.",
               },
               {
-                q: "Comment fonctionne l'application mobile ?",
-                a: "Une application mobile native est en cours de développement. En attendant, vous pouvez accéder à Ujamaan depuis le navigateur de votre téléphone.",
+                q: "Comment contacter un vendeur sur la carte ?",
+                a: 'Sur la carte des vendeurs (/vendeurs/carte), cliquez sur un marqueur puis sur « Demander la position exacte ». La messagerie interne s\'ouvre. Pour les non-Pro, les numéros de téléphone et liens sont automatiquement masqués (🔒) dans les messages.',
+              },
+              {
+                q: "L'application mobile Ujamaan est-elle disponible ?",
+                a: "Oui, l'application mobile native (Android et iOS, basée sur Capacitor) partage la même infrastructure que le site. Elle inclut notifications push, GPS temps réel pour les vendeurs ambulants, paiement Mvola direct via lien tel: et messagerie en temps réel.",
+              },
+              {
+                q: "Comment fonctionne l'assistant IA ?",
+                a: "L'IA Ujamaan (Gemini) couvre les 4 îles des Comores et répond avec les vraies données de la plateforme : prix, événements, annonces, freelancers, lieux touristiques. Posez vos questions via le chat flottant ou la recherche plein écran — les réponses contiennent des liens cliquables vers les sections pertinentes.",
               },
               {
                 q: "Comment signaler un contenu inapproprié ?",
-                a: "Chaque contenu dispose d'un bouton de signalement. Nos modérateurs examinent tous les signalements sous 24h.",
+                a: "Chaque contenu dispose d'un bouton de signalement. Nos modérateurs examinent tous les signalements sous 24h et vous recevez une notification automatique sur la décision prise.",
+              },
+              {
+                q: "Comment supprimer mon compte ?",
+                a: "Rendez-vous sur /supprimer-compte pour générer une demande de suppression. Notre équipe support traitera votre demande sous 7 jours, conformément au RGPD.",
               },
             ].map(({ q, a }, i) => (
               <FaqItem key={i} question={q} answer={a} />
