@@ -31,6 +31,17 @@ export default function MessagesPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useRealtimeMessages(partnerId);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Pré-remplit le message depuis ?prefill= (ex: bouton "Guidez-moi" carte)
+  useEffect(() => {
+    const prefill = searchParams.get('prefill');
+    if (prefill && partnerId) {
+      setNewMessage(prefill);
+      searchParams.delete('prefill');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [partnerId, searchParams, setSearchParams]);
 
   // Fetch account types
   useEffect(() => {
