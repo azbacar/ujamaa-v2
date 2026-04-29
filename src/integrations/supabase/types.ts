@@ -1708,13 +1708,6 @@ export type Database = {
             referencedRelation: "partner_accounts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "partner_deposits_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "partner_accounts_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       partner_settings: {
@@ -1808,13 +1801,6 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partner_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partner_transactions_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "partner_accounts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2996,45 +2982,6 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
           views?: number | null
-        }
-        Relationships: []
-      }
-      partner_accounts_public: {
-        Row: {
-          accepted_methods: string[] | null
-          address: string | null
-          business_name: string | null
-          city: string | null
-          contact_phone: string | null
-          id: string | null
-          island: string | null
-          latitude: number | null
-          longitude: number | null
-          opening_hours: string | null
-        }
-        Insert: {
-          accepted_methods?: string[] | null
-          address?: string | null
-          business_name?: string | null
-          city?: string | null
-          contact_phone?: string | null
-          id?: string | null
-          island?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          opening_hours?: string | null
-        }
-        Update: {
-          accepted_methods?: string[] | null
-          address?: string | null
-          business_name?: string | null
-          city?: string | null
-          contact_phone?: string | null
-          id?: string | null
-          island?: string | null
-          latitude?: number | null
-          longitude?: number | null
-          opening_hours?: string | null
         }
         Relationships: []
       }
