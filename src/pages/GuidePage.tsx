@@ -149,8 +149,8 @@ export default function GuidePage() {
     },
     {
       icon: <Globe2 className="h-6 w-6 text-teal-600" />,
-      title: "Diaspora",
-      description: "Investissez dans des projets aux Comores",
+      title: "Investissement",
+      description: "Levez des fonds pour votre projet ou trouvez des associés",
       link: "/investissement",
       color: "bg-teal-100 dark:bg-teal-900/30",
     },
