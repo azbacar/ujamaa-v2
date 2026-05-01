@@ -41,7 +41,7 @@ const serviceCards = [
   { icon: TrendingUp, label: 'Prix & Marchés', desc: 'Comparez les prix en temps réel', to: '/prix', color: 'from-emerald-500 to-emerald-600' },
   { icon: Calendar, label: 'Événements', desc: 'Agenda culturel et professionnel', to: '/evenements', color: 'from-ocean-500 to-ocean-600' },
   { icon: Briefcase, label: 'Appels d\'offres', desc: 'Marchés publics et privés', to: '/appels-offres', color: 'from-amber-500 to-amber-600' },
-  { icon: Globe, label: 'Investissement', desc: 'Projets diaspora & levée de fonds', to: '/investissement', color: 'from-blue-500 to-blue-600' },
+  { icon: Globe, label: 'Investissement', desc: 'Projets & levée de fonds', to: '/investissement', color: 'from-blue-500 to-blue-600' },
   { icon: Map, label: 'Info Pratique', desc: 'Taxis, pharmacies de garde', to: '/infos-pratiques', color: 'from-purple-500 to-purple-600' },
   { icon: Stethoscope, label: 'Services Publics', desc: 'Administrations & services', to: '/services', color: 'from-rose-500 to-rose-600' },
 ];
@@ -54,7 +54,7 @@ const Index = () => {
 
   usePageSEO({
     canonicalPath: '/',
-    keywords: 'Comores, prix, événements, services, annonces, investissement, diaspora, Moroni, Anjouan, Mohéli, Mayotte',
+    keywords: 'Comores, prix, événements, services, annonces, investissement, levée de fonds, Moroni, Anjouan, Mohéli, Mayotte',
   });
   useJsonLd();
 

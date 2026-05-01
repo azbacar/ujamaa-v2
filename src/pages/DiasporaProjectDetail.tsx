@@ -36,11 +36,11 @@ export default function DiasporaProjectDetail() {
   const updateStatus = useUpdateInvestmentStatus();
 
   usePageSEO({
-    title: project?.title || 'Projet Diaspora',
-    description: project?.description?.substring(0, 160) || 'Projet d\'investissement diaspora aux Comores',
+    title: project?.title || 'Projet d\'investissement',
+    description: project?.description?.substring(0, 160) || 'Projet en recherche d\'investisseurs ou d\'associés aux Comores',
     canonicalPath: id ? `/investissement/${id}` : undefined,
     ogType: 'article',
-    keywords: project ? `${project.category}, investissement, diaspora, comores` : undefined,
+    keywords: project ? `${project.category}, investissement, levée de fonds, comores` : undefined,
   });
 
   useViewTracker('diaspora_project', project?.id);
