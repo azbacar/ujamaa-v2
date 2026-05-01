@@ -401,3 +401,22 @@ async function loadFavorites() {
 ---
 
 *Dernière mise à jour : 29/04/2026 — données vérifiées en prod.*
+
+---
+
+## 📍 Suivi GPS ambulant en arrière-plan (Capacitor)
+
+Pour que le partage de position **continue même écran verrouillé / app en arrière-plan**, ajouter dans l'app Capacitor :
+
+```bash
+npm i @capacitor/geolocation @capacitor-community/background-geolocation
+npx cap sync
+```
+
+Côté code, remplacer `navigator.geolocation.watchPosition` par le plugin natif quand `Capacitor.isNativePlatform()` est `true`. Update vers `vendor_locations` toutes les 15s via `supabase.from('vendor_locations').update(...)`.
+
+**Permissions requises :**
+- iOS `Info.plist` : `NSLocationAlwaysAndWhenInUseUsageDescription`, `UIBackgroundModes` → `location`
+- Android : `ACCESS_BACKGROUND_LOCATION` + service foreground
+
+**Limite web pure (PWA / navigateur) :** impossible de suivre la position quand l'onglet est fermé ou l'écran verrouillé. Solution actuelle = Wake Lock + heartbeat 15s tant que l'onglet est ouvert.
