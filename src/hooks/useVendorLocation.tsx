@@ -235,6 +235,7 @@ export const useVendorLocation = () => {
         .update({ is_active: false, expires_at: new Date().toISOString() })
         .eq('id', activeId);
       stopWatching();
+      activeIdRef.current = null;
       localStorage.removeItem(STORAGE_KEY);
       setActiveId(null);
       setExpiresAt(null);
