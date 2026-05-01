@@ -40,39 +40,104 @@ export const useVendorLocation = () => {
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [isMobileActive, setIsMobileActive] = useState(false);
   const watchIdRef = useRef<number | null>(null);
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const wakeLockRef = useRef<any>(null);
+  const activeIdRef = useRef<string | null>(null);
+
+  const requestWakeLock = useCallback(async () => {
+    try {
+      // @ts-ignore - wakeLock exists on modern browsers
+      if ('wakeLock' in navigator && !wakeLockRef.current) {
+        // @ts-ignore
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        wakeLockRef.current.addEventListener?.('release', () => {
+          wakeLockRef.current = null;
+        });
+      }
+    } catch (e) {
+      logger.warn('wake lock unavailable', e);
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(async () => {
+    try {
+      await wakeLockRef.current?.release?.();
+    } catch {}
+    wakeLockRef.current = null;
+  }, []);
+
+  const pushPosition = useCallback(async (locationId: string, pos: GeolocationPosition) => {
+    try {
+      await supabase
+        .from('vendor_locations')
+        .update({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy ?? null,
+          heading: pos.coords.heading ?? null,
+          speed: pos.coords.speed ?? null,
+          last_seen_at: new Date().toISOString(),
+        })
+        .eq('id', locationId);
+    } catch (e) {
+      logger.error('update vendor position failed', e);
+    }
+  }, []);
 
   const stopWatching = useCallback(() => {
     if (watchIdRef.current !== null && navigator.geolocation) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
-  }, []);
+    if (heartbeatRef.current) {
+      clearInterval(heartbeatRef.current);
+      heartbeatRef.current = null;
+    }
+    releaseWakeLock();
+  }, [releaseWakeLock]);
 
   const startWatching = useCallback((locationId: string) => {
     if (!('geolocation' in navigator)) return;
     stopWatching();
+    activeIdRef.current = locationId;
+
+    // 1) Continuous watch (fires when device detects movement)
     watchIdRef.current = navigator.geolocation.watchPosition(
-      async (pos) => {
-        try {
-          await supabase
-            .from('vendor_locations')
-            .update({
-              latitude: pos.coords.latitude,
-              longitude: pos.coords.longitude,
-              accuracy: pos.coords.accuracy ?? null,
-              heading: pos.coords.heading ?? null,
-              speed: pos.coords.speed ?? null,
-              last_seen_at: new Date().toISOString(),
-            })
-            .eq('id', locationId);
-        } catch (e) {
-          logger.error('update vendor position failed', e);
-        }
-      },
+      (pos) => pushPosition(locationId, pos),
       (err) => logger.error('geolocation watch error', err),
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 }
     );
-  }, [stopWatching]);
+
+    // 2) Heartbeat: force a fresh GPS fix every 15s so the marker keeps moving
+    //    even if watchPosition is throttled by the browser.
+    heartbeatRef.current = setInterval(() => {
+      if (!activeIdRef.current) return;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => pushPosition(activeIdRef.current!, pos),
+        (err) => logger.warn('heartbeat geolocation error', err),
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+      );
+    }, 15000);
+
+    // 3) Keep the screen awake while ambulant sharing is active
+    requestWakeLock();
+  }, [stopWatching, pushPosition, requestWakeLock]);
+
+  // Re-acquire wake lock + force a fix when the tab becomes visible again
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && activeIdRef.current) {
+        requestWakeLock();
+        navigator.geolocation?.getCurrentPosition(
+          (pos) => pushPosition(activeIdRef.current!, pos),
+          () => {},
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+        );
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [requestWakeLock, pushPosition]);
 
   // Restore session
   useEffect(() => {
@@ -170,6 +235,7 @@ export const useVendorLocation = () => {
         .update({ is_active: false, expires_at: new Date().toISOString() })
         .eq('id', activeId);
       stopWatching();
+      activeIdRef.current = null;
       localStorage.removeItem(STORAGE_KEY);
       setActiveId(null);
       setExpiresAt(null);
