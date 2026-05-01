@@ -195,7 +195,7 @@ export default function VendorLocationShareCard(_props: Props) {
             </Button>
             <p className="text-xs text-muted-foreground">
               {mode === 'ambulant'
-                ? '⚠️ Gardez cet onglet ouvert pour la mise à jour en temps réel.'
+                ? '⚠️ Gardez cet onglet ouvert et l\'écran allumé. Le navigateur garde votre GPS actif (Wake Lock + rafraîchissement toutes les 15 sec) tant que la page reste visible. Sur l\'app mobile native, le suivi continuera même écran verrouillé.'
                 : 'ℹ️ Position enregistrée une fois, visible sur la carte jusqu\'à expiration.'}
               {!isPro && isVerified && ' Géolocalisation accessible gratuitement grâce à votre statut Vérifié.'}
             </p>
