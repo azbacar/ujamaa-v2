@@ -40,7 +40,7 @@ const islands = [
 
 export default function DiasporaPage() {
   const { user } = useAuth();
-  usePageSEO({ title: 'Investissement Diaspora', description: 'Investissez dans des projets aux Comores. Découvrez les opportunités d\'investissement pour la diaspora comorienne.', canonicalPath: '/investissement', keywords: 'investissement Comores, diaspora, projets, financement' });
+  usePageSEO({ title: 'Investissement & Levée de fonds', description: 'Découvrez des projets aux Comores en recherche d\'investisseurs ou d\'associés. Levez des fonds pour votre projet.', canonicalPath: '/investissement', keywords: 'investissement Comores, levée de fonds, projets, financement, associés' });
   const { isAnnonceur } = useRole();
   const { data: carrierProfile } = useMyCarrierProfile();
   const [category, setCategory] = useState('all');
