@@ -17,6 +17,7 @@ import Index from "./pages/Index";
 
 // Lazy loaded: everything else
 const FloatingChatbox = lazy(() => import("@/components/FloatingChatbox"));
+const ActiveShareBar = lazy(() => import("@/components/ActiveShareBar"));
 
 const WelcomeDialog = lazy(() => import("@/components/WelcomeDialog").then(m => ({ default: m.WelcomeDialog })));
 const MaintenanceCheck = lazy(() => import("./components/MaintenanceCheck").then(m => ({ default: m.MaintenanceCheck })));
@@ -183,6 +184,9 @@ const App = () => (
                 <MaintenanceCheck />
               </Suspense>
             )}
+            <Suspense fallback={null}>
+              <ActiveShareBar />
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
