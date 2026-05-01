@@ -66,10 +66,10 @@ export default function DiasporaPage() {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Globe className="h-8 w-8" />
-            <h1 className="text-3xl sm:text-4xl font-bold">Investissement Diaspora</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold">Investissement & Levée de fonds</h1>
           </div>
           <p className="text-lg text-emerald-100 max-w-2xl mx-auto">
-            Investissez dans des projets locaux depuis l'étranger. Contribuez au développement des Comores.
+            Portez un projet aux Comores et trouvez des investisseurs ou des associés pour le financer.
           </p>
           <div className="flex items-center justify-center gap-6 mt-6 text-sm">
             <div className="flex items-center gap-2">
