@@ -54,7 +54,7 @@ const Index = () => {
 
   usePageSEO({
     canonicalPath: '/',
-    keywords: 'Comores, prix, événements, services, annonces, investissement, diaspora, Moroni, Anjouan, Mohéli, Mayotte',
+    keywords: 'Comores, prix, événements, services, annonces, investissement, levée de fonds, Moroni, Anjouan, Mohéli, Mayotte',
   });
   useJsonLd();
 
