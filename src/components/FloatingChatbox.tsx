@@ -40,7 +40,7 @@ const INTERNAL_LINK_LABELS: Record<string, string> = {
   '/tourisme': '🏨 Tourisme',
   '/freelance': '💼 Missions Freelance',
   '/freelancers': '👨‍💻 Répertoire Freelancers',
-  '/investissement': '🌍 Investissement Diaspora',
+  '/investissement': '🌍 Investissement & Levée de fonds',
   '/pro': '👑 UJAMAA Pro',
   '/entreprise': '🏢 Espace Entreprise',
   '/profil': '👤 Mon Profil',
