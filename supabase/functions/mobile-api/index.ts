@@ -380,32 +380,161 @@ Deno.serve(async (req) => {
       return err("Method not allowed", 405);
     }
 
-    // ── MESSAGES ──
+    // ── MESSAGES (privés 1:1, partagés avec le web) ──
+    // Schéma: public.direct_messages(sender_id, receiver_id, content, is_read, created_at)
+    // Routes:
+    //  GET  /messages                        → liste de mes conversations (groupées par interlocuteur)
+    //  GET  /messages/{partnerId}            → fil complet avec un interlocuteur (marque comme lu)
+    //  GET  /messages/{partnerId}/since?ts=  → delta depuis ts ISO (sync incrémentale mobile)
+    //  GET  /messages/unread-count           → nb total messages non lus
+    //  POST /messages                        → { receiver_id, content, attachment? } envoyer un message
+    //  POST /messages/{partnerId}/read       → marquer toute la conversation comme lue
+    //  GET  /messages/with-freelancer/{freelancerUserId} → ouvre/charge le fil avec un freelancer (mission)
     if (resource === "messages") {
       const { user, response } = await requireUser();
       if (response) return response;
+      const uid = user!.id;
+
+      // GET /messages/unread-count
+      if (method === "GET" && id === "unread-count") {
+        const { count, error: e } = await supabase
+          .from("direct_messages")
+          .select("*", { count: "exact", head: true })
+          .eq("receiver_id", uid)
+          .eq("is_read", false);
+        if (e) return err(e.message, 500);
+        return json({ unread: count || 0 });
+      }
+
+      // GET /messages → conversations groupées
       if (method === "GET" && !id) {
-        const { data, error: e } = await supabase.from("conversations")
-          .select("*").or(`user1_id.eq.${user!.id},user2_id.eq.${user!.id}`)
-          .order("updated_at", { ascending: false });
+        const { data, error: e } = await supabase
+          .from("direct_messages")
+          .select("*")
+          .or(`sender_id.eq.${uid},receiver_id.eq.${uid}`)
+          .order("created_at", { ascending: false });
         if (e) return err(e.message, 500);
-        return json({ data });
+
+        const convMap = new Map<string, { messages: any[]; unread: number }>();
+        for (const msg of data || []) {
+          const partnerId = msg.sender_id === uid ? msg.receiver_id : msg.sender_id;
+          if (!convMap.has(partnerId)) convMap.set(partnerId, { messages: [], unread: 0 });
+          const conv = convMap.get(partnerId)!;
+          conv.messages.push(msg);
+          if (!msg.is_read && msg.receiver_id === uid) conv.unread++;
+        }
+        const partnerIds = [...convMap.keys()];
+        const { data: usernames } = await supabase.rpc("get_public_usernames", { _user_ids: partnerIds });
+        const uMap = new Map<string, any>((usernames || []).map((u: any) => [u.id, u]));
+
+        const conversations = partnerIds.map((pid) => {
+          const c = convMap.get(pid)!;
+          const last = c.messages[0];
+          const u = uMap.get(pid);
+          return {
+            partner_id: pid,
+            partner_username: u?.username || "Anonyme",
+            partner_avatar_url: u?.avatar_url || null,
+            last_message: last.content,
+            last_message_at: last.created_at,
+            last_sender_id: last.sender_id,
+            unread_count: c.unread,
+          };
+        }).sort((a, b) => +new Date(b.last_message_at) - +new Date(a.last_message_at));
+
+        return json({ data: conversations });
       }
-      if (method === "GET" && id) {
-        const { data, error: e } = await supabase.from("messages")
-          .select("*").eq("conversation_id", id).order("created_at", { ascending: true });
+
+      // GET /messages/with-freelancer/{freelancerUserId} → ouvre le fil mission
+      if (method === "GET" && id === "with-freelancer" && sub) {
+        // sub = freelancer's user_id (pas profile id). Si on reçoit un profile id on résout.
+        let partnerUserId = sub;
+        const { data: prof } = await supabase
+          .from("freelancer_profiles")
+          .select("user_id")
+          .eq("id", sub)
+          .maybeSingle();
+        if (prof?.user_id) partnerUserId = prof.user_id;
+
+        const { data, error: e } = await supabase
+          .from("direct_messages")
+          .select("*")
+          .or(`and(sender_id.eq.${uid},receiver_id.eq.${partnerUserId}),and(sender_id.eq.${partnerUserId},receiver_id.eq.${uid})`)
+          .order("created_at", { ascending: true });
         if (e) return err(e.message, 500);
-        return json({ data });
+        return json({ partner_id: partnerUserId, data });
       }
-      if (method === "POST") {
+
+      // POST /messages/{partnerId}/read
+      if (method === "POST" && id && sub === "read") {
+        const { error: e } = await supabase
+          .from("direct_messages")
+          .update({ is_read: true })
+          .eq("receiver_id", uid)
+          .eq("sender_id", id)
+          .eq("is_read", false);
+        if (e) return err(e.message, 500);
+        return json({ ok: true });
+      }
+
+      // GET /messages/{partnerId}/since?ts=ISO
+      if (method === "GET" && id && sub === "since") {
+        const ts = url.searchParams.get("ts");
+        if (!ts) return err("ts query param required (ISO timestamp)");
+        const { data, error: e } = await supabase
+          .from("direct_messages")
+          .select("*")
+          .or(`and(sender_id.eq.${uid},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${uid})`)
+          .gt("created_at", ts)
+          .order("created_at", { ascending: true });
+        if (e) return err(e.message, 500);
+        return json({ data, server_time: new Date().toISOString() });
+      }
+
+      // GET /messages/{partnerId} → fil complet + auto-mark-read
+      if (method === "GET" && id && !sub) {
+        const { data, error: e } = await supabase
+          .from("direct_messages")
+          .select("*")
+          .or(`and(sender_id.eq.${uid},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${uid})`)
+          .order("created_at", { ascending: true });
+        if (e) return err(e.message, 500);
+
+        const unreadIds = (data || []).filter((m: any) => m.receiver_id === uid && !m.is_read).map((m: any) => m.id);
+        if (unreadIds.length) {
+          await supabase.from("direct_messages").update({ is_read: true }).in("id", unreadIds);
+        }
+        return json({ data, server_time: new Date().toISOString() });
+      }
+
+      // POST /messages → envoyer
+      if (method === "POST" && !id) {
         const body = await req.json();
-        if (!body.conversation_id || !body.content) return err("conversation_id and content required");
-        const { data, error: e } = await supabase.from("messages").insert({
-          conversation_id: body.conversation_id, sender_id: user!.id, content: body.content,
+        if (!body.receiver_id || !body.content?.trim()) {
+          return err("receiver_id and content required");
+        }
+        if (body.receiver_id === uid) return err("Cannot message yourself");
+
+        const { data, error: e } = await supabase.from("direct_messages").insert({
+          sender_id: uid,
+          receiver_id: body.receiver_id,
+          content: body.content.trim(),
         }).select().single();
         if (e) return err(e.message, 500);
+
+        // Pièce jointe optionnelle (URL déjà uploadée côté client sur bucket chat-attachments)
+        if (body.attachment?.file_url && data) {
+          await supabase.from("chat_attachments").insert({
+            message_id: data.id,
+            file_url: body.attachment.file_url,
+            file_name: body.attachment.file_name || "file",
+            file_type: body.attachment.file_type || "application/octet-stream",
+            file_size: body.attachment.file_size || 0,
+          });
+        }
         return json(data, 201);
       }
+
       return err("Method not allowed", 405);
     }
 
@@ -582,6 +711,46 @@ Deno.serve(async (req) => {
         const { data, error: e } = await supabase.from("freelance_proposals").select("*, freelance_jobs(*)").eq("freelancer_id", user!.id);
         if (e) return err(e.message, 500);
         return json({ data });
+      }
+      // GET /freelance-action/job-conversations/{jobId}
+      // Liste les freelancers ayant postulé à ma mission, avec stats de conversation
+      if (method === "GET" && id === "job-conversations" && sub) {
+        const { data: job } = await supabase.from("freelance_jobs").select("posted_by").eq("id", sub).single();
+        if (!job || job.posted_by !== user!.id) return err("Forbidden", 403);
+        const { data: proposals } = await supabase
+          .from("freelance_proposals")
+          .select("id, freelancer_id, status, proposed_amount, currency, created_at")
+          .eq("job_id", sub);
+        const freelancerIds = (proposals || []).map((p: any) => p.freelancer_id);
+        const { data: usernames } = await supabase.rpc("get_public_usernames", { _user_ids: freelancerIds });
+        const uMap = new Map<string, any>((usernames || []).map((u: any) => [u.id, u]));
+        // Dernier message + non lus pour chaque freelancer
+        const enriched = await Promise.all((proposals || []).map(async (p: any) => {
+          const { data: lastMsg } = await supabase
+            .from("direct_messages")
+            .select("content, created_at, sender_id")
+            .or(`and(sender_id.eq.${user!.id},receiver_id.eq.${p.freelancer_id}),and(sender_id.eq.${p.freelancer_id},receiver_id.eq.${user!.id})`)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const { count: unread } = await supabase
+            .from("direct_messages")
+            .select("*", { count: "exact", head: true })
+            .eq("sender_id", p.freelancer_id)
+            .eq("receiver_id", user!.id)
+            .eq("is_read", false);
+          const u = uMap.get(p.freelancer_id);
+          return {
+            proposal: p,
+            partner_id: p.freelancer_id,
+            partner_username: u?.username || "Anonyme",
+            partner_avatar_url: u?.avatar_url || null,
+            last_message: lastMsg?.content || null,
+            last_message_at: lastMsg?.created_at || null,
+            unread_count: unread || 0,
+          };
+        }));
+        return json({ job_id: sub, data: enriched });
       }
       return err("Unknown action", 404);
     }
@@ -1078,10 +1247,15 @@ function buildOpenApiSpec() {
       "/my-notifications/{id}": { put: { summary: "Marquer une notification lue", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
       "/my-notifications/read-all": { put: { summary: "Tout marquer lu", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
       "/messages": {
-        get: { summary: "Mes conversations", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
-        post: { summary: "Envoyer un message", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+        get: { summary: "Mes conversations privées (groupées par interlocuteur)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        post: { summary: "Envoyer un message ({ receiver_id, content, attachment? })", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
       },
-      "/messages/{conversation_id}": { get: { summary: "Messages d'une conversation", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/unread-count": { get: { summary: "Nombre total de messages non lus", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/{partnerId}": { get: { summary: "Fil complet avec un interlocuteur (auto-marque comme lu)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/{partnerId}/since": { get: { summary: "Sync incrémentale ?ts=ISO", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/{partnerId}/read": { post: { summary: "Marquer la conversation comme lue", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/with-freelancer/{freelancerUserId}": { get: { summary: "Ouvrir/charger le fil avec un freelancer (mission)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/freelance-action/job-conversations/{jobId}": { get: { summary: "Conversations liées à ma mission (annonceur)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
       "/push": {
         post: { summary: "Enregistrer un endpoint push", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
         delete: { summary: "Désinscrire un endpoint push", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
