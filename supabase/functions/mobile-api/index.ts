@@ -380,32 +380,161 @@ Deno.serve(async (req) => {
       return err("Method not allowed", 405);
     }
 
-    // ── MESSAGES ──
+    // ── MESSAGES (privés 1:1, partagés avec le web) ──
+    // Schéma: public.direct_messages(sender_id, receiver_id, content, is_read, created_at)
+    // Routes:
+    //  GET  /messages                        → liste de mes conversations (groupées par interlocuteur)
+    //  GET  /messages/{partnerId}            → fil complet avec un interlocuteur (marque comme lu)
+    //  GET  /messages/{partnerId}/since?ts=  → delta depuis ts ISO (sync incrémentale mobile)
+    //  GET  /messages/unread-count           → nb total messages non lus
+    //  POST /messages                        → { receiver_id, content, attachment? } envoyer un message
+    //  POST /messages/{partnerId}/read       → marquer toute la conversation comme lue
+    //  GET  /messages/with-freelancer/{freelancerUserId} → ouvre/charge le fil avec un freelancer (mission)
     if (resource === "messages") {
       const { user, response } = await requireUser();
       if (response) return response;
+      const uid = user!.id;
+
+      // GET /messages/unread-count
+      if (method === "GET" && id === "unread-count") {
+        const { count, error: e } = await supabase
+          .from("direct_messages")
+          .select("*", { count: "exact", head: true })
+          .eq("receiver_id", uid)
+          .eq("is_read", false);
+        if (e) return err(e.message, 500);
+        return json({ unread: count || 0 });
+      }
+
+      // GET /messages → conversations groupées
       if (method === "GET" && !id) {
-        const { data, error: e } = await supabase.from("conversations")
-          .select("*").or(`user1_id.eq.${user!.id},user2_id.eq.${user!.id}`)
-          .order("updated_at", { ascending: false });
+        const { data, error: e } = await supabase
+          .from("direct_messages")
+          .select("*")
+          .or(`sender_id.eq.${uid},receiver_id.eq.${uid}`)
+          .order("created_at", { ascending: false });
         if (e) return err(e.message, 500);
-        return json({ data });
+
+        const convMap = new Map<string, { messages: any[]; unread: number }>();
+        for (const msg of data || []) {
+          const partnerId = msg.sender_id === uid ? msg.receiver_id : msg.sender_id;
+          if (!convMap.has(partnerId)) convMap.set(partnerId, { messages: [], unread: 0 });
+          const conv = convMap.get(partnerId)!;
+          conv.messages.push(msg);
+          if (!msg.is_read && msg.receiver_id === uid) conv.unread++;
+        }
+        const partnerIds = [...convMap.keys()];
+        const { data: usernames } = await supabase.rpc("get_public_usernames", { _user_ids: partnerIds });
+        const uMap = new Map<string, any>((usernames || []).map((u: any) => [u.id, u]));
+
+        const conversations = partnerIds.map((pid) => {
+          const c = convMap.get(pid)!;
+          const last = c.messages[0];
+          const u = uMap.get(pid);
+          return {
+            partner_id: pid,
+            partner_username: u?.username || "Anonyme",
+            partner_avatar_url: u?.avatar_url || null,
+            last_message: last.content,
+            last_message_at: last.created_at,
+            last_sender_id: last.sender_id,
+            unread_count: c.unread,
+          };
+        }).sort((a, b) => +new Date(b.last_message_at) - +new Date(a.last_message_at));
+
+        return json({ data: conversations });
       }
-      if (method === "GET" && id) {
-        const { data, error: e } = await supabase.from("messages")
-          .select("*").eq("conversation_id", id).order("created_at", { ascending: true });
+
+      // GET /messages/with-freelancer/{freelancerUserId} → ouvre le fil mission
+      if (method === "GET" && id === "with-freelancer" && sub) {
+        // sub = freelancer's user_id (pas profile id). Si on reçoit un profile id on résout.
+        let partnerUserId = sub;
+        const { data: prof } = await supabase
+          .from("freelancer_profiles")
+          .select("user_id")
+          .eq("id", sub)
+          .maybeSingle();
+        if (prof?.user_id) partnerUserId = prof.user_id;
+
+        const { data, error: e } = await supabase
+          .from("direct_messages")
+          .select("*")
+          .or(`and(sender_id.eq.${uid},receiver_id.eq.${partnerUserId}),and(sender_id.eq.${partnerUserId},receiver_id.eq.${uid})`)
+          .order("created_at", { ascending: true });
         if (e) return err(e.message, 500);
-        return json({ data });
+        return json({ partner_id: partnerUserId, data });
       }
-      if (method === "POST") {
+
+      // POST /messages/{partnerId}/read
+      if (method === "POST" && id && sub === "read") {
+        const { error: e } = await supabase
+          .from("direct_messages")
+          .update({ is_read: true })
+          .eq("receiver_id", uid)
+          .eq("sender_id", id)
+          .eq("is_read", false);
+        if (e) return err(e.message, 500);
+        return json({ ok: true });
+      }
+
+      // GET /messages/{partnerId}/since?ts=ISO
+      if (method === "GET" && id && sub === "since") {
+        const ts = url.searchParams.get("ts");
+        if (!ts) return err("ts query param required (ISO timestamp)");
+        const { data, error: e } = await supabase
+          .from("direct_messages")
+          .select("*")
+          .or(`and(sender_id.eq.${uid},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${uid})`)
+          .gt("created_at", ts)
+          .order("created_at", { ascending: true });
+        if (e) return err(e.message, 500);
+        return json({ data, server_time: new Date().toISOString() });
+      }
+
+      // GET /messages/{partnerId} → fil complet + auto-mark-read
+      if (method === "GET" && id && !sub) {
+        const { data, error: e } = await supabase
+          .from("direct_messages")
+          .select("*")
+          .or(`and(sender_id.eq.${uid},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${uid})`)
+          .order("created_at", { ascending: true });
+        if (e) return err(e.message, 500);
+
+        const unreadIds = (data || []).filter((m: any) => m.receiver_id === uid && !m.is_read).map((m: any) => m.id);
+        if (unreadIds.length) {
+          await supabase.from("direct_messages").update({ is_read: true }).in("id", unreadIds);
+        }
+        return json({ data, server_time: new Date().toISOString() });
+      }
+
+      // POST /messages → envoyer
+      if (method === "POST" && !id) {
         const body = await req.json();
-        if (!body.conversation_id || !body.content) return err("conversation_id and content required");
-        const { data, error: e } = await supabase.from("messages").insert({
-          conversation_id: body.conversation_id, sender_id: user!.id, content: body.content,
+        if (!body.receiver_id || !body.content?.trim()) {
+          return err("receiver_id and content required");
+        }
+        if (body.receiver_id === uid) return err("Cannot message yourself");
+
+        const { data, error: e } = await supabase.from("direct_messages").insert({
+          sender_id: uid,
+          receiver_id: body.receiver_id,
+          content: body.content.trim(),
         }).select().single();
         if (e) return err(e.message, 500);
+
+        // Pièce jointe optionnelle (URL déjà uploadée côté client sur bucket chat-attachments)
+        if (body.attachment?.file_url && data) {
+          await supabase.from("chat_attachments").insert({
+            message_id: data.id,
+            file_url: body.attachment.file_url,
+            file_name: body.attachment.file_name || "file",
+            file_type: body.attachment.file_type || "application/octet-stream",
+            file_size: body.attachment.file_size || 0,
+          });
+        }
         return json(data, 201);
       }
+
       return err("Method not allowed", 405);
     }
 
