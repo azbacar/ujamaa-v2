@@ -712,6 +712,46 @@ Deno.serve(async (req) => {
         if (e) return err(e.message, 500);
         return json({ data });
       }
+      // GET /freelance-action/job-conversations/{jobId}
+      // Liste les freelancers ayant postulé à ma mission, avec stats de conversation
+      if (method === "GET" && id === "job-conversations" && sub) {
+        const { data: job } = await supabase.from("freelance_jobs").select("posted_by").eq("id", sub).single();
+        if (!job || job.posted_by !== user!.id) return err("Forbidden", 403);
+        const { data: proposals } = await supabase
+          .from("freelance_proposals")
+          .select("id, freelancer_id, status, proposed_amount, currency, created_at")
+          .eq("job_id", sub);
+        const freelancerIds = (proposals || []).map((p: any) => p.freelancer_id);
+        const { data: usernames } = await supabase.rpc("get_public_usernames", { _user_ids: freelancerIds });
+        const uMap = new Map<string, any>((usernames || []).map((u: any) => [u.id, u]));
+        // Dernier message + non lus pour chaque freelancer
+        const enriched = await Promise.all((proposals || []).map(async (p: any) => {
+          const { data: lastMsg } = await supabase
+            .from("direct_messages")
+            .select("content, created_at, sender_id")
+            .or(`and(sender_id.eq.${user!.id},receiver_id.eq.${p.freelancer_id}),and(sender_id.eq.${p.freelancer_id},receiver_id.eq.${user!.id})`)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const { count: unread } = await supabase
+            .from("direct_messages")
+            .select("*", { count: "exact", head: true })
+            .eq("sender_id", p.freelancer_id)
+            .eq("receiver_id", user!.id)
+            .eq("is_read", false);
+          const u = uMap.get(p.freelancer_id);
+          return {
+            proposal: p,
+            partner_id: p.freelancer_id,
+            partner_username: u?.username || "Anonyme",
+            partner_avatar_url: u?.avatar_url || null,
+            last_message: lastMsg?.content || null,
+            last_message_at: lastMsg?.created_at || null,
+            unread_count: unread || 0,
+          };
+        }));
+        return json({ job_id: sub, data: enriched });
+      }
       return err("Unknown action", 404);
     }
 
@@ -1207,10 +1247,15 @@ function buildOpenApiSpec() {
       "/my-notifications/{id}": { put: { summary: "Marquer une notification lue", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
       "/my-notifications/read-all": { put: { summary: "Tout marquer lu", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
       "/messages": {
-        get: { summary: "Mes conversations", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
-        post: { summary: "Envoyer un message", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+        get: { summary: "Mes conversations privées (groupées par interlocuteur)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
+        post: { summary: "Envoyer un message ({ receiver_id, content, attachment? })", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
       },
-      "/messages/{conversation_id}": { get: { summary: "Messages d'une conversation", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/unread-count": { get: { summary: "Nombre total de messages non lus", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/{partnerId}": { get: { summary: "Fil complet avec un interlocuteur (auto-marque comme lu)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/{partnerId}/since": { get: { summary: "Sync incrémentale ?ts=ISO", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/{partnerId}/read": { post: { summary: "Marquer la conversation comme lue", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/messages/with-freelancer/{freelancerUserId}": { get: { summary: "Ouvrir/charger le fil avec un freelancer (mission)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
+      "/freelance-action/job-conversations/{jobId}": { get: { summary: "Conversations liées à ma mission (annonceur)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } } },
       "/push": {
         post: { summary: "Enregistrer un endpoint push", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
         delete: { summary: "Désinscrire un endpoint push", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
