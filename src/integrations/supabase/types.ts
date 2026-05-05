@@ -2355,29 +2355,35 @@ export type Database = {
       }
       push_subscriptions: {
         Row: {
-          auth: string
+          auth: string | null
           created_at: string
-          endpoint: string
+          endpoint: string | null
           id: string
-          p256dh: string
+          native_token: string | null
+          p256dh: string | null
+          platform: string
           updated_at: string
           user_id: string | null
         }
         Insert: {
-          auth: string
+          auth?: string | null
           created_at?: string
-          endpoint: string
+          endpoint?: string | null
           id?: string
-          p256dh: string
+          native_token?: string | null
+          p256dh?: string | null
+          platform?: string
           updated_at?: string
           user_id?: string | null
         }
         Update: {
-          auth?: string
+          auth?: string | null
           created_at?: string
-          endpoint?: string
+          endpoint?: string | null
           id?: string
-          p256dh?: string
+          native_token?: string | null
+          p256dh?: string | null
+          platform?: string
           updated_at?: string
           user_id?: string | null
         }
