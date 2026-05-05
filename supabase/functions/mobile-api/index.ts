@@ -99,8 +99,14 @@ Deno.serve(async (req) => {
     return err("Invalid or expired API key", 401);
   }
 
-  const { resource, id, sub } = parseRoute(url);
+  let { resource, id, sub } = parseRoute(url);
   const method = req.method;
+
+  // Aliases publics (cohérence externe) → routent vers les implémentations existantes
+  // /investment       → /diaspora
+  // /investment-action → /diaspora-action
+  if (resource === "investment") resource = "diaspora";
+  else if (resource === "investment-action") resource = "diaspora-action";
 
   try {
     // ── PUBLIC ENDPOINT: AI CHAT (login permission, no admin) ──
