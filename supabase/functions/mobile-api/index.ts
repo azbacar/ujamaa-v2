@@ -99,8 +99,14 @@ Deno.serve(async (req) => {
     return err("Invalid or expired API key", 401);
   }
 
-  const { resource, id, sub } = parseRoute(url);
+  let { resource, id, sub } = parseRoute(url);
   const method = req.method;
+
+  // Aliases publics (cohérence externe) → routent vers les implémentations existantes
+  // /investment       → /diaspora
+  // /investment-action → /diaspora-action
+  if (resource === "investment") resource = "diaspora";
+  else if (resource === "investment-action") resource = "diaspora-action";
 
   try {
     // ── PUBLIC ENDPOINT: AI CHAT (login permission, no admin) ──
@@ -538,24 +544,53 @@ Deno.serve(async (req) => {
       return err("Method not allowed", 405);
     }
 
-    // ── PUSH SUBSCRIPTIONS ──
+    // ── PUSH SUBSCRIPTIONS (Web Push + Capacitor natif iOS/Android) ──
     if (resource === "push") {
       const { user, response } = await requireUser();
       if (response) return response;
       if (method === "POST") {
         const body = await req.json();
-        if (!body.endpoint || !body.keys) return err("endpoint and keys required");
+        const platform = (body.platform || "web") as "web" | "ios" | "android";
+
+        if (platform === "web") {
+          if (!body.endpoint || !body.keys) return err("endpoint and keys required");
+          const { data, error: e } = await supabase.from("push_subscriptions")
+            .upsert({
+              user_id: user!.id,
+              platform: "web",
+              endpoint: body.endpoint,
+              p256dh: body.keys.p256dh,
+              auth: body.keys.auth,
+            }, { onConflict: "endpoint" })
+            .select().single();
+          if (e) return err(e.message, 500);
+          return json(data, 201);
+        }
+
+        // Native (Capacitor)
+        if (!body.native_token) return err("native_token required for ios/android");
         const { data, error: e } = await supabase.from("push_subscriptions")
-          .upsert({ user_id: user!.id, endpoint: body.endpoint, keys: body.keys, user_agent: body.user_agent || null }, { onConflict: "endpoint" })
+          .upsert({
+            user_id: user!.id,
+            platform,
+            native_token: body.native_token,
+          }, { onConflict: "user_id,native_token" })
           .select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (method === "DELETE") {
         const body = await req.json().catch(() => ({}));
-        if (!body.endpoint) return err("endpoint required");
-        const { error: e } = await supabase.from("push_subscriptions").delete().eq("endpoint", body.endpoint).eq("user_id", user!.id);
-        if (e) return err(e.message, 500);
+        const q = supabase.from("push_subscriptions").delete().eq("user_id", user!.id);
+        if (body.endpoint) {
+          const { error: e } = await q.eq("endpoint", body.endpoint);
+          if (e) return err(e.message, 500);
+        } else if (body.native_token) {
+          const { error: e } = await q.eq("native_token", body.native_token);
+          if (e) return err(e.message, 500);
+        } else {
+          return err("endpoint or native_token required");
+        }
         return json({ success: true });
       }
       return err("Method not allowed", 405);
