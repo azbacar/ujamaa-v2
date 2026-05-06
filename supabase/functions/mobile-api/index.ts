@@ -1385,7 +1385,7 @@ function buildOpenApiSpec() {
         get: {
           summary: "Lister du contenu public",
           parameters: [
-            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "diaspora"] } },
+            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "diaspora", "fundraising", "vendor-locations", "enterprises", "partners"] } },
             { name: "limit", in: "query", schema: { type: "integer", default: 50 } },
             { name: "offset", in: "query", schema: { type: "integer", default: 0 } },
           ],
