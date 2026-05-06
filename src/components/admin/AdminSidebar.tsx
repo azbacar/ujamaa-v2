@@ -52,6 +52,7 @@ export default function AdminSidebar({
     { id: 'ai-analytics', title: 'Analyse IA', icon: Brain, description: 'Requêtes IA & tendances', available: isAdmin, category: 'monitoring' },
     { id: 'ai-knowledge', title: 'Sources IA', icon: Brain, description: 'Liens et sources de l\'IA', available: isAdmin, category: 'monitoring' },
     { id: 'api-dev', title: 'API & Développeurs', icon: Code, description: 'Clés API mobile', available: isAdmin, category: 'monitoring' },
+    { id: 'push-subs', title: 'Abonnements Push', icon: Bell, description: 'Web / iOS / Android par utilisateur', available: isAdmin, category: 'monitoring' },
   ];
 
   const getCategory = (category: string) => {
