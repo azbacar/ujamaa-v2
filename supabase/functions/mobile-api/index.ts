@@ -135,7 +135,8 @@ Deno.serve(async (req) => {
     if (resource === "public" && method === "GET") {
       // Allows mobile app to fetch public listings without admin permission
       if (!hasPermission(keyInfo, "login") && !hasPermission(keyInfo, "admin")) return err("Permission denied", 403);
-      const sub = id; // 'prices' | 'events' | 'content' | 'gastronomy' | 'freelancers' | 'diaspora'
+      // Alias : fundraising = diaspora (levée de fonds = projets investissement)
+      const sub = (id === "fundraising" ? "diaspora" : id) as string | undefined;
       const limit = parseInt(url.searchParams.get("limit") || "50");
       const offset = parseInt(url.searchParams.get("offset") || "0");
       const tableMap: Record<string, string> = {
@@ -148,22 +149,145 @@ Deno.serve(async (req) => {
       const table = tableMap[sub || ""];
       if (!table) return err("Unknown public resource", 404);
       let q = supabase.from(table).select("*", { count: "exact" });
-      // Filtres spécifiques par table
-      if (table === "freelancer_profiles") {
-        q = q.eq("is_visible", true);
-      } else if (table === "vendor_locations") {
-        q = q.eq("is_active", true);
-      } else if (table === "enterprise_profiles_public") {
-        // vue publique : pas de colonne status
-      } else if (table === "partner_accounts") {
-        q = q.eq("status", "active");
-      } else {
-        q = q.eq("status", "published");
-      }
+      if (table === "freelancer_profiles") q = q.eq("is_visible", true);
+      else if (table === "vendor_locations") q = q.eq("is_active", true);
+      else if (table === "enterprise_profiles_public") { /* pas de status */ }
+      else if (table === "partner_accounts") q = q.eq("status", "active");
+      else q = q.eq("status", "published");
       const orderCol = table === "vendor_locations" ? "last_seen_at" : "created_at";
       const { data, count, error: qErr } = await q.range(offset, offset + limit - 1).order(orderCol, { ascending: false });
       if (qErr) return err(qErr.message, 500);
-      return json({ data, total: count, limit, offset });
+
+      // ── Enrichissement auteur (batch) ──
+      const rawAuthorIds = (data || []).map((r: any) => r.author_id || r.user_id).filter(Boolean);
+      const authorIds = Array.from(new Set(rawAuthorIds));
+      const authorsMap = new Map<string, any>();
+      if (authorIds.length) {
+        const { data: usersRows } = await supabase
+          .from("users").select("id, username, avatar_url, account_type")
+          .in("id", authorIds);
+        (usersRows || []).forEach((u: any) => authorsMap.set(u.id, u));
+      }
+
+      // ── Normalisation PublicListing ──
+      const STORAGE_BASE = `${SUPABASE_URL}/storage/v1/object/public`;
+      const toAbsImg = (v: string | null | undefined): string | null => {
+        if (!v) return null;
+        if (v.startsWith("http://") || v.startsWith("https://")) return v;
+        return `${STORAGE_BASE}/${v.replace(/^\/+/, "")}`;
+      };
+      const buildImages = (row: any, candidates: string[]): string[] => {
+        const out: string[] = [];
+        for (const k of candidates) {
+          const v = row[k];
+          if (Array.isArray(v)) v.forEach((x) => { const a = toAbsImg(x); if (a) out.push(a); });
+          else if (v) { const a = toAbsImg(v); if (a) out.push(a); }
+        }
+        return Array.from(new Set(out));
+      };
+      const normalize = (row: any) => {
+        const authorId = row.author_id || row.user_id || null;
+        const u = authorId ? authorsMap.get(authorId) : null;
+        let title = row.title || row.product || row.name || row.display_name || row.label || "";
+        let subtitle: string | null = null;
+        const extra: Record<string, any> = {};
+        let images: string[] = [];
+
+        switch (table) {
+          case "prices":
+            subtitle = [row.vendor, row.market, row.city].filter(Boolean).join(" · ") || null;
+            images = buildImages(row, ["image_url"]);
+            extra.price = row.price; extra.currency = row.currency; extra.unit = row.unit;
+            extra.vendor = row.vendor; extra.market = row.market; extra.village = row.village; extra.region = row.region;
+            extra.merchant_type = row.merchant_type; extra.trend = row.trend;
+            break;
+          case "events":
+            images = buildImages(row, ["images"]);
+            extra.date = row.date; extra.end_date = row.end_date; extra.organizer = row.organizer;
+            extra.price = row.price; extra.currency = row.currency; extra.capacity = row.capacity;
+            extra.registered_count = row.registered_count; extra.requires_registration = row.requires_registration;
+            break;
+          case "content_items":
+            extra.type = row.type;
+            images = buildImages(row, ["image_url", "images"]);
+            break;
+          case "gastronomy_items":
+            images = buildImages(row, ["images"]);
+            extra.price_min = row.price_min; extra.price_max = row.price_max;
+            extra.dining_style = row.dining_style; extra.accommodation_type = row.accommodation_type;
+            extra.room_types = row.room_types; extra.service_mode = row.service_mode;
+            break;
+          case "freelancer_profiles":
+            images = buildImages(row, ["avatar_url"]);
+            extra.skills = row.skills; extra.hourly_rate_min = row.hourly_rate_min;
+            extra.hourly_rate_max = row.hourly_rate_max; extra.currency = row.currency;
+            extra.experience_years = row.experience_years; extra.is_available = row.is_available;
+            extra.facebook_url = row.facebook_url; extra.linkedin_url = row.linkedin_url;
+            extra.twitter_url = row.twitter_url; extra.instagram_url = row.instagram_url;
+            break;
+          case "diaspora_projects":
+            images = buildImages(row, ["images"]);
+            extra.target_amount = row.target_amount; extra.current_amount = row.current_amount;
+            extra.currency = row.currency; extra.deadline = row.deadline;
+            extra.min_investment = row.min_investment;
+            extra.progress_pct = row.target_amount > 0
+              ? Math.round((Number(row.current_amount || 0) / Number(row.target_amount)) * 100)
+              : null;
+            break;
+          case "enterprise_profiles_public":
+            images = buildImages(row, ["logo_url"]);
+            extra.sector = row.sector; extra.is_verified = row.is_verified;
+            break;
+          case "vendor_locations":
+            extra.accuracy = row.accuracy; extra.heading = row.heading; extra.speed = row.speed;
+            extra.is_mobile = row.is_mobile; extra.is_active = row.is_active;
+            extra.last_seen_at = row.last_seen_at;
+            title = row.label || "";
+            subtitle = row.address || row.location || null;
+            break;
+          case "partner_accounts":
+            images = buildImages(row, ["logo_url"]);
+            break;
+        }
+
+        const phone = row.contact_phone ?? row.phone ?? null;
+        const whatsapp = row.contact_whatsapp ?? row.whatsapp ?? null;
+        const email = row.contact_email ?? row.email ?? null;
+        const website = row.website ?? row.portfolio_url ?? null;
+        const cover_url = images[0] || null;
+
+        return {
+          id: row.id,
+          resource: sub,
+          title,
+          subtitle,
+          description: row.description ?? null,
+          category: row.category ?? null,
+          island: row.island ?? null,
+          city: row.city ?? row.location ?? null,
+          phone, whatsapp, email, website,
+          images, cover_url,
+          latitude: row.latitude ?? null,
+          longitude: row.longitude ?? null,
+          author_id: authorId,
+          author: u ? {
+            id: u.id,
+            display_name: u.username || null,
+            avatar_url: u.avatar_url || null,
+            account_type: u.account_type || "free",
+            is_verified: false, // TODO enrichir via RPC is_verified_user
+            role: "user",
+          } : null,
+          views: row.views ?? null,
+          status: row.status ?? null,
+          created_at: row.created_at ?? null,
+          updated_at: row.updated_at ?? null,
+          ...extra,
+        };
+      };
+
+      const normalized = (data || []).map(normalize);
+      return json({ data: normalized, total: count, limit, offset });
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -1261,7 +1385,7 @@ function buildOpenApiSpec() {
         get: {
           summary: "Lister du contenu public",
           parameters: [
-            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "diaspora"] } },
+            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "diaspora", "fundraising", "vendor-locations", "enterprises", "partners"] } },
             { name: "limit", in: "query", schema: { type: "integer", default: 50 } },
             { name: "offset", in: "query", schema: { type: "integer", default: 0 } },
           ],
