@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useDiasporaProjects } from '@/hooks/useDiaspora';
-import DiasporaProjectCard from '@/components/diaspora/DiasporaProjectCard';
-import DiasporaProjectForm from '@/components/diaspora/DiasporaProjectForm';
-import CarrierProfileForm from '@/components/diaspora/CarrierProfileForm';
+import { useInvestProjects } from '@/hooks/useInvest';
+import InvestProjectCard from '@/components/invest/InvestProjectCard';
+import InvestProjectForm from '@/components/invest/InvestProjectForm';
+import CarrierProfileForm from '@/components/invest/CarrierProfileForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { useMyCarrierProfile } from '@/hooks/useProjectCarrier';
@@ -38,7 +38,7 @@ const islands = [
   { value: 'Mayotte', label: 'Mayotte' },
 ];
 
-export default function DiasporaPage() {
+export default function InvestPage() {
   const { user } = useAuth();
   usePageSEO({ title: 'Investissement & Levée de fonds', description: 'Découvrez des projets aux Comores en recherche d\'investisseurs ou d\'associés. Levez des fonds pour votre projet.', canonicalPath: '/investissement', keywords: 'investissement Comores, levée de fonds, projets, financement, associés' });
   const { isAnnonceur } = useRole();
@@ -49,7 +49,7 @@ export default function DiasporaPage() {
 
   const canSubmitProject = isAnnonceur() || !!carrierProfile;
 
-  const { data: projects, isLoading } = useDiasporaProjects({
+  const { data: projects, isLoading } = useInvestProjects({
     category: category !== 'all' ? category : undefined,
     island: island !== 'all' ? island : undefined,
   });
@@ -133,7 +133,7 @@ export default function DiasporaPage() {
             ) : filtered && filtered.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map(project => (
-                  <DiasporaProjectCard key={project.id} project={project} />
+                  <InvestProjectCard key={project.id} project={project} />
                 ))}
               </div>
             ) : (
@@ -152,7 +152,7 @@ export default function DiasporaPage() {
               </div>
             ) : canSubmitProject ? (
               <div className="max-w-2xl mx-auto">
-                <DiasporaProjectForm onSuccess={() => {}} />
+                <InvestProjectForm onSuccess={() => {}} />
               </div>
             ) : (
               <div className="max-w-2xl mx-auto space-y-4">

@@ -1,8 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { useDiasporaProject, useProjectInvestments, useProjectUpdates, useUpdateInvestmentStatus } from '@/hooks/useDiaspora';
-import InvestmentForm from '@/components/diaspora/InvestmentForm';
+import { useInvestProject, useProjectInvestments, useProjectUpdates, useUpdateInvestmentStatus } from '@/hooks/useInvest';
+import InvestmentForm from '@/components/invest/InvestmentForm';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,11 @@ import { usePageSEO } from '@/hooks/usePageSEO';
 import { useViewTracker } from '@/hooks/useViewTracker';
 import { authPath, proPath } from '@/lib/authRedirect';
 
-export default function DiasporaProjectDetail() {
+export default function InvestProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: project, isLoading } = useDiasporaProject(id);
+  const { data: project, isLoading } = useInvestProject(id);
   const [isAuthorPro, setIsAuthorPro] = useState(false);
 
   useEffect(() => {

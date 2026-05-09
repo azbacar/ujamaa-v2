@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
-import { useCreateDiasporaProject } from '@/hooks/useDiaspora';
+import { useCreateInvestProject } from '@/hooks/useInvest';
 
 const categories = [
   { value: 'agriculture', label: '🌾 Agriculture' },
@@ -29,9 +29,9 @@ interface Props {
   onSuccess?: () => void;
 }
 
-export default function DiasporaProjectForm({ onSuccess }: Props) {
+export default function InvestProjectForm({ onSuccess }: Props) {
   const { user } = useAuth();
-  const createProject = useCreateDiasporaProject();
+  const createProject = useCreateInvestProject();
 
   const [form, setForm] = useState({
     title: '',

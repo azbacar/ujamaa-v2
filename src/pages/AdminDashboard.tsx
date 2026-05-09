@@ -35,7 +35,7 @@ import SEOManagementSection from '@/components/admin/SEOManagementSection';
 import TourismManagementSection from '@/components/admin/TourismManagementSection';
 import ProSubscriptionsSection from '@/components/admin/ProSubscriptionsSection';
 import FreelanceManagementSection from '@/components/admin/FreelanceManagementSection';
-import DiasporaManagementSection from '@/components/admin/DiasporaManagementSection';
+import InvestManagementSection from '@/components/admin/InvestManagementSection';
 import CarrierManagementSection from '@/components/admin/CarrierManagementSection';
 import EnterpriseManagementSection from '@/components/admin/EnterpriseManagementSection';
 import VerificationManagementSection from '@/components/admin/VerificationManagementSection';
@@ -262,7 +262,7 @@ export default function AdminDashboard() {
       case 'tourism': return <TourismManagementSection />;
       case 'pro-subscriptions': return <ProSubscriptionsSection />;
       case 'freelance': return <FreelanceManagementSection />;
-      case 'diaspora': return <DiasporaManagementSection />;
+      case 'diaspora': return <InvestManagementSection />;
       case 'carriers': return <CarrierManagementSection />;
       case 'enterprises': return <EnterpriseManagementSection />;
       case 'verifications': return <VerificationManagementSection />;

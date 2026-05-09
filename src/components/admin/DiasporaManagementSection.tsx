@@ -12,17 +12,17 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, CheckCircle, XCircle, Edit, TrendingUp, Save } from 'lucide-react';
-import type { DiasporaProject } from '@/hooks/useDiaspora';
+import type { InvestProject } from '@/hooks/useInvest';
 
-export default function DiasporaManagementSection() {
+export default function InvestManagementSection() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
-  const [editingProject, setEditingProject] = useState<DiasporaProject | null>(null);
+  const [editingProject, setEditingProject] = useState<InvestProject | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { data: projects, isLoading } = useQuery({
-    queryKey: ['admin-diaspora-projects', statusFilter],
+    queryKey: ['admin-invest-projects', statusFilter],
     queryFn: async () => {
       let query = supabase
         .from('investments')
@@ -32,7 +32,7 @@ export default function DiasporaManagementSection() {
       if (statusFilter !== 'all') query = query.eq('status', statusFilter);
       const { data, error } = await query;
       if (error) throw error;
-      return data as DiasporaProject[];
+      return data as InvestProject[];
     },
   });
 
@@ -59,11 +59,11 @@ export default function DiasporaManagementSection() {
       toast({ title: '❌ Erreur', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: '✅ Statut mis à jour' });
-      queryClient.invalidateQueries({ queryKey: ['admin-diaspora-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-invest-projects'] });
     }
   };
 
-  const openEditDialog = (project: DiasporaProject) => {
+  const openEditDialog = (project: InvestProject) => {
     setEditingProject({ ...project });
     setIsEditDialogOpen(true);
   };
@@ -86,7 +86,7 @@ export default function DiasporaManagementSection() {
       toast({ title: '✅ Projet mis à jour avec succès' });
       setIsEditDialogOpen(false);
       setEditingProject(null);
-      queryClient.invalidateQueries({ queryKey: ['admin-diaspora-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-invest-projects'] });
     } catch (err: any) {
       toast({ title: '❌ Erreur', description: err?.message, variant: 'destructive' });
     }

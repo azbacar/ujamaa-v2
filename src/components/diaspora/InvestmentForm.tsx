@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
-import { useCreateInvestment } from '@/hooks/useDiaspora';
-import type { DiasporaProject } from '@/hooks/useDiaspora';
+import { useCreateInvestment } from '@/hooks/useInvest';
+import type { InvestProject } from '@/hooks/useInvest';
 
 interface Props {
-  project: DiasporaProject;
+  project: InvestProject;
   onSuccess?: () => void;
 }
 
