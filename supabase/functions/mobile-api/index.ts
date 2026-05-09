@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
     if (resource === "public" && method === "GET") {
       // Allows mobile app to fetch public listings without admin permission
       if (!hasPermission(keyInfo, "login") && !hasPermission(keyInfo, "admin")) return err("Permission denied", 403);
-      // Alias : fundraising = diaspora (levée de fonds = projets investissement)
+      // Alias : fundraising = invest (levée de fonds (alias public))
       const sub = (id === "fundraising" ? "invest" : id) as string | undefined;
       const limit = parseInt(url.searchParams.get("limit") || "50");
       const offset = parseInt(url.searchParams.get("offset") || "0");
