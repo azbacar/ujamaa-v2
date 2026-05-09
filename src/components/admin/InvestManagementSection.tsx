@@ -108,7 +108,7 @@ export default function InvestManagementSection() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Globe className="h-6 w-6 text-emerald-600" />
-        <h2 className="text-2xl font-bold">Investissement Diaspora</h2>
+        <h2 className="text-2xl font-bold">Investissement Investissement Diaspora Levée de fonds</h2>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

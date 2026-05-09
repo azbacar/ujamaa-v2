@@ -99,7 +99,7 @@ const ENDPOINTS: { group: string; items: Endpoint[] }[] = [
     ],
   },
   {
-    group: "🎟️ Événements / Freelance / Diaspora / Entreprise",
+    group: "🎟️ Événements / Freelance / Invest / Entreprise",
     items: [
       { method: "POST", path: "/event-registration", description: "S'inscrire à un événement.", permission: "login",
         body: '{ "event_id": "uuid" }' },

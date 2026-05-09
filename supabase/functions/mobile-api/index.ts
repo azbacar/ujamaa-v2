@@ -914,7 +914,7 @@ Deno.serve(async (req) => {
       return err("Unknown action", 404);
     }
 
-    // ── DIASPORA ACTIONS ──
+    // ── INVEST ACTIONS (alias diaspora deprecated) ──
     if (resource === "invest-action") {
       const { user, response } = await requireUser();
       if (response) return response;
@@ -1260,7 +1260,7 @@ Deno.serve(async (req) => {
       return err("Method not allowed", 405);
     }
 
-    // ── DIASPORA PROJECTS ──
+    // ── INVEST PROJECTS (alias diaspora deprecated) ──
     if (resource === "invest") {
       if (method === "GET" && !id) {
         const status = url.searchParams.get("status") || "published";

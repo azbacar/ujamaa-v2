@@ -491,7 +491,7 @@ PAGES INTERNES DU SITE:
 - /infos-pratiques → Infos Pratiques (tarifs taxi, pharmacies de garde) 📋
 - /freelance → Missions freelance 💼
 - /freelancers → Répertoire des freelancers 👨‍💻
-- /investissement → Investissement Diaspora 🌍
+- /investissement → Investissement / Levée de fonds 💰
 - /investissement/:id → Détail d'un projet
 - /pro → Forfaits Pro et Entreprise 👑
 - /entreprise → Tableau de bord entreprise (CRM, factures, comptabilité) 🏢
@@ -545,7 +545,7 @@ FREELANCE:
 - Publier une mission: [Missions](/freelance) → Créer une mission (requiert rôle annonceur)
 - Postuler: ouvrir une mission → "Soumettre une proposition"
 
-INVESTISSEMENT DIASPORA:
+INVESTISSEMENT / LEVÉE DE FONDS:
 - Explorer les projets: [Investissement](/investissement)
 - Investir: ouvrir un projet → "Investir" → Choisir le montant et le mode de paiement
 - Publier un projet: requiert un profil de porteur de projet
