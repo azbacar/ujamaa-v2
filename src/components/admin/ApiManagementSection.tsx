@@ -269,7 +269,7 @@ export default function ApiManagementSection() {
                 <p><Badge variant="destructive" className="text-[10px]">GET</Badge> /gastronomy — Restaurants & hébergements</p>
                 <p><Badge variant="destructive" className="text-[10px]">GET</Badge> /enterprises — Profils entreprises</p>
                 <p><Badge variant="destructive" className="text-[10px]">GET</Badge> /freelancers — Profils freelancers</p>
-                <p><Badge variant="destructive" className="text-[10px]">GET</Badge> /diaspora — Projets diaspora</p>
+                <p><Badge variant="destructive" className="text-[10px]">GET</Badge> /invest — Projets d'investissement</p>
                 <p><Badge variant="destructive" className="text-[10px]">POST</Badge> /notifications — Envoyer notification</p>
                 <p><Badge variant="destructive" className="text-[10px]">GET</Badge> /stats — Statistiques globales</p>
               </div>

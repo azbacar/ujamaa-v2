@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { MapPin, Calendar, TrendingUp, Eye, BadgeCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import type { DiasporaProject } from '@/hooks/useDiaspora';
+import type { InvestProject } from '@/hooks/useInvest';
 
 interface Props {
-  project: DiasporaProject;
+  project: InvestProject;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -23,7 +23,7 @@ const categoryLabels: Record<string, string> = {
   autre: '📦 Autre',
 };
 
-export default function DiasporaProjectCard({ project }: Props) {
+export default function InvestProjectCard({ project }: Props) {
   const progress = project.target_amount > 0
     ? Math.min((project.current_amount / project.target_amount) * 100, 100)
     : 0;

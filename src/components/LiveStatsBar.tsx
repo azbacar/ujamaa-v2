@@ -17,13 +17,13 @@ const fetchLiveStats = async (): Promise<StatItem[]> => {
     { count: eventsCount },
     { count: tendersCount },
     { count: freelanceCount },
-    { count: diasporaCount },
+    { count: investCount },
   ] = await Promise.all([
     supabase.from('prices').select('*', { count: 'exact', head: true }).eq('status', 'published'),
     supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'published').gte('date', new Date().toISOString()),
     supabase.from('content_items').select('*', { count: 'exact', head: true }).eq('type', 'tender').eq('status', 'published'),
     supabase.from('freelance_jobs').select('*', { count: 'exact', head: true }).eq('status', 'published'),
-    supabase.from('diaspora_projects').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+    supabase.from('investments').select('*', { count: 'exact', head: true }).eq('status', 'published'),
   ]);
 
   return [
@@ -31,7 +31,7 @@ const fetchLiveStats = async (): Promise<StatItem[]> => {
     { label: 'Événements', count: eventsCount || 0, icon: <Calendar className="w-4 h-4" />, link: '/evenements', gradient: 'from-ocean-500/10 to-ocean-500/5' },
     { label: 'Appels d\'offres', count: tendersCount || 0, icon: <Briefcase className="w-4 h-4" />, link: '/appels-offres', gradient: 'from-amber-500/10 to-amber-500/5' },
     { label: 'Missions', count: freelanceCount || 0, icon: <TrendingUp className="w-4 h-4" />, link: '/freelance', gradient: 'from-purple-500/10 to-purple-500/5' },
-    { label: 'Projets', count: diasporaCount || 0, icon: <Globe className="w-4 h-4" />, link: '/investissement', gradient: 'from-blue-500/10 to-blue-500/5' },
+    { label: 'Projets', count: investCount || 0, icon: <Globe className="w-4 h-4" />, link: '/investissement', gradient: 'from-blue-500/10 to-blue-500/5' },
   ];
 };
 

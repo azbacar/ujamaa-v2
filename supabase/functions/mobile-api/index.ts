@@ -103,10 +103,10 @@ Deno.serve(async (req) => {
   const method = req.method;
 
   // Aliases publics (cohérence externe) → routent vers les implémentations existantes
-  // /investment       → /diaspora
-  // /investment-action → /diaspora-action
-  if (resource === "investment") resource = "diaspora";
-  else if (resource === "investment-action") resource = "diaspora-action";
+  // /diaspora (deprecated) → /invest
+  // /diaspora-action (deprecated) → /invest-action
+  if (resource === "diaspora") resource = "invest"; // deprecated alias
+  else if (resource === "invest-action") resource = "invest-action"; // deprecated alias
 
   try {
     // ── PUBLIC ENDPOINT: AI CHAT (login permission, no admin) ──
@@ -135,13 +135,13 @@ Deno.serve(async (req) => {
     if (resource === "public" && method === "GET") {
       // Allows mobile app to fetch public listings without admin permission
       if (!hasPermission(keyInfo, "login") && !hasPermission(keyInfo, "admin")) return err("Permission denied", 403);
-      // Alias : fundraising = diaspora (levée de fonds = projets investissement)
-      const sub = (id === "fundraising" ? "diaspora" : id) as string | undefined;
+      // Alias : fundraising = invest (levée de fonds (alias public))
+      const sub = (id === "fundraising" ? "invest" : id) as string | undefined;
       const limit = parseInt(url.searchParams.get("limit") || "50");
       const offset = parseInt(url.searchParams.get("offset") || "0");
       const tableMap: Record<string, string> = {
         prices: "prices", events: "events", content: "content_items",
-        gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", diaspora: "diaspora_projects",
+        gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", invest: "investments",
         "vendor-locations": "vendor_locations",
         enterprises: "enterprise_profiles_public",
         partners: "partner_accounts",
@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
             extra.facebook_url = row.facebook_url; extra.linkedin_url = row.linkedin_url;
             extra.twitter_url = row.twitter_url; extra.instagram_url = row.instagram_url;
             break;
-          case "diaspora_projects":
+          case "investments":
             images = buildImages(row, ["images"]);
             extra.target_amount = row.target_amount; extra.current_amount = row.current_amount;
             extra.currency = row.currency; extra.deadline = row.deadline;
@@ -914,13 +914,13 @@ Deno.serve(async (req) => {
       return err("Unknown action", 404);
     }
 
-    // ── DIASPORA ACTIONS ──
-    if (resource === "diaspora-action") {
+    // ── INVEST ACTIONS (alias diaspora deprecated) ──
+    if (resource === "invest-action") {
       const { user, response } = await requireUser();
       if (response) return response;
       if (method === "POST" && id === "investment") {
         const body = await req.json();
-        const { data, error: e } = await supabase.from("diaspora_investments").insert({
+        const { data, error: e } = await supabase.from("project_investments").insert({
           ...body, investor_id: user!.id, status: "pending",
         }).select().single();
         if (e) return err(e.message, 500);
@@ -928,14 +928,14 @@ Deno.serve(async (req) => {
       }
       if (method === "POST" && id === "project") {
         const body = await req.json();
-        const { data, error: e } = await supabase.from("diaspora_projects").insert({
+        const { data, error: e } = await supabase.from("investments").insert({
           ...body, carrier_id: user!.id, status: body.status || "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (method === "GET" && id === "my-investments") {
-        const { data, error: e } = await supabase.from("diaspora_investments").select("*, diaspora_projects(*)").eq("investor_id", user!.id);
+        const { data, error: e } = await supabase.from("project_investments").select("*, investments(*)").eq("investor_id", user!.id);
         if (e) return err(e.message, 500);
         return json({ data });
       }
@@ -1260,18 +1260,18 @@ Deno.serve(async (req) => {
       return err("Method not allowed", 405);
     }
 
-    // ── DIASPORA PROJECTS ──
-    if (resource === "diaspora") {
+    // ── INVEST PROJECTS (alias diaspora deprecated) ──
+    if (resource === "invest") {
       if (method === "GET" && !id) {
         const status = url.searchParams.get("status") || "published";
-        let query = supabase.from("diaspora_projects").select("*", { count: "exact" });
+        let query = supabase.from("investments").select("*", { count: "exact" });
         if (status !== "all") query = query.eq("status", status);
         const { data, count, error: qErr } = await query.order("created_at", { ascending: false });
         if (qErr) return err(qErr.message, 500);
         return json({ data, total: count });
       }
       if (method === "GET" && id) {
-        const { data, error: qErr } = await supabase.from("diaspora_projects").select("*").eq("id", id).single();
+        const { data, error: qErr } = await supabase.from("investments").select("*").eq("id", id).single();
         if (qErr) return err(qErr.message, 404);
         return json(data);
       }
@@ -1385,7 +1385,7 @@ function buildOpenApiSpec() {
         get: {
           summary: "Lister du contenu public",
           parameters: [
-            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "diaspora", "fundraising", "vendor-locations", "enterprises", "partners"] } },
+            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "invest", "fundraising", "vendor-locations", "enterprises", "partners"] } },
             { name: "limit", in: "query", schema: { type: "integer", default: 50 } },
             { name: "offset", in: "query", schema: { type: "integer", default: 0 } },
           ],
@@ -1444,8 +1444,8 @@ function buildOpenApiSpec() {
         post: { summary: "Actions freelance (proposal | job)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
         get: { summary: "Mes propositions (action=my-proposals)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
       },
-      "/diaspora-action/{action}": {
-        post: { summary: "Actions diaspora (investment | project)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+      "/invest-action/{action}": {
+        post: { summary: "Actions invest (investment | project)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
         get: { summary: "Mes investissements (action=my-investments)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
       },
       "/enterprise-action/{action}": {

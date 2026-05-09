@@ -379,75 +379,6 @@ export type Database = {
         }
         Relationships: []
       }
-      diaspora_projects: {
-        Row: {
-          author_id: string
-          category: string
-          contact_email: string | null
-          contact_phone: string | null
-          created_at: string
-          currency: string
-          current_amount: number
-          deadline: string | null
-          description: string
-          full_content: string | null
-          id: string
-          images: string[] | null
-          island: string | null
-          location: string | null
-          min_investment: number | null
-          status: string
-          target_amount: number
-          title: string
-          updated_at: string
-          views: number
-        }
-        Insert: {
-          author_id: string
-          category?: string
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          currency?: string
-          current_amount?: number
-          deadline?: string | null
-          description: string
-          full_content?: string | null
-          id?: string
-          images?: string[] | null
-          island?: string | null
-          location?: string | null
-          min_investment?: number | null
-          status?: string
-          target_amount?: number
-          title: string
-          updated_at?: string
-          views?: number
-        }
-        Update: {
-          author_id?: string
-          category?: string
-          contact_email?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          currency?: string
-          current_amount?: number
-          deadline?: string | null
-          description?: string
-          full_content?: string | null
-          id?: string
-          images?: string[] | null
-          island?: string | null
-          location?: string | null
-          min_investment?: number | null
-          status?: string
-          target_amount?: number
-          title?: string
-          updated_at?: string
-          views?: number
-        }
-        Relationships: []
-      }
       direct_messages: {
         Row: {
           content: string
@@ -1546,6 +1477,75 @@ export type Database = {
         }
         Relationships: []
       }
+      investments: {
+        Row: {
+          author_id: string
+          category: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          currency: string
+          current_amount: number
+          deadline: string | null
+          description: string
+          full_content: string | null
+          id: string
+          images: string[] | null
+          island: string | null
+          location: string | null
+          min_investment: number | null
+          status: string
+          target_amount: number
+          title: string
+          updated_at: string
+          views: number
+        }
+        Insert: {
+          author_id: string
+          category?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string
+          current_amount?: number
+          deadline?: string | null
+          description: string
+          full_content?: string | null
+          id?: string
+          images?: string[] | null
+          island?: string | null
+          location?: string | null
+          min_investment?: number | null
+          status?: string
+          target_amount?: number
+          title: string
+          updated_at?: string
+          views?: number
+        }
+        Update: {
+          author_id?: string
+          category?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          currency?: string
+          current_amount?: number
+          deadline?: string | null
+          description?: string
+          full_content?: string | null
+          id?: string
+          images?: string[] | null
+          island?: string | null
+          location?: string | null
+          min_investment?: number | null
+          status?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+          views?: number
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -2262,7 +2262,7 @@ export type Database = {
             foreignKeyName: "project_investments_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: "diaspora_projects"
+            referencedRelation: "investments"
             referencedColumns: ["id"]
           },
         ]
@@ -2297,7 +2297,7 @@ export type Database = {
             foreignKeyName: "project_updates_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
-            referencedRelation: "diaspora_projects"
+            referencedRelation: "investments"
             referencedColumns: ["id"]
           },
         ]

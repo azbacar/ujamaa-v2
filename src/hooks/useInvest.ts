@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-export interface DiasporaProject {
+export interface InvestProject {
   id: string;
   title: string;
   description: string;
@@ -50,13 +50,13 @@ export interface ProjectUpdate {
   created_at: string;
 }
 
-// Fetch published diaspora projects
-export function useDiasporaProjects(filters?: { category?: string; island?: string }) {
+// Fetch published invest projects
+export function useInvestProjects(filters?: { category?: string; island?: string }) {
   return useQuery({
-    queryKey: ['diaspora-projects', filters],
+    queryKey: ['invest-projects', filters],
     queryFn: async () => {
       let query = supabase
-        .from('diaspora_projects')
+        .from('investments')
         .select('*')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
@@ -66,7 +66,7 @@ export function useDiasporaProjects(filters?: { category?: string; island?: stri
 
       const { data, error } = await query;
       if (error) throw error;
-      const projects = data as DiasporaProject[];
+      const projects = data as InvestProject[];
 
       // Fetch carrier verification status for all authors
       if (projects.length > 0) {
@@ -100,18 +100,18 @@ export function useDiasporaProjects(filters?: { category?: string; island?: stri
 }
 
 // Fetch single project
-export function useDiasporaProject(id: string | undefined) {
+export function useInvestProject(id: string | undefined) {
   return useQuery({
-    queryKey: ['diaspora-project', id],
+    queryKey: ['invest-project', id],
     queryFn: async () => {
       if (!id) return null;
       const { data, error } = await supabase
-        .from('diaspora_projects')
+        .from('investments')
         .select('*')
         .eq('id', id)
         .single();
       if (error) throw error;
-      const project = data as DiasporaProject;
+      const project = data as InvestProject;
 
       // Check carrier verification
       const { data: carrier } = await supabase
@@ -138,19 +138,19 @@ export function useDiasporaProject(id: string | undefined) {
 }
 
 // Fetch my projects (author)
-export function useMyDiasporaProjects() {
+export function useMyInvestProjects() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['my-diaspora-projects', user?.id],
+    queryKey: ['my-invest-projects', user?.id],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
-        .from('diaspora_projects')
+        .from('investments')
         .select('*')
         .eq('author_id', user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as DiasporaProject[];
+      return data as InvestProject[];
     },
     enabled: !!user,
   });
@@ -212,14 +212,14 @@ export function useProjectUpdates(projectId: string | undefined) {
 }
 
 // Create project mutation
-export function useCreateDiasporaProject() {
+export function useCreateInvestProject() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (project: Omit<DiasporaProject, 'id' | 'current_amount' | 'views' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (project: Omit<InvestProject, 'id' | 'current_amount' | 'views' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
-        .from('diaspora_projects')
+        .from('investments')
         .insert(project)
         .select()
         .single();
@@ -227,8 +227,8 @@ export function useCreateDiasporaProject() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['diaspora-projects'] });
-      queryClient.invalidateQueries({ queryKey: ['my-diaspora-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['invest-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['my-invest-projects'] });
       toast({ title: '✅ Projet créé', description: 'Votre projet a été soumis avec succès.' });
     },
     onError: (error: Error) => {
@@ -238,14 +238,14 @@ export function useCreateDiasporaProject() {
 }
 
 // Update project mutation
-export function useUpdateDiasporaProject() {
+export function useUpdateInvestProject() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<DiasporaProject> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: Partial<InvestProject> & { id: string }) => {
       const { data, error } = await supabase
-        .from('diaspora_projects')
+        .from('investments')
         .update(updates)
         .eq('id', id)
         .select()
@@ -254,8 +254,8 @@ export function useUpdateDiasporaProject() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['diaspora-projects'] });
-      queryClient.invalidateQueries({ queryKey: ['my-diaspora-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['invest-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['my-invest-projects'] });
       toast({ title: '✅ Projet mis à jour' });
     },
     onError: (error: Error) => {

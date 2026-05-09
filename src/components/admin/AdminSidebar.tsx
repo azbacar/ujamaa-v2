@@ -34,7 +34,7 @@ export default function AdminSidebar({
     { id: 'prices', title: 'Prix & Marchés', icon: DollarSign, description: 'Gestion des prix', available: isModerator || isAdmin, category: 'content' },
     { id: 'moderation', title: 'Modération', icon: UserCheck, description: 'Signalements et attente', available: isModerator || isAdmin, category: 'content' },
     { id: 'freelance', title: 'Freelance', icon: Briefcase, description: 'Missions et candidatures', available: isAdmin, category: 'content' },
-    { id: 'diaspora', title: 'Diaspora', icon: Globe, description: 'Projets d\'investissement', available: isAdmin, category: 'content' },
+    { id: 'invest', title: 'Investissement', icon: Globe, description: 'Projets d\'investissement', available: isAdmin, category: 'content' },
     { id: 'carriers', title: 'Porteurs de projet', icon: UserCheck, description: 'Vérification des porteurs', available: isAdmin, category: 'content' },
     { id: 'verifications', title: 'Vérifications', icon: BadgeCheck, description: 'Demandes de vérification', available: isAdmin || isModerator, category: 'management' },
     { id: 'enterprises', title: 'Entreprises', icon: Building2, description: 'Profils entreprises', available: isAdmin, category: 'management' },

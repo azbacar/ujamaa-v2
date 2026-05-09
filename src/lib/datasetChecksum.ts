@@ -25,7 +25,7 @@ export type DatasetKey =
   | "tenders"
   | "announcements"
   | "freelance_jobs"
-  | "diaspora_projects";
+  | "investments";
 
 interface ChecksumRecord {
   checksum: string;

@@ -12,27 +12,27 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, CheckCircle, XCircle, Edit, TrendingUp, Save } from 'lucide-react';
-import type { DiasporaProject } from '@/hooks/useDiaspora';
+import type { InvestProject } from '@/hooks/useInvest';
 
-export default function DiasporaManagementSection() {
+export default function InvestManagementSection() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('all');
-  const [editingProject, setEditingProject] = useState<DiasporaProject | null>(null);
+  const [editingProject, setEditingProject] = useState<InvestProject | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { data: projects, isLoading } = useQuery({
-    queryKey: ['admin-diaspora-projects', statusFilter],
+    queryKey: ['admin-invest-projects', statusFilter],
     queryFn: async () => {
       let query = supabase
-        .from('diaspora_projects')
+        .from('investments')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') query = query.eq('status', statusFilter);
       const { data, error } = await query;
       if (error) throw error;
-      return data as DiasporaProject[];
+      return data as InvestProject[];
     },
   });
 
@@ -51,7 +51,7 @@ export default function DiasporaManagementSection() {
 
   const updateProjectStatus = async (id: string, status: string) => {
     const { error } = await supabase
-      .from('diaspora_projects')
+      .from('investments')
       .update({ status })
       .eq('id', id);
 
@@ -59,11 +59,11 @@ export default function DiasporaManagementSection() {
       toast({ title: '❌ Erreur', description: error.message, variant: 'destructive' });
     } else {
       toast({ title: '✅ Statut mis à jour' });
-      queryClient.invalidateQueries({ queryKey: ['admin-diaspora-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-invest-projects'] });
     }
   };
 
-  const openEditDialog = (project: DiasporaProject) => {
+  const openEditDialog = (project: InvestProject) => {
     setEditingProject({ ...project });
     setIsEditDialogOpen(true);
   };
@@ -71,7 +71,7 @@ export default function DiasporaManagementSection() {
   const handleEditSave = async () => {
     if (!editingProject) return;
     try {
-      const { error } = await supabase.from('diaspora_projects').update({
+      const { error } = await supabase.from('investments').update({
         title: editingProject.title,
         description: editingProject.description,
         full_content: editingProject.full_content,
@@ -86,7 +86,7 @@ export default function DiasporaManagementSection() {
       toast({ title: '✅ Projet mis à jour avec succès' });
       setIsEditDialogOpen(false);
       setEditingProject(null);
-      queryClient.invalidateQueries({ queryKey: ['admin-diaspora-projects'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-invest-projects'] });
     } catch (err: any) {
       toast({ title: '❌ Erreur', description: err?.message, variant: 'destructive' });
     }
@@ -108,7 +108,7 @@ export default function DiasporaManagementSection() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Globe className="h-6 w-6 text-emerald-600" />
-        <h2 className="text-2xl font-bold">Investissement Diaspora</h2>
+        <h2 className="text-2xl font-bold">Investissement & Levée de fonds</h2>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

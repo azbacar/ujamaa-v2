@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type ViewableType = 'content_item' | 'event' | 'diaspora_project' | 'freelance_job' | 'price';
+export type ViewableType = 'content_item' | 'event' | 'invest' | 'freelance_job' | 'price';
 
 /**
  * Incrémente atomiquement le compteur de vues côté serveur.
