@@ -103,10 +103,10 @@ Deno.serve(async (req) => {
   const method = req.method;
 
   // Aliases publics (cohérence externe) → routent vers les implémentations existantes
-  // /investment       → /diaspora
-  // /investment-action → /diaspora-action
-  if (resource === "investment") resource = "diaspora";
-  else if (resource === "investment-action") resource = "diaspora-action";
+  // /diaspora (deprecated) → /invest
+  // /diaspora-action (deprecated) → /invest-action
+  if (resource === "diaspora") resource = "invest"; // deprecated alias
+  else if (resource === "invest-action") resource = "invest-action"; // deprecated alias
 
   try {
     // ── PUBLIC ENDPOINT: AI CHAT (login permission, no admin) ──
@@ -136,12 +136,12 @@ Deno.serve(async (req) => {
       // Allows mobile app to fetch public listings without admin permission
       if (!hasPermission(keyInfo, "login") && !hasPermission(keyInfo, "admin")) return err("Permission denied", 403);
       // Alias : fundraising = diaspora (levée de fonds = projets investissement)
-      const sub = (id === "fundraising" ? "diaspora" : id) as string | undefined;
+      const sub = (id === "fundraising" ? "invest" : id) as string | undefined;
       const limit = parseInt(url.searchParams.get("limit") || "50");
       const offset = parseInt(url.searchParams.get("offset") || "0");
       const tableMap: Record<string, string> = {
         prices: "prices", events: "events", content: "content_items",
-        gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", diaspora: "investments",
+        gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", invest: "investments",
         "vendor-locations": "vendor_locations",
         enterprises: "enterprise_profiles_public",
         partners: "partner_accounts",
@@ -915,7 +915,7 @@ Deno.serve(async (req) => {
     }
 
     // ── DIASPORA ACTIONS ──
-    if (resource === "diaspora-action") {
+    if (resource === "invest-action") {
       const { user, response } = await requireUser();
       if (response) return response;
       if (method === "POST" && id === "investment") {
@@ -1261,7 +1261,7 @@ Deno.serve(async (req) => {
     }
 
     // ── DIASPORA PROJECTS ──
-    if (resource === "diaspora") {
+    if (resource === "invest") {
       if (method === "GET" && !id) {
         const status = url.searchParams.get("status") || "published";
         let query = supabase.from("investments").select("*", { count: "exact" });
@@ -1385,7 +1385,7 @@ function buildOpenApiSpec() {
         get: {
           summary: "Lister du contenu public",
           parameters: [
-            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "diaspora", "fundraising", "vendor-locations", "enterprises", "partners"] } },
+            { name: "resource", in: "path", required: true, schema: { type: "string", enum: ["prices", "events", "content", "gastronomy", "freelancers", "invest", "fundraising", "vendor-locations", "enterprises", "partners"] } },
             { name: "limit", in: "query", schema: { type: "integer", default: 50 } },
             { name: "offset", in: "query", schema: { type: "integer", default: 0 } },
           ],
@@ -1444,8 +1444,8 @@ function buildOpenApiSpec() {
         post: { summary: "Actions freelance (proposal | job)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
         get: { summary: "Mes propositions (action=my-proposals)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
       },
-      "/diaspora-action/{action}": {
-        post: { summary: "Actions diaspora (investment | project)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
+      "/invest-action/{action}": {
+        post: { summary: "Actions invest (investment | project)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "201": { description: "Créé" } } },
         get: { summary: "Mes investissements (action=my-investments)", security: [{ ApiKey: [] }, { Bearer: [] }], responses: { "200": { description: "OK" } } },
       },
       "/enterprise-action/{action}": {

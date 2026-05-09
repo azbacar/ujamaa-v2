@@ -88,7 +88,7 @@ async function searchSiteContent(query: string, authHeader: string | null, locat
   };
 
   try {
-    const [contentRes, pricesRes, eventsRes, gastroRes, jobsRes, freelRes, diasRes, staticRes] = await Promise.all([
+    const [contentRes, pricesRes, eventsRes, gastroRes, jobsRes, freelRes, investRes, staticRes] = await Promise.all([
       supabase.from('content_items').select('id, title, description, type, category, slug').eq('status','published').or(orFilter).limit(15),
       supabase.from('prices').select('id, product, price, currency, unit, island, city, village, market, vendor, created_at').eq('status','published').or(orPrices).limit(40),
       supabase.from('events').select('id, title, description, date, location, island').eq('status','published').or(orFilter).limit(15),
@@ -105,7 +105,7 @@ async function searchSiteContent(query: string, authHeader: string | null, locat
       gastronomy: rerank(gastroRes.data || []).slice(0, 10),
       jobs: rerank(jobsRes.data || []).slice(0, 10),
       freelancers: rerank(freelRes.data || []).slice(0, 10),
-      diaspora: rerank(diasRes.data || []).slice(0, 10),
+      invest: rerank(investRes.data || []).slice(0, 10),
       staticPages: staticRes.data || [],
       keywords,
       location,
@@ -122,7 +122,7 @@ async function getDynamicSiteData(authHeader: string | null) {
   });
 
   try {
-    const [pricesRes, eventsRes, announcementsRes, freelancersRes, diasporaRes, taxiRes, pharmacyRes, jobsRes, gastroRes, tendersRes, staticPagesRes, homepageCatsRes] = await Promise.all([
+    const [pricesRes, eventsRes, announcementsRes, freelancersRes, investRes, taxiRes, pharmacyRes, jobsRes, gastroRes, tendersRes, staticPagesRes, homepageCatsRes] = await Promise.all([
       supabase.from('prices').select('id, product, price, unit, island, category, currency, market, city, vendor, trend, created_at, village, region').eq('status', 'published').order('created_at', { ascending: false }).limit(200),
       supabase.from('events').select('id, title, description, date, end_date, location, island, category, price, currency').gte('date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
       supabase.from('content_items').select('id, title, description, category, type').eq('status', 'published').eq('type', 'announcement').order('published_at', { ascending: false }).limit(20),
@@ -142,7 +142,7 @@ async function getDynamicSiteData(authHeader: string | null) {
       events: eventsRes.data || [],
       announcements: announcementsRes.data || [],
       freelancers: freelancersRes.data || [],
-      diasporaProjects: diasporaRes.data || [],
+      investments: investRes.data || [],
       taxiFares: taxiRes.data || [],
       pharmacies: pharmacyRes.data || [],
       jobs: jobsRes.data || [],
@@ -153,7 +153,7 @@ async function getDynamicSiteData(authHeader: string | null) {
     };
   } catch (error) {
     console.error('Error fetching dynamic data:', error);
-    return { prices: [], events: [], announcements: [], freelancers: [], diasporaProjects: [], taxiFares: [], pharmacies: [], jobs: [], gastronomy: [], tenders: [], staticPages: [], homepageCategories: [] };
+    return { prices: [], events: [], announcements: [], freelancers: [], investments: [], taxiFares: [], pharmacies: [], jobs: [], gastronomy: [], tenders: [], staticPages: [], homepageCategories: [] };
   }
 }
 
@@ -284,9 +284,9 @@ serve(async (req) => {
       dynamicContent += '\n';
     }
 
-    if (dynamicData.diasporaProjects && dynamicData.diasporaProjects.length > 0) {
+    if (dynamicData.investments && dynamicData.investments.length > 0) {
       dynamicContent += '🌍 PROJETS D\'INVESTISSEMENT DIASPORA:\n';
-      dynamicData.diasporaProjects.forEach((p: any) => {
+      dynamicData.investments.forEach((p: any) => {
         const progress = p.target_amount > 0 ? Math.round((p.current_amount / p.target_amount) * 100) : 0;
         const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '';
         dynamicContent += `- [ID:${p.id}] ${p.title} (${p.category}) - Objectif: ${p.target_amount} ${p.currency} - ${progress}% financé${p.island ? ' - ' + p.island : ''}${p.min_investment ? ' - Min: ' + p.min_investment + ' ' + p.currency : ''}${deadline ? ' - Échéance: ' + deadline : ''}\n`;
@@ -381,7 +381,7 @@ serve(async (req) => {
     // 🎯 Section RAG : résultats spécifiquement liés à la question posée
     let searchSection = '';
     const sh: any = searchHits || {};
-    const totalHits = (sh.content?.length || 0) + (sh.prices?.length || 0) + (sh.events?.length || 0) + (sh.gastronomy?.length || 0) + (sh.jobs?.length || 0) + (sh.freelancers?.length || 0) + (sh.diaspora?.length || 0) + (sh.staticPages?.length || 0);
+    const totalHits = (sh.content?.length || 0) + (sh.prices?.length || 0) + (sh.events?.length || 0) + (sh.gastronomy?.length || 0) + (sh.jobs?.length || 0) + (sh.freelancers?.length || 0) + (sh.invest?.length || 0) + (sh.staticPages?.length || 0);
     if (totalHits > 0) {
       searchSection = `\n\n🎯 RÉSULTATS PERTINENTS POUR CETTE QUESTION (mots-clés: ${(sh.keywords || []).join(', ')}):\n`;
       searchSection += '⚠️ Utilise ces résultats EN PRIORITÉ — ils correspondent directement à ce que demande l\'utilisateur.\n\n';
@@ -423,9 +423,9 @@ serve(async (req) => {
           searchSection += `- [ID:${f.id}] ${f.display_name} — ${(f.skills || []).slice(0, 4).join(', ')} (${f.island || 'n/a'})\n`;
         });
       }
-      if (sh.diaspora?.length) {
-        searchSection += '\n🌍 Projets diaspora correspondants:\n';
-        sh.diaspora.forEach((d: any) => {
+      if (sh.invest?.length) {
+        searchSection += '\n🌍 Projets d'investissement correspondants:\n';
+        sh.invest.forEach((d: any) => {
           searchSection += `- [${d.title}](/investissement/${d.id}) — ${d.category} (objectif ${d.target_amount} ${d.currency})\n`;
         });
       }
@@ -472,7 +472,7 @@ Quand tu mentionnes un produit, un événement, un freelancer ou un projet, tu D
 - Événement → [Voir cet événement](/evenements/ID_EVENEMENT)
 - Annonce → [Voir cette annonce](/annonces/ID_ANNONCE)  
 - Freelancer → [Voir le profil](/freelancers) ← vers le répertoire
-- Projet diaspora → [Voir ce projet](/investissement/ID_PROJET)
+- Projet d'investissement → [Voir ce projet](/investissement/ID_PROJET)
 
 EXEMPLES DE RÉPONSES AVEC LIENS DIRECTS:
 - "Le riz coûte 500 FC/kg au marché de Volo-Volo. [Voir tous les prix du riz](/prix)"
@@ -510,7 +510,7 @@ INSCRIPTION ET CONNEXION:
 - Mot de passe oublié: lien "Mot de passe oublié" sur la page de connexion
 
 PUBLIER DU CONTENU (requiert le rôle Annonceur):
-- Les annonceurs peuvent publier : annonces, événements, prix, missions freelance, projets diaspora
+- Les annonceurs peuvent publier : annonces, événements, prix, missions freelance, projets d'investissement
 - Toute publication commence en "brouillon" et doit être validée par un modérateur
 - Pour devenir annonceur: contacter un administrateur ou passer au forfait Pro
 

@@ -50,7 +50,7 @@ export interface ProjectUpdate {
   created_at: string;
 }
 
-// Fetch published diaspora projects
+// Fetch published invest projects
 export function useInvestProjects(filters?: { category?: string; island?: string }) {
   return useQuery({
     queryKey: ['invest-projects', filters],

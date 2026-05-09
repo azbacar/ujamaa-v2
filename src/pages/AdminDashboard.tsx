@@ -262,7 +262,7 @@ export default function AdminDashboard() {
       case 'tourism': return <TourismManagementSection />;
       case 'pro-subscriptions': return <ProSubscriptionsSection />;
       case 'freelance': return <FreelanceManagementSection />;
-      case 'diaspora': return <InvestManagementSection />;
+      case 'invest': return <InvestManagementSection />;
       case 'carriers': return <CarrierManagementSection />;
       case 'enterprises': return <EnterpriseManagementSection />;
       case 'verifications': return <VerificationManagementSection />;

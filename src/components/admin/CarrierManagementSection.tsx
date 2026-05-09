@@ -93,7 +93,7 @@ export default function CarrierManagementSection() {
     <div className="p-4 sm:p-6 space-y-6">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900">👤 Porteurs de Projet</h2>
-        <p className="text-slate-600 text-sm mt-1">Vérifiez et gérez les profils des porteurs de projet diaspora</p>
+        <p className="text-slate-600 text-sm mt-1">Vérifiez et gérez les profils des porteurs de projet</p>
       </div>
 
       {/* Stats */}
