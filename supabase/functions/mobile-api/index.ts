@@ -920,7 +920,7 @@ Deno.serve(async (req) => {
       if (response) return response;
       if (method === "POST" && id === "investment") {
         const body = await req.json();
-        const { data, error: e } = await supabase.from("diaspora_investments").insert({
+        const { data, error: e } = await supabase.from("project_investments").insert({
           ...body, investor_id: user!.id, status: "pending",
         }).select().single();
         if (e) return err(e.message, 500);
@@ -935,7 +935,7 @@ Deno.serve(async (req) => {
         return json(data, 201);
       }
       if (method === "GET" && id === "my-investments") {
-        const { data, error: e } = await supabase.from("diaspora_investments").select("*, diaspora_projects(*)").eq("investor_id", user!.id);
+        const { data, error: e } = await supabase.from("project_investments").select("*, investments(*)").eq("investor_id", user!.id);
         if (e) return err(e.message, 500);
         return json({ data });
       }
