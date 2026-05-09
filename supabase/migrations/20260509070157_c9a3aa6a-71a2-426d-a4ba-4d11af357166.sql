@@ -1,0 +1,1 @@
+ALTER VIEW IF EXISTS public.users_pro_status SET (security_invoker = true);

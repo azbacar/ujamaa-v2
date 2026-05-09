@@ -71,8 +71,9 @@ export function useDiasporaProjects(filters?: { category?: string; island?: stri
       // Fetch carrier verification status for all authors
       if (projects.length > 0) {
         const authorIds = [...new Set(projects.map(p => p.author_id))];
+        // Vue publique: pas de fuite phone/email
         const { data: carriers } = await supabase
-          .from('project_carriers' as any)
+          .from('project_carriers_public' as any)
           .select('user_id, is_verified')
           .in('user_id', authorIds)
           .eq('is_verified', true);
@@ -114,7 +115,7 @@ export function useDiasporaProject(id: string | undefined) {
 
       // Check carrier verification
       const { data: carrier } = await supabase
-        .from('project_carriers' as any)
+        .from('project_carriers_public' as any)
         .select('is_verified')
         .eq('user_id', project.author_id)
         .eq('is_verified', true)
