@@ -285,7 +285,7 @@ serve(async (req) => {
     }
 
     if (dynamicData.investments && dynamicData.investments.length > 0) {
-      dynamicContent += '🌍 PROJETS D\'INVESTISSEMENT DIASPORA:\n';
+      dynamicContent += '💰 PROJETS D\'INVESTISSEMENT (LEVÉE DE FONDS):\n';
       dynamicData.investments.forEach((p: any) => {
         const progress = p.target_amount > 0 ? Math.round((p.current_amount / p.target_amount) * 100) : 0;
         const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '';
