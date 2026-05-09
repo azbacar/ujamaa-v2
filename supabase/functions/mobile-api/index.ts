@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
       const offset = parseInt(url.searchParams.get("offset") || "0");
       const tableMap: Record<string, string> = {
         prices: "prices", events: "events", content: "content_items",
-        gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", diaspora: "diaspora_projects",
+        gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", diaspora: "investments",
         "vendor-locations": "vendor_locations",
         enterprises: "enterprise_profiles_public",
         partners: "partner_accounts",
@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
             extra.facebook_url = row.facebook_url; extra.linkedin_url = row.linkedin_url;
             extra.twitter_url = row.twitter_url; extra.instagram_url = row.instagram_url;
             break;
-          case "diaspora_projects":
+          case "investments":
             images = buildImages(row, ["images"]);
             extra.target_amount = row.target_amount; extra.current_amount = row.current_amount;
             extra.currency = row.currency; extra.deadline = row.deadline;
@@ -928,7 +928,7 @@ Deno.serve(async (req) => {
       }
       if (method === "POST" && id === "project") {
         const body = await req.json();
-        const { data, error: e } = await supabase.from("diaspora_projects").insert({
+        const { data, error: e } = await supabase.from("investments").insert({
           ...body, carrier_id: user!.id, status: body.status || "draft",
         }).select().single();
         if (e) return err(e.message, 500);
@@ -1264,14 +1264,14 @@ Deno.serve(async (req) => {
     if (resource === "diaspora") {
       if (method === "GET" && !id) {
         const status = url.searchParams.get("status") || "published";
-        let query = supabase.from("diaspora_projects").select("*", { count: "exact" });
+        let query = supabase.from("investments").select("*", { count: "exact" });
         if (status !== "all") query = query.eq("status", status);
         const { data, count, error: qErr } = await query.order("created_at", { ascending: false });
         if (qErr) return err(qErr.message, 500);
         return json({ data, total: count });
       }
       if (method === "GET" && id) {
-        const { data, error: qErr } = await supabase.from("diaspora_projects").select("*").eq("id", id).single();
+        const { data, error: qErr } = await supabase.from("investments").select("*").eq("id", id).single();
         if (qErr) return err(qErr.message, 404);
         return json(data);
       }

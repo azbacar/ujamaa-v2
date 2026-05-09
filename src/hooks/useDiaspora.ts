@@ -56,7 +56,7 @@ export function useDiasporaProjects(filters?: { category?: string; island?: stri
     queryKey: ['diaspora-projects', filters],
     queryFn: async () => {
       let query = supabase
-        .from('diaspora_projects')
+        .from('investments')
         .select('*')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
@@ -106,7 +106,7 @@ export function useDiasporaProject(id: string | undefined) {
     queryFn: async () => {
       if (!id) return null;
       const { data, error } = await supabase
-        .from('diaspora_projects')
+        .from('investments')
         .select('*')
         .eq('id', id)
         .single();
@@ -145,7 +145,7 @@ export function useMyDiasporaProjects() {
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
-        .from('diaspora_projects')
+        .from('investments')
         .select('*')
         .eq('author_id', user.id)
         .order('created_at', { ascending: false });
@@ -219,7 +219,7 @@ export function useCreateDiasporaProject() {
   return useMutation({
     mutationFn: async (project: Omit<DiasporaProject, 'id' | 'current_amount' | 'views' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
-        .from('diaspora_projects')
+        .from('investments')
         .insert(project)
         .select()
         .single();
@@ -245,7 +245,7 @@ export function useUpdateDiasporaProject() {
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<DiasporaProject> & { id: string }) => {
       const { data, error } = await supabase
-        .from('diaspora_projects')
+        .from('investments')
         .update(updates)
         .eq('id', id)
         .select()

@@ -43,7 +43,7 @@ export default function DiasporaProjectDetail() {
     keywords: project ? `${project.category}, investissement, levée de fonds, comores` : undefined,
   });
 
-  useViewTracker('diaspora_project', project?.id);
+  useViewTracker('invest', project?.id);
 
   if (isLoading) {
     return (

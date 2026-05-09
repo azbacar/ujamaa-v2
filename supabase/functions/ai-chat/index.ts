@@ -95,7 +95,7 @@ async function searchSiteContent(query: string, authHeader: string | null, locat
       supabase.from('gastronomy_items').select('id, title, description, type, location, price_min').eq('status','published').or(orFilter).limit(15),
       supabase.from('freelance_jobs').select('id, title, description, budget_min, budget_max, currency, island').eq('status','published').or(orFilter).limit(15),
       supabase.from('freelancer_profiles').select('id, display_name, bio, skills, island, location, hourly_rate_min, currency').eq('is_visible',true).or(`display_name.ilike.%${safeKeywords[0]}%,bio.ilike.%${safeKeywords[0]}%`).limit(15),
-      supabase.from('diaspora_projects').select('id, title, description, category, target_amount, currency, island, location').eq('status','published').or(orFilter).limit(15),
+      supabase.from('investments').select('id, title, description, category, target_amount, currency, island, location').eq('status','published').or(orFilter).limit(15),
       supabase.from('static_pages').select('slug, title, meta_description, content').or(`title.ilike.%${safeKeywords[0]}%,meta_description.ilike.%${safeKeywords[0]}%,content.ilike.%${safeKeywords[0]}%`).limit(8),
     ]);
     return {
@@ -127,7 +127,7 @@ async function getDynamicSiteData(authHeader: string | null) {
       supabase.from('events').select('id, title, description, date, end_date, location, island, category, price, currency').gte('date', new Date().toISOString()).order('date', { ascending: true }).limit(20),
       supabase.from('content_items').select('id, title, description, category, type').eq('status', 'published').eq('type', 'announcement').order('published_at', { ascending: false }).limit(20),
       supabase.from('freelancer_profiles').select('id, display_name, skills, island, hourly_rate_min, hourly_rate_max, currency, experience_years, is_available, location').eq('is_visible', true).eq('is_available', true).limit(30),
-      supabase.from('diaspora_projects').select('id, title, description, category, target_amount, current_amount, currency, island, location, min_investment, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
+      supabase.from('investments').select('id, title, description, category, target_amount, current_amount, currency, island, location, min_investment, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),
       supabase.from('taxi_fares').select('id, from_location, to_location, island, price, currency, vehicle_type, notes').eq('is_active', true).order('island').limit(100),
       supabase.from('pharmacy_guards').select('id, name, address, phone, island, city, is_on_duty, duty_start, duty_end, notes').eq('is_active', true).order('island').limit(50),
       supabase.from('freelance_jobs').select('id, title, description, category, skills, budget_min, budget_max, currency, location, island, is_remote, deadline').eq('status', 'published').order('created_at', { ascending: false }).limit(20),

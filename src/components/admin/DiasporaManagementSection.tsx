@@ -25,7 +25,7 @@ export default function DiasporaManagementSection() {
     queryKey: ['admin-diaspora-projects', statusFilter],
     queryFn: async () => {
       let query = supabase
-        .from('diaspora_projects')
+        .from('investments')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -51,7 +51,7 @@ export default function DiasporaManagementSection() {
 
   const updateProjectStatus = async (id: string, status: string) => {
     const { error } = await supabase
-      .from('diaspora_projects')
+      .from('investments')
       .update({ status })
       .eq('id', id);
 
@@ -71,7 +71,7 @@ export default function DiasporaManagementSection() {
   const handleEditSave = async () => {
     if (!editingProject) return;
     try {
-      const { error } = await supabase.from('diaspora_projects').update({
+      const { error } = await supabase.from('investments').update({
         title: editingProject.title,
         description: editingProject.description,
         full_content: editingProject.full_content,
