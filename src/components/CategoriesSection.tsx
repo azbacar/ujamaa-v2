@@ -91,6 +91,7 @@ const CategoriesSection = () => {
               itemCount = bricolageCount || 0;
               lastUpdate = formatLastUpdate(latestBricolage?.[0]?.updated_at ?? null);
               break;
+          }
           return {
             title: cat.title,
             description: cat.description,
