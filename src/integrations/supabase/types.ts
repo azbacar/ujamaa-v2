@@ -1720,6 +1720,13 @@ export type Database = {
             referencedRelation: "partner_accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "partner_deposits_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_accounts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       partner_kyc_documents: {
@@ -1759,6 +1766,13 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partner_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_kyc_documents_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_accounts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1854,6 +1868,13 @@ export type Database = {
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partner_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_transactions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_accounts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3044,6 +3065,51 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_accounts_public: {
+        Row: {
+          accepted_methods: string[] | null
+          address: string | null
+          business_name: string | null
+          city: string | null
+          created_at: string | null
+          id: string | null
+          is_visible_on_map: boolean | null
+          island: string | null
+          latitude: number | null
+          longitude: number | null
+          opening_hours: string | null
+          status: string | null
+        }
+        Insert: {
+          accepted_methods?: string[] | null
+          address?: string | null
+          business_name?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_visible_on_map?: boolean | null
+          island?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          opening_hours?: string | null
+          status?: string | null
+        }
+        Update: {
+          accepted_methods?: string[] | null
+          address?: string | null
+          business_name?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_visible_on_map?: boolean | null
+          island?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          opening_hours?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       project_carriers_public: {
         Row: {
           bio: string | null
@@ -3080,6 +3146,69 @@ export type Database = {
           location?: string | null
           organization?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      site_settings_public: {
+        Row: {
+          ai_assistant_enabled: boolean | null
+          ai_assistant_name: string | null
+          ai_assistant_welcome_message: string | null
+          ga_tracking_id: string | null
+          hero_image_url: string | null
+          hero_subtitle: string | null
+          hero_title: string | null
+          id: string | null
+          island_images: Json | null
+          og_description: string | null
+          og_image_url: string | null
+          og_title: string | null
+          seo_keywords: string | null
+          site_favicon_url: string | null
+          site_logo_url: string | null
+          site_name: string | null
+          twitter_card: string | null
+          twitter_site: string | null
+        }
+        Insert: {
+          ai_assistant_enabled?: boolean | null
+          ai_assistant_name?: string | null
+          ai_assistant_welcome_message?: string | null
+          ga_tracking_id?: string | null
+          hero_image_url?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string | null
+          island_images?: Json | null
+          og_description?: string | null
+          og_image_url?: string | null
+          og_title?: string | null
+          seo_keywords?: string | null
+          site_favicon_url?: string | null
+          site_logo_url?: string | null
+          site_name?: string | null
+          twitter_card?: string | null
+          twitter_site?: string | null
+        }
+        Update: {
+          ai_assistant_enabled?: boolean | null
+          ai_assistant_name?: string | null
+          ai_assistant_welcome_message?: string | null
+          ga_tracking_id?: string | null
+          hero_image_url?: string | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string | null
+          island_images?: Json | null
+          og_description?: string | null
+          og_image_url?: string | null
+          og_title?: string | null
+          seo_keywords?: string | null
+          site_favicon_url?: string | null
+          site_logo_url?: string | null
+          site_name?: string | null
+          twitter_card?: string | null
+          twitter_site?: string | null
         }
         Relationships: []
       }
@@ -3136,6 +3265,10 @@ export type Database = {
         Args: { _id: string; _type: string }
         Returns: undefined
       }
+      increment_promo_code_usage: {
+        Args: { _code: string }
+        Returns: undefined
+      }
       is_active_partner: { Args: { _user_id: string }; Returns: boolean }
       is_pro_annonceur: { Args: { _user_id: string }; Returns: boolean }
       is_pro_user: { Args: { _user_id: string }; Returns: boolean }
@@ -3175,6 +3308,16 @@ export type Database = {
           created_by: string
           id: string
           permissions: string[]
+        }[]
+      }
+      validate_promo_code: {
+        Args: { _code: string; _plan: string }
+        Returns: {
+          code: string
+          discount_type: string
+          discount_value: number
+          message: string
+          valid: boolean
         }[]
       }
     }
