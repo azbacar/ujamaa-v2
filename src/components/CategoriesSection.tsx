@@ -81,7 +81,16 @@ const CategoriesSection = () => {
               itemCount = gastronomyCount || 0;
               lastUpdate = formatLastUpdate(latestGastronomy?.[0]?.updated_at ?? null);
               break;
-          }
+            case "Transport":
+              itemCount = (taxiCount || 0) + (transportAdsCount || 0);
+              lastUpdate = formatLastUpdate(
+                latestTaxi?.[0]?.updated_at ?? latestTransportAd?.[0]?.updated_at ?? null
+              );
+              break;
+            case "Bricolage et Maintenance":
+              itemCount = bricolageCount || 0;
+              lastUpdate = formatLastUpdate(latestBricolage?.[0]?.updated_at ?? null);
+              break;
           return {
             title: cat.title,
             description: cat.description,
