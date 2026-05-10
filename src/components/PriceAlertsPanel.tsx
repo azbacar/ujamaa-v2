@@ -180,6 +180,31 @@ export default function PriceAlertsPanel() {
                 />
               </div>
             )}
+            <div className="space-y-2 pt-2 border-t">
+              <Label className="text-xs uppercase text-muted-foreground">Canaux de notification</Label>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">📧 Email</span>
+                <Switch
+                  checked={newAlert.notify_email}
+                  onCheckedChange={v => setNewAlert(p => ({ ...p, notify_email: v }))}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">💬 WhatsApp</span>
+                <Switch
+                  checked={newAlert.notify_whatsapp}
+                  onCheckedChange={v => setNewAlert(p => ({ ...p, notify_whatsapp: v }))}
+                />
+              </div>
+              {newAlert.notify_whatsapp && (
+                <Input
+                  placeholder="Ex: +269 333 12 34"
+                  value={newAlert.whatsapp_phone}
+                  onChange={e => setNewAlert(p => ({ ...p, whatsapp_phone: e.target.value }))}
+                />
+              )}
+              <p className="text-[10px] text-muted-foreground">📱 Notifications push & in-app toujours actives.</p>
+            </div>
             <div className="flex gap-2">
               <Button onClick={handleCreate} disabled={saving} size="sm">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Bell className="h-4 w-4 mr-1" />}
