@@ -163,29 +163,24 @@ export default function ProPage() {
     if (!promoCode.trim()) return;
     setCheckingPromo(true);
     try {
-      const { data, error } = await supabase
-        .from('promo_codes')
-        .select('*')
-        .eq('code', promoCode.toUpperCase().trim())
-        .eq('is_active', true)
-        .maybeSingle();
+      const planId = selectedPlan === 'premium'
+        ? (billingCycle === 'yearly' ? 'pro_yearly' : 'pro_monthly')
+        : selectedPlan;
+      const { data, error } = await supabase.rpc('validate_promo_code' as any, {
+        _code: promoCode.toUpperCase().trim(),
+        _plan: planId,
+      });
 
       if (error) throw error;
-      if (!data) { toast.error('Code promo invalide ou expiré'); setAppliedPromo(null); return; }
-
-      const promo = data as any;
-      if (promo.valid_until && new Date(promo.valid_until) < new Date()) {
-        toast.error('Ce code promo a expiré'); setAppliedPromo(null); return;
-      }
-      if (promo.max_uses && promo.current_uses >= promo.max_uses) {
-        toast.error('Ce code promo a atteint son nombre maximum d\'utilisations'); setAppliedPromo(null); return;
-      }
-      if (!promo.applicable_plans.includes(selectedPlan)) {
-        toast.error('Ce code ne s\'applique pas à ce plan'); setAppliedPromo(null); return;
+      const row: any = Array.isArray(data) ? data[0] : data;
+      if (!row || !row.valid) {
+        toast.error(row?.message || 'Code promo invalide ou expiré');
+        setAppliedPromo(null);
+        return;
       }
 
-      setAppliedPromo({ code: promo.code, discount_type: promo.discount_type, discount_value: promo.discount_value });
-      toast.success(`Code "${promo.code}" appliqué ! ${promo.discount_type === 'percentage' ? `-${promo.discount_value}%` : `-${promo.discount_value.toLocaleString()} FC`}`);
+      setAppliedPromo({ code: row.code, discount_type: row.discount_type, discount_value: Number(row.discount_value) });
+      toast.success(`Code "${row.code}" appliqué ! ${row.discount_type === 'percentage' ? `-${row.discount_value}%` : `-${Number(row.discount_value).toLocaleString()} FC`}`);
     } catch {
       toast.error('Erreur lors de la vérification');
     } finally {
@@ -247,9 +242,9 @@ export default function ProPage() {
     });
     if (error) throw error;
 
-    // Increment promo code usage
+    // Increment promo code usage via secure RPC
     if (appliedPromo) {
-      await supabase.from('promo_codes').update({ current_uses: (appliedPromo as any).current_uses + 1 } as any).eq('code', appliedPromo.code).then(() => {});
+      await supabase.rpc('increment_promo_code_usage' as any, { _code: appliedPromo.code });
     }
 
     toast.success("Demande envoyée ! Vous recevrez une notification après validation.");
