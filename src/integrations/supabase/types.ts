@@ -3071,6 +3071,7 @@ export type Database = {
           address: string | null
           business_name: string | null
           city: string | null
+          contact_phone: string | null
           created_at: string | null
           id: string | null
           is_visible_on_map: boolean | null
@@ -3085,6 +3086,7 @@ export type Database = {
           address?: string | null
           business_name?: string | null
           city?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           id?: string | null
           is_visible_on_map?: boolean | null
@@ -3099,6 +3101,7 @@ export type Database = {
           address?: string | null
           business_name?: string | null
           city?: string | null
+          contact_phone?: string | null
           created_at?: string | null
           id?: string | null
           is_visible_on_map?: boolean | null
