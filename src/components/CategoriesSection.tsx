@@ -35,13 +35,19 @@ const CategoriesSection = () => {
           { count: tendersCount, data: latestTender },
           { count: eventsCount, data: latestEvent },
           { count: servicesCount, data: latestService },
-          { count: gastronomyCount, data: latestGastronomy }
+          { count: gastronomyCount, data: latestGastronomy },
+          { count: taxiCount, data: latestTaxi },
+          { count: transportAdsCount, data: latestTransportAd },
+          { count: bricolageCount, data: latestBricolage },
         ] = await Promise.all([
           supabase.from('prices').select('*', { count: 'exact', head: false }).eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
           supabase.from('content_items').select('*', { count: 'exact', head: false }).eq('type', 'tender').eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
           supabase.from('events').select('*', { count: 'exact', head: false }).eq('status', 'published').gte('date', new Date().toISOString()).order('updated_at', { ascending: false }).limit(1),
           supabase.from('content_items').select('*', { count: 'exact', head: false }).eq('type', 'service').eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
           supabase.from('gastronomy_items').select('*', { count: 'exact', head: false }).eq('status', 'published').order('updated_at', { ascending: false }).limit(1),
+          supabase.from('taxi_fares').select('*', { count: 'exact', head: false }).eq('is_active', true).order('updated_at', { ascending: false }).limit(1),
+          supabase.from('content_items').select('*', { count: 'exact', head: false }).eq('status', 'published').ilike('category', '%transport%').order('updated_at', { ascending: false }).limit(1),
+          supabase.from('content_items').select('*', { count: 'exact', head: false }).eq('status', 'published').ilike('category', '%bricolage%').order('updated_at', { ascending: false }).limit(1),
         ]);
 
         const formatLastUpdate = (date: string | null) => {
@@ -74,6 +80,16 @@ const CategoriesSection = () => {
             case "Tourisme & Gastronomie":
               itemCount = gastronomyCount || 0;
               lastUpdate = formatLastUpdate(latestGastronomy?.[0]?.updated_at ?? null);
+              break;
+            case "Transport":
+              itemCount = (taxiCount || 0) + (transportAdsCount || 0);
+              lastUpdate = formatLastUpdate(
+                latestTaxi?.[0]?.updated_at ?? latestTransportAd?.[0]?.updated_at ?? null
+              );
+              break;
+            case "Bricolage et Maintenance":
+              itemCount = bricolageCount || 0;
+              lastUpdate = formatLastUpdate(latestBricolage?.[0]?.updated_at ?? null);
               break;
           }
           return {
