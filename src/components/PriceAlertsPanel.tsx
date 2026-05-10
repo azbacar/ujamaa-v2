@@ -36,6 +36,9 @@ export default function PriceAlertsPanel() {
     island: '',
     threshold_type: 'any',
     threshold_value: '',
+    notify_email: true,
+    notify_whatsapp: false,
+    whatsapp_phone: '',
   });
 
   useEffect(() => {
