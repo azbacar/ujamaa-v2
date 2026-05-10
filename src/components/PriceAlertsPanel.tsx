@@ -66,11 +66,14 @@ export default function PriceAlertsPanel() {
         island: newAlert.island || null,
         threshold_type: newAlert.threshold_type,
         threshold_value: newAlert.threshold_value ? Number(newAlert.threshold_value) : null,
+        notify_email: newAlert.notify_email,
+        notify_whatsapp: newAlert.notify_whatsapp,
+        whatsapp_phone: newAlert.notify_whatsapp ? (newAlert.whatsapp_phone || null) : null,
       });
       if (error) throw error;
       toast.success('Alerte créée avec succès !');
       setShowForm(false);
-      setNewAlert({ product: '', category: '', island: '', threshold_type: 'any', threshold_value: '' });
+      setNewAlert({ product: '', category: '', island: '', threshold_type: 'any', threshold_value: '', notify_email: true, notify_whatsapp: false, whatsapp_phone: '' });
       fetchAlerts();
     } catch (e: any) {
       toast.error(e.message);
