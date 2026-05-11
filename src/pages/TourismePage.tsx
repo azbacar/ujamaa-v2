@@ -67,11 +67,21 @@ const ACCOMMODATION_LABELS: Record<string, string> = {
 
 export default function TourismePage() {
   const { currentLanguage, setLanguage } = useLanguage();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [items, setItems] = useState<GastronomyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedItem, setSelectedItem] = useState<GastronomyItem | null>(null);
+
+  const handleAddInfo = () => {
+    if (!user) {
+      navigate('/auth?redirect=/annonceur');
+    } else {
+      navigate('/annonceur?tab=tourisme');
+    }
+  };
 
   usePageSEO({
     title: 'Tourisme & Gastronomie aux Comores | UJAMAA',
