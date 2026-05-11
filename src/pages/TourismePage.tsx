@@ -10,8 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   UtensilsCrossed, Hotel, Home, ChefHat, Search, MapPin, Eye, 
-  Phone, MessageCircle, Mail, Star, Navigation
+  Phone, MessageCircle, Mail, Star, Navigation, Plus
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import GastronomyDetailDialog from '@/components/tourism/GastronomyDetailDialog';
 import ContactDisplay from '@/components/ContactDisplay';
@@ -65,11 +67,21 @@ const ACCOMMODATION_LABELS: Record<string, string> = {
 
 export default function TourismePage() {
   const { currentLanguage, setLanguage } = useLanguage();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [items, setItems] = useState<GastronomyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedItem, setSelectedItem] = useState<GastronomyItem | null>(null);
+
+  const handleAddInfo = () => {
+    if (!user) {
+      navigate('/auth?redirect=/annonceur');
+    } else {
+      navigate('/annonceur?tab=tourisme');
+    }
+  };
 
   usePageSEO({
     title: 'Tourisme & Gastronomie aux Comores | UJAMAA',
@@ -305,6 +317,17 @@ export default function TourismePage() {
             })}
           </div>
         )}
+
+        {/* CTA Add info */}
+        <div className="flex flex-col items-center gap-3 py-8 border-t border-border">
+          <p className="text-sm text-muted-foreground text-center">
+            Vous êtes restaurateur, hôtelier ou guide touristique ?
+          </p>
+          <Button onClick={handleAddInfo} size="lg" variant="secondary">
+            <Plus className="w-5 h-5" />
+            Ajouter une information touristique
+          </Button>
+        </div>
       </main>
 
       {/* Detail Dialog */}
