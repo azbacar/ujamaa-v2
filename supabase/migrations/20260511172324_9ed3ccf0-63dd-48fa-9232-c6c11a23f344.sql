@@ -1,0 +1,1 @@
+UPDATE public.homepage_categories SET link = '/tourisme' WHERE title = 'Tourisme & Gastronomie';
