@@ -10,8 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   UtensilsCrossed, Hotel, Home, ChefHat, Search, MapPin, Eye, 
-  Phone, MessageCircle, Mail, Star, Navigation
+  Phone, MessageCircle, Mail, Star, Navigation, Plus
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import GastronomyDetailDialog from '@/components/tourism/GastronomyDetailDialog';
 import ContactDisplay from '@/components/ContactDisplay';
