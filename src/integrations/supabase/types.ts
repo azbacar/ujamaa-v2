@@ -333,45 +333,90 @@ export type Database = {
       }
       content_items: {
         Row: {
+          attachments: Json | null
           author_id: string
+          budget_estimate: number | null
           category: string | null
           contact_phone: string | null
           contact_whatsapp: string | null
+          contracting_authority: string | null
           created_at: string
+          currency: string | null
+          deadline_at: string | null
           description: string | null
+          evaluation_criteria: Json | null
+          guarantee_amount: number | null
           id: string
+          island: string | null
+          lots_count: number | null
+          opening_at: string | null
+          opening_location: string | null
+          procurement_type: string | null
           published_at: string
+          reference_number: string | null
+          required_documents: Json | null
           status: Database["public"]["Enums"]["content_status"]
+          submission_location: string | null
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at: string
           views: number
         }
         Insert: {
+          attachments?: Json | null
           author_id: string
+          budget_estimate?: number | null
           category?: string | null
           contact_phone?: string | null
           contact_whatsapp?: string | null
+          contracting_authority?: string | null
           created_at?: string
+          currency?: string | null
+          deadline_at?: string | null
           description?: string | null
+          evaluation_criteria?: Json | null
+          guarantee_amount?: number | null
           id?: string
+          island?: string | null
+          lots_count?: number | null
+          opening_at?: string | null
+          opening_location?: string | null
+          procurement_type?: string | null
           published_at?: string
+          reference_number?: string | null
+          required_documents?: Json | null
           status?: Database["public"]["Enums"]["content_status"]
+          submission_location?: string | null
           title: string
           type: Database["public"]["Enums"]["content_type"]
           updated_at?: string
           views?: number
         }
         Update: {
+          attachments?: Json | null
           author_id?: string
+          budget_estimate?: number | null
           category?: string | null
           contact_phone?: string | null
           contact_whatsapp?: string | null
+          contracting_authority?: string | null
           created_at?: string
+          currency?: string | null
+          deadline_at?: string | null
           description?: string | null
+          evaluation_criteria?: Json | null
+          guarantee_amount?: number | null
           id?: string
+          island?: string | null
+          lots_count?: number | null
+          opening_at?: string | null
+          opening_location?: string | null
+          procurement_type?: string | null
           published_at?: string
+          reference_number?: string | null
+          required_documents?: Json | null
           status?: Database["public"]["Enums"]["content_status"]
+          submission_location?: string | null
           title?: string
           type?: Database["public"]["Enums"]["content_type"]
           updated_at?: string
@@ -2740,47 +2785,95 @@ export type Database = {
       }
       tender_submissions: {
         Row: {
+          acknowledged_terms: boolean | null
+          address: string | null
+          city: string | null
+          company_name: string | null
+          company_type: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contact_title: string | null
           cover_letter: string
           created_at: string
           currency: string
+          delivery_time: string | null
           documents: string[] | null
-          enterprise_id: string
+          enterprise_id: string | null
           id: string
+          island: string | null
           proposed_amount: number | null
+          registration_number: string | null
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
+          submitter_user_id: string | null
+          tax_number: string | null
+          team_description: string | null
+          technical_approach: string | null
           tender_id: string
           updated_at: string
         }
         Insert: {
+          acknowledged_terms?: boolean | null
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
+          company_type?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_title?: string | null
           cover_letter: string
           created_at?: string
           currency?: string
+          delivery_time?: string | null
           documents?: string[] | null
-          enterprise_id: string
+          enterprise_id?: string | null
           id?: string
+          island?: string | null
           proposed_amount?: number | null
+          registration_number?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          submitter_user_id?: string | null
+          tax_number?: string | null
+          team_description?: string | null
+          technical_approach?: string | null
           tender_id: string
           updated_at?: string
         }
         Update: {
+          acknowledged_terms?: boolean | null
+          address?: string | null
+          city?: string | null
+          company_name?: string | null
+          company_type?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_title?: string | null
           cover_letter?: string
           created_at?: string
           currency?: string
+          delivery_time?: string | null
           documents?: string[] | null
-          enterprise_id?: string
+          enterprise_id?: string | null
           id?: string
+          island?: string | null
           proposed_amount?: number | null
+          registration_number?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
+          submitter_user_id?: string | null
+          tax_number?: string | null
+          team_description?: string | null
+          technical_approach?: string | null
           tender_id?: string
           updated_at?: string
         }
@@ -3260,6 +3353,10 @@ export type Database = {
           id: string
           username: string
         }[]
+      }
+      get_tender_submission_count: {
+        Args: { _tender_id: string }
+        Returns: number
       }
       get_user_role: {
         Args: { _user_id: string }
