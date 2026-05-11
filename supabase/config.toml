@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.send-price-alert]
 verify_jwt = false
+
+[functions.notify-tender-submission]
+verify_jwt = false
