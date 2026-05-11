@@ -317,6 +317,17 @@ export default function TourismePage() {
             })}
           </div>
         )}
+
+        {/* CTA Add info */}
+        <div className="flex flex-col items-center gap-3 py-8 border-t border-border">
+          <p className="text-sm text-muted-foreground text-center">
+            Vous êtes restaurateur, hôtelier ou guide touristique ?
+          </p>
+          <Button onClick={handleAddInfo} size="lg" variant="secondary">
+            <Plus className="w-5 h-5" />
+            Ajouter une information touristique
+          </Button>
+        </div>
       </main>
 
       {/* Detail Dialog */}
