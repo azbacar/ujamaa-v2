@@ -74,6 +74,14 @@ const ACCOMMODATION_TYPES = [
   { value: 'bungalow', label: '🏖️ Bungalow' },
 ];
 
+const PROCUREMENT_TYPES = [
+  { value: 'aoo', label: 'Appel d\'offres ouvert' },
+  { value: 'aor', label: 'Appel d\'offres restreint' },
+  { value: 'ami', label: 'Manifestation d\'intérêt' },
+  { value: 'consultation', label: 'Consultation restreinte' },
+  { value: 'gre_a_gre', label: 'Gré à gré' },
+];
+
 const initialForm = {
   title: '', description: '', type: 'announcement', category: '',
   contact_phone: '', contact_whatsapp: '', contact_email: '',
@@ -90,6 +98,11 @@ const initialForm = {
   room_types: [] as { name: string; description: string; price_min: number; price_max: number }[],
   latitude: '',
   longitude: '',
+  // Tender (OHADA) specific
+  reference_number: '', procurement_type: '', contracting_authority: '',
+  budget_estimate: '', tender_currency: 'KMF', guarantee_amount: '',
+  lots_count: '', deadline_at: '', opening_at: '',
+  opening_location: '', submission_location: '', tender_island: '',
 };
 
 export default function AnnouncerDashboard() {
