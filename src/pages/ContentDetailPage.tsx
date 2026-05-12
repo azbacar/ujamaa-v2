@@ -79,7 +79,7 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
       try {
         const { data, error } = await supabase
           .from('content_items')
-          .select('id, title, description, category, created_at, type, author_id, contact_phone, contact_whatsapp')
+          .select('id, title, description, category, created_at, type, author_id, contact_phone, contact_whatsapp, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island')
           .eq('id', id)
           .eq('type', contentType)
           .maybeSingle();
