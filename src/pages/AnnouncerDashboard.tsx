@@ -228,7 +228,8 @@ export default function AnnouncerDashboard() {
         toast.success('Publication tourisme soumise pour modération');
       } else {
         // content_items: announcement, service, tender
-        const { error } = await supabase.from('content_items').insert({
+        const isTender = newForm.type === 'tender';
+        const payload: any = {
           title: newForm.title,
           description: newForm.description,
           type: newForm.type as any,
@@ -237,9 +238,24 @@ export default function AnnouncerDashboard() {
           status: 'draft',
           contact_phone: newForm.contact_phone || null,
           contact_whatsapp: newForm.contact_whatsapp || null,
-        });
+        };
+        if (isTender) {
+          payload.reference_number = newForm.reference_number || null;
+          payload.procurement_type = newForm.procurement_type || null;
+          payload.contracting_authority = newForm.contracting_authority || null;
+          payload.budget_estimate = newForm.budget_estimate ? parseFloat(newForm.budget_estimate) : null;
+          payload.currency = newForm.tender_currency || 'KMF';
+          payload.guarantee_amount = newForm.guarantee_amount ? parseFloat(newForm.guarantee_amount) : null;
+          payload.lots_count = newForm.lots_count ? parseInt(newForm.lots_count) : null;
+          payload.deadline_at = newForm.deadline_at ? new Date(newForm.deadline_at).toISOString() : null;
+          payload.opening_at = newForm.opening_at ? new Date(newForm.opening_at).toISOString() : null;
+          payload.opening_location = newForm.opening_location || null;
+          payload.submission_location = newForm.submission_location || null;
+          payload.island = newForm.tender_island || null;
+        }
+        const { error } = await supabase.from('content_items').insert(payload);
         if (error) throw error;
-        toast.success(newForm.type === 'tender' ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
+        toast.success(isTender ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
       }
       setNewForm(initialForm);
       setEventImages([]);
