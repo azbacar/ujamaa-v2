@@ -84,7 +84,7 @@ const IslandDetailPage = () => {
 
   useEffect(() => {
     const fetchCustomImages = async () => {
-      const { data } = await supabase.from('site_settings').select('island_images').limit(1).maybeSingle();
+      const { data } = await supabase.from('site_settings_public').select('island_images').limit(1).maybeSingle();
       if (data?.island_images && typeof data.island_images === 'object') {
         setCustomImages(data.island_images as Record<string, string>);
       }

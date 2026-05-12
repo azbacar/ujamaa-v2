@@ -81,17 +81,16 @@ const TenderSubmissionForm = ({ tenderId, tenderTitle, onClose }: TenderSubmissi
 
   const uploadDocuments = async (): Promise<string[]> => {
     if (!user || documents.length === 0) return [];
-    const urls: string[] = [];
+    const paths: string[] = [];
     for (const file of documents) {
-      const ext = file.name.split('.').pop() || 'bin';
       const safe = file.name.replace(/[^\w.-]+/g, '_').slice(0, 60);
       const path = `${user.id}/${tenderId}/${Date.now()}-${safe}`;
       const { error } = await supabase.storage.from('tender-documents').upload(path, file, { upsert: false, contentType: file.type });
       if (error) throw new Error(`Upload échoué (${file.name}): ${error.message}`);
-      const { data } = supabase.storage.from('tender-documents').getPublicUrl(path);
-      urls.push(data.publicUrl);
+      // Bucket is private — store path; consumers create signed URLs on demand.
+      paths.push(path);
     }
-    return urls;
+    return paths;
   };
 
   const handleSubmit = async () => {

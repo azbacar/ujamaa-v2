@@ -182,7 +182,7 @@ export const usePublicPartners = (island?: string) => {
 
   const refresh = useCallback(async () => {
     let q = supabase
-      .from('partner_accounts')
+      .from('partner_accounts_public')
       .select('id,business_name,contact_phone,island,city,address,latitude,longitude,opening_hours,accepted_methods')
       .eq('status', 'active')
       .eq('is_visible_on_map', true);

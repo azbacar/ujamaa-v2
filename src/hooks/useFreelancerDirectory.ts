@@ -84,27 +84,35 @@ export const useFreelancerProfiles = (filters?: { skills?: string[]; island?: st
   });
 };
 
+// Columns explicitly enumerated to skip the `whatsapp` column,
+// which is REVOKEd and exposed only via get_freelancer_whatsapp() RPC.
+const FREELANCER_COLUMNS =
+  'id, user_id, display_name, bio, skills, hourly_rate_min, hourly_rate_max, currency, experience_years, portfolio_url, island, location, is_available, is_visible, views, avatar_url, facebook_url, linkedin_url, twitter_url, instagram_url, created_at, updated_at';
+
+const fetchWhatsapp = async (profileId: string): Promise<string | null> => {
+  const { data } = await supabase.rpc('get_freelancer_whatsapp', { _profile_id: profileId });
+  return (data as string | null) ?? null;
+};
+
 export const useFreelancerProfile = (userId?: string) => {
   return useQuery({
     queryKey: ['freelancer-profile', userId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('freelancer_profiles')
-        .select('*')
+        .select(FREELANCER_COLUMNS)
         .eq('user_id', userId!)
         .maybeSingle();
 
       if (error) throw error;
       if (!data) return null;
 
-      // enrich with account_type
-      const { data: u } = await supabase
-        .from('users')
-        .select('account_type')
-        .eq('id', data.user_id)
-        .maybeSingle();
+      const [{ data: u }, whatsapp] = await Promise.all([
+        supabase.from('users').select('account_type').eq('id', data.user_id).maybeSingle(),
+        fetchWhatsapp(data.id),
+      ]);
 
-      return { ...data, account_type: (u as any)?.account_type || 'free' } as FreelancerProfile;
+      return { ...data, whatsapp, account_type: (u as any)?.account_type || 'free' } as FreelancerProfile;
     },
     enabled: !!userId,
   });
@@ -116,20 +124,19 @@ export const useFreelancerProfileById = (profileId?: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('freelancer_profiles')
-        .select('*')
+        .select(FREELANCER_COLUMNS)
         .eq('id', profileId!)
         .maybeSingle();
 
       if (error) throw error;
       if (!data) return null;
 
-      const { data: u } = await supabase
-        .from('users')
-        .select('account_type')
-        .eq('id', data.user_id)
-        .maybeSingle();
+      const [{ data: u }, whatsapp] = await Promise.all([
+        supabase.from('users').select('account_type').eq('id', data.user_id).maybeSingle(),
+        fetchWhatsapp(data.id),
+      ]);
 
-      return { ...data, account_type: (u as any)?.account_type || 'free' } as FreelancerProfile;
+      return { ...data, whatsapp, account_type: (u as any)?.account_type || 'free' } as FreelancerProfile;
     },
     enabled: !!profileId,
   });
@@ -160,7 +167,7 @@ export const useUpsertFreelancerProfile = () => {
           .from('freelancer_profiles')
           .update(payload)
           .eq('user_id', user!.id)
-          .select()
+          .select(FREELANCER_COLUMNS)
           .single();
         if (error) throw error;
         return data;
@@ -168,7 +175,7 @@ export const useUpsertFreelancerProfile = () => {
         const { data, error } = await supabase
           .from('freelancer_profiles')
           .insert([{ ...payload, display_name: payload.display_name || '' }] as any)
-          .select()
+          .select(FREELANCER_COLUMNS)
           .single();
         if (error) throw error;
         return data;
