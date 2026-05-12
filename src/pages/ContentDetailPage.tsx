@@ -28,7 +28,27 @@ interface ContentItem {
   author_id: string;
   contact_phone: string | null;
   contact_whatsapp: string | null;
+  reference_number?: string | null;
+  procurement_type?: string | null;
+  contracting_authority?: string | null;
+  budget_estimate?: number | null;
+  currency?: string | null;
+  guarantee_amount?: number | null;
+  lots_count?: number | null;
+  deadline_at?: string | null;
+  opening_at?: string | null;
+  opening_location?: string | null;
+  submission_location?: string | null;
+  island?: string | null;
 }
+
+const PROCUREMENT_LABELS: Record<string, string> = {
+  aoo: 'Appel d\'offres ouvert',
+  aor: 'Appel d\'offres restreint',
+  ami: 'Manifestation d\'intérêt',
+  consultation: 'Consultation restreinte',
+  gre_a_gre: 'Gré à gré',
+};
 
 interface AuthorInfo {
   account_type: string;
