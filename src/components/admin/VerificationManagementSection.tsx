@@ -175,10 +175,8 @@ export default function VerificationManagementSection() {
                       <p className="text-sm text-muted-foreground italic">"{req.additional_info}"</p>
                     )}
                     {req.document_url && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={getDocUrl(req.document_url) || '#'} target="_blank" rel="noopener noreferrer">
-                          <FileText className="h-4 w-4 mr-1" /> Voir le document <ExternalLink className="h-3 w-3 ml-1" />
-                        </a>
+                      <Button variant="outline" size="sm" onClick={() => openDoc(req.document_url)}>
+                        <FileText className="h-4 w-4 mr-1" /> Voir le document <ExternalLink className="h-3 w-3 ml-1" />
                       </Button>
                     )}
                     <div className="flex gap-2 items-end">
