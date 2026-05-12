@@ -167,7 +167,7 @@ export const useUpsertFreelancerProfile = () => {
           .from('freelancer_profiles')
           .update(payload)
           .eq('user_id', user!.id)
-          .select()
+          .select(FREELANCER_COLUMNS)
           .single();
         if (error) throw error;
         return data;
