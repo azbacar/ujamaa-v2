@@ -739,6 +739,94 @@ export default function AnnouncerDashboard() {
                   </div>
                 )}
 
+                {/* Tender (OHADA) specific fields */}
+                {isTender && (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                    <h4 className="font-medium text-sm flex items-center gap-2">📋 Détails OHADA de l'appel d'offres</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>N° de référence</Label>
+                        <Input value={newForm.reference_number} onChange={e => updateForm('reference_number', e.target.value)} placeholder="Ex: AO-2026-001" />
+                      </div>
+                      <div>
+                        <Label>Type de procédure</Label>
+                        <Select value={newForm.procurement_type} onValueChange={v => updateForm('procurement_type', v)}>
+                          <SelectTrigger><SelectValue placeholder="Choisir une procédure" /></SelectTrigger>
+                          <SelectContent>
+                            {PROCUREMENT_TYPES.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Autorité contractante</Label>
+                      <Input value={newForm.contracting_authority} onChange={e => updateForm('contracting_authority', e.target.value)} placeholder="Ex: Ministère des Finances" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Budget estimé</Label>
+                        <Input type="number" value={newForm.budget_estimate} onChange={e => updateForm('budget_estimate', e.target.value)} placeholder="0" />
+                      </div>
+                      <div>
+                        <Label>Devise</Label>
+                        <Select value={newForm.tender_currency} onValueChange={v => updateForm('tender_currency', v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="KMF">KMF</SelectItem>
+                            <SelectItem value="EUR">EUR</SelectItem>
+                            <SelectItem value="USD">USD</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Garantie de soumission</Label>
+                        <Input type="number" value={newForm.guarantee_amount} onChange={e => updateForm('guarantee_amount', e.target.value)} placeholder="0" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Nombre de lots</Label>
+                        <Input type="number" value={newForm.lots_count} onChange={e => updateForm('lots_count', e.target.value)} placeholder="1" />
+                      </div>
+                      <div>
+                        <Label>Île</Label>
+                        <Select value={newForm.tender_island} onValueChange={v => updateForm('tender_island', v)}>
+                          <SelectTrigger><SelectValue placeholder="Île" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="grande-comore">Grande Comore</SelectItem>
+                            <SelectItem value="anjouan">Anjouan</SelectItem>
+                            <SelectItem value="moheli">Mohéli</SelectItem>
+                            <SelectItem value="mayotte">Mayotte</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="flex items-center gap-1"><Clock className="h-3 w-3" /> Date limite de dépôt</Label>
+                        <Input type="datetime-local" value={newForm.deadline_at} onChange={e => updateForm('deadline_at', e.target.value)} />
+                      </div>
+                      <div>
+                        <Label className="flex items-center gap-1"><Clock className="h-3 w-3" /> Ouverture des plis</Label>
+                        <Input type="datetime-local" value={newForm.opening_at} onChange={e => updateForm('opening_at', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Lieu de dépôt</Label>
+                        <Input value={newForm.submission_location} onChange={e => updateForm('submission_location', e.target.value)} placeholder="Ex: Bureau du DG, Moroni" />
+                      </div>
+                      <div>
+                        <Label>Lieu d'ouverture des plis</Label>
+                        <Input value={newForm.opening_location} onChange={e => updateForm('opening_location', e.target.value)} placeholder="Ex: Salle de conférence" />
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-xs text-muted-foreground">
+                      💡 Conformité OHADA — Tous les soumissionnaires devront fournir RCCM/NIF, attestations fiscales et caution. Vous recevrez les offres par email + WhatsApp et dans votre espace "Soumissions reçues".
+                    </div>
+                  </div>
+                )}
+
                 {/* Contact fields for service/tender/event/tourisme */}
                 {(isTenderOrService || isEvent || isTourisme) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
