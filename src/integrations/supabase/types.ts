@@ -3346,6 +3346,10 @@ export type Database = {
       }
       generate_ticket_code: { Args: never; Returns: string }
       get_enterprise_id: { Args: { _user_id: string }; Returns: string }
+      get_freelancer_whatsapp: {
+        Args: { _profile_id: string }
+        Returns: string
+      }
       get_public_usernames: {
         Args: { _user_ids: string[] }
         Returns: {
