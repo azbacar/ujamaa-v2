@@ -23,7 +23,7 @@ interface SiteSettings {
 
 const fetchSettings = async (): Promise<SiteSettings | null> => {
   const { data, error } = await supabase
-    .from('site_settings')
+    .from('site_settings_public')
     .select('site_name, site_logo_url, site_favicon_url, ga_tracking_id, hero_title, hero_subtitle, hero_image_url, ai_assistant_enabled, ai_assistant_name, ai_assistant_welcome_message, og_title, og_description, og_image_url, twitter_card, twitter_site, seo_keywords')
     .single();
 
