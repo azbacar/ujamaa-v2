@@ -187,7 +187,7 @@ const FloatingChatbox = () => {
     const loadSettings = async () => {
       try {
         const { data, error } = await supabase
-          .from('site_settings')
+          .from('site_settings_public')
           .select('ai_assistant_name, ai_assistant_welcome_message, ai_assistant_enabled')
           .single();
         if (error) throw error;
