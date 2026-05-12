@@ -99,10 +99,17 @@ export default function VerificationManagementSection() {
     }
   };
 
-  const getDocUrl = (path: string | null) => {
-    if (!path) return null;
-    const { data } = supabase.storage.from('verification-documents').getPublicUrl(path);
-    return data?.publicUrl;
+  const openDoc = async (path: string | null) => {
+    if (!path) return;
+    try {
+      const { data, error } = await supabase.storage
+        .from('verification-documents')
+        .createSignedUrl(path, 600);
+      if (error) throw error;
+      window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      toast.error('Impossible d\'ouvrir le document');
+    }
   };
 
   const typeLabels: Record<string, string> = {
