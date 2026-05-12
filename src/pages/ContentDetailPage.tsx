@@ -178,12 +178,50 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
                   <span>{new Date(item.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="prose prose-lg max-w-none">
                   <p className="text-foreground whitespace-pre-line">
                     {item.description || 'Aucune description disponible.'}
                   </p>
                 </div>
+
+                {contentType === 'tender' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm bg-muted/40 p-4 rounded-lg border border-border">
+                    {item.reference_number && (
+                      <div><div className="text-xs text-muted-foreground">N° de référence</div><div className="font-mono font-medium">{item.reference_number}</div></div>
+                    )}
+                    {item.procurement_type && (
+                      <div><div className="text-xs text-muted-foreground">Type de procédure</div><div className="font-medium">{PROCUREMENT_LABELS[item.procurement_type] || item.procurement_type}</div></div>
+                    )}
+                    {item.contracting_authority && (
+                      <div className="sm:col-span-2"><div className="text-xs text-muted-foreground">Autorité contractante</div><div className="font-medium">{item.contracting_authority}</div></div>
+                    )}
+                    {item.budget_estimate != null && (
+                      <div><div className="text-xs text-muted-foreground">Budget estimé</div><div className="font-medium">{item.budget_estimate.toLocaleString('fr-FR')} {item.currency || 'KMF'}</div></div>
+                    )}
+                    {item.guarantee_amount != null && (
+                      <div><div className="text-xs text-muted-foreground">Garantie de soumission</div><div className="font-medium">{item.guarantee_amount.toLocaleString('fr-FR')} {item.currency || 'KMF'}</div></div>
+                    )}
+                    {item.lots_count != null && item.lots_count > 0 && (
+                      <div><div className="text-xs text-muted-foreground">Nombre de lots</div><div className="font-medium">{item.lots_count}</div></div>
+                    )}
+                    {item.island && (
+                      <div><div className="text-xs text-muted-foreground">Île</div><div className="font-medium capitalize">{item.island.replace('-', ' ')}</div></div>
+                    )}
+                    {item.deadline_at && (
+                      <div><div className="text-xs text-muted-foreground">Date limite de dépôt</div><div className="font-medium">{new Date(item.deadline_at).toLocaleString('fr-FR')}</div></div>
+                    )}
+                    {item.opening_at && (
+                      <div><div className="text-xs text-muted-foreground">Ouverture des plis</div><div className="font-medium">{new Date(item.opening_at).toLocaleString('fr-FR')}</div></div>
+                    )}
+                    {item.submission_location && (
+                      <div className="sm:col-span-2"><div className="text-xs text-muted-foreground">Lieu de dépôt</div><div className="font-medium">{item.submission_location}</div></div>
+                    )}
+                    {item.opening_location && (
+                      <div className="sm:col-span-2"><div className="text-xs text-muted-foreground">Lieu d'ouverture</div><div className="font-medium">{item.opening_location}</div></div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
