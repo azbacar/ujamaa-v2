@@ -13,6 +13,7 @@ import {
   Calendar, MapPin, Users, Clock, ImagePlus, X, DollarSign
 } from 'lucide-react';
 import MyPricesTab from '@/components/MyPricesTab';
+import ReceivedTenderSubmissions from '@/components/ReceivedTenderSubmissions';
 import VendorLocationShareCard from '@/components/VendorLocationShareCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
