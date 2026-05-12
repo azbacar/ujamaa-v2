@@ -97,8 +97,12 @@ export default function MessagesPage() {
           .upload(filePath, attachment);
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage.from('chat-attachments').getPublicUrl(filePath);
-        attachmentUrl = publicUrl;
+        // chat-attachments bucket is private — use signed URL (1 year)
+        const { data: signed, error: signErr } = await supabase.storage
+          .from('chat-attachments')
+          .createSignedUrl(filePath, 60 * 60 * 24 * 365);
+        if (signErr) throw signErr;
+        attachmentUrl = signed.signedUrl;
         attachmentName = attachment.name;
         attachmentType = attachment.type;
       } catch (err: any) {
