@@ -312,7 +312,8 @@ export default function AnnouncerDashboard() {
   const activePrivileges = privileges.filter(p => p.is_active);
   const isEvent = newForm.type === 'event';
   const isTourisme = newForm.type === 'tourisme';
-  const isTenderOrService = newForm.type === 'tender' || newForm.type === 'service';
+  const isTender = newForm.type === 'tender';
+  const isTenderOrService = isTender || newForm.type === 'service';
 
   const typeLabels: Record<string, string> = {
     announcement: '📢 Annonce',
