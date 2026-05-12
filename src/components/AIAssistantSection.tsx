@@ -314,7 +314,7 @@ const AIAssistantSection = () => {
   useEffect(() => {
     const loadSettings = async () => {
       const { data, error } = await supabase
-        .from('site_settings')
+        .from('site_settings_public')
         .select('ai_assistant_name, ai_assistant_welcome_message')
         .single();
 
