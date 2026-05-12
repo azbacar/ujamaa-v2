@@ -175,7 +175,7 @@ export const useUpsertFreelancerProfile = () => {
         const { data, error } = await supabase
           .from('freelancer_profiles')
           .insert([{ ...payload, display_name: payload.display_name || '' }] as any)
-          .select()
+          .select(FREELANCER_COLUMNS)
           .single();
         if (error) throw error;
         return data;
