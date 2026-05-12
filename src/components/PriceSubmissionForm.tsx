@@ -91,8 +91,9 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
   const uploadImage = async (): Promise<string | null> => {
     if (!imageFile || !user) return null;
     const ext = imageFile.name.split('.').pop();
-    const path = `prices/${user.id}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('event-images').upload(path, imageFile);
+    // Path must start with auth.uid() folder per event-images RLS
+    const path = `${user.id}/prices/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from('event-images').upload(path, imageFile, { contentType: imageFile.type });
     if (error) throw error;
     const { data: { publicUrl } } = supabase.storage.from('event-images').getPublicUrl(path);
     return publicUrl;

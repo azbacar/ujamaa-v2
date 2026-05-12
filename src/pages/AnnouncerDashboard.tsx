@@ -13,6 +13,7 @@ import {
   Calendar, MapPin, Users, Clock, ImagePlus, X, DollarSign
 } from 'lucide-react';
 import MyPricesTab from '@/components/MyPricesTab';
+import ReceivedTenderSubmissions from '@/components/ReceivedTenderSubmissions';
 import VendorLocationShareCard from '@/components/VendorLocationShareCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -228,7 +229,8 @@ export default function AnnouncerDashboard() {
         toast.success('Publication tourisme soumise pour modération');
       } else {
         // content_items: announcement, service, tender
-        const { error } = await supabase.from('content_items').insert({
+        const isTender = newForm.type === 'tender';
+        const payload: any = {
           title: newForm.title,
           description: newForm.description,
           type: newForm.type as any,
@@ -237,9 +239,24 @@ export default function AnnouncerDashboard() {
           status: 'draft',
           contact_phone: newForm.contact_phone || null,
           contact_whatsapp: newForm.contact_whatsapp || null,
-        });
+        };
+        if (isTender) {
+          payload.reference_number = newForm.reference_number || null;
+          payload.procurement_type = newForm.procurement_type || null;
+          payload.contracting_authority = newForm.contracting_authority || null;
+          payload.budget_estimate = newForm.budget_estimate ? parseFloat(newForm.budget_estimate) : null;
+          payload.currency = newForm.tender_currency || 'KMF';
+          payload.guarantee_amount = newForm.guarantee_amount ? parseFloat(newForm.guarantee_amount) : null;
+          payload.lots_count = newForm.lots_count ? parseInt(newForm.lots_count) : null;
+          payload.deadline_at = newForm.deadline_at ? new Date(newForm.deadline_at).toISOString() : null;
+          payload.opening_at = newForm.opening_at ? new Date(newForm.opening_at).toISOString() : null;
+          payload.opening_location = newForm.opening_location || null;
+          payload.submission_location = newForm.submission_location || null;
+          payload.island = newForm.tender_island || null;
+        }
+        const { error } = await supabase.from('content_items').insert(payload);
         if (error) throw error;
-        toast.success(newForm.type === 'tender' ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
+        toast.success(isTender ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
       }
       setNewForm(initialForm);
       setEventImages([]);
@@ -296,7 +313,8 @@ export default function AnnouncerDashboard() {
   const activePrivileges = privileges.filter(p => p.is_active);
   const isEvent = newForm.type === 'event';
   const isTourisme = newForm.type === 'tourisme';
-  const isTenderOrService = newForm.type === 'tender' || newForm.type === 'service';
+  const isTender = newForm.type === 'tender';
+  const isTenderOrService = isTender || newForm.type === 'service';
 
   const typeLabels: Record<string, string> = {
     announcement: '📢 Annonce',
@@ -365,12 +383,17 @@ export default function AnnouncerDashboard() {
         </div>
 
         <Tabs defaultValue="my-content">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1">
             <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Publications</TabsTrigger>
+            <TabsTrigger value="received"><Megaphone className="h-4 w-4 mr-1" /> Soumissions</TabsTrigger>
             <TabsTrigger value="my-prices"><DollarSign className="h-4 w-4 mr-1" /> Mes prix</TabsTrigger>
             <TabsTrigger value="gps"><MapPin className="h-4 w-4 mr-1" /> GPS</TabsTrigger>
             <TabsTrigger value="create"><Plus className="h-4 w-4 mr-1" /> Créer</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="received">
+            <ReceivedTenderSubmissions />
+          </TabsContent>
 
           <TabsContent value="gps">
             <VendorLocationShareCard isProAnnonceur={accountType === 'pro' || accountType === 'enterprise'} />
@@ -718,6 +741,94 @@ export default function AnnouncerDashboard() {
                           </label>
                         )}
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tender (OHADA) specific fields */}
+                {isTender && (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                    <h4 className="font-medium text-sm flex items-center gap-2">📋 Détails OHADA de l'appel d'offres</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>N° de référence</Label>
+                        <Input value={newForm.reference_number} onChange={e => updateForm('reference_number', e.target.value)} placeholder="Ex: AO-2026-001" />
+                      </div>
+                      <div>
+                        <Label>Type de procédure</Label>
+                        <Select value={newForm.procurement_type} onValueChange={v => updateForm('procurement_type', v)}>
+                          <SelectTrigger><SelectValue placeholder="Choisir une procédure" /></SelectTrigger>
+                          <SelectContent>
+                            {PROCUREMENT_TYPES.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Autorité contractante</Label>
+                      <Input value={newForm.contracting_authority} onChange={e => updateForm('contracting_authority', e.target.value)} placeholder="Ex: Ministère des Finances" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Budget estimé</Label>
+                        <Input type="number" value={newForm.budget_estimate} onChange={e => updateForm('budget_estimate', e.target.value)} placeholder="0" />
+                      </div>
+                      <div>
+                        <Label>Devise</Label>
+                        <Select value={newForm.tender_currency} onValueChange={v => updateForm('tender_currency', v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="KMF">KMF</SelectItem>
+                            <SelectItem value="EUR">EUR</SelectItem>
+                            <SelectItem value="USD">USD</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Garantie de soumission</Label>
+                        <Input type="number" value={newForm.guarantee_amount} onChange={e => updateForm('guarantee_amount', e.target.value)} placeholder="0" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Nombre de lots</Label>
+                        <Input type="number" value={newForm.lots_count} onChange={e => updateForm('lots_count', e.target.value)} placeholder="1" />
+                      </div>
+                      <div>
+                        <Label>Île</Label>
+                        <Select value={newForm.tender_island} onValueChange={v => updateForm('tender_island', v)}>
+                          <SelectTrigger><SelectValue placeholder="Île" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="grande-comore">Grande Comore</SelectItem>
+                            <SelectItem value="anjouan">Anjouan</SelectItem>
+                            <SelectItem value="moheli">Mohéli</SelectItem>
+                            <SelectItem value="mayotte">Mayotte</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="flex items-center gap-1"><Clock className="h-3 w-3" /> Date limite de dépôt</Label>
+                        <Input type="datetime-local" value={newForm.deadline_at} onChange={e => updateForm('deadline_at', e.target.value)} />
+                      </div>
+                      <div>
+                        <Label className="flex items-center gap-1"><Clock className="h-3 w-3" /> Ouverture des plis</Label>
+                        <Input type="datetime-local" value={newForm.opening_at} onChange={e => updateForm('opening_at', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Lieu de dépôt</Label>
+                        <Input value={newForm.submission_location} onChange={e => updateForm('submission_location', e.target.value)} placeholder="Ex: Bureau du DG, Moroni" />
+                      </div>
+                      <div>
+                        <Label>Lieu d'ouverture des plis</Label>
+                        <Input value={newForm.opening_location} onChange={e => updateForm('opening_location', e.target.value)} placeholder="Ex: Salle de conférence" />
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-xs text-muted-foreground">
+                      💡 Conformité OHADA — Tous les soumissionnaires devront fournir RCCM/NIF, attestations fiscales et caution. Vous recevrez les offres par email + WhatsApp et dans votre espace "Soumissions reçues".
                     </div>
                   </div>
                 )}
