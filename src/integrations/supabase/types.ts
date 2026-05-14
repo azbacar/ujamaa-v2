@@ -2340,6 +2340,13 @@ export type Database = {
             referencedRelation: "investments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "project_investments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "investments_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       project_updates: {
@@ -2373,6 +2380,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "investments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_updates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "investments_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3163,6 +3177,69 @@ export type Database = {
           skills?: string[] | null
           updated_at?: string | null
           user_id?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
+      investments_public: {
+        Row: {
+          author_id: string | null
+          category: string | null
+          created_at: string | null
+          currency: string | null
+          current_amount: number | null
+          deadline: string | null
+          description: string | null
+          full_content: string | null
+          id: string | null
+          images: string[] | null
+          island: string | null
+          location: string | null
+          min_investment: number | null
+          status: string | null
+          target_amount: number | null
+          title: string | null
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          author_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_amount?: number | null
+          deadline?: string | null
+          description?: string | null
+          full_content?: string | null
+          id?: string | null
+          images?: string[] | null
+          island?: string | null
+          location?: string | null
+          min_investment?: number | null
+          status?: string | null
+          target_amount?: number | null
+          title?: string | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          author_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_amount?: number | null
+          deadline?: string | null
+          description?: string | null
+          full_content?: string | null
+          id?: string | null
+          images?: string[] | null
+          island?: string | null
+          location?: string | null
+          min_investment?: number | null
+          status?: string | null
+          target_amount?: number | null
+          title?: string | null
+          updated_at?: string | null
           views?: number | null
         }
         Relationships: []

@@ -50,6 +50,10 @@ export interface ProjectUpdate {
   created_at: string;
 }
 
+// Columns safe to expose to anon (excludes contact_phone / contact_email)
+const PUBLIC_INVEST_COLS =
+  'id, title, description, full_content, category, target_amount, current_amount, currency, author_id, island, location, status, images, deadline, min_investment, views, created_at, updated_at';
+
 // Fetch published invest projects
 export function useInvestProjects(filters?: { category?: string; island?: string }) {
   return useQuery({
@@ -57,7 +61,7 @@ export function useInvestProjects(filters?: { category?: string; island?: string
     queryFn: async () => {
       let query = supabase
         .from('investments')
-        .select('*')
+        .select(PUBLIC_INVEST_COLS)
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
@@ -66,19 +70,21 @@ export function useInvestProjects(filters?: { category?: string; island?: string
 
       const { data, error } = await query;
       if (error) throw error;
-      const projects = data as InvestProject[];
+      const projects = (data as any[]).map(p => ({
+        ...p,
+        contact_email: null,
+        contact_phone: null,
+      })) as InvestProject[];
 
       // Fetch carrier verification status for all authors
       if (projects.length > 0) {
         const authorIds = [...new Set(projects.map(p => p.author_id))];
-        // Vue publique: pas de fuite phone/email
         const { data: carriers } = await supabase
           .from('project_carriers_public' as any)
           .select('user_id, is_verified')
           .in('user_id', authorIds)
           .eq('is_verified', true);
 
-        // Also check annonceur roles
         const { data: roles } = await supabase
           .from('user_roles')
           .select('user_id, role')
@@ -101,17 +107,31 @@ export function useInvestProjects(filters?: { category?: string; island?: string
 
 // Fetch single project
 export function useInvestProject(id: string | undefined) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['invest-project', id],
+    queryKey: ['invest-project', id, user?.id || 'anon'],
     queryFn: async () => {
       if (!id) return null;
+      // Anon-safe columns by default
       const { data, error } = await supabase
         .from('investments')
-        .select('*')
+        .select(PUBLIC_INVEST_COLS)
         .eq('id', id)
         .single();
       if (error) throw error;
-      const project = data as InvestProject;
+      let project = { ...(data as any), contact_email: null, contact_phone: null } as InvestProject;
+
+      // Authenticated users may receive contact fields (RLS still enforced)
+      if (user) {
+        const { data: full } = await supabase
+          .from('investments')
+          .select('contact_email, contact_phone')
+          .eq('id', id)
+          .maybeSingle();
+        if (full) {
+          project = { ...project, contact_email: full.contact_email, contact_phone: full.contact_phone };
+        }
+      }
 
       // Check carrier verification
       const { data: carrier } = await supabase
