@@ -2514,6 +2514,13 @@ export type Database = {
             referencedRelation: "gastronomy_items"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "recipe_ingredients_gastronomy_item_id_fkey"
+            columns: ["gastronomy_item_id"]
+            isOneToOne: false
+            referencedRelation: "gastronomy_items_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reports: {
@@ -2601,6 +2608,13 @@ export type Database = {
             columns: ["gastronomy_item_id"]
             isOneToOne: false
             referencedRelation: "gastronomy_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_menu_items_gastronomy_item_id_fkey"
+            columns: ["gastronomy_item_id"]
+            isOneToOne: false
+            referencedRelation: "gastronomy_items_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3180,6 +3194,93 @@ export type Database = {
           views?: number | null
         }
         Relationships: []
+      }
+      gastronomy_items_public: {
+        Row: {
+          accommodation_type: string | null
+          author_id: string | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          dining_style: string | null
+          id: string | null
+          images: string[] | null
+          latitude: number | null
+          location: string | null
+          longitude: number | null
+          metadata: Json | null
+          price_max: number | null
+          price_min: number | null
+          room_types: Json | null
+          service_mode: string | null
+          status: Database["public"]["Enums"]["content_status"] | null
+          title: string | null
+          type: Database["public"]["Enums"]["gastronomy_type"] | null
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          accommodation_type?: string | null
+          author_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          dining_style?: string | null
+          id?: string | null
+          images?: string[] | null
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          metadata?: Json | null
+          price_max?: number | null
+          price_min?: number | null
+          room_types?: Json | null
+          service_mode?: string | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["gastronomy_type"] | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          accommodation_type?: string | null
+          author_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          dining_style?: string | null
+          id?: string | null
+          images?: string[] | null
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          metadata?: Json | null
+          price_max?: number | null
+          price_min?: number | null
+          room_types?: Json | null
+          service_mode?: string | null
+          status?: Database["public"]["Enums"]["content_status"] | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["gastronomy_type"] | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gastronomy_items_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gastronomy_items_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users_pro_status"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       investments_public: {
         Row: {
