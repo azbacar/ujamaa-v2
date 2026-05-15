@@ -93,9 +93,10 @@ export default function TourismePage() {
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
+      const SAFE_COLS = 'id, type, title, description, price_min, price_max, images, location, category, views, created_at, latitude, longitude, dining_style, accommodation_type, service_mode, room_types, author_id';
       const { data, error } = await supabase
         .from('gastronomy_items')
-        .select('id, type, title, description, price_min, price_max, images, contact_phone, contact_email, contact_whatsapp, location, category, views, created_at, latitude, longitude, dining_style, accommodation_type, service_mode, room_types, author_id')
+        .select(user ? `${SAFE_COLS}, contact_phone, contact_email, contact_whatsapp` : SAFE_COLS)
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
