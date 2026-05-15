@@ -126,7 +126,7 @@ export default function TourismePage() {
       setLoading(false);
     };
     fetchItems();
-  }, []);
+  }, [user]);
 
   const filtered = items.filter(item => {
     const matchSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
