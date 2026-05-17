@@ -94,8 +94,18 @@ async function sendWhatsApp(p: Payload) {
   }
 }
 
+const INTERNAL_SECRET = Deno.env.get('NOTIFY_INTERNAL_SECRET');
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+
+  // Internal-only: triggered by DB triggers with shared secret header
+  const providedSecret = req.headers.get('x-internal-secret');
+  if (!INTERNAL_SECRET || providedSecret !== INTERNAL_SECRET) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   try {
     const payload = await req.json() as Payload;
