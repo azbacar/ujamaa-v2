@@ -87,15 +87,37 @@ export default function MenuItemsManager({ gastronomyItemId, readOnly = false }:
     setItems(prev => prev.filter(i => i.id !== id));
   };
 
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 Mo
+  const ALLOWED_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
   const handleImageUpload = async (itemId: string, file: File) => {
     if (!user) return;
+
+    // Validation côté client
+    if (!file.type.startsWith('image/') || !ALLOWED_MIME.includes(file.type)) {
+      toast.error('Format non autorisé. Utilisez JPG, PNG, WEBP ou GIF.');
+      return;
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast.error('Image trop lourde (max 5 Mo).');
+      return;
+    }
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (!ALLOWED_EXT.includes(ext)) {
+      toast.error('Extension de fichier non autorisée.');
+      return;
+    }
+
     setUploading(itemId);
     try {
-      const ext = file.name.split('.').pop();
       const path = `${user.id}/${itemId}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from('menu-images')
-        .upload(path, file, { upsert: true });
+        .upload(path, file, {
+          upsert: true,
+          contentType: file.type,
+        });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('menu-images').getPublicUrl(path);
       await updateItem(itemId, { image_url: `${publicUrl}?t=${Date.now()}` });
