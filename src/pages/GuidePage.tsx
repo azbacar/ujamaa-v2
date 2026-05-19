@@ -222,9 +222,20 @@ export default function GuidePage() {
           <Smartphone className="h-6 w-6 text-primary" />
           Premiers pas
         </h2>
-        <p className="text-muted-foreground mb-6">Commencez à utiliser Ujamaan en 4 étapes simples</p>
+        <p className="text-muted-foreground mb-6">Commencez à utiliser Ujamaan en 6 étapes simples</p>
+
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 mb-6 text-sm text-emerald-900 flex items-start gap-3">
+          <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold mb-1">Images officielles des îles sur l'accueil</p>
+            <p className="text-emerald-800">
+              Les visuels affichés dans la section « Nos îles » (Grande Comore, Anjouan, Mohéli, Mayotte) sont gérés par l'administration depuis <strong>Tableau de bord admin → Page d'accueil → Îles</strong>. Toute mise à jour est visible immédiatement par tous les visiteurs, même non connectés.
+            </p>
+          </div>
+        </div>
 
         <div className="space-y-3">
+
           <Step
             number={1}
             title="Créez votre compte"
