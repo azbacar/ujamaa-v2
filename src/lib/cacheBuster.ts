@@ -85,3 +85,24 @@ export async function checkAndPurgeStaleCache(): Promise<void> {
     // Silencieux — ne jamais bloquer le boot de l'app
   }
 }
+
+/**
+ * Purge manuelle du cache côté client, utilisable via un bouton UI.
+ * - Purge tout localStorage (sauf auth/langue/consent)
+ * - Purge sessionStorage
+ * - Désinscrit les Service Workers et vide les caches
+ * - Met à jour la version pour forcer le rechargement des assets
+ * - Recharge la page immédiatement
+ */
+export async function forceCachePurgeAndReload(): Promise<void> {
+  purgeNonEssentialLocalStorage();
+  purgeSessionStorage();
+  await purgeServiceWorkerCaches();
+
+  // Force la version à '0' pour que checkAndPurgeStaleCache() au prochain boot
+  // considère qu'il y a une nouvelle version et recharge
+  try { localStorage.setItem(VERSION_KEY, '0'); } catch {}
+
+  // Recharge immédiatement
+  try { window.location.reload(); } catch {}
+}
