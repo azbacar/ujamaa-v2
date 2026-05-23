@@ -173,11 +173,18 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-6 pt-6 text-center">
+        <div className="border-t border-gray-700 mt-6 pt-6 text-center space-y-3">
           <p className="text-gray-400 text-sm sm:text-base">
             &copy; {new Date().getFullYear()} Ujamaan Call Center. By AZZHY | Tous droits réservés.
             <span className="ml-2 text-2xl">🇰🇲</span>
           </p>
+          <button
+            onClick={handleClearCache}
+            className="text-xs text-gray-500 hover:text-emerald-400 transition-colors underline underline-offset-2"
+            type="button"
+          >
+            🗑️ Vider le cache et recharger
+          </button>
         </div>
       </div>
     </footer>
