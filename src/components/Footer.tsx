@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
+import { forceCachePurgeAndReload } from "@/lib/cacheBuster";
 
 const Footer = () => {
+  const handleClearCache = () => {
+    if (typeof window !== 'undefined' && window.confirm("Vider le cache et recharger la dernière version ?")) {
+      forceCachePurgeAndReload();
+    }
+  };
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-900 text-white py-10 sm:py-16 mt-12 sm:mt-20">
       <div className="container mx-auto px-4 sm:px-6">
@@ -167,11 +173,18 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 mt-6 pt-6 text-center">
+        <div className="border-t border-gray-700 mt-6 pt-6 text-center space-y-3">
           <p className="text-gray-400 text-sm sm:text-base">
             &copy; {new Date().getFullYear()} Ujamaan Call Center. By AZZHY | Tous droits réservés.
             <span className="ml-2 text-2xl">🇰🇲</span>
           </p>
+          <button
+            onClick={handleClearCache}
+            className="text-xs text-gray-500 hover:text-emerald-400 transition-colors underline underline-offset-2"
+            type="button"
+          >
+            🗑️ Vider le cache et recharger
+          </button>
         </div>
       </div>
     </footer>
