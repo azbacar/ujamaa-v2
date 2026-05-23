@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
+import { forceCachePurgeAndReload } from "@/lib/cacheBuster";
 
 const Footer = () => {
+  const handleClearCache = () => {
+    if (typeof window !== 'undefined' && window.confirm("Vider le cache et recharger la dernière version ?")) {
+      forceCachePurgeAndReload();
+    }
+  };
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-900 text-white py-10 sm:py-16 mt-12 sm:mt-20">
       <div className="container mx-auto px-4 sm:px-6">
