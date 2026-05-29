@@ -248,6 +248,34 @@ export default function AnnouncerDashboard() {
       } else {
         // content_items: announcement, service, tender
         const isTender = newForm.type === 'tender';
+        const isService = newForm.type === 'service';
+        const isAnnouncement = newForm.type === 'announcement';
+
+        // Validation : photo obligatoire pour un service
+        if (isService && eventImages.length === 0) {
+          toast.error('Ajoutez au moins une photo pour le service');
+          setSubmitting(false);
+          return;
+        }
+        if (isService && !newForm.service_subtype) {
+          toast.error('Choisissez le type de service');
+          setSubmitting(false);
+          return;
+        }
+
+        // Upload images (annonce + service)
+        const uploadedUrls: string[] = [];
+        if (isAnnouncement || isService) {
+          for (const file of eventImages) {
+            const ext = file.name.split('.').pop();
+            const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+            const { error: uploadError } = await supabase.storage.from('event-images').upload(path, file, { upsert: false });
+            if (uploadError) throw new Error(`Erreur upload image: ${uploadError.message}`);
+            const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
+            uploadedUrls.push(urlData.publicUrl);
+          }
+        }
+
         const payload: any = {
           title: newForm.title,
           description: newForm.description,
@@ -258,6 +286,15 @@ export default function AnnouncerDashboard() {
           contact_phone: newForm.contact_phone || null,
           contact_whatsapp: newForm.contact_whatsapp || null,
         };
+        if (isAnnouncement || isService) {
+          if (uploadedUrls.length > 0) payload.images = uploadedUrls;
+          if (newForm.price) {
+            payload.price = parseFloat(newForm.price);
+            payload.currency = newForm.currency || 'FC';
+          }
+          if (newForm.gastronomy_location) payload.location = newForm.gastronomy_location;
+          if (isService) payload.service_subtype = newForm.service_subtype;
+        }
         if (isTender) {
           payload.reference_number = newForm.reference_number || null;
           payload.procurement_type = newForm.procurement_type || null;
@@ -274,7 +311,7 @@ export default function AnnouncerDashboard() {
         }
         const { error } = await supabase.from('content_items').insert(payload);
         if (error) throw error;
-        toast.success(isTender ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
+        toast.success(isTender ? 'Appel d\'offres soumis pour modération' : isService ? 'Service soumis pour modération' : 'Annonce soumise pour modération');
       }
       setNewForm(initialForm);
       setEventImages([]);
