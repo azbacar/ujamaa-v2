@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useViewTracker } from '@/hooks/useViewTracker';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
@@ -29,14 +30,9 @@ export default function FreelancerProfilePage() {
     keywords: profile ? `freelance, ${profile.skills.slice(0, 5).join(', ')}, comores` : undefined,
   });
 
-  // Increment view count
-  useEffect(() => {
-    if (!profile?.id) return;
-    supabase.rpc('increment_freelancer_views' as any, { _profile_id: profile.id }).then(() => {}, () => {
-      // fallback: direct update
-      supabase.from('freelancer_profiles').update({ views: (profile.views || 0) + 1 }).eq('id', profile.id);
-    });
-  }, [profile?.id]);
+  // Increment view count (déduplication par session)
+  useViewTracker('freelancer', profile?.id);
+
 
   if (isLoading) {
     return (
