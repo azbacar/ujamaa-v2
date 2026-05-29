@@ -47,7 +47,11 @@ export default function MvolaPaymentDialog({
   description,
   userRef,
   onPaymentSubmit,
+  paypalPurpose,
+  paypalMetadata,
+  onPayPalSuccess,
 }: MvolaPaymentDialogProps) {
+
   const isMobile = useIsMobile();
   const [tab, setTab] = useState<string>(isMobile ? "mvola" : "mvola");
   const [paymentRef, setPaymentRef] = useState("");
