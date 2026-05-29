@@ -16,19 +16,24 @@ import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { usePageSEO } from '@/hooks/usePageSEO';
 import { authPath, proPath } from '@/lib/authRedirect';
 
-interface ContentItem {
+interface AnnouncementItem {
   id: string;
   title: string;
   category: string | null;
   description: string | null;
-  type: 'announcement' | 'event' | 'service' | 'tender';
+  type: string;
   created_at: string;
   author_id: string;
+  source: 'content' | 'gastronomy' | 'event';
 }
 
-interface Announcement extends Omit<ContentItem, 'type'> {
-  type: 'urgent' | 'normal' | 'featured';
-}
+const TYPE_META: Record<string, { label: string; color: string }> = {
+  announcement: { label: '📢 Annonce', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+  service: { label: '🛠️ Service', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+  tender: { label: '📋 Appel d\'offres', color: 'bg-amber-100 text-amber-800 border-amber-200' },
+  event: { label: '🎉 Événement', color: 'bg-green-100 text-green-800 border-green-200' },
+  gastronomy: { label: '🍽️ Gastronomie', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+};
 
 const AnnouncementsPage = () => {
   const { user } = useAuth();
@@ -39,31 +44,40 @@ const AnnouncementsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [items, setItems] = useState<AnnouncementItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
-    const fetchAnnouncements = async () => {
+    const fetchAll = async () => {
       try {
-        const { data, error } = await supabase
-          .from('content_items')
-          .select('id, title, category, description, created_at, author_id, type')
-          .eq('status', 'published')
-          .eq('type', 'announcement')
-          .order('created_at', { ascending: false });
+        const [contentRes, gastroRes, eventsRes] = await Promise.all([
+          supabase
+            .from('content_items')
+            .select('id, title, category, description, created_at, author_id, type')
+            .eq('status', 'published')
+            .in('type', ['announcement', 'service', 'tender'])
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('gastronomy_items')
+            .select('id, title, category, description, created_at, author_id')
+            .eq('status', 'published')
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('events')
+            .select('id, title, category, description, created_at, author_id, date')
+            .eq('status', 'published')
+            .gte('date', new Date().toISOString())
+            .order('date', { ascending: true }),
+        ]);
 
-        if (error) throw error;
-        
-        const mappedData: Announcement[] = (data || []).map((item: ContentItem) => {
-          const cat = (item.category || '').toLowerCase();
-          let announcementType: 'urgent' | 'normal' | 'featured' = 'normal';
-          if (cat.includes('urgent') || cat.includes('alerte')) announcementType = 'urgent';
-          else if (cat.includes('une') || cat.includes('featured')) announcementType = 'featured';
-          return { ...item, type: announcementType };
-        });
-        
-        setAnnouncements(mappedData);
+        const merged: AnnouncementItem[] = [
+          ...((contentRes.data || []) as any[]).map((i) => ({ ...i, source: 'content' as const })),
+          ...((gastroRes.data || []) as any[]).map((i) => ({ ...i, type: 'gastronomy', source: 'gastronomy' as const })),
+          ...((eventsRes.data || []) as any[]).map((i) => ({ ...i, type: 'event', source: 'event' as const })),
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        setItems(merged);
       } catch (error) {
         console.error('Erreur lors du chargement des annonces:', error);
       } finally {
@@ -71,24 +85,28 @@ const AnnouncementsPage = () => {
       }
     };
 
-    fetchAnnouncements();
-    
-    // Check URL params for category filter
+    fetchAll();
+
     const params = new URLSearchParams(window.location.search);
     const category = params.get('category');
-    if (category) {
-      setSelectedCategory(category);
-    }
+    if (category) setSelectedCategory(category);
+    const t = params.get('type');
+    if (t) setSelectedType(t);
   }, []);
 
-  const filteredAnnouncements = announcements.filter(announcement => {
-    const matchesSearch = announcement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (announcement.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-    const matchesCategory = selectedCategory === 'all' || announcement.category === selectedCategory;
-    const matchesType = selectedType === 'all' || announcement.type === selectedType;
-    
+  const filteredAnnouncements = items.filter((a) => {
+    const matchesSearch = a.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (a.description?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+    const matchesCategory = selectedCategory === 'all' || a.category === selectedCategory;
+    const matchesType = selectedType === 'all' || a.type === selectedType;
     return matchesSearch && matchesCategory && matchesType;
   });
+
+  const getDetailPath = (a: AnnouncementItem) => {
+    if (a.source === 'event') return `/evenements/${a.id}`;
+    if (a.source === 'gastronomy') return `/tourisme?item=${a.id}`;
+    return `/annonces/${a.id}`;
+  };
 
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -101,27 +119,9 @@ const AnnouncementsPage = () => {
     return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'urgent':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'featured':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
+  const getTypeColor = (type: string) => TYPE_META[type]?.color || 'bg-slate-100 text-slate-800 border-slate-200';
+  const getTypeLabel = (type: string) => TYPE_META[type]?.label || type;
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'urgent':
-        return '🚨 Urgent';
-      case 'featured':
-        return '⭐ À la une';
-      default:
-        return '📢 Nouveau';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -171,9 +171,11 @@ const AnnouncementsPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous types</SelectItem>
-                  <SelectItem value="urgent">🚨 Urgent</SelectItem>
-                  <SelectItem value="featured">⭐ À la une</SelectItem>
-                  <SelectItem value="normal">📢 Normal</SelectItem>
+                  <SelectItem value="announcement">📢 Annonce</SelectItem>
+                  <SelectItem value="service">🛠️ Service</SelectItem>
+                  <SelectItem value="tender">📋 Appel d'offres</SelectItem>
+                  <SelectItem value="event">🎉 Événement</SelectItem>
+                  <SelectItem value="gastronomy">🍽️ Gastronomie</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -223,7 +225,7 @@ const AnnouncementsPage = () => {
                   </div>
                 </div>
 
-                <Link to={`/annonces/${announcement.id}`}>
+                <Link to={getDetailPath(announcement)}>
                   <Button 
                     variant="outline" 
                     size="sm" 
