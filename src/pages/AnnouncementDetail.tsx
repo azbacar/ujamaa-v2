@@ -85,22 +85,23 @@ const AnnouncementDetail = () => {
 
     const fetchItem = async () => {
       try {
+        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id';
         const { data, error } = await supabase
           .from('content_items')
-          .select('id, title, description, category, created_at, type, author_id, contact_phone, contact_whatsapp')
+          .select(user ? `${SAFE_COLS}, contact_phone, contact_whatsapp` : SAFE_COLS)
           .eq('id', id)
           .maybeSingle();
 
         if (error) throw error;
-        console.log('AnnouncementDetail: item loaded', { id: data?.id, phone: data?.contact_phone, whatsapp: data?.contact_whatsapp });
-        setDbItem(data);
+        setDbItem(data as any);
 
         // Fetch author Pro status via vue publique (accessible aux visiteurs anonymes)
-        if (data?.author_id) {
+        const dataAny = data as any;
+        if (dataAny?.author_id) {
           const { data: userData } = await supabase
             .from('users_pro_status' as any)
             .select('is_pro')
-            .eq('id', data.author_id)
+            .eq('id', dataAny.author_id)
             .maybeSingle();
           setAuthorInfo({ account_type: (userData as any)?.is_pro ? 'pro' : 'free' });
         }
@@ -111,7 +112,7 @@ const AnnouncementDetail = () => {
       }
     };
     fetchItem();
-  }, [id, isUuid]);
+  }, [id, isUuid, user]);
 
   // Legacy numeric ID lookup
   const legacyItem = !isUuid ? legacyAnnouncements.find(a => a.id === parseInt(id || '0')) : null;

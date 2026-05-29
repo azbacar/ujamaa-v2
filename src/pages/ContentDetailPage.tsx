@@ -17,6 +17,7 @@ import { useViewTracker } from '@/hooks/useViewTracker';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ContentItem {
   id: string;
@@ -65,6 +66,7 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
   const { id } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [item, setItem] = useState<ContentItem | null>(null);
   const [authorInfo, setAuthorInfo] = useState<AuthorInfo | null>(null);
@@ -77,22 +79,23 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
     const fetchItem = async () => {
       if (!id) return;
       try {
+        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island';
         const { data, error } = await supabase
           .from('content_items')
-          .select('id, title, description, category, created_at, type, author_id, contact_phone, contact_whatsapp, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island')
+          .select(user ? `${SAFE_COLS}, contact_phone, contact_whatsapp` : SAFE_COLS)
           .eq('id', id)
           .eq('type', contentType)
           .maybeSingle();
 
         if (error) throw error;
-        setItem(data);
+        setItem(data as any);
 
-        // Fetch author Pro status via vue publique
-        if (data?.author_id) {
+        const dataAny = data as any;
+        if (dataAny?.author_id) {
           const { data: userData } = await supabase
             .from('users_pro_status' as any)
             .select('is_pro')
-            .eq('id', data.author_id)
+            .eq('id', dataAny.author_id)
             .maybeSingle();
           setAuthorInfo({ account_type: (userData as any)?.is_pro ? 'pro' : 'free' } as any);
         }
@@ -103,7 +106,7 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
       }
     };
     fetchItem();
-  }, [id, contentType]);
+  }, [id, contentType, user]);
 
   const isAuthorPro = authorInfo?.account_type === 'pro' || authorInfo?.account_type === 'enterprise';
 

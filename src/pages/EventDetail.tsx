@@ -74,20 +74,22 @@ const EventDetail = () => {
       fetchEvent().then(() => incrementViews());
       checkRegistration();
     }
-  }, [id]);
+  }, [id, user]);
 
   const fetchEvent = async () => {
     try {
+      const SAFE_COLS = 'id, title, description, full_content, category, date, end_date, location, island, organizer, images, price, currency, capacity, registered_count, status, requires_registration, requires_payment, author_id, created_at, updated_at, views, metadata';
       const { data, error } = await supabase
         .from('events')
-        .select('*')
+        .select(user ? `${SAFE_COLS}, contact_phone, contact_email` : SAFE_COLS)
         .eq('id', id)
         .single();
 
       if (error) throw error;
-      setEvent(data);
-      if (data?.author_id) {
-        const { data: userData } = await supabase.from('users_pro_status' as any).select('is_pro').eq('id', data.author_id).maybeSingle();
+      setEvent(data as any);
+      const dataAny = data as any;
+      if (dataAny?.author_id) {
+        const { data: userData } = await supabase.from('users_pro_status' as any).select('is_pro').eq('id', dataAny.author_id).maybeSingle();
         setAuthorInfo({ account_type: (userData as any)?.is_pro ? 'pro' : 'free' } as any);
       }
     } catch (error) {
