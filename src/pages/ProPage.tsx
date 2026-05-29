@@ -516,7 +516,14 @@ export default function ProPage() {
               : `${baseAmount.toLocaleString("fr-FR")} FC${periodLabel}`}
             userRef={userRef}
             onPaymentSubmit={handlePaymentSubmit}
+            paypalPurpose="pro_subscription"
+            paypalMetadata={{ plan: selectedPlan, billing_cycle: billingCycle }}
+            onPayPalSuccess={() => {
+              // request already approved server-side; refresh user state
+              window.location.href = '/annonceur';
+            }}
           />
+
         );
       })()}
 

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { usePublicPartners } from "@/hooks/usePartner";
 import { Link } from "react-router-dom";
+import PayPalButton from "@/components/PayPalButton";
 
 interface MvolaPaymentDialogProps {
   open: boolean;
@@ -22,7 +23,13 @@ interface MvolaPaymentDialogProps {
   description?: string;
   userRef: string; // max 15 chars, unique per user
   onPaymentSubmit: (method: "mvola" | "cash" | "card", reference: string) => Promise<void>;
+  /** When provided, a PayPal tab is shown and uses this purpose for the capture edge function. */
+  paypalPurpose?: "pro_subscription" | "investment" | "event";
+  paypalMetadata?: Record<string, any>;
+  /** Called after a successful PayPal capture (request is already recorded server-side). */
+  onPayPalSuccess?: (captureId: string) => void;
 }
+
 
 const MVOLA_MERCHANT = "4102122";
 
@@ -40,7 +47,11 @@ export default function MvolaPaymentDialog({
   description,
   userRef,
   onPaymentSubmit,
+  paypalPurpose,
+  paypalMetadata,
+  onPayPalSuccess,
 }: MvolaPaymentDialogProps) {
+
   const isMobile = useIsMobile();
   const [tab, setTab] = useState<string>(isMobile ? "mvola" : "mvola");
   const [paymentRef, setPaymentRef] = useState("");
@@ -98,20 +109,26 @@ export default function MvolaPaymentDialog({
         </div>
 
         <Tabs value={tab} onValueChange={setTab} className="mt-2">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="mvola" className="text-[11px] sm:text-xs gap-1 px-1">
+          <TabsList className={`grid w-full ${paypalPurpose ? 'grid-cols-5' : 'grid-cols-4'}`}>
+            <TabsTrigger value="mvola" className="text-[10px] sm:text-xs gap-1 px-1">
               <Smartphone className="w-3.5 h-3.5" /> Mvola
             </TabsTrigger>
-            <TabsTrigger value="cash" className="text-[11px] sm:text-xs gap-1 px-1">
+            <TabsTrigger value="cash" className="text-[10px] sm:text-xs gap-1 px-1">
               <Banknote className="w-3.5 h-3.5" /> Dépôt
             </TabsTrigger>
-            <TabsTrigger value="partner" className="text-[11px] sm:text-xs gap-1 px-1">
+            <TabsTrigger value="partner" className="text-[10px] sm:text-xs gap-1 px-1">
               <Handshake className="w-3.5 h-3.5" /> Concess.
             </TabsTrigger>
-            <TabsTrigger value="card" className="text-[11px] sm:text-xs gap-1 px-1">
+            {paypalPurpose && (
+              <TabsTrigger value="paypal" className="text-[10px] sm:text-xs gap-1 px-1">
+                <CreditCard className="w-3.5 h-3.5" /> PayPal
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="card" className="text-[10px] sm:text-xs gap-1 px-1">
               <CreditCard className="w-3.5 h-3.5" /> Carte
             </TabsTrigger>
           </TabsList>
+
 
           {/* Mvola USSD */}
           <TabsContent value="mvola" className="space-y-4 mt-4">
@@ -314,8 +331,36 @@ export default function MvolaPaymentDialog({
             </Button>
           </TabsContent>
 
+          {/* PayPal */}
+          {paypalPurpose && (
+            <TabsContent value="paypal" className="space-y-4 mt-4">
+              <Card className="bg-muted/50 border-primary/20">
+                <CardContent className="p-4 space-y-3">
+                  <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-primary" /> Paiement PayPal (Sandbox)
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Payez par carte bancaire ou compte PayPal. Choisissez votre devise selon votre pays.
+                    Votre compte sera activé automatiquement après confirmation.
+                  </p>
+                  <PayPalButton
+                    amountKMF={amount}
+                    description={label}
+                    purpose={paypalPurpose}
+                    metadata={paypalMetadata}
+                    onSuccess={(captureId) => {
+                      onPayPalSuccess?.(captureId);
+                      onOpenChange(false);
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
           {/* Carte bancaire */}
           <TabsContent value="card" className="space-y-4 mt-4">
+
             <Card className="bg-muted/50">
               <CardContent className="p-4 text-center space-y-3">
                 <CreditCard className="w-12 h-12 mx-auto text-muted-foreground" />
