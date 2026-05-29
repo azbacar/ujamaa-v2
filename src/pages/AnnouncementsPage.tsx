@@ -119,27 +119,9 @@ const AnnouncementsPage = () => {
     return `Il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'urgent':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'featured':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
+  const getTypeColor = (type: string) => TYPE_META[type]?.color || 'bg-slate-100 text-slate-800 border-slate-200';
+  const getTypeLabel = (type: string) => TYPE_META[type]?.label || type;
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'urgent':
-        return '🚨 Urgent';
-      case 'featured':
-        return '⭐ À la une';
-      default:
-        return '📢 Nouveau';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
