@@ -140,6 +140,7 @@ export default function AnnouncerDashboard() {
   const [newForm, setNewForm] = useState(initialForm);
   const [eventImages, setEventImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [manageItem, setManageItem] = useState<ContentItem | null>(null);
 
   useEffect(() => {
     if (user) fetchData();
