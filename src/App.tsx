@@ -40,6 +40,7 @@ const ResetPasswordRequest = lazy(() => import("./pages/ResetPasswordRequest"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const ProPage = lazy(() => import("./pages/ProPage"));
+const PaymentsHistoryPage = lazy(() => import("./pages/PaymentsHistoryPage"));
 const StaticPage = lazy(() => import("./pages/StaticPage"));
 
 const DeleteAccountPage = lazy(() => import("./pages/DeleteAccountPage"));
@@ -127,6 +128,14 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedRoles={['admin', 'moderator']}>
                     <Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/mes-paiements" 
+                element={
+                  <ProtectedRoute allowedRoles={['user', 'annonceur', 'moderator', 'admin']}>
+                    <Suspense fallback={<PageLoader />}><PaymentsHistoryPage /></Suspense>
                   </ProtectedRoute>
                 } 
               />
