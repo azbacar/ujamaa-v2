@@ -571,6 +571,11 @@ export default function AnnouncerDashboard() {
                       <span className={`text-[10px] font-medium px-2 py-1 rounded-full border whitespace-nowrap ${st.cls}`}>
                         {st.label}
                       </span>
+                      {item.type === 'tourisme' && (item.gastronomy_type === 'restaurant_dish' || item.gastronomy_type === 'recipe') && (
+                        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setManageItem(item)}>
+                          {item.gastronomy_type === 'recipe' ? '🧑‍🍳 Ingrédients' : '🍽️ Menu'}
+                        </Button>
+                      )}
                       {item.status === 'draft' && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(item)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
