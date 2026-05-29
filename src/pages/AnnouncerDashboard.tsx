@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Megaphone, Plus, FileText, Eye, Crown, 
+import {
+  Megaphone, Plus, FileText, Eye, Crown,
   CheckCircle, Zap, Phone, Save, Trash2, ChevronRight, MessageCircle,
-  Calendar, MapPin, Users, Clock, ImagePlus, X, DollarSign
+  Calendar, MapPin, Users, Clock, ImagePlus, X, DollarSign,
+  TrendingUp, Sparkles, Inbox, BarChart3
 } from 'lucide-react';
 import MyPricesTab from '@/components/MyPricesTab';
 import ReceivedTenderSubmissions from '@/components/ReceivedTenderSubmissions';
@@ -324,71 +325,138 @@ export default function AnnouncerDashboard() {
     tourisme: '🏝️ Tourisme',
   };
 
+  const accountLabel = accountType === 'enterprise' ? 'Entreprise' : accountType === 'pro' ? 'Pro' : 'Gratuit';
+  const totalViews = items.reduce((s, i) => s + i.views, 0);
+  const publishedCount = items.filter(i => i.status === 'published').length;
+  const draftCount = items.filter(i => i.status === 'draft').length;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-background to-background">
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-3">
-              <Megaphone className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              Espace Annonceur
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Gérez vos annonces, événements et appels d'offres</p>
+        {/* Hero header */}
+        <section className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-sm">
+          <div className="absolute inset-0 opacity-10 pointer-events-none" aria-hidden>
+            <div className="absolute -right-10 -top-10 w-56 h-56 rounded-full bg-white blur-3xl" />
+            <div className="absolute -left-8 -bottom-16 w-64 h-64 rounded-full bg-white blur-3xl" />
           </div>
-          {accountType !== 'pro' && accountType !== 'enterprise' && (
-            <Button variant="outline" size="sm" onClick={() => navigate(proPath())}>
-              <Crown className="h-4 w-4 mr-2" /> Upgrade PRO
-            </Button>
-          )}
+          <div className="relative p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-xs font-medium text-white/85 uppercase tracking-wider">
+                <Megaphone className="h-3.5 w-3.5" /> Espace Annonceur
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold mt-1 truncate">Tableau de bord</h1>
+              <p className="text-white/85 mt-1 text-sm sm:text-base">
+                Pilotez vos annonces, événements, prix et appels d'offres.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-white text-emerald-700 border border-white/40 font-medium">
+                  <Crown className="h-3 w-3" /> Compte {accountLabel}
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-white/15 text-white border border-white/30">
+                  <FileText className="h-3 w-3" /> {items.length} publication{items.length > 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+            {accountType !== 'pro' && accountType !== 'enterprise' && (
+              <Button
+                size="sm"
+                onClick={() => navigate(proPath())}
+                className="bg-white text-emerald-700 hover:bg-emerald-50 shadow-sm self-start sm:self-auto"
+              >
+                <Crown className="h-4 w-4 mr-2" /> Passer Pro
+              </Button>
+            )}
+          </div>
+        </section>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[
+            { label: 'Publications', value: items.length, icon: FileText, tone: 'text-emerald-600 bg-emerald-50' },
+            { label: 'Publiées', value: publishedCount, icon: CheckCircle, tone: 'text-blue-600 bg-blue-50' },
+            { label: 'En attente', value: draftCount, icon: Clock, tone: 'text-amber-600 bg-amber-50' },
+            { label: 'Vues totales', value: totalViews, icon: TrendingUp, tone: 'text-violet-600 bg-violet-50' },
+          ].map(({ label, value, icon: Icon, tone }) => (
+            <Card key={label} className="border-border/60 hover:shadow-sm transition-shadow">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${tone}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold leading-none">{value}</p>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Privilege badges */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Mes privilèges</CardTitle>
+        {/* Privileges */}
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500" /> Mes privilèges
+              </CardTitle>
+              {activePrivileges.length > 0 && (
+                <Badge variant="secondary" className="text-[10px]">
+                  {activePrivileges.length} actif{activePrivileges.length > 1 ? 's' : ''}
+                </Badge>
+              )}
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {Object.entries(PRIVILEGE_CONFIG).map(([key, cfg]) => {
                 const priv = privileges.find(p => p.privilege === key);
                 const active = priv?.is_active;
                 const Icon = cfg.icon;
                 return (
-                  <Badge key={key} variant={active ? 'default' : 'outline'} className={`px-3 py-1.5 ${active ? `${cfg.color} text-white` : 'opacity-50'}`}>
-                    <Icon className="h-3 w-3 mr-1" />
-                    {cfg.label}{!active && ' (inactif)'}
-                  </Badge>
+                  <div
+                    key={key}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-colors ${
+                      active
+                        ? 'border-emerald-200 bg-emerald-50/60'
+                        : 'border-dashed border-border bg-muted/30 text-muted-foreground'
+                    }`}
+                  >
+                    <span className={`h-7 w-7 rounded-md flex items-center justify-center text-white ${active ? cfg.color : 'bg-muted-foreground/40'}`}>
+                      <Icon className="h-3.5 w-3.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-medium leading-tight">{cfg.label}</p>
+                      <p className="text-[10px] leading-tight">{active ? 'Actif' : 'Inactif'}</p>
+                    </div>
+                  </div>
                 );
               })}
             </div>
             {activePrivileges.length === 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Aucun privilège actif.{' '}
-                <Button variant="link" size="sm" className="p-0" onClick={() => navigate(proPath())}>
-                  Découvrir les offres <ChevronRight className="h-3 w-3" />
-                </Button>
-              </p>
+              <Button variant="link" size="sm" className="px-0 mt-2 text-xs" onClick={() => navigate(proPath())}>
+                Découvrir les offres <ChevronRight className="h-3 w-3 ml-0.5" />
+              </Button>
             )}
           </CardContent>
         </Card>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.length}</p><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.filter(i => i.source === 'event').length}</p><p className="text-xs text-muted-foreground">Événements</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.filter(i => i.status === 'published').length}</p><p className="text-xs text-muted-foreground">Publiés</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.reduce((s, i) => s + i.views, 0)}</p><p className="text-xs text-muted-foreground">Vues</p></CardContent></Card>
-        </div>
-
         <Tabs defaultValue="my-content">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1">
-            <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Publications</TabsTrigger>
-            <TabsTrigger value="received"><Megaphone className="h-4 w-4 mr-1" /> Soumissions</TabsTrigger>
-            <TabsTrigger value="my-prices"><DollarSign className="h-4 w-4 mr-1" /> Mes prix</TabsTrigger>
-            <TabsTrigger value="gps"><MapPin className="h-4 w-4 mr-1" /> GPS</TabsTrigger>
-            <TabsTrigger value="create"><Plus className="h-4 w-4 mr-1" /> Créer</TabsTrigger>
+          <TabsList className="w-full h-auto p-1 bg-muted/60 grid grid-cols-3 sm:grid-cols-5 gap-1">
+            <TabsTrigger value="my-content" className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <FileText className="h-4 w-4" /> Publications
+            </TabsTrigger>
+            <TabsTrigger value="received" className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <Inbox className="h-4 w-4" /> Soumissions
+            </TabsTrigger>
+            <TabsTrigger value="my-prices" className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <DollarSign className="h-4 w-4" /> Mes prix
+            </TabsTrigger>
+            <TabsTrigger value="gps" className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <MapPin className="h-4 w-4" /> GPS
+            </TabsTrigger>
+            <TabsTrigger value="create" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <Plus className="h-4 w-4" /> Créer
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="received">
@@ -400,34 +468,62 @@ export default function AnnouncerDashboard() {
           </TabsContent>
 
           {/* My content list */}
-          <TabsContent value="my-content" className="space-y-3">
+          <TabsContent value="my-content" className="space-y-2">
             {items.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground">Aucune publication</CardContent></Card>
+              <Card className="border-dashed">
+                <CardContent className="py-12 flex flex-col items-center text-center text-muted-foreground gap-3">
+                  <div className="h-12 w-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">Aucune publication pour l'instant</p>
+                    <p className="text-xs mt-1">Créez votre première annonce, événement ou appel d'offres.</p>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-              items.map(item => (
-                <Card key={item.id}>
-                  <CardContent className="pt-4 flex justify-between items-center">
-                    <div>
-                      <h4 className="font-semibold">{item.title}</h4>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge variant="outline" className="text-xs">{typeLabels[item.type] || item.type}</Badge>
-                        <Badge variant={item.status === 'published' ? 'default' : item.status === 'draft' ? 'secondary' : 'outline'}>
-                          {item.status === 'published' ? 'Publié' : item.status === 'draft' ? 'En attente' : item.status === 'cancelled' ? 'Annulé' : 'Archivé'}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1"><Eye className="h-3 w-3" /> {item.views}</span>
-                        <span className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
+              items.map(item => {
+                const typeIcons: Record<string, string> = {
+                  announcement: '📢', event: '🎉', service: '🏛️', tender: '📋', tourisme: '🏝️',
+                };
+                const statusMeta: Record<string, { label: string; cls: string }> = {
+                  published: { label: 'Publié', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+                  draft: { label: 'En attente', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+                  cancelled: { label: 'Annulé', cls: 'bg-rose-100 text-rose-700 border-rose-200' },
+                  archived: { label: 'Archivé', cls: 'bg-muted text-muted-foreground border-border' },
+                };
+                const st = statusMeta[item.status] || statusMeta.archived;
+                return (
+                  <Card key={item.id} className="border-border/60 hover:border-emerald-200 hover:shadow-sm transition-all">
+                    <CardContent className="p-3 sm:p-4 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-lg flex-shrink-0">
+                        {typeIcons[item.type] || '📄'}
                       </div>
-                    </div>
-                    {item.status === 'draft' && (
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm sm:text-base truncate">{item.title}</h4>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap text-[11px] text-muted-foreground">
+                          <span className="font-medium">{typeLabels[item.type] || item.type}</span>
+                          <span>·</span>
+                          <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" /> {item.views}</span>
+                          <span>·</span>
+                          <span>{new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-medium px-2 py-1 rounded-full border whitespace-nowrap ${st.cls}`}>
+                        {st.label}
+                      </span>
+                      {item.status === 'draft' && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(item)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </TabsContent>
+
 
           {/* My prices tab — same as profile, for usability */}
           <TabsContent value="my-prices">
