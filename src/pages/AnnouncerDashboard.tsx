@@ -468,34 +468,62 @@ export default function AnnouncerDashboard() {
           </TabsContent>
 
           {/* My content list */}
-          <TabsContent value="my-content" className="space-y-3">
+          <TabsContent value="my-content" className="space-y-2">
             {items.length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-muted-foreground">Aucune publication</CardContent></Card>
+              <Card className="border-dashed">
+                <CardContent className="py-12 flex flex-col items-center text-center text-muted-foreground gap-3">
+                  <div className="h-12 w-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">Aucune publication pour l'instant</p>
+                    <p className="text-xs mt-1">Créez votre première annonce, événement ou appel d'offres.</p>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-              items.map(item => (
-                <Card key={item.id}>
-                  <CardContent className="pt-4 flex justify-between items-center">
-                    <div>
-                      <h4 className="font-semibold">{item.title}</h4>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge variant="outline" className="text-xs">{typeLabels[item.type] || item.type}</Badge>
-                        <Badge variant={item.status === 'published' ? 'default' : item.status === 'draft' ? 'secondary' : 'outline'}>
-                          {item.status === 'published' ? 'Publié' : item.status === 'draft' ? 'En attente' : item.status === 'cancelled' ? 'Annulé' : 'Archivé'}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground flex items-center gap-1"><Eye className="h-3 w-3" /> {item.views}</span>
-                        <span className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
+              items.map(item => {
+                const typeIcons: Record<string, string> = {
+                  announcement: '📢', event: '🎉', service: '🏛️', tender: '📋', tourisme: '🏝️',
+                };
+                const statusMeta: Record<string, { label: string; cls: string }> = {
+                  published: { label: 'Publié', cls: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+                  draft: { label: 'En attente', cls: 'bg-amber-100 text-amber-700 border-amber-200' },
+                  cancelled: { label: 'Annulé', cls: 'bg-rose-100 text-rose-700 border-rose-200' },
+                  archived: { label: 'Archivé', cls: 'bg-muted text-muted-foreground border-border' },
+                };
+                const st = statusMeta[item.status] || statusMeta.archived;
+                return (
+                  <Card key={item.id} className="border-border/60 hover:border-emerald-200 hover:shadow-sm transition-all">
+                    <CardContent className="p-3 sm:p-4 flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-lg flex-shrink-0">
+                        {typeIcons[item.type] || '📄'}
                       </div>
-                    </div>
-                    {item.status === 'draft' && (
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(item)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm sm:text-base truncate">{item.title}</h4>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap text-[11px] text-muted-foreground">
+                          <span className="font-medium">{typeLabels[item.type] || item.type}</span>
+                          <span>·</span>
+                          <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" /> {item.views}</span>
+                          <span>·</span>
+                          <span>{new Date(item.created_at).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-medium px-2 py-1 rounded-full border whitespace-nowrap ${st.cls}`}>
+                        {st.label}
+                      </span>
+                      {item.status === 'draft' && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(item)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </TabsContent>
+
 
           {/* My prices tab — same as profile, for usability */}
           <TabsContent value="my-prices">
