@@ -169,6 +169,22 @@ export default function PayPalButton({
     }).render(containerRef.current);
   }, [sdkReady, convertedAmount, currency, amountKMF, description, purpose, JSON.stringify(metadata)]);
 
+  if (!authLoading && !user) {
+    return (
+      <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4 text-center space-y-3">
+        <p className="text-sm font-medium">Connexion requise pour payer avec PayPal</p>
+        <p className="text-xs text-muted-foreground">
+          Vous devez être connecté à votre compte Ujamaan pour effectuer un paiement sécurisé et recevoir votre reçu.
+        </p>
+        <Button asChild size="sm" className="w-full">
+          <Link to={authPath()}>
+            <LogIn className="h-4 w-4 mr-2" /> Se connecter / Créer un compte
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex items-end justify-between gap-3">
