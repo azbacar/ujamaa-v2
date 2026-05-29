@@ -132,7 +132,6 @@ export default function CRMAccountingTab({ transactions, totalIncome, totalExpen
                     <SelectItem value="cash">Espèces</SelectItem>
                     <SelectItem value="bank">Virement</SelectItem>
                     <SelectItem value="mobile">Mobile Money</SelectItem>
-                    <SelectItem value="card">Carte</SelectItem>
                     <SelectItem value="other">Autre</SelectItem>
                   </SelectContent>
                 </Select>
