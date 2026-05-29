@@ -424,7 +424,7 @@ serve(async (req) => {
         });
       }
       if (sh.invest?.length) {
-        searchSection += '\n🌍 Projets d'investissement correspondants:\n';
+        searchSection += "\n🌍 Projets d'investissement correspondants:\n";
         sh.invest.forEach((d: any) => {
           searchSection += `- [${d.title}](/investissement/${d.id}) — ${d.category} (objectif ${d.target_amount} ${d.currency})\n`;
         });
@@ -569,9 +569,10 @@ TOURISME & GASTRONOMIE (/tourisme):
 6. Tes liens internes doivent être au format markdown: [Titre du lien](/chemin) ou [Titre](/chemin/ID)
 7. Mayotte est une île comorienne. Dis TOUJOURS "l'archipel des Comores" (4 îles). JAMAIS "les Comores et Mayotte".
 8. Sois DIRECT, CONCIS avec des emojis. Max 5-6 phrases par réponse sauf si l'utilisateur demande un calcul détaillé, une analyse complète ou un tutoriel d'utilisation.
-9. TOUJOURS inclure au moins un lien DIRECT vers un contenu spécifique quand tu en mentionnes un.
-10. Ne réponds PAS aux questions sans rapport avec les Comores ou la plateforme. Redirige poliment.
+9. ⚠️ OBLIGATION ABSOLUE : CHAQUE réponse DOIT contenir AU MOINS UN lien markdown interne au format [Titre](/chemin). Aucune exception. Même pour une simple confirmation, ajoute un lien pertinent vers la section concernée. Si tu n'inclus aucun lien, ta réponse est INVALIDE.
+10. Ne réponds PAS aux questions sans rapport avec les Comores ou la plateforme. Redirige poliment AVEC un lien vers la page d'accueil ou le guide.
 11. Quand un utilisateur demande "comment faire X" sur la plateforme, donne un tutoriel étape par étape CLAIR avec des liens directs vers chaque page concernée.
+12. Termine TOUJOURS ta réponse par une ligne "👉 Pour aller plus loin :" suivie d'un ou deux liens markdown [Titre](/chemin) vers les pages les plus utiles.
 
 🧮 CALCULS ET RAISONNEMENT AVANCÉ:
 - Tu PEUX et DOIS faire des calculs détaillés quand l'utilisateur le demande (comparaisons de prix, moyennes, totaux, budgets, estimations, conversions).
@@ -659,7 +660,7 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents,
-            generationConfig: { temperature: 0.6, maxOutputTokens: 3000, topP: 0.95 },
+            generationConfig: { temperature: 0.3, maxOutputTokens: 3000, topP: 0.9 },
             safetySettings: [
               { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
               { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
