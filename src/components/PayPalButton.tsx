@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, LogIn } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { authPath } from '@/lib/authRedirect';
 
 // PayPal Sandbox client ID is fetched at runtime from edge function `paypal-config`.
 let cachedClientId: string | null = null;
@@ -63,6 +67,7 @@ export default function PayPalButton({
   onError,
   defaultCurrency,
 }: PayPalButtonProps) {
+  const { user, loading: authLoading } = useAuth();
   const [currency, setCurrency] = useState<'EUR' | 'USD'>(defaultCurrency || detectDefaultCurrency());
   const [sdkReady, setSdkReady] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -72,6 +77,7 @@ export default function PayPalButton({
 
   // Load PayPal SDK whenever currency changes
   useEffect(() => {
+    if (!user) return;
     let cancelled = false;
     setSdkReady(false);
     const existing = document.querySelector('script[data-paypal-sdk]');
@@ -162,6 +168,22 @@ export default function PayPalButton({
       },
     }).render(containerRef.current);
   }, [sdkReady, convertedAmount, currency, amountKMF, description, purpose, JSON.stringify(metadata)]);
+
+  if (!authLoading && !user) {
+    return (
+      <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4 text-center space-y-3">
+        <p className="text-sm font-medium">Connexion requise pour payer avec PayPal</p>
+        <p className="text-xs text-muted-foreground">
+          Vous devez être connecté à votre compte Ujamaan pour effectuer un paiement sécurisé et recevoir votre reçu.
+        </p>
+        <Button asChild size="sm" className="w-full">
+          <Link to={authPath()}>
+            <LogIn className="h-4 w-4 mr-2" /> Se connecter / Créer un compte
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
