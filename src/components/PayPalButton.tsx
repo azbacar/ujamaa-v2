@@ -9,14 +9,14 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { authPath } from '@/lib/authRedirect';
 
-// PayPal Sandbox client ID is fetched at runtime from edge function `paypal-config`.
-let cachedClientId: string | null = null;
-async function getPayPalClientId(): Promise<string> {
-  if (cachedClientId) return cachedClientId;
+// PayPal client ID + mode (sandbox|live) is fetched at runtime from edge function `paypal-config`.
+let cachedConfig: { client_id: string; mode: 'sandbox' | 'live' } | null = null;
+async function getPayPalConfig(): Promise<{ client_id: string; mode: 'sandbox' | 'live' }> {
+  if (cachedConfig) return cachedConfig;
   const { data, error } = await supabase.functions.invoke('paypal-config');
   if (error || !data?.client_id) throw new Error('PayPal config unavailable');
-  cachedClientId = data.client_id;
-  return cachedClientId!;
+  cachedConfig = { client_id: data.client_id, mode: data.mode === 'live' ? 'live' : 'sandbox' };
+  return cachedConfig;
 }
 
 
