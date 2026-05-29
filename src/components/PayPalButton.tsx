@@ -222,7 +222,7 @@ export default function PayPalButton({
         </p>
       )}
       <p className="text-[10px] text-center text-muted-foreground">
-        Mode Sandbox PayPal • Taux indicatif : 1 EUR ≈ 492 KMF, 1 USD ≈ 455 KMF
+        {mode === 'live' ? '🔒 Paiement réel PayPal' : '🧪 Mode Sandbox PayPal'} • Taux indicatif : 1 EUR ≈ 492 KMF, 1 USD ≈ 455 KMF
       </p>
     </div>
   );
