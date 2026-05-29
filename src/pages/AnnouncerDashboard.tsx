@@ -16,6 +16,9 @@ import {
 import MyPricesTab from '@/components/MyPricesTab';
 import ReceivedTenderSubmissions from '@/components/ReceivedTenderSubmissions';
 import VendorLocationShareCard from '@/components/VendorLocationShareCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import MenuItemsManager from '@/components/tourism/MenuItemsManager';
+import RecipeIngredientsManager from '@/components/tourism/RecipeIngredientsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -34,6 +37,7 @@ interface ContentItem {
   views: number;
   created_at: string;
   source: 'content' | 'event';
+  gastronomy_type?: string;
 }
 
 interface Privilege {
@@ -136,6 +140,7 @@ export default function AnnouncerDashboard() {
   const [newForm, setNewForm] = useState(initialForm);
   const [eventImages, setEventImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [manageItem, setManageItem] = useState<ContentItem | null>(null);
 
   useEffect(() => {
     if (user) fetchData();
@@ -154,7 +159,7 @@ export default function AnnouncerDashboard() {
     
     const contentItems: ContentItem[] = (itemsRes.data || []).map(i => ({ ...i, source: 'content' as const }));
     const eventItems: ContentItem[] = (eventsRes.data || []).map(e => ({ ...e, type: 'event', views: e.views || 0, status: e.status || 'draft', source: 'event' as const }));
-    const gastroItems: ContentItem[] = (gastroRes.data || []).map(g => ({ ...g, type: 'tourisme', views: g.views || 0, status: g.status || 'draft', source: 'content' as const }));
+    const gastroItems: ContentItem[] = (gastroRes.data || []).map(g => ({ ...g, gastronomy_type: g.type, type: 'tourisme', views: g.views || 0, status: g.status || 'draft', source: 'content' as const }));
     
     const all = [...contentItems, ...eventItems, ...gastroItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     setItems(all);
@@ -566,6 +571,11 @@ export default function AnnouncerDashboard() {
                       <span className={`text-[10px] font-medium px-2 py-1 rounded-full border whitespace-nowrap ${st.cls}`}>
                         {st.label}
                       </span>
+                      {item.type === 'tourisme' && (item.gastronomy_type === 'restaurant_dish' || item.gastronomy_type === 'recipe') && (
+                        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setManageItem(item)}>
+                          {item.gastronomy_type === 'recipe' ? '🧑‍🍳 Ingrédients' : '🍽️ Menu'}
+                        </Button>
+                      )}
                       {item.status === 'draft' && (
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(item)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
@@ -1151,6 +1161,21 @@ export default function AnnouncerDashboard() {
         </Tabs>
       </main>
       <Footer />
+      <Dialog open={!!manageItem} onOpenChange={v => !v && setManageItem(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {manageItem?.gastronomy_type === 'recipe' ? '🧑‍🍳 Ingrédients' : '🍽️ Menu'} — {manageItem?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {manageItem && manageItem.gastronomy_type === 'recipe' && (
+            <RecipeIngredientsManager gastronomyItemId={manageItem.id} />
+          )}
+          {manageItem && manageItem.gastronomy_type === 'restaurant_dish' && (
+            <MenuItemsManager gastronomyItemId={manageItem.id} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
