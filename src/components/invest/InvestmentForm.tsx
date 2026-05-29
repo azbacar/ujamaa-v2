@@ -20,6 +20,7 @@ interface Props {
 export default function InvestmentForm({ project, onSuccess }: Props) {
   const { user } = useAuth();
   const createInvestment = useCreateInvestment();
+  const queryClient = useQueryClient();
 
   const [form, setForm] = useState({
     amount: '',
@@ -50,6 +51,17 @@ export default function InvestmentForm({ project, onSuccess }: Props) {
   };
 
   const minInvestment = project.min_investment || 0;
+  const isPaypal = form.payment_method === 'paypal';
+  const numericAmount = Number(form.amount) || 0;
+  // PayPalButton expects KMF; for projects in other currencies, we still pass through
+  // and trust the displayed converted amount.
+  const amountKMFEquivalent = (() => {
+    const c = (project.currency || 'KMF').toUpperCase();
+    if (c === 'KMF' || c === 'FC') return numericAmount;
+    if (c === 'EUR') return Math.round(numericAmount * 492);
+    if (c === 'USD') return Math.round(numericAmount * 455);
+    return numericAmount;
+  })();
 
   return (
     <Card>
@@ -81,6 +93,7 @@ export default function InvestmentForm({ project, onSuccess }: Props) {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="mobile_money">Mobile Money</SelectItem>
+                <SelectItem value="paypal">PayPal (carte / compte PayPal)</SelectItem>
                 <SelectItem value="virement">Virement bancaire</SelectItem>
                 <SelectItem value="western_union">Western Union</SelectItem>
                 <SelectItem value="autre">Autre</SelectItem>
@@ -88,14 +101,16 @@ export default function InvestmentForm({ project, onSuccess }: Props) {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Référence de paiement</Label>
-            <Input
-              value={form.payment_reference}
-              onChange={e => setForm(prev => ({ ...prev, payment_reference: e.target.value }))}
-              placeholder="Numéro de transaction..."
-            />
-          </div>
+          {!isPaypal && (
+            <div className="space-y-2">
+              <Label>Référence de paiement</Label>
+              <Input
+                value={form.payment_reference}
+                onChange={e => setForm(prev => ({ ...prev, payment_reference: e.target.value }))}
+                placeholder="Numéro de transaction..."
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Message (optionnel)</Label>
@@ -107,11 +122,36 @@ export default function InvestmentForm({ project, onSuccess }: Props) {
             />
           </div>
 
-          <Button type="submit" disabled={createInvestment.isPending} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600">
-            {createInvestment.isPending ? 'Envoi...' : 'Confirmer l\'investissement'}
-          </Button>
+          {isPaypal ? (
+            numericAmount >= Math.max(1, minInvestment) ? (
+              <PayPalButton
+                amountKMF={amountKMFEquivalent}
+                description={`Investissement : ${project.title || 'projet'}`}
+                purpose="investment"
+                metadata={{
+                  project_id: project.id,
+                  message: form.message || null,
+                }}
+                onSuccess={() => {
+                  setForm({ amount: '', payment_method: 'mobile_money', payment_reference: '', message: '' });
+                  queryClient.invalidateQueries({ queryKey: ['invest'] });
+                  queryClient.invalidateQueries({ queryKey: ['project-investments'] });
+                  onSuccess?.();
+                }}
+              />
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-2">
+                Saisissez un montant pour afficher le bouton PayPal.
+              </p>
+            )
+          ) : (
+            <Button type="submit" disabled={createInvestment.isPending} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600">
+              {createInvestment.isPending ? 'Envoi...' : 'Confirmer l\'investissement'}
+            </Button>
+          )}
         </form>
       </CardContent>
     </Card>
   );
 }
+
