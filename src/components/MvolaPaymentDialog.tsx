@@ -109,20 +109,26 @@ export default function MvolaPaymentDialog({
         </div>
 
         <Tabs value={tab} onValueChange={setTab} className="mt-2">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="mvola" className="text-[11px] sm:text-xs gap-1 px-1">
+          <TabsList className={`grid w-full ${paypalPurpose ? 'grid-cols-5' : 'grid-cols-4'}`}>
+            <TabsTrigger value="mvola" className="text-[10px] sm:text-xs gap-1 px-1">
               <Smartphone className="w-3.5 h-3.5" /> Mvola
             </TabsTrigger>
-            <TabsTrigger value="cash" className="text-[11px] sm:text-xs gap-1 px-1">
+            <TabsTrigger value="cash" className="text-[10px] sm:text-xs gap-1 px-1">
               <Banknote className="w-3.5 h-3.5" /> Dépôt
             </TabsTrigger>
-            <TabsTrigger value="partner" className="text-[11px] sm:text-xs gap-1 px-1">
+            <TabsTrigger value="partner" className="text-[10px] sm:text-xs gap-1 px-1">
               <Handshake className="w-3.5 h-3.5" /> Concess.
             </TabsTrigger>
-            <TabsTrigger value="card" className="text-[11px] sm:text-xs gap-1 px-1">
+            {paypalPurpose && (
+              <TabsTrigger value="paypal" className="text-[10px] sm:text-xs gap-1 px-1">
+                <CreditCard className="w-3.5 h-3.5" /> PayPal
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="card" className="text-[10px] sm:text-xs gap-1 px-1">
               <CreditCard className="w-3.5 h-3.5" /> Carte
             </TabsTrigger>
           </TabsList>
+
 
           {/* Mvola USSD */}
           <TabsContent value="mvola" className="space-y-4 mt-4">
