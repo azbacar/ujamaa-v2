@@ -11,11 +11,29 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 
-interface PriceSubmissionFormProps {
-  onClose: () => void;
+interface PriceDefaults {
+  vendorName?: string;
+  market?: string;
+  village?: string;
+  city?: string;
+  island?: string;
+  latitude?: string;
+  longitude?: string;
+  merchantType?: 'fixed' | 'ambulant';
+  category?: string;
+  unit?: string;
+  currency?: string;
+  productName?: string;
+  price?: string;
 }
 
-const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
+interface PriceSubmissionFormProps {
+  onClose: () => void;
+  onSuccess?: () => void;
+  defaults?: PriceDefaults;
+}
+
+const PriceSubmissionForm = ({ onClose, onSuccess, defaults }: PriceSubmissionFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -23,23 +41,25 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [geoLoading, setGeoLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
-    productName: '',
-    category: '',
-    unit: '',
-    price: '',
-    currency: 'FC',
-    vendorName: '',
-    village: '',
-    city: '',
-    island: '',
-    market: '',
-    latitude: '',
-    longitude: '',
-    merchantType: 'fixed' as 'fixed' | 'ambulant',
+    productName: defaults?.productName || '',
+    category: defaults?.category || '',
+    unit: defaults?.unit || '',
+    price: defaults?.price || '',
+    currency: defaults?.currency || 'FC',
+    vendorName: defaults?.vendorName || '',
+    village: defaults?.village || '',
+    city: defaults?.city || '',
+    island: defaults?.island || '',
+    market: defaults?.market || '',
+    latitude: defaults?.latitude || '',
+    longitude: defaults?.longitude || '',
+    merchantType: (defaults?.merchantType || 'fixed') as 'fixed' | 'ambulant',
     geoExpiresHours: '24',
   });
+
+  const hasPrefilled = !!(defaults?.vendorName || defaults?.market || defaults?.city);
 
   const categories = [
     'Céréales', 'Fruits', 'Légumes', 'Poissons', 'Viandes', 'Huiles', 
@@ -146,6 +166,7 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
         title: "✅ Prix ajouté avec succès!",
         description: `${formData.productName} a été ajouté aux prix de ${formData.market || formData.city}.`,
       });
+      onSuccess?.();
       onClose();
     } catch (error: any) {
       console.error('Error submitting price:', error);
@@ -179,7 +200,11 @@ const PriceSubmissionForm = ({ onClose }: PriceSubmissionFormProps) => {
         
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Produit */}
+            {hasPrefilled && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800">
+                ✨ Vos informations vendeur et localisation ont été pré-remplies depuis votre dernier prix. Modifiez-les si besoin.
+              </div>
+            )}
             <div className="space-y-4">
               <h3 className="font-semibold text-lg flex items-center gap-2 text-emerald-700">
                 <Package className="w-5 h-5" />
