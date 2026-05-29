@@ -1161,6 +1161,21 @@ export default function AnnouncerDashboard() {
         </Tabs>
       </main>
       <Footer />
+      <Dialog open={!!manageItem} onOpenChange={v => !v && setManageItem(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {manageItem?.gastronomy_type === 'recipe' ? '🧑‍🍳 Ingrédients' : '🍽️ Menu'} — {manageItem?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {manageItem && manageItem.gastronomy_type === 'recipe' && (
+            <RecipeIngredientsManager gastronomyItemId={manageItem.id} />
+          )}
+          {manageItem && manageItem.gastronomy_type === 'restaurant_dish' && (
+            <MenuItemsManager gastronomyItemId={manageItem.id} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
