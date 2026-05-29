@@ -112,7 +112,7 @@ const AnnouncementDetail = () => {
       }
     };
     fetchItem();
-  }, [id, isUuid]);
+  }, [id, isUuid, user]);
 
   // Legacy numeric ID lookup
   const legacyItem = !isUuid ? legacyAnnouncements.find(a => a.id === parseInt(id || '0')) : null;
