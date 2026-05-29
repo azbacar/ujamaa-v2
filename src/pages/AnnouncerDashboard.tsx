@@ -155,7 +155,7 @@ export default function AnnouncerDashboard() {
     
     const contentItems: ContentItem[] = (itemsRes.data || []).map(i => ({ ...i, source: 'content' as const }));
     const eventItems: ContentItem[] = (eventsRes.data || []).map(e => ({ ...e, type: 'event', views: e.views || 0, status: e.status || 'draft', source: 'event' as const }));
-    const gastroItems: ContentItem[] = (gastroRes.data || []).map(g => ({ ...g, type: 'tourisme', views: g.views || 0, status: g.status || 'draft', source: 'content' as const }));
+    const gastroItems: ContentItem[] = (gastroRes.data || []).map(g => ({ ...g, gastronomy_type: g.type, type: 'tourisme', views: g.views || 0, status: g.status || 'draft', source: 'content' as const }));
     
     const all = [...contentItems, ...eventItems, ...gastroItems].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     setItems(all);
