@@ -34,6 +34,7 @@ interface ContentItem {
   views: number;
   created_at: string;
   source: 'content' | 'event';
+  gastronomy_type?: string;
 }
 
 interface Privilege {
