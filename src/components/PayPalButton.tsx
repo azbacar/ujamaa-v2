@@ -91,7 +91,7 @@ export default function PayPalButton({
         if (cancelled) return;
         setMode(ppMode);
         const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(client_id)}&currency=${currency}&intent=capture`;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(client_id)}&currency=${currency}&intent=capture&components=buttons&disable-funding=card,credit,paylater`;
         script.async = true;
         script.setAttribute('data-paypal-sdk', currency);
         script.onload = () => { if (!cancelled) setSdkReady(true); };
