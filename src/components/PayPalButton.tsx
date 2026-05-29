@@ -67,6 +67,7 @@ export default function PayPalButton({
   onError,
   defaultCurrency,
 }: PayPalButtonProps) {
+  const { user, loading: authLoading } = useAuth();
   const [currency, setCurrency] = useState<'EUR' | 'USD'>(defaultCurrency || detectDefaultCurrency());
   const [sdkReady, setSdkReady] = useState(false);
   const [processing, setProcessing] = useState(false);
