@@ -72,22 +72,30 @@ export default function PayPalButton({
 
   // Load PayPal SDK whenever currency changes
   useEffect(() => {
+    let cancelled = false;
     setSdkReady(false);
     const existing = document.querySelector('script[data-paypal-sdk]');
     if (existing) existing.remove();
     if (window.paypal) delete window.paypal;
 
-    const script = document.createElement('script');
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_SANDBOX_CLIENT_ID}&currency=${currency}&intent=capture`;
-    script.async = true;
-    script.setAttribute('data-paypal-sdk', currency);
-    script.onload = () => setSdkReady(true);
-    script.onerror = () => toast.error('Impossible de charger PayPal');
-    document.body.appendChild(script);
-    return () => {
-      script.remove();
-    };
+    (async () => {
+      try {
+        const clientId = await getPayPalClientId();
+        if (cancelled) return;
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${currency}&intent=capture`;
+        script.async = true;
+        script.setAttribute('data-paypal-sdk', currency);
+        script.onload = () => { if (!cancelled) setSdkReady(true); };
+        script.onerror = () => toast.error('Impossible de charger PayPal');
+        document.body.appendChild(script);
+      } catch {
+        toast.error('Configuration PayPal indisponible');
+      }
+    })();
+    return () => { cancelled = true; };
   }, [currency]);
+
 
   // Render buttons when SDK ready or amount changes
   useEffect(() => {
