@@ -450,7 +450,7 @@ export default function ProPage() {
                 <li><strong>Référence personnelle</strong> : générée automatiquement (commence par <code>UJA…</code>) — ne la modifiez pas, elle permet de retrouver votre paiement.</li>
                 <li><strong>Confirmation</strong> : après le paiement, vous recevez un SMS Mvola avec un <strong>numéro de référence</strong>. Collez-le dans le champ <em>Référence Mvola</em> et validez.</li>
                 <li><strong>Activation</strong> : un administrateur valide votre paiement (généralement sous <strong>24 h</strong>). Vous recevez ensuite une notification dans l'app dès l'activation du compte Pro.</li>
-                <li><strong>Pas de Mvola ?</strong> Vous pouvez payer en <strong>espèces</strong> auprès d'un partenaire Ujamaan, ou par <strong>carte bancaire</strong> via Stripe (à venir).</li>
+                <li><strong>Pas de Mvola ?</strong> Vous pouvez payer en <strong>espèces</strong> auprès d'un partenaire Ujamaan ou par dépôt bancaire.</li>
               </ul>
             </div>
 

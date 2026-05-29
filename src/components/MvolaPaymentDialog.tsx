@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Banknote, CreditCard, Lock, Phone, QrCode, Copy, CheckCircle, Handshake, MapPin, Navigation } from "lucide-react";
+import { Smartphone, Banknote, CreditCard, Phone, QrCode, Copy, CheckCircle, Handshake, MapPin, Navigation } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
@@ -109,7 +109,7 @@ export default function MvolaPaymentDialog({
         </div>
 
         <Tabs value={tab} onValueChange={setTab} className="mt-2">
-          <TabsList className={`grid w-full ${paypalPurpose ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${paypalPurpose ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="mvola" className="text-[10px] sm:text-xs gap-1 px-1">
               <Smartphone className="w-3.5 h-3.5" /> Mvola
             </TabsTrigger>
@@ -124,9 +124,6 @@ export default function MvolaPaymentDialog({
                 <CreditCard className="w-3.5 h-3.5" /> PayPal
               </TabsTrigger>
             )}
-            <TabsTrigger value="card" className="text-[10px] sm:text-xs gap-1 px-1">
-              <CreditCard className="w-3.5 h-3.5" /> Carte
-            </TabsTrigger>
           </TabsList>
 
 
@@ -340,7 +337,7 @@ export default function MvolaPaymentDialog({
                     <CreditCard className="w-4 h-4 text-primary" /> Paiement PayPal (Sandbox)
                   </h4>
                   <p className="text-xs text-muted-foreground">
-                    Payez par carte bancaire ou compte PayPal. Choisissez votre devise selon votre pays.
+                    Payez avec votre compte PayPal. Choisissez votre devise selon votre pays.
                     Votre compte sera activé automatiquement après confirmation.
                   </p>
                   <PayPalButton
@@ -357,23 +354,6 @@ export default function MvolaPaymentDialog({
               </Card>
             </TabsContent>
           )}
-
-          {/* Carte bancaire */}
-          <TabsContent value="card" className="space-y-4 mt-4">
-
-            <Card className="bg-muted/50">
-              <CardContent className="p-4 text-center space-y-3">
-                <CreditCard className="w-12 h-12 mx-auto text-muted-foreground" />
-                <h4 className="font-semibold text-sm text-foreground">Paiement par carte bancaire</h4>
-                <p className="text-sm text-muted-foreground">
-                  Le paiement par carte sera bientôt disponible via Stripe. En attendant, utilisez Mvola ou le dépôt.
-                </p>
-              </CardContent>
-            </Card>
-            <Button className="w-full" disabled variant="outline">
-              <Lock className="w-4 h-4 mr-2" /> Bientôt disponible
-            </Button>
-          </TabsContent>
         </Tabs>
 
         <div className="bg-accent/50 rounded-lg p-3 mt-2">
