@@ -171,9 +171,11 @@ const AnnouncementsPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous types</SelectItem>
-                  <SelectItem value="urgent">🚨 Urgent</SelectItem>
-                  <SelectItem value="featured">⭐ À la une</SelectItem>
-                  <SelectItem value="normal">📢 Normal</SelectItem>
+                  <SelectItem value="announcement">📢 Annonce</SelectItem>
+                  <SelectItem value="service">🛠️ Service</SelectItem>
+                  <SelectItem value="tender">📋 Appel d'offres</SelectItem>
+                  <SelectItem value="event">🎉 Événement</SelectItem>
+                  <SelectItem value="gastronomy">🍽️ Gastronomie</SelectItem>
                 </SelectContent>
               </Select>
 
