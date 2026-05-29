@@ -90,7 +90,7 @@ const AnnouncementDetail = () => {
 
     const fetchItem = async () => {
       try {
-        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id';
+        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, images, price, currency, location';
         const { data, error } = await supabase
           .from('content_items')
           .select(user ? `${SAFE_COLS}, contact_phone, contact_whatsapp` : SAFE_COLS)
