@@ -180,6 +180,27 @@ export default function AdminDashboard() {
         }
       }
 
+      // If approved and it's a price_update, apply the new price
+      if (action === 'approved' && mod?.type === 'price_update') {
+        const content = mod.content as any;
+        const priceId = content?.price_id;
+        const newPriceValue = Number(content?.new_price);
+        if (priceId && !isNaN(newPriceValue) && newPriceValue > 0) {
+          const { error: priceError } = await supabase
+            .from('prices')
+            .update({ price: newPriceValue })
+            .eq('id', priceId);
+          if (priceError) {
+            console.error('Error applying price update:', priceError);
+            toast.error(`Erreur lors de l'application du prix : ${priceError.message}`);
+          } else {
+            toast.success(`Prix mis à jour : ${content?.product || ''} → ${newPriceValue} ${content?.currency || ''}`);
+          }
+        } else {
+          toast.error('Données de mise à jour de prix invalides');
+        }
+      }
+
       await supabase.rpc('log_admin_action', {
         _action_type: 'modification_review', _target_type: 'pending_modification', _target_id: modId,
         _description: `Modification ${action} par ${user.email}`,
