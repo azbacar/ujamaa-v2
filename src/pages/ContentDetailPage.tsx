@@ -41,7 +41,27 @@ interface ContentItem {
   opening_location?: string | null;
   submission_location?: string | null;
   island?: string | null;
+  images?: string[] | null;
+  price?: number | null;
+  location?: string | null;
+  service_subtype?: string | null;
 }
+
+const SERVICE_SUBTYPE_LABELS: Record<string, string> = {
+  atelier: '🛠️ Atelier / Réparation',
+  service_public: '🏛️ Service public / Administration',
+  point_eau: '🚰 Point d\'eau',
+  point_ravitaillement: '⛽ Point de ravitaillement',
+  sante: '🏥 Santé / Pharmacie',
+  education: '🎓 Éducation / Formation',
+  transport: '🚐 Transport',
+  banque_finance: '🏦 Banque / Finance',
+  telecom: '📡 Télécom / Internet',
+  commerce: '🛒 Commerce / Boutique',
+  artisan: '👷 Artisan / Construction',
+  autre_service: '🔧 Autre service',
+};
+
 
 const PROCUREMENT_LABELS: Record<string, string> = {
   aoo: 'Appel d\'offres ouvert',
