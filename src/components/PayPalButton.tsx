@@ -77,6 +77,7 @@ export default function PayPalButton({
 
   // Load PayPal SDK whenever currency changes
   useEffect(() => {
+    if (!user) return;
     let cancelled = false;
     setSdkReady(false);
     const existing = document.querySelector('script[data-paypal-sdk]');
