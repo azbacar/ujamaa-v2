@@ -656,6 +656,8 @@ export default function AnnouncerDashboard() {
                 <div>
                   <Label>Description *</Label>
                   <Textarea value={newForm.description} onChange={e => updateForm('description', e.target.value)} rows={4} placeholder="Description détaillée..." />
+                </div>
+
 
                 {/* Announcement-specific fields (price + image) */}
                 {newForm.type === 'announcement' && (
