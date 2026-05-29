@@ -5,9 +5,16 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-// PayPal Sandbox client ID (publishable) — for the browser SDK only.
-// Server-side uses PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET secrets.
-const PAYPAL_SANDBOX_CLIENT_ID = 'sb';
+// PayPal Sandbox client ID is fetched at runtime from edge function `paypal-config`.
+let cachedClientId: string | null = null;
+async function getPayPalClientId(): Promise<string> {
+  if (cachedClientId) return cachedClientId;
+  const { data, error } = await supabase.functions.invoke('paypal-config');
+  if (error || !data?.client_id) throw new Error('PayPal config unavailable');
+  cachedClientId = data.client_id;
+  return cachedClientId!;
+}
+
 
 // Approximate conversion rates (KMF base). Update as needed or move to settings later.
 const CONVERSION = {
