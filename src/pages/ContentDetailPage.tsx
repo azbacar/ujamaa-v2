@@ -17,6 +17,7 @@ import { useViewTracker } from '@/hooks/useViewTracker';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ContentItem {
   id: string;
