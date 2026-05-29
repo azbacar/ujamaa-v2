@@ -325,71 +325,138 @@ export default function AnnouncerDashboard() {
     tourisme: '🏝️ Tourisme',
   };
 
+  const accountLabel = accountType === 'enterprise' ? 'Entreprise' : accountType === 'pro' ? 'Pro' : 'Gratuit';
+  const totalViews = items.reduce((s, i) => s + i.views, 0);
+  const publishedCount = items.filter(i => i.status === 'published').length;
+  const draftCount = items.filter(i => i.status === 'draft').length;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/40 via-background to-background">
       <Header currentLanguage="fr" onLanguageChange={() => {}} />
       <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-5xl space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-3">
-              <Megaphone className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-              Espace Annonceur
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">Gérez vos annonces, événements et appels d'offres</p>
+        {/* Hero header */}
+        <section className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-sm">
+          <div className="absolute inset-0 opacity-10 pointer-events-none" aria-hidden>
+            <div className="absolute -right-10 -top-10 w-56 h-56 rounded-full bg-white blur-3xl" />
+            <div className="absolute -left-8 -bottom-16 w-64 h-64 rounded-full bg-white blur-3xl" />
           </div>
-          {accountType !== 'pro' && accountType !== 'enterprise' && (
-            <Button variant="outline" size="sm" onClick={() => navigate(proPath())}>
-              <Crown className="h-4 w-4 mr-2" /> Upgrade PRO
-            </Button>
-          )}
+          <div className="relative p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 text-xs font-medium text-white/85 uppercase tracking-wider">
+                <Megaphone className="h-3.5 w-3.5" /> Espace Annonceur
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold mt-1 truncate">Tableau de bord</h1>
+              <p className="text-white/85 mt-1 text-sm sm:text-base">
+                Pilotez vos annonces, événements, prix et appels d'offres.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-white text-emerald-700 border border-white/40 font-medium">
+                  <Crown className="h-3 w-3" /> Compte {accountLabel}
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-white/15 text-white border border-white/30">
+                  <FileText className="h-3 w-3" /> {items.length} publication{items.length > 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+            {accountType !== 'pro' && accountType !== 'enterprise' && (
+              <Button
+                size="sm"
+                onClick={() => navigate(proPath())}
+                className="bg-white text-emerald-700 hover:bg-emerald-50 shadow-sm self-start sm:self-auto"
+              >
+                <Crown className="h-4 w-4 mr-2" /> Passer Pro
+              </Button>
+            )}
+          </div>
+        </section>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[
+            { label: 'Publications', value: items.length, icon: FileText, tone: 'text-emerald-600 bg-emerald-50' },
+            { label: 'Publiées', value: publishedCount, icon: CheckCircle, tone: 'text-blue-600 bg-blue-50' },
+            { label: 'En attente', value: draftCount, icon: Clock, tone: 'text-amber-600 bg-amber-50' },
+            { label: 'Vues totales', value: totalViews, icon: TrendingUp, tone: 'text-violet-600 bg-violet-50' },
+          ].map(({ label, value, icon: Icon, tone }) => (
+            <Card key={label} className="border-border/60 hover:shadow-sm transition-shadow">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${tone}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold leading-none">{value}</p>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Privilege badges */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Mes privilèges</CardTitle>
+        {/* Privileges */}
+        <Card className="border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500" /> Mes privilèges
+              </CardTitle>
+              {activePrivileges.length > 0 && (
+                <Badge variant="secondary" className="text-[10px]">
+                  {activePrivileges.length} actif{activePrivileges.length > 1 ? 's' : ''}
+                </Badge>
+              )}
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {Object.entries(PRIVILEGE_CONFIG).map(([key, cfg]) => {
                 const priv = privileges.find(p => p.privilege === key);
                 const active = priv?.is_active;
                 const Icon = cfg.icon;
                 return (
-                  <Badge key={key} variant={active ? 'default' : 'outline'} className={`px-3 py-1.5 ${active ? `${cfg.color} text-white` : 'opacity-50'}`}>
-                    <Icon className="h-3 w-3 mr-1" />
-                    {cfg.label}{!active && ' (inactif)'}
-                  </Badge>
+                  <div
+                    key={key}
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-colors ${
+                      active
+                        ? 'border-emerald-200 bg-emerald-50/60'
+                        : 'border-dashed border-border bg-muted/30 text-muted-foreground'
+                    }`}
+                  >
+                    <span className={`h-7 w-7 rounded-md flex items-center justify-center text-white ${active ? cfg.color : 'bg-muted-foreground/40'}`}>
+                      <Icon className="h-3.5 w-3.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-medium leading-tight">{cfg.label}</p>
+                      <p className="text-[10px] leading-tight">{active ? 'Actif' : 'Inactif'}</p>
+                    </div>
+                  </div>
                 );
               })}
             </div>
             {activePrivileges.length === 0 && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Aucun privilège actif.{' '}
-                <Button variant="link" size="sm" className="p-0" onClick={() => navigate(proPath())}>
-                  Découvrir les offres <ChevronRight className="h-3 w-3" />
-                </Button>
-              </p>
+              <Button variant="link" size="sm" className="px-0 mt-2 text-xs" onClick={() => navigate(proPath())}>
+                Découvrir les offres <ChevronRight className="h-3 w-3 ml-0.5" />
+              </Button>
             )}
           </CardContent>
         </Card>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.length}</p><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.filter(i => i.source === 'event').length}</p><p className="text-xs text-muted-foreground">Événements</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.filter(i => i.status === 'published').length}</p><p className="text-xs text-muted-foreground">Publiés</p></CardContent></Card>
-          <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{items.reduce((s, i) => s + i.views, 0)}</p><p className="text-xs text-muted-foreground">Vues</p></CardContent></Card>
-        </div>
-
         <Tabs defaultValue="my-content">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1">
-            <TabsTrigger value="my-content"><FileText className="h-4 w-4 mr-1" /> Publications</TabsTrigger>
-            <TabsTrigger value="received"><Megaphone className="h-4 w-4 mr-1" /> Soumissions</TabsTrigger>
-            <TabsTrigger value="my-prices"><DollarSign className="h-4 w-4 mr-1" /> Mes prix</TabsTrigger>
-            <TabsTrigger value="gps"><MapPin className="h-4 w-4 mr-1" /> GPS</TabsTrigger>
-            <TabsTrigger value="create"><Plus className="h-4 w-4 mr-1" /> Créer</TabsTrigger>
+          <TabsList className="w-full h-auto p-1 bg-muted/60 grid grid-cols-3 sm:grid-cols-5 gap-1">
+            <TabsTrigger value="my-content" className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <FileText className="h-4 w-4" /> Publications
+            </TabsTrigger>
+            <TabsTrigger value="received" className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <Inbox className="h-4 w-4" /> Soumissions
+            </TabsTrigger>
+            <TabsTrigger value="my-prices" className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <DollarSign className="h-4 w-4" /> Mes prix
+            </TabsTrigger>
+            <TabsTrigger value="gps" className="data-[state=active]:bg-background data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <MapPin className="h-4 w-4" /> GPS
+            </TabsTrigger>
+            <TabsTrigger value="create" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-sm flex items-center gap-1.5 py-2 text-xs sm:text-sm">
+              <Plus className="h-4 w-4" /> Créer
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="received">
