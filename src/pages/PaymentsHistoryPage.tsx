@@ -58,7 +58,7 @@ const fmtDate = (d: string | null | undefined) =>
 
 export default function PaymentsHistoryPage() {
   const { user, loading } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { currentLanguage, setLanguage } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function PaymentsHistoryPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header currentLanguage={language} onLanguageChange={setLanguage} />
+      <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="sm" asChild>
