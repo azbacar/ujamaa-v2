@@ -200,7 +200,11 @@ const PriceSubmissionForm = ({ onClose, onSuccess, defaults }: PriceSubmissionFo
         
         <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Produit */}
+            {hasPrefilled && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm text-emerald-800">
+                ✨ Vos informations vendeur et localisation ont été pré-remplies depuis votre dernier prix. Modifiez-les si besoin.
+              </div>
+            )}
             <div className="space-y-4">
               <h3 className="font-semibold text-lg flex items-center gap-2 text-emerald-700">
                 <Package className="w-5 h-5" />
