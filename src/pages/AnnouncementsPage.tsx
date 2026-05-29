@@ -225,7 +225,7 @@ const AnnouncementsPage = () => {
                   </div>
                 </div>
 
-                <Link to={`/annonces/${announcement.id}`}>
+                <Link to={getDetailPath(announcement)}>
                   <Button 
                     variant="outline" 
                     size="sm" 
