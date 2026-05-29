@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { usePublicPartners } from "@/hooks/usePartner";
 import { Link } from "react-router-dom";
+import PayPalButton from "@/components/PayPalButton";
 
 interface MvolaPaymentDialogProps {
   open: boolean;
@@ -22,7 +23,13 @@ interface MvolaPaymentDialogProps {
   description?: string;
   userRef: string; // max 15 chars, unique per user
   onPaymentSubmit: (method: "mvola" | "cash" | "card", reference: string) => Promise<void>;
+  /** When provided, a PayPal tab is shown and uses this purpose for the capture edge function. */
+  paypalPurpose?: "pro_subscription" | "investment" | "event";
+  paypalMetadata?: Record<string, any>;
+  /** Called after a successful PayPal capture (request is already recorded server-side). */
+  onPayPalSuccess?: (captureId: string) => void;
 }
+
 
 const MVOLA_MERCHANT = "4102122";
 
