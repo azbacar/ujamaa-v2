@@ -155,10 +155,10 @@ export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
           )}
 
           {/* Restaurant menu */}
-          {isRestaurant && <MenuItemsManager gastronomyItemId={item.id} readOnly />}
+          {isRestaurant && <MenuItemsManager gastronomyItemId={item.id} readOnly={!isOwner} />}
 
           {/* Recipe ingredients */}
-          {isRecipe && <RecipeIngredientsManager gastronomyItemId={item.id} readOnly />}
+          {isRecipe && <RecipeIngredientsManager gastronomyItemId={item.id} readOnly={!isOwner} />}
 
           {/* Location & Map */}
           {item.location && (
