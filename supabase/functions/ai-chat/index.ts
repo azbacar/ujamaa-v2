@@ -424,7 +424,7 @@ serve(async (req) => {
         });
       }
       if (sh.invest?.length) {
-        searchSection += '\n🌍 Projets d'investissement correspondants:\n';
+        searchSection += "\n🌍 Projets d'investissement correspondants:\n";
         sh.invest.forEach((d: any) => {
           searchSection += `- [${d.title}](/investissement/${d.id}) — ${d.category} (objectif ${d.target_amount} ${d.currency})\n`;
         });
