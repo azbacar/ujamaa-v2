@@ -16,6 +16,9 @@ import {
 import MyPricesTab from '@/components/MyPricesTab';
 import ReceivedTenderSubmissions from '@/components/ReceivedTenderSubmissions';
 import VendorLocationShareCard from '@/components/VendorLocationShareCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import MenuItemsManager from '@/components/tourism/MenuItemsManager';
+import RecipeIngredientsManager from '@/components/tourism/RecipeIngredientsManager';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
