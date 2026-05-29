@@ -538,35 +538,61 @@ export default function AnnouncerDashboard() {
                 <CardDescription>Votre publication sera soumise à modération avant diffusion</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Type selector */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Type de publication *</Label>
-                    <Select value={newForm.type} onValueChange={v => updateForm('type', v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="announcement">📢 Annonce</SelectItem>
-                        <SelectItem value="event">🎉 Événement</SelectItem>
-                        <SelectItem value="tourisme">🏝️ Tourisme</SelectItem>
-                        <SelectItem value="service">🏛️ Service</SelectItem>
-                        <SelectItem value="tender">📋 Appel d'offres</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Catégorie {isEvent ? '*' : ''}</Label>
-                    {isEvent ? (
-                      <Select value={newForm.category} onValueChange={v => updateForm('category', v)}>
-                        <SelectTrigger><SelectValue placeholder="Choisir une catégorie" /></SelectTrigger>
-                        <SelectContent>
-                          {EVENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input value={newForm.category} onChange={e => updateForm('category', e.target.value)} placeholder="Ex: Commerce, Santé..." />
-                    )}
+                {/* Type selector — visual tiles to make all options equally visible */}
+                <div>
+                  <Label className="mb-2 block">Type de publication *</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {[
+                      { value: 'announcement', icon: '📢', label: 'Annonce', desc: 'Info, offre, alerte' },
+                      { value: 'event', icon: '🎉', label: 'Événement', desc: 'Date, lieu, billet' },
+                      { value: 'tourisme', icon: '🏝️', label: 'Tourisme', desc: 'Resto, hôtel, recette' },
+                      { value: 'service', icon: '🏛️', label: 'Service', desc: 'Prestation, démarche' },
+                      { value: 'tender', icon: '📋', label: "Appel d'offres", desc: 'OHADA, marché' },
+                    ].map(opt => {
+                      const active = newForm.type === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => updateForm('type', opt.value)}
+                          aria-pressed={active}
+                          className={`group relative text-left rounded-xl border p-3 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+                            active
+                              ? 'border-emerald-500 bg-emerald-50 shadow-sm ring-1 ring-emerald-500/30'
+                              : 'border-border bg-card hover:border-emerald-300 hover:bg-emerald-50/40'
+                          }`}
+                        >
+                          {active && (
+                            <span className="absolute top-1.5 right-1.5 h-4 w-4 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                              <CheckCircle className="h-3 w-3" />
+                            </span>
+                          )}
+                          <div className="text-2xl leading-none mb-1.5">{opt.icon}</div>
+                          <div className={`text-sm font-semibold ${active ? 'text-emerald-700' : 'text-foreground'}`}>
+                            {opt.label}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{opt.desc}</div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
+
+                {/* Category */}
+                <div>
+                  <Label>Catégorie {isEvent ? '*' : ''}</Label>
+                  {isEvent ? (
+                    <Select value={newForm.category} onValueChange={v => updateForm('category', v)}>
+                      <SelectTrigger><SelectValue placeholder="Choisir une catégorie" /></SelectTrigger>
+                      <SelectContent>
+                        {EVENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input value={newForm.category} onChange={e => updateForm('category', e.target.value)} placeholder="Ex: Commerce, Santé..." />
+                  )}
+                </div>
+
 
                 {/* Common fields */}
                 <div>
