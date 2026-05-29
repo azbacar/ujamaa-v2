@@ -1,8 +1,9 @@
-// PayPal Sandbox - Capture Order and record payment in DB
+// PayPal - Capture Order and record payment in DB (sandbox or live based on PAYPAL_MODE)
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const PAYPAL_BASE = 'https://api-m.sandbox.paypal.com';
+const PAYPAL_MODE = (Deno.env.get('PAYPAL_MODE') || 'sandbox').toLowerCase() === 'live' ? 'live' : 'sandbox';
+const PAYPAL_BASE = PAYPAL_MODE === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
 async function getAccessToken(): Promise<string> {
   const id = Deno.env.get('PAYPAL_CLIENT_ID')!;
@@ -89,7 +90,7 @@ Deno.serve(async (req) => {
         currency: amount_kmf ? 'KMF' : currency,
         status: 'approved',
         reviewed_at: new Date().toISOString(),
-        review_notes: `Paiement PayPal Sandbox confirmé : ${amount} ${currency} (capture ${captureId})`,
+        review_notes: `Paiement PayPal ${PAYPAL_MODE === 'live' ? 'LIVE' : 'Sandbox'} confirmé : ${amount} ${currency} (capture ${captureId})`,
       });
       if (error) throw error;
     } else if (purpose === 'investment') {

@@ -9,14 +9,14 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { authPath } from '@/lib/authRedirect';
 
-// PayPal Sandbox client ID is fetched at runtime from edge function `paypal-config`.
-let cachedClientId: string | null = null;
-async function getPayPalClientId(): Promise<string> {
-  if (cachedClientId) return cachedClientId;
+// PayPal client ID + mode (sandbox|live) is fetched at runtime from edge function `paypal-config`.
+let cachedConfig: { client_id: string; mode: 'sandbox' | 'live' } | null = null;
+async function getPayPalConfig(): Promise<{ client_id: string; mode: 'sandbox' | 'live' }> {
+  if (cachedConfig) return cachedConfig;
   const { data, error } = await supabase.functions.invoke('paypal-config');
   if (error || !data?.client_id) throw new Error('PayPal config unavailable');
-  cachedClientId = data.client_id;
-  return cachedClientId!;
+  cachedConfig = { client_id: data.client_id, mode: data.mode === 'live' ? 'live' : 'sandbox' };
+  return cachedConfig;
 }
 
 
@@ -70,6 +70,7 @@ export default function PayPalButton({
   const { user, loading: authLoading } = useAuth();
   const [currency, setCurrency] = useState<'EUR' | 'USD'>(defaultCurrency || detectDefaultCurrency());
   const [sdkReady, setSdkReady] = useState(false);
+  const [mode, setMode] = useState<'sandbox' | 'live'>('sandbox');
   const [processing, setProcessing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -86,10 +87,11 @@ export default function PayPalButton({
 
     (async () => {
       try {
-        const clientId = await getPayPalClientId();
+        const { client_id, mode: ppMode } = await getPayPalConfig();
         if (cancelled) return;
+        setMode(ppMode);
         const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${currency}&intent=capture`;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(client_id)}&currency=${currency}&intent=capture`;
         script.async = true;
         script.setAttribute('data-paypal-sdk', currency);
         script.onload = () => { if (!cancelled) setSdkReady(true); };
@@ -220,7 +222,7 @@ export default function PayPalButton({
         </p>
       )}
       <p className="text-[10px] text-center text-muted-foreground">
-        Mode Sandbox PayPal • Taux indicatif : 1 EUR ≈ 492 KMF, 1 USD ≈ 455 KMF
+        {mode === 'live' ? '🔒 Paiement réel PayPal' : '🧪 Mode Sandbox PayPal'} • Taux indicatif : 1 EUR ≈ 492 KMF, 1 USD ≈ 455 KMF
       </p>
     </div>
   );

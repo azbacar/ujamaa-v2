@@ -1,7 +1,8 @@
-// PayPal Sandbox - Create Order
+// PayPal - Create Order (sandbox or live based on PAYPAL_MODE)
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
-const PAYPAL_BASE = 'https://api-m.sandbox.paypal.com';
+const PAYPAL_MODE = (Deno.env.get('PAYPAL_MODE') || 'sandbox').toLowerCase() === 'live' ? 'live' : 'sandbox';
+const PAYPAL_BASE = PAYPAL_MODE === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
 
 async function getAccessToken(): Promise<string> {
   const id = Deno.env.get('PAYPAL_CLIENT_ID')!;
