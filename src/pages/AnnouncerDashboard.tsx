@@ -84,6 +84,21 @@ const PROCUREMENT_TYPES = [
   { value: 'gre_a_gre', label: 'Gré à gré' },
 ];
 
+const SERVICE_SUBTYPES = [
+  { value: 'atelier', label: '🛠️ Atelier / Réparation' },
+  { value: 'service_public', label: '🏛️ Service public / Administration' },
+  { value: 'point_eau', label: '🚰 Point d\'eau' },
+  { value: 'point_ravitaillement', label: '⛽ Point de ravitaillement (carburant, gaz)' },
+  { value: 'sante', label: '🏥 Santé / Pharmacie' },
+  { value: 'education', label: '🎓 Éducation / Formation' },
+  { value: 'transport', label: '🚐 Transport' },
+  { value: 'banque_finance', label: '🏦 Banque / Finance' },
+  { value: 'telecom', label: '📡 Télécom / Internet' },
+  { value: 'commerce', label: '🛒 Commerce / Boutique' },
+  { value: 'artisan', label: '👷 Artisan / Construction' },
+  { value: 'autre_service', label: '🔧 Autre service' },
+];
+
 const initialForm = {
   title: '', description: '', type: 'announcement', category: '',
   contact_phone: '', contact_whatsapp: '', contact_email: '',
@@ -100,6 +115,8 @@ const initialForm = {
   room_types: [] as { name: string; description: string; price_min: number; price_max: number }[],
   latitude: '',
   longitude: '',
+  // Service / annonce extras
+  service_subtype: '',
   // Tender (OHADA) specific
   reference_number: '', procurement_type: '', contracting_authority: '',
   budget_estimate: '', tender_currency: 'KMF', guarantee_amount: '',
@@ -231,6 +248,34 @@ export default function AnnouncerDashboard() {
       } else {
         // content_items: announcement, service, tender
         const isTender = newForm.type === 'tender';
+        const isService = newForm.type === 'service';
+        const isAnnouncement = newForm.type === 'announcement';
+
+        // Validation : photo obligatoire pour un service
+        if (isService && eventImages.length === 0) {
+          toast.error('Ajoutez au moins une photo pour le service');
+          setSubmitting(false);
+          return;
+        }
+        if (isService && !newForm.service_subtype) {
+          toast.error('Choisissez le type de service');
+          setSubmitting(false);
+          return;
+        }
+
+        // Upload images (annonce + service)
+        const uploadedUrls: string[] = [];
+        if (isAnnouncement || isService) {
+          for (const file of eventImages) {
+            const ext = file.name.split('.').pop();
+            const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+            const { error: uploadError } = await supabase.storage.from('event-images').upload(path, file, { upsert: false });
+            if (uploadError) throw new Error(`Erreur upload image: ${uploadError.message}`);
+            const { data: urlData } = supabase.storage.from('event-images').getPublicUrl(path);
+            uploadedUrls.push(urlData.publicUrl);
+          }
+        }
+
         const payload: any = {
           title: newForm.title,
           description: newForm.description,
@@ -241,6 +286,15 @@ export default function AnnouncerDashboard() {
           contact_phone: newForm.contact_phone || null,
           contact_whatsapp: newForm.contact_whatsapp || null,
         };
+        if (isAnnouncement || isService) {
+          if (uploadedUrls.length > 0) payload.images = uploadedUrls;
+          if (newForm.price) {
+            payload.price = parseFloat(newForm.price);
+            payload.currency = newForm.currency || 'FC';
+          }
+          if (newForm.gastronomy_location) payload.location = newForm.gastronomy_location;
+          if (isService) payload.service_subtype = newForm.service_subtype;
+        }
         if (isTender) {
           payload.reference_number = newForm.reference_number || null;
           payload.procurement_type = newForm.procurement_type || null;
@@ -257,7 +311,7 @@ export default function AnnouncerDashboard() {
         }
         const { error } = await supabase.from('content_items').insert(payload);
         if (error) throw error;
-        toast.success(isTender ? 'Appel d\'offres soumis pour modération' : 'Annonce soumise pour modération');
+        toast.success(isTender ? 'Appel d\'offres soumis pour modération' : isService ? 'Service soumis pour modération' : 'Annonce soumise pour modération');
       }
       setNewForm(initialForm);
       setEventImages([]);
@@ -603,6 +657,117 @@ export default function AnnouncerDashboard() {
                   <Label>Description *</Label>
                   <Textarea value={newForm.description} onChange={e => updateForm('description', e.target.value)} rows={4} placeholder="Description détaillée..." />
                 </div>
+
+
+                {/* Announcement-specific fields (price + image) */}
+                {newForm.type === 'announcement' && (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                    <h4 className="font-medium text-sm flex items-center gap-2">📢 Détails de l'annonce</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2">
+                        <Label>Prix (si applicable)</Label>
+                        <Input type="number" value={newForm.price} onChange={e => updateForm('price', e.target.value)} placeholder="Ex: 1500 — laissez vide si non applicable" />
+                      </div>
+                      <div>
+                        <Label>Devise</Label>
+                        <Select value={newForm.currency} onValueChange={v => updateForm('currency', v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="FC">FC</SelectItem>
+                            <SelectItem value="EUR">EUR</SelectItem>
+                            <SelectItem value="USD">USD</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Lieu (optionnel)</Label>
+                      <Input value={newForm.gastronomy_location} onChange={e => updateForm('gastronomy_location', e.target.value)} placeholder="Ex: Marché de Volo-Volo, Moroni" />
+                    </div>
+                    <div>
+                      <Label className="flex items-center gap-2 mb-2"><ImagePlus className="h-4 w-4 text-primary" /> Photo(s) — recommandé (max 5, 5 Mo chacune)</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {imagePreviews.map((src, i) => (
+                          <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-border group">
+                            <img src={src} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                            <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {eventImages.length < 5 && (
+                          <label className="w-24 h-24 rounded-lg border-2 border-dashed border-primary/40 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors">
+                            <ImagePlus className="h-6 w-6 text-primary/60" />
+                            <span className="text-[10px] text-muted-foreground mt-1">Ajouter</span>
+                            <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Service-specific fields (subtype + photo obligatoire + prix + lieu) */}
+                {newForm.type === 'service' && (
+                  <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                    <h4 className="font-medium text-sm flex items-center gap-2">🏛️ Détails du service</h4>
+                    <div>
+                      <Label>Type de service *</Label>
+                      <Select value={newForm.service_subtype} onValueChange={v => updateForm('service_subtype', v)}>
+                        <SelectTrigger><SelectValue placeholder="Atelier, point d'eau, service public…" /></SelectTrigger>
+                        <SelectContent>
+                          {SERVICE_SUBTYPES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">Précisez le type — plus détaillé qu'une annonce simple.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label>Lieu / Adresse</Label>
+                        <Input value={newForm.gastronomy_location} onChange={e => updateForm('gastronomy_location', e.target.value)} placeholder="Ex: Quartier Coulée, Moroni" />
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="col-span-2">
+                          <Label>Tarif indicatif</Label>
+                          <Input type="number" value={newForm.price} onChange={e => updateForm('price', e.target.value)} placeholder="Optionnel" />
+                        </div>
+                        <div>
+                          <Label>Devise</Label>
+                          <Select value={newForm.currency} onValueChange={v => updateForm('currency', v)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="FC">FC</SelectItem>
+                              <SelectItem value="EUR">EUR</SelectItem>
+                              <SelectItem value="USD">USD</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="flex items-center gap-2 mb-2 text-destructive"><ImagePlus className="h-4 w-4" /> Photo(s) — au moins 1 obligatoire (max 5, 5 Mo)</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {imagePreviews.map((src, i) => (
+                          <div key={i} className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-border group">
+                            <img src={src} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                            <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {eventImages.length < 5 && (
+                          <label className={`w-24 h-24 rounded-lg border-2 border-dashed ${eventImages.length === 0 ? 'border-destructive/60 bg-destructive/5' : 'border-primary/40'} flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors`}>
+                            <ImagePlus className={`h-6 w-6 ${eventImages.length === 0 ? 'text-destructive/70' : 'text-primary/60'}`} />
+                            <span className="text-[10px] text-muted-foreground mt-1">Ajouter</span>
+                            <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
 
                 {/* Tourisme-specific fields */}
                 {isTourisme && (

@@ -41,7 +41,27 @@ interface ContentItem {
   opening_location?: string | null;
   submission_location?: string | null;
   island?: string | null;
+  images?: string[] | null;
+  price?: number | null;
+  location?: string | null;
+  service_subtype?: string | null;
 }
+
+const SERVICE_SUBTYPE_LABELS: Record<string, string> = {
+  atelier: '🛠️ Atelier / Réparation',
+  service_public: '🏛️ Service public / Administration',
+  point_eau: '🚰 Point d\'eau',
+  point_ravitaillement: '⛽ Point de ravitaillement',
+  sante: '🏥 Santé / Pharmacie',
+  education: '🎓 Éducation / Formation',
+  transport: '🚐 Transport',
+  banque_finance: '🏦 Banque / Finance',
+  telecom: '📡 Télécom / Internet',
+  commerce: '🛒 Commerce / Boutique',
+  artisan: '👷 Artisan / Construction',
+  autre_service: '🔧 Autre service',
+};
+
 
 const PROCUREMENT_LABELS: Record<string, string> = {
   aoo: 'Appel d\'offres ouvert',
@@ -79,7 +99,7 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
     const fetchItem = async () => {
       if (!id) return;
       try {
-        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island';
+        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island, images, price, location, service_subtype';
         const { data, error } = await supabase
           .from('content_items')
           .select(user ? `${SAFE_COLS}, contact_phone, contact_whatsapp` : SAFE_COLS)
@@ -182,11 +202,40 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {item.images && item.images.length > 0 && (
+                  <div className={`grid gap-2 ${item.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3'}`}>
+                    {item.images.map((src, i) => (
+                      <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="block aspect-video overflow-hidden rounded-lg border bg-muted">
+                        <img src={src} alt={`${item.title} - photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+                {(item.service_subtype || item.price != null || item.location) && (
+                  <div className="flex flex-wrap gap-2">
+                    {item.service_subtype && (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary text-sm px-3 py-1.5">
+                        {SERVICE_SUBTYPE_LABELS[item.service_subtype] || item.service_subtype}
+                      </Badge>
+                    )}
+                    {item.price != null && (
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 text-sm px-3 py-1.5">
+                        💰 {item.price.toLocaleString('fr-FR')} {item.currency || 'FC'}
+                      </Badge>
+                    )}
+                    {item.location && (
+                      <Badge variant="outline" className="text-sm px-3 py-1.5">
+                        📍 {item.location}
+                      </Badge>
+                    )}
+                  </div>
+                )}
                 <div className="prose prose-lg max-w-none">
                   <p className="text-foreground whitespace-pre-line">
                     {item.description || 'Aucune description disponible.'}
                   </p>
                 </div>
+
 
                 {contentType === 'tender' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm bg-muted/40 p-4 rounded-lg border border-border">

@@ -46,7 +46,12 @@ interface DbAnnouncement {
   author_id: string;
   contact_phone: string | null;
   contact_whatsapp: string | null;
+  images: string[] | null;
+  price: number | null;
+  currency: string | null;
+  location: string | null;
 }
+
 
 interface AuthorInfo {
   account_type: string;
@@ -85,7 +90,7 @@ const AnnouncementDetail = () => {
 
     const fetchItem = async () => {
       try {
-        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id';
+        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, images, price, currency, location';
         const { data, error } = await supabase
           .from('content_items')
           .select(user ? `${SAFE_COLS}, contact_phone, contact_whatsapp` : SAFE_COLS)
@@ -175,7 +180,30 @@ const AnnouncementDetail = () => {
                     <span>{new Date(dbItem.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                  {dbItem.images && dbItem.images.length > 0 && (
+                    <div className={`grid gap-2 ${dbItem.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3'}`}>
+                      {dbItem.images.map((src, i) => (
+                        <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="block aspect-video overflow-hidden rounded-lg border bg-muted">
+                          <img src={src} alt={`${dbItem.title} - photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  {(dbItem.price != null || dbItem.location) && (
+                    <div className="flex flex-wrap gap-3 text-sm">
+                      {dbItem.price != null && (
+                        <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 text-base px-3 py-1.5">
+                          💰 {dbItem.price.toLocaleString('fr-FR')} {dbItem.currency || 'FC'}
+                        </Badge>
+                      )}
+                      {dbItem.location && (
+                        <Badge variant="outline" className="text-base px-3 py-1.5">
+                          <MapPin className="w-3.5 h-3.5 mr-1" /> {dbItem.location}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                   <div className="prose prose-lg max-w-none">
                     <p className="text-foreground whitespace-pre-line">
                       {dbItem.description || 'Aucune description disponible.'}

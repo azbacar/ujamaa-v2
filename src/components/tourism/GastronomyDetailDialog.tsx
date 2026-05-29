@@ -7,6 +7,8 @@ import RecipeIngredientsManager from './RecipeIngredientsManager';
 import SocialShareButtons from '@/components/SocialShareButtons';
 import ContactDisplay from '@/components/ContactDisplay';
 import { useViewTracker } from '@/hooks/useViewTracker';
+import { useAuth } from '@/hooks/useAuth';
+
 
 interface GastronomyItem {
   id: string;
@@ -63,6 +65,7 @@ const ACCOMMODATION_LABELS: Record<string, string> = {
 };
 
 export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
+  const { user } = useAuth();
   // Tracker les vues seulement quand le dialog est ouvert
   useViewTracker('gastronomy', open ? item?.id : undefined);
 
@@ -72,6 +75,9 @@ export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
   const isRecipe = item.type === 'recipe';
   const isHotel = item.type === 'hotel_room';
   const isAccommodation = item.type === 'private_room';
+  const isOwner = !!user && !!item.author_id && user.id === item.author_id;
+
+
 
 
   return (
@@ -149,10 +155,10 @@ export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
           )}
 
           {/* Restaurant menu */}
-          {isRestaurant && <MenuItemsManager gastronomyItemId={item.id} readOnly />}
+          {isRestaurant && <MenuItemsManager gastronomyItemId={item.id} readOnly={!isOwner} />}
 
           {/* Recipe ingredients */}
-          {isRecipe && <RecipeIngredientsManager gastronomyItemId={item.id} readOnly />}
+          {isRecipe && <RecipeIngredientsManager gastronomyItemId={item.id} readOnly={!isOwner} />}
 
           {/* Location & Map */}
           {item.location && (
