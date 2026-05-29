@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateInvestment } from '@/hooks/useInvest';
 import type { InvestProject } from '@/hooks/useInvest';
+import PayPalButton from '@/components/PayPalButton';
+import { useQueryClient } from '@tanstack/react-query';
+
 
 interface Props {
   project: InvestProject;
