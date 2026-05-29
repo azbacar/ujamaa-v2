@@ -166,6 +166,7 @@ const PriceSubmissionForm = ({ onClose, onSuccess, defaults }: PriceSubmissionFo
         title: "✅ Prix ajouté avec succès!",
         description: `${formData.productName} a été ajouté aux prix de ${formData.market || formData.city}.`,
       });
+      onSuccess?.();
       onClose();
     } catch (error: any) {
       console.error('Error submitting price:', error);
