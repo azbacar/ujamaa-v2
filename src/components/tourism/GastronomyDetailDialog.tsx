@@ -7,6 +7,8 @@ import RecipeIngredientsManager from './RecipeIngredientsManager';
 import SocialShareButtons from '@/components/SocialShareButtons';
 import ContactDisplay from '@/components/ContactDisplay';
 import { useViewTracker } from '@/hooks/useViewTracker';
+import { useAuth } from '@/hooks/useAuth';
+
 
 interface GastronomyItem {
   id: string;
