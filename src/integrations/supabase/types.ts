@@ -347,14 +347,18 @@ export type Database = {
           evaluation_criteria: Json | null
           guarantee_amount: number | null
           id: string
+          images: string[] | null
           island: string | null
+          location: string | null
           lots_count: number | null
           opening_at: string | null
           opening_location: string | null
+          price: number | null
           procurement_type: string | null
           published_at: string
           reference_number: string | null
           required_documents: Json | null
+          service_subtype: string | null
           status: Database["public"]["Enums"]["content_status"]
           submission_location: string | null
           title: string
@@ -377,14 +381,18 @@ export type Database = {
           evaluation_criteria?: Json | null
           guarantee_amount?: number | null
           id?: string
+          images?: string[] | null
           island?: string | null
+          location?: string | null
           lots_count?: number | null
           opening_at?: string | null
           opening_location?: string | null
+          price?: number | null
           procurement_type?: string | null
           published_at?: string
           reference_number?: string | null
           required_documents?: Json | null
+          service_subtype?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           submission_location?: string | null
           title: string
@@ -407,14 +415,18 @@ export type Database = {
           evaluation_criteria?: Json | null
           guarantee_amount?: number | null
           id?: string
+          images?: string[] | null
           island?: string | null
+          location?: string | null
           lots_count?: number | null
           opening_at?: string | null
           opening_location?: string | null
+          price?: number | null
           procurement_type?: string | null
           published_at?: string
           reference_number?: string | null
           required_documents?: Json | null
+          service_subtype?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           submission_location?: string | null
           title?: string
