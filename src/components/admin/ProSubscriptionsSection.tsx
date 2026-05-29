@@ -128,10 +128,13 @@ export default function ProSubscriptionsSection() {
     switch (method) {
       case 'stripe': return '💳 Stripe';
       case 'mvola': return '📱 Mvola';
+      case 'paypal': return '🅿️ PayPal';
       case 'bank_transfer': return '🏦 Virement';
+      case 'partner_cash': return '🤝 Concessionnaire';
       default: return method;
     }
   };
+
 
   const pending = requests.filter(r => r.status === 'pending');
   const processed = requests.filter(r => r.status !== 'pending');
