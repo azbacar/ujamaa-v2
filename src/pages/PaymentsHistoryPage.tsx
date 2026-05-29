@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Crown, TrendingUp, Calendar, ArrowLeft, Receipt, Loader2 } from 'lucide-react';
 import Header from '@/components/Header';
-import { Helmet } from 'react-helmet-async' as any;
+
 
 type StatusTone = 'success' | 'pending' | 'error' | 'info';
 function statusBadge(label: string, tone: StatusTone) {
