@@ -65,6 +65,7 @@ const ACCOMMODATION_LABELS: Record<string, string> = {
 };
 
 export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
+  const { user } = useAuth();
   // Tracker les vues seulement quand le dialog est ouvert
   useViewTracker('gastronomy', open ? item?.id : undefined);
 
@@ -74,6 +75,9 @@ export default function GastronomyDetailDialog({ item, open, onClose }: Props) {
   const isRecipe = item.type === 'recipe';
   const isHotel = item.type === 'hotel_room';
   const isAccommodation = item.type === 'private_room';
+  const isOwner = !!user && !!item.author_id && user.id === item.author_id;
+
+
 
 
   return (
