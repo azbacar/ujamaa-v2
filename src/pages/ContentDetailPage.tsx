@@ -202,11 +202,40 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {item.images && item.images.length > 0 && (
+                  <div className={`grid gap-2 ${item.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-3'}`}>
+                    {item.images.map((src, i) => (
+                      <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="block aspect-video overflow-hidden rounded-lg border bg-muted">
+                        <img src={src} alt={`${item.title} - photo ${i + 1}`} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+                {(item.service_subtype || item.price != null || item.location) && (
+                  <div className="flex flex-wrap gap-2">
+                    {item.service_subtype && (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary text-sm px-3 py-1.5">
+                        {SERVICE_SUBTYPE_LABELS[item.service_subtype] || item.service_subtype}
+                      </Badge>
+                    )}
+                    {item.price != null && (
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 text-sm px-3 py-1.5">
+                        💰 {item.price.toLocaleString('fr-FR')} {item.currency || 'FC'}
+                      </Badge>
+                    )}
+                    {item.location && (
+                      <Badge variant="outline" className="text-sm px-3 py-1.5">
+                        📍 {item.location}
+                      </Badge>
+                    )}
+                  </div>
+                )}
                 <div className="prose prose-lg max-w-none">
                   <p className="text-foreground whitespace-pre-line">
                     {item.description || 'Aucune description disponible.'}
                   </p>
                 </div>
+
 
                 {contentType === 'tender' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm bg-muted/40 p-4 rounded-lg border border-border">
