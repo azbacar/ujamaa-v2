@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Crown, TrendingUp, Calendar, ArrowLeft, Receipt, Loader2 } from 'lucide-react';
 import Header from '@/components/Header';
+import { useLanguage } from '@/components/LanguageProvider';
+
 
 
 type StatusTone = 'success' | 'pending' | 'error' | 'info';
@@ -56,6 +58,7 @@ const fmtDate = (d: string | null | undefined) =>
 
 export default function PaymentsHistoryPage() {
   const { user, loading } = useAuth();
+  const { language, setLanguage } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -120,7 +123,7 @@ export default function PaymentsHistoryPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header currentLanguage={language} onLanguageChange={setLanguage} />
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="sm" asChild>
