@@ -62,20 +62,51 @@ const NotificationSystemReal = () => {
   const handleNotificationClick = (notification: typeof notifications[0]) => {
     markAsRead(notification.id);
     setShowPanel(false);
-    
+
+    // 1. Lien explicite stocké en base : priorité absolue
     if (notification.link) {
       navigate(notification.link);
+      return;
+    }
+
+    // 2. Détection d'un UUID dans le message (souvent injecté par les triggers)
+    const haystack = `${notification.title} ${notification.message}`;
+    const uuidMatch = haystack.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+
+    // Normalisation (sans accents, minuscules) pour matcher en français
+    const norm = haystack
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    const has = (...keywords: string[]) => keywords.some(k => norm.includes(k));
+
+    // 3. Routing par mots-clés (du plus spécifique au plus générique)
+    if (has('verifie', 'verification', 'kyc', 'identite', 'badge')) {
+      navigate('/profil?tab=verification');
+    } else if (has('pro ', 'abonnement', 'souscription', 'paiement', 'facture', 'mvola', 'paypal')) {
+      navigate('/profil?tab=abonnement');
+    } else if (has('modification', 'approuv', 'rejet', 'validation', 'en attente')) {
+      navigate('/annonceur');
+    } else if (has('message', 'discussion', 'conversation')) {
+      navigate('/messages');
+    } else if (has('appel d\'offre', 'appel d offre', 'soumission', 'tender')) {
+      navigate(uuidMatch ? `/ao/${uuidMatch[0]}` : '/appels-offres');
+    } else if (has('freelance', 'mission', 'proposition')) {
+      navigate(uuidMatch ? `/f/${uuidMatch[0]}` : '/freelance');
+    } else if (has('investissement', 'invest', 'projet')) {
+      navigate(uuidMatch ? `/i/${uuidMatch[0]}` : '/investissement');
+    } else if (has('evenement', 'festival', 'inscription')) {
+      navigate(uuidMatch ? `/e/${uuidMatch[0]}` : '/evenements');
+    } else if (has('prix', 'marche', 'carburant', 'tarif')) {
+      navigate(uuidMatch ? `/p/${uuidMatch[0]}` : '/prix');
+    } else if (has('service', 'administratif')) {
+      navigate('/services');
+    } else if (has('annonce', 'alerte', 'urgent')) {
+      navigate('/annonces');
     } else {
-      // Rediriger selon le contenu
-      if (notification.title.includes('prix') || notification.title.includes('marché')) {
-        navigate('/prix');
-      } else if (notification.title.includes('événement') || notification.title.includes('festival') || notification.title.includes('inscription')) {
-        navigate('/evenements');
-      } else if (notification.title.includes('service') || notification.title.includes('administratif')) {
-        navigate('/services');
-      } else {
-        navigate('/annonces');
-      }
+      // 4. Aucun signal exploitable → centre de notifications
+      navigate('/profil?tab=notifications');
     }
   };
 
