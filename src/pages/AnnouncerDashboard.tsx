@@ -84,6 +84,21 @@ const PROCUREMENT_TYPES = [
   { value: 'gre_a_gre', label: 'Gré à gré' },
 ];
 
+const SERVICE_SUBTYPES = [
+  { value: 'atelier', label: '🛠️ Atelier / Réparation' },
+  { value: 'service_public', label: '🏛️ Service public / Administration' },
+  { value: 'point_eau', label: '🚰 Point d\'eau' },
+  { value: 'point_ravitaillement', label: '⛽ Point de ravitaillement (carburant, gaz)' },
+  { value: 'sante', label: '🏥 Santé / Pharmacie' },
+  { value: 'education', label: '🎓 Éducation / Formation' },
+  { value: 'transport', label: '🚐 Transport' },
+  { value: 'banque_finance', label: '🏦 Banque / Finance' },
+  { value: 'telecom', label: '📡 Télécom / Internet' },
+  { value: 'commerce', label: '🛒 Commerce / Boutique' },
+  { value: 'artisan', label: '👷 Artisan / Construction' },
+  { value: 'autre_service', label: '🔧 Autre service' },
+];
+
 const initialForm = {
   title: '', description: '', type: 'announcement', category: '',
   contact_phone: '', contact_whatsapp: '', contact_email: '',
@@ -100,6 +115,8 @@ const initialForm = {
   room_types: [] as { name: string; description: string; price_min: number; price_max: number }[],
   latitude: '',
   longitude: '',
+  // Service / annonce extras
+  service_subtype: '',
   // Tender (OHADA) specific
   reference_number: '', procurement_type: '', contracting_authority: '',
   budget_estimate: '', tender_currency: 'KMF', guarantee_amount: '',
