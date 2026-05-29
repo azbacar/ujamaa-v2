@@ -46,7 +46,12 @@ interface DbAnnouncement {
   author_id: string;
   contact_phone: string | null;
   contact_whatsapp: string | null;
+  images: string[] | null;
+  price: number | null;
+  currency: string | null;
+  location: string | null;
 }
+
 
 interface AuthorInfo {
   account_type: string;
