@@ -331,8 +331,36 @@ export default function MvolaPaymentDialog({
             </Button>
           </TabsContent>
 
+          {/* PayPal */}
+          {paypalPurpose && (
+            <TabsContent value="paypal" className="space-y-4 mt-4">
+              <Card className="bg-muted/50 border-primary/20">
+                <CardContent className="p-4 space-y-3">
+                  <h4 className="font-semibold text-sm text-foreground flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-primary" /> Paiement PayPal (Sandbox)
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Payez par carte bancaire ou compte PayPal. Choisissez votre devise selon votre pays.
+                    Votre compte sera activé automatiquement après confirmation.
+                  </p>
+                  <PayPalButton
+                    amountKMF={amount}
+                    description={label}
+                    purpose={paypalPurpose}
+                    metadata={paypalMetadata}
+                    onSuccess={(captureId) => {
+                      onPayPalSuccess?.(captureId);
+                      onOpenChange(false);
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
           {/* Carte bancaire */}
           <TabsContent value="card" className="space-y-4 mt-4">
+
             <Card className="bg-muted/50">
               <CardContent className="p-4 text-center space-y-3">
                 <CreditCard className="w-12 h-12 mx-auto text-muted-foreground" />
