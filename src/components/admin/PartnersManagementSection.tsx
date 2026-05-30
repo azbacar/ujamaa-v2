@@ -135,13 +135,13 @@ export default function PartnersManagementSection() {
     }
     setCreating(true);
     try {
-      const { data: u } = await supabase.from('users').select('id').eq('email', createForm.email.toLowerCase().trim()).maybeSingle();
-      if (!u?.id) {
+      const { data: uid } = await supabase.rpc('lookup_user_id_by_email', { _email: createForm.email.toLowerCase().trim() });
+      if (!uid) {
         toast.error('Utilisateur introuvable. Demandez-lui de créer un compte UJAMAA d\'abord.');
         return;
       }
       const { error } = await supabase.from('partner_accounts').insert({
-        user_id: u.id,
+        user_id: uid as string,
         business_name: createForm.business_name,
         contact_name: createForm.contact_name || null,
         contact_phone: createForm.contact_phone || null,

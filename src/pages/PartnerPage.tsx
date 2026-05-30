@@ -109,8 +109,8 @@ export default function PartnerPage() {
     try {
       let clientId: string | null = null;
       if (email) {
-        const { data: u } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
-        clientId = (u as any)?.id || null;
+        const { data: uid } = await supabase.rpc('lookup_user_id_by_email', { _email: email });
+        clientId = (uid as any) || null;
       }
       if (!clientId) {
         toast.error('Client introuvable. Demandez-lui de créer un compte UJAMAA d\'abord.');

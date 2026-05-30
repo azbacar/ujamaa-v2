@@ -91,8 +91,8 @@ function ClientsTab({ clients, onAdd, onDelete }: {
     try {
       let linked_user_id: string | null = null;
       if (form.linked_email.trim()) {
-        const { data } = await supabase.from('users').select('id').eq('email', form.linked_email.trim()).maybeSingle();
-        if (data) linked_user_id = data.id;
+        const { data: uid } = await supabase.rpc('lookup_user_id_by_email', { _email: form.linked_email.trim() });
+        if (uid) linked_user_id = uid as string;
       }
       await onAdd({
         name: form.name.trim(),
