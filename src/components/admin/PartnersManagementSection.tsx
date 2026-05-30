@@ -153,7 +153,7 @@ export default function PartnersManagementSection() {
       });
       if (error) throw error;
       // Add partner role
-      await supabase.from('user_roles').insert({ user_id: u.id, role: 'partner' as any });
+      await supabase.from('user_roles').insert({ user_id: uid as string, role: 'partner' as any });
       toast.success('Concessionnaire créé ✅');
       setCreateForm({ email: '', business_name: '', contact_name: '', contact_phone: '', island: '', city: '' });
       fetchAll();
