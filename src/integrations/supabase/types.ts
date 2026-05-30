@@ -3587,6 +3587,7 @@ export type Database = {
         }
         Returns: string
       }
+      lookup_user_id_by_email: { Args: { _email: string }; Returns: string }
       record_api_key_usage: { Args: { _key_id: string }; Returns: undefined }
       search_freelancers: {
         Args: { _island?: string; _limit?: number; _skills: string[] }
