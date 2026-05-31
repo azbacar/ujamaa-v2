@@ -113,7 +113,8 @@ export default function FreelancerCard({ profile }: Props) {
               ) : <span />}
 
               <div className="flex items-center gap-2">
-                {isPro && socialLinks.length > 0 && (
+                {/* Liens sociaux : visibles uniquement si auteur Pro ET viewer connecté (anon toujours masqué) */}
+                {isPro && user && socialLinks.length > 0 && (
                   <div className="flex items-center gap-1.5">
                     {socialLinks.map(link => (
                       <a
