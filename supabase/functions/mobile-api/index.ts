@@ -953,16 +953,22 @@ Deno.serve(async (req) => {
       if (response) return response;
       if (method === "POST" && id === "investment") {
         const body = await req.json();
+        const allowedInv = ["project_id","amount","currency","message"];
+        const pickInv: any = {};
+        for (const k of allowedInv) if (k in body) pickInv[k] = body[k];
         const { data, error: e } = await supabase.from("project_investments").insert({
-          ...body, investor_id: user!.id, status: "pending",
+          ...pickInv, investor_id: user!.id, status: "pending",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (method === "POST" && id === "project") {
         const body = await req.json();
+        const allowedProj = ["title","description","category","island","target_amount","current_amount","currency","deadline","min_investment","images","contact_phone","contact_email"];
+        const pickProj: any = {};
+        for (const k of allowedProj) if (k in body) pickProj[k] = body[k];
         const { data, error: e } = await supabase.from("investments").insert({
-          ...body, carrier_id: user!.id, status: body.status || "draft",
+          ...pickProj, carrier_id: user!.id, author_id: user!.id, status: "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
