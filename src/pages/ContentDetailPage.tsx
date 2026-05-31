@@ -42,6 +42,7 @@ interface ContentItem {
   submission_location?: string | null;
   island?: string | null;
   images?: string[] | null;
+  attachments?: Array<{ name: string; url: string; size?: number }> | null;
   price?: number | null;
   location?: string | null;
   service_subtype?: string | null;
