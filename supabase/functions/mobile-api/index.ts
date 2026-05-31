@@ -890,8 +890,11 @@ Deno.serve(async (req) => {
       }
       if (method === "POST" && id === "job") {
         const body = await req.json();
+        const allowed = ["title","description","category","skills","budget_min","budget_max","currency","duration_days","island","is_remote","deadline"];
+        const pick: any = {};
+        for (const k of allowed) if (k in body) pick[k] = body[k];
         const { data, error: e } = await supabase.from("freelance_jobs").insert({
-          ...body, posted_by: user!.id, status: body.status || "open",
+          ...pick, posted_by: user!.id, author_id: user!.id, status: "open",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
