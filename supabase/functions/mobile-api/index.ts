@@ -158,6 +158,20 @@ Deno.serve(async (req) => {
       const { data, count, error: qErr } = await q.range(offset, offset + limit - 1).order(orderCol, { ascending: false });
       if (qErr) return err(qErr.message, 500);
 
+      // ── Identify viewer (optional Bearer) to mirror ContactDisplay rules:
+      //    Pro viewer OR Pro author → contacts visible. Anonymous → always masked.
+      const viewerUser = await (async () => {
+        const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+        if (!bearer) return null;
+        const { data: u } = await supabase.auth.getUser(bearer);
+        return u?.user || null;
+      })();
+      let viewerIsPro = false;
+      if (viewerUser) {
+        const { data: viewerPro } = await supabase.rpc("is_pro_user", { _user_id: viewerUser.id });
+        viewerIsPro = !!viewerPro;
+      }
+
       // ── Enrichissement auteur (batch) ──
       const rawAuthorIds = (data || []).map((r: any) => r.author_id || r.user_id).filter(Boolean);
       const authorIds = Array.from(new Set(rawAuthorIds));
@@ -250,9 +264,15 @@ Deno.serve(async (req) => {
             break;
         }
 
-        const phone = row.contact_phone ?? row.phone ?? null;
-        const whatsapp = row.contact_whatsapp ?? row.whatsapp ?? null;
-        const email = row.contact_email ?? row.email ?? null;
+        const authorIsPro = u?.account_type === "pro";
+        // Contact PII rule (mirrors web ContactDisplay):
+        //   - Anonymous viewer → ALWAYS masked
+        //   - Authenticated viewer + (viewer Pro OR author Pro) → visible
+        //   - Otherwise → masked
+        const canSeeContacts = !!viewerUser && (viewerIsPro || authorIsPro);
+        const phone = canSeeContacts ? (row.contact_phone ?? row.phone ?? null) : null;
+        const whatsapp = canSeeContacts ? (row.contact_whatsapp ?? row.whatsapp ?? null) : null;
+        const email = canSeeContacts ? (row.contact_email ?? row.email ?? null) : null;
         const website = row.website ?? row.portfolio_url ?? null;
         const cover_url = images[0] || null;
 
@@ -779,24 +799,34 @@ Deno.serve(async (req) => {
       const body = await req.json();
       if (!id) return err("submission type required");
 
+      // Whitelist helper: pick only allowed keys, force draft + author
+      const pick = (src: any, keys: string[]) => {
+        const out: any = {};
+        for (const k of keys) if (k in src) out[k] = src[k];
+        return out;
+      };
+
       if (id === "price") {
+        const allowed = ["product","category","price","currency","unit","vendor","market","village","city","region","island","merchant_type","image_url","description","latitude","longitude"];
         const { data, error: e } = await supabase.from("prices").insert({
-          ...body, submitted_by: user!.id, status: body.status || "draft",
+          ...pick(body, allowed), submitted_by: user!.id, status: "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (id === "content") {
         if (!body.type) return err("content.type required (announcement|article|service|tender)");
+        const allowed = ["type","title","description","category","island","city","location","image_url","images","contact_phone","contact_email","contact_whatsapp","website","tags","price","currency","deadline"];
         const { data, error: e } = await supabase.from("content_items").insert({
-          ...body, submitted_by: user!.id, status: body.status || "draft",
+          ...pick(body, allowed), author_id: user!.id, submitted_by: user!.id, status: "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (id === "event") {
+        const allowed = ["title","description","date","end_date","location","island","city","category","capacity","price","currency","requires_payment","images","contact_phone","contact_email","organizer"];
         const { data, error: e } = await supabase.from("events").insert({
-          ...body, organizer_id: user!.id, status: body.status || "draft",
+          ...pick(body, allowed), author_id: user!.id, organizer_id: user!.id, status: "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
@@ -860,8 +890,11 @@ Deno.serve(async (req) => {
       }
       if (method === "POST" && id === "job") {
         const body = await req.json();
+        const allowed = ["title","description","category","skills","budget_min","budget_max","currency","duration_days","island","is_remote","deadline"];
+        const pick: any = {};
+        for (const k of allowed) if (k in body) pick[k] = body[k];
         const { data, error: e } = await supabase.from("freelance_jobs").insert({
-          ...body, posted_by: user!.id, status: body.status || "open",
+          ...pick, posted_by: user!.id, author_id: user!.id, status: "open",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
@@ -920,16 +953,22 @@ Deno.serve(async (req) => {
       if (response) return response;
       if (method === "POST" && id === "investment") {
         const body = await req.json();
+        const allowedInv = ["project_id","amount","currency","message"];
+        const pickInv: any = {};
+        for (const k of allowedInv) if (k in body) pickInv[k] = body[k];
         const { data, error: e } = await supabase.from("project_investments").insert({
-          ...body, investor_id: user!.id, status: "pending",
+          ...pickInv, investor_id: user!.id, status: "pending",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (method === "POST" && id === "project") {
         const body = await req.json();
+        const allowedProj = ["title","description","category","island","target_amount","current_amount","currency","deadline","min_investment","images","contact_phone","contact_email"];
+        const pickProj: any = {};
+        for (const k of allowedProj) if (k in body) pickProj[k] = body[k];
         const { data, error: e } = await supabase.from("investments").insert({
-          ...body, carrier_id: user!.id, status: body.status || "draft",
+          ...pickProj, carrier_id: user!.id, author_id: user!.id, status: "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
