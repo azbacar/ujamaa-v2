@@ -100,7 +100,7 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
     const fetchItem = async () => {
       if (!id) return;
       try {
-        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island, images, price, location, service_subtype';
+        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island, images, attachments, price, location, service_subtype';
         const { data, error } = await supabase
           .from('content_items')
           .select(user ? `${SAFE_COLS}, contact_phone, contact_whatsapp` : SAFE_COLS)
