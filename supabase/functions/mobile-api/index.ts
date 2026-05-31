@@ -799,24 +799,34 @@ Deno.serve(async (req) => {
       const body = await req.json();
       if (!id) return err("submission type required");
 
+      // Whitelist helper: pick only allowed keys, force draft + author
+      const pick = (src: any, keys: string[]) => {
+        const out: any = {};
+        for (const k of keys) if (k in src) out[k] = src[k];
+        return out;
+      };
+
       if (id === "price") {
+        const allowed = ["product","category","price","currency","unit","vendor","market","village","city","region","island","merchant_type","image_url","description","latitude","longitude"];
         const { data, error: e } = await supabase.from("prices").insert({
-          ...body, submitted_by: user!.id, status: body.status || "draft",
+          ...pick(body, allowed), submitted_by: user!.id, status: "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (id === "content") {
         if (!body.type) return err("content.type required (announcement|article|service|tender)");
+        const allowed = ["type","title","description","category","island","city","location","image_url","images","contact_phone","contact_email","contact_whatsapp","website","tags","price","currency","deadline"];
         const { data, error: e } = await supabase.from("content_items").insert({
-          ...body, submitted_by: user!.id, status: body.status || "draft",
+          ...pick(body, allowed), author_id: user!.id, submitted_by: user!.id, status: "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (id === "event") {
+        const allowed = ["title","description","date","end_date","location","island","city","category","capacity","price","currency","requires_payment","images","contact_phone","contact_email","organizer"];
         const { data, error: e } = await supabase.from("events").insert({
-          ...body, organizer_id: user!.id, status: body.status || "draft",
+          ...pick(body, allowed), author_id: user!.id, organizer_id: user!.id, status: "draft",
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
