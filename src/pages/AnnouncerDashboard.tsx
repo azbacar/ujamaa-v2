@@ -1167,6 +1167,70 @@ export default function AnnouncerDashboard() {
                         <Input value={newForm.opening_location} onChange={e => updateForm('opening_location', e.target.value)} placeholder="Ex: Salle de conférence" />
                       </div>
                     </div>
+
+                    {/* Cover image (optional) */}
+                    <div className="space-y-2 pt-2 border-t border-border/60">
+                      <Label className="text-sm font-medium">🖼️ Image de couverture (facultatif)</Label>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => {
+                          const f = e.target.files?.[0];
+                          if (!f) { setTenderCover(null); setTenderCoverPreview(''); return; }
+                          if (f.size > 5 * 1024 * 1024) { toast.error('Image > 5 Mo'); return; }
+                          setTenderCover(f);
+                          setTenderCoverPreview(URL.createObjectURL(f));
+                        }}
+                      />
+                      {tenderCoverPreview && (
+                        <div className="relative inline-block">
+                          <img src={tenderCoverPreview} alt="Aperçu couverture" className="h-32 rounded-lg border object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => { setTenderCover(null); setTenderCoverPreview(''); }}
+                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 text-xs flex items-center justify-center"
+                          >×</button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* PDF documents (1-5 required) */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">📎 Documents PDF (1 à 5, obligatoire) <span className="text-destructive">*</span></Label>
+                      <Input
+                        type="file"
+                        accept="application/pdf"
+                        multiple
+                        onChange={e => {
+                          const files = Array.from(e.target.files || []);
+                          const valid = files.filter(f => {
+                            if (f.type !== 'application/pdf') { toast.error(`${f.name} n'est pas un PDF`); return false; }
+                            if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name} dépasse 10 Mo`); return false; }
+                            return true;
+                          });
+                          const combined = [...tenderPdfs, ...valid].slice(0, 5);
+                          if (tenderPdfs.length + valid.length > 5) toast.error('Maximum 5 PDF');
+                          setTenderPdfs(combined);
+                          e.target.value = '';
+                        }}
+                      />
+                      {tenderPdfs.length > 0 && (
+                        <ul className="space-y-1 text-sm">
+                          {tenderPdfs.map((f, i) => (
+                            <li key={i} className="flex items-center justify-between gap-2 p-2 bg-background rounded border">
+                              <span className="truncate">📄 {f.name} <span className="text-xs text-muted-foreground">({(f.size / 1024 / 1024).toFixed(2)} Mo)</span></span>
+                              <button
+                                type="button"
+                                onClick={() => setTenderPdfs(prev => prev.filter((_, idx) => idx !== i))}
+                                className="text-destructive text-xs hover:underline"
+                              >Retirer</button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="text-xs text-muted-foreground">Dossier d'appel d'offres, cahier des charges, modèles, etc. Max 10 Mo / fichier.</p>
+                    </div>
+
                     <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-xs text-muted-foreground">
                       💡 Conformité OHADA — Tous les soumissionnaires devront fournir RCCM/NIF, attestations fiscales et caution. Vous recevrez les offres par email + WhatsApp et dans votre espace "Soumissions reçues".
                     </div>
