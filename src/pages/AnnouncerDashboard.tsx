@@ -361,6 +361,9 @@ export default function AnnouncerDashboard() {
       setNewForm(initialForm);
       setEventImages([]);
       setImagePreviews([]);
+      setTenderPdfs([]);
+      setTenderCover(null);
+      setTenderCoverPreview('');
       fetchData();
     } catch (e: any) {
       toast.error(e.message || 'Erreur lors de la création');
