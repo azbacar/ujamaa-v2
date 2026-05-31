@@ -264,9 +264,15 @@ Deno.serve(async (req) => {
             break;
         }
 
-        const phone = row.contact_phone ?? row.phone ?? null;
-        const whatsapp = row.contact_whatsapp ?? row.whatsapp ?? null;
-        const email = row.contact_email ?? row.email ?? null;
+        const authorIsPro = u?.account_type === "pro";
+        // Contact PII rule (mirrors web ContactDisplay):
+        //   - Anonymous viewer → ALWAYS masked
+        //   - Authenticated viewer + (viewer Pro OR author Pro) → visible
+        //   - Otherwise → masked
+        const canSeeContacts = !!viewerUser && (viewerIsPro || authorIsPro);
+        const phone = canSeeContacts ? (row.contact_phone ?? row.phone ?? null) : null;
+        const whatsapp = canSeeContacts ? (row.contact_whatsapp ?? row.whatsapp ?? null) : null;
+        const email = canSeeContacts ? (row.contact_email ?? row.email ?? null) : null;
         const website = row.website ?? row.portfolio_url ?? null;
         const cover_url = images[0] || null;
 
