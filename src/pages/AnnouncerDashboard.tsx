@@ -304,6 +304,43 @@ export default function AnnouncerDashboard() {
           if (isService) payload.service_subtype = newForm.service_subtype;
         }
         if (isTender) {
+          // Upload optional cover image
+          if (tenderCover) {
+            const ext = tenderCover.name.split('.').pop();
+            const path = `${user.id}/cover-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+            const { error: upErr } = await supabase.storage.from('tender-attachments').upload(path, tenderCover, { upsert: false });
+            if (upErr) throw new Error(`Erreur upload image de couverture: ${upErr.message}`);
+            const { data: urlData } = supabase.storage.from('tender-attachments').getPublicUrl(path);
+            payload.images = [urlData.publicUrl];
+          }
+          // Upload PDF documents (1 to 5 required)
+          if (tenderPdfs.length === 0) {
+            toast.error('Joignez au moins 1 document PDF (dossier d\'appel d\'offres)');
+            setSubmitting(false);
+            return;
+          }
+          if (tenderPdfs.length > 5) {
+            toast.error('Maximum 5 documents PDF');
+            setSubmitting(false);
+            return;
+          }
+          const uploadedAttachments: Array<{ name: string; url: string; size: number }> = [];
+          for (const file of tenderPdfs) {
+            if (file.type !== 'application/pdf') {
+              throw new Error(`${file.name} n'est pas un PDF`);
+            }
+            if (file.size > 10 * 1024 * 1024) {
+              throw new Error(`${file.name} dépasse 10 Mo`);
+            }
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const path = `${user.id}/pdf-${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`;
+            const { error: upErr } = await supabase.storage.from('tender-attachments').upload(path, file, { upsert: false, contentType: 'application/pdf' });
+            if (upErr) throw new Error(`Erreur upload ${file.name}: ${upErr.message}`);
+            const { data: urlData } = supabase.storage.from('tender-attachments').getPublicUrl(path);
+            uploadedAttachments.push({ name: file.name, url: urlData.publicUrl, size: file.size });
+          }
+          payload.attachments = uploadedAttachments;
+
           payload.reference_number = newForm.reference_number || null;
           payload.procurement_type = newForm.procurement_type || null;
           payload.contracting_authority = newForm.contracting_authority || null;
