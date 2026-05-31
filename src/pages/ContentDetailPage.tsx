@@ -275,6 +275,29 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
                     )}
                   </div>
                 )}
+
+                {contentType === 'tender' && Array.isArray(item.attachments) && item.attachments.length > 0 && (
+                  <div className="bg-muted/40 p-4 rounded-lg border border-border">
+                    <h3 className="text-sm font-semibold mb-3">📎 Documents de l'appel d'offres</h3>
+                    <ul className="space-y-2">
+                      {item.attachments.map((att, i) => (
+                        <li key={i}>
+                          <a
+                            href={att.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between gap-2 p-2 rounded border bg-background hover:bg-muted transition"
+                          >
+                            <span className="truncate text-sm">📄 {att.name}</span>
+                            <span className="text-xs text-muted-foreground shrink-0">
+                              {att.size ? `${(att.size / 1024 / 1024).toFixed(2)} Mo` : 'Télécharger'}
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
