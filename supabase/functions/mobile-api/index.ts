@@ -158,6 +158,20 @@ Deno.serve(async (req) => {
       const { data, count, error: qErr } = await q.range(offset, offset + limit - 1).order(orderCol, { ascending: false });
       if (qErr) return err(qErr.message, 500);
 
+      // ── Identify viewer (optional Bearer) to mirror ContactDisplay rules:
+      //    Pro viewer OR Pro author → contacts visible. Anonymous → always masked.
+      const viewerUser = await (async () => {
+        const bearer = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+        if (!bearer) return null;
+        const { data: u } = await supabase.auth.getUser(bearer);
+        return u?.user || null;
+      })();
+      let viewerIsPro = false;
+      if (viewerUser) {
+        const { data: viewerPro } = await supabase.rpc("is_pro_user", { _user_id: viewerUser.id });
+        viewerIsPro = !!viewerPro;
+      }
+
       // ── Enrichissement auteur (batch) ──
       const rawAuthorIds = (data || []).map((r: any) => r.author_id || r.user_id).filter(Boolean);
       const authorIds = Array.from(new Set(rawAuthorIds));
