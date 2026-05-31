@@ -42,6 +42,7 @@ interface ContentItem {
   submission_location?: string | null;
   island?: string | null;
   images?: string[] | null;
+  attachments?: Array<{ name: string; url: string; size?: number }> | null;
   price?: number | null;
   location?: string | null;
   service_subtype?: string | null;
@@ -99,7 +100,7 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
     const fetchItem = async () => {
       if (!id) return;
       try {
-        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island, images, price, location, service_subtype';
+        const SAFE_COLS = 'id, title, description, category, created_at, type, author_id, reference_number, procurement_type, contracting_authority, budget_estimate, currency, guarantee_amount, lots_count, deadline_at, opening_at, opening_location, submission_location, island, images, attachments, price, location, service_subtype';
         const { data, error } = await supabase
           .from('content_items')
           .select(user ? `${SAFE_COLS}, contact_phone, contact_whatsapp` : SAFE_COLS)
@@ -272,6 +273,29 @@ const ContentDetailPage = ({ contentType, label, icon, backPath }: ContentDetail
                     {item.opening_location && (
                       <div className="sm:col-span-2"><div className="text-xs text-muted-foreground">Lieu d'ouverture</div><div className="font-medium">{item.opening_location}</div></div>
                     )}
+                  </div>
+                )}
+
+                {contentType === 'tender' && Array.isArray(item.attachments) && item.attachments.length > 0 && (
+                  <div className="bg-muted/40 p-4 rounded-lg border border-border">
+                    <h3 className="text-sm font-semibold mb-3">📎 Documents de l'appel d'offres</h3>
+                    <ul className="space-y-2">
+                      {item.attachments.map((att, i) => (
+                        <li key={i}>
+                          <a
+                            href={att.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between gap-2 p-2 rounded border bg-background hover:bg-muted transition"
+                          >
+                            <span className="truncate text-sm">📄 {att.name}</span>
+                            <span className="text-xs text-muted-foreground shrink-0">
+                              {att.size ? `${(att.size / 1024 / 1024).toFixed(2)} Mo` : 'Télécharger'}
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </CardContent>
