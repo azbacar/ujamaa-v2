@@ -5,8 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 import { 
   UtensilsCrossed, 
   Hotel, 
@@ -60,6 +64,10 @@ export default function GastronomyManagementSection() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [editingItem, setEditingItem] = useState<GastronomyItem | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
 
   useEffect(() => {
     fetchItems();
@@ -140,8 +148,51 @@ export default function GastronomyManagementSection() {
     }
   };
 
+  const openEdit = (item: GastronomyItem) => {
+    setEditingItem({ ...item });
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('gastronomy_items')
+        .update({
+          title: editingItem.title,
+          description: editingItem.description,
+          category: editingItem.category ?? null,
+          location: editingItem.location ?? null,
+          price_min: editingItem.price_min ?? null,
+          price_max: editingItem.price_max ?? null,
+          contact_phone: editingItem.contact_phone ?? null,
+          contact_email: editingItem.contact_email ?? null,
+          contact_whatsapp: editingItem.contact_whatsapp ?? null,
+        })
+        .eq('id', editingItem.id);
+      if (error) throw error;
+      await supabase.rpc('log_admin_action', {
+        _action_type: 'gastronomy_edit',
+        _target_type: 'gastronomy_item',
+        _target_id: editingItem.id,
+        _description: `Annonce modifiée: ${editingItem.title}`,
+      });
+      toast.success('Annonce modifiée');
+      setEditOpen(false);
+      setEditingItem(null);
+      fetchItems();
+    } catch (e: any) {
+      console.error('Edit error:', e);
+      toast.error(e?.message || 'Erreur lors de la modification');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const getTypeIcon = (type: GastronomyType) => {
     switch (type) {
+
       case 'recipe':
         return <ChefHat className="h-4 w-4" />;
       case 'restaurant_dish':
@@ -405,6 +456,16 @@ export default function GastronomyManagementSection() {
                         <Button
                           size="sm"
                           variant="ghost"
+                          onClick={() => openEdit(item)}
+                          className="h-8 w-8 p-0"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4 text-blue-600" />
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           onClick={() => handleDelete(item.id)}
                           className="h-8 w-8 p-0"
                         >
@@ -419,6 +480,102 @@ export default function GastronomyManagementSection() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" /> Modifier l'annonce
+            </DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <Label>Titre</Label>
+                <Input
+                  value={editingItem.title}
+                  onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  rows={5}
+                  value={editingItem.description || ''}
+                  onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Catégorie</Label>
+                  <Input
+                    value={editingItem.category || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Localisation</Label>
+                  <Input
+                    value={editingItem.location || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, location: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Prix min (KMF)</Label>
+                  <Input
+                    type="number"
+                    value={editingItem.price_min ?? ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, price_min: e.target.value ? Number(e.target.value) : undefined })}
+                  />
+                </div>
+                <div>
+                  <Label>Prix max (KMF)</Label>
+                  <Input
+                    type="number"
+                    value={editingItem.price_max ?? ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, price_max: e.target.value ? Number(e.target.value) : undefined })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label>Téléphone</Label>
+                  <Input
+                    value={editingItem.contact_phone || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, contact_phone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>WhatsApp</Label>
+                  <Input
+                    value={editingItem.contact_whatsapp || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, contact_whatsapp: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    value={editingItem.contact_email || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, contact_email: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={saving}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={saving}>
+              {saving ? 'Enregistrement…' : 'Enregistrer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
