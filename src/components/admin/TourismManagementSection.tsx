@@ -456,6 +456,16 @@ export default function GastronomyManagementSection() {
                         <Button
                           size="sm"
                           variant="ghost"
+                          onClick={() => openEdit(item)}
+                          className="h-8 w-8 p-0"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4 text-blue-600" />
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           onClick={() => handleDelete(item.id)}
                           className="h-8 w-8 p-0"
                         >
@@ -470,6 +480,102 @@ export default function GastronomyManagementSection() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" /> Modifier l'annonce
+            </DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <Label>Titre</Label>
+                <Input
+                  value={editingItem.title}
+                  onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  rows={5}
+                  value={editingItem.description || ''}
+                  onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Catégorie</Label>
+                  <Input
+                    value={editingItem.category || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Localisation</Label>
+                  <Input
+                    value={editingItem.location || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, location: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Prix min (KMF)</Label>
+                  <Input
+                    type="number"
+                    value={editingItem.price_min ?? ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, price_min: e.target.value ? Number(e.target.value) : undefined })}
+                  />
+                </div>
+                <div>
+                  <Label>Prix max (KMF)</Label>
+                  <Input
+                    type="number"
+                    value={editingItem.price_max ?? ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, price_max: e.target.value ? Number(e.target.value) : undefined })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label>Téléphone</Label>
+                  <Input
+                    value={editingItem.contact_phone || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, contact_phone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>WhatsApp</Label>
+                  <Input
+                    value={editingItem.contact_whatsapp || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, contact_whatsapp: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    value={editingItem.contact_email || ''}
+                    onChange={(e) => setEditingItem({ ...editingItem, contact_email: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={saving}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={saving}>
+              {saving ? 'Enregistrement…' : 'Enregistrer'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
