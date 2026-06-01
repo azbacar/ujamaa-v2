@@ -148,7 +148,49 @@ export default function GastronomyManagementSection() {
     }
   };
 
-  const getTypeIcon = (type: GastronomyType) => {
+  const openEdit = (item: GastronomyItem) => {
+    setEditingItem({ ...item });
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingItem) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('gastronomy_items')
+        .update({
+          title: editingItem.title,
+          description: editingItem.description,
+          category: editingItem.category ?? null,
+          location: editingItem.location ?? null,
+          price_min: editingItem.price_min ?? null,
+          price_max: editingItem.price_max ?? null,
+          contact_phone: editingItem.contact_phone ?? null,
+          contact_email: editingItem.contact_email ?? null,
+          contact_whatsapp: editingItem.contact_whatsapp ?? null,
+        })
+        .eq('id', editingItem.id);
+      if (error) throw error;
+      await supabase.rpc('log_admin_action', {
+        _action_type: 'gastronomy_edit',
+        _target_type: 'gastronomy_item',
+        _target_id: editingItem.id,
+        _description: `Annonce modifiée: ${editingItem.title}`,
+      });
+      toast.success('Annonce modifiée');
+      setEditOpen(false);
+      setEditingItem(null);
+      fetchItems();
+    } catch (e: any) {
+      console.error('Edit error:', e);
+      toast.error(e?.message || 'Erreur lors de la modification');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
     switch (type) {
       case 'recipe':
         return <ChefHat className="h-4 w-4" />;
