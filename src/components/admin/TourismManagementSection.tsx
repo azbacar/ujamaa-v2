@@ -190,8 +190,9 @@ export default function GastronomyManagementSection() {
     }
   };
 
-
+  const getTypeIcon = (type: GastronomyType) => {
     switch (type) {
+
       case 'recipe':
         return <ChefHat className="h-4 w-4" />;
       case 'restaurant_dish':
