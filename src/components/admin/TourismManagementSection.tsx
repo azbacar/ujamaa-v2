@@ -64,6 +64,10 @@ export default function GastronomyManagementSection() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [editingItem, setEditingItem] = useState<GastronomyItem | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
 
   useEffect(() => {
     fetchItems();
