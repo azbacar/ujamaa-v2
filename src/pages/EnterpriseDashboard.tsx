@@ -165,7 +165,7 @@ export default function EnterpriseDashboard() {
           </TabsContent>
 
           <TabsContent value="invoices">
-            <CRMInvoicesTab invoices={crm.invoices} clients={crm.clients} onAdd={crm.addInvoice} onUpdate={crm.updateInvoice} onDelete={crm.deleteInvoice} />
+            <CRMInvoicesTab invoices={crm.invoices} clients={crm.clients} enterprise={activeEnterprise} onAdd={crm.addInvoice} onUpdate={crm.updateInvoice} onDelete={crm.deleteInvoice} />
           </TabsContent>
 
           <TabsContent value="accounting">
