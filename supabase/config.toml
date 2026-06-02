@@ -30,4 +30,10 @@ verify_jwt = false
 [functions.paypal-config]
 verify_jwt = false
 
+[functions.send-invoice-email]
+verify_jwt = false
+
+
+
+
 
