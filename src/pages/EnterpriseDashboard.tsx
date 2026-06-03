@@ -317,6 +317,43 @@ function EnterpriseRegistrationForm({ onCreated, userId }: { onCreated: () => vo
 function EnterpriseProfileEditor({ enterprise, onUpdate }: { enterprise: EnterpriseProfile; onUpdate: (u: Partial<EnterpriseProfile>) => Promise<void> }) {
   const [form, setForm] = useState(enterprise);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const { user } = useAuth();
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Logo trop volumineux (max 2 Mo)');
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const path = `${user.id}/${enterprise.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('enterprise-logos')
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from('enterprise-logos').getPublicUrl(path);
+      await onUpdate({ logo_url: pub.publicUrl });
+      setForm(p => ({ ...p, logo_url: pub.publicUrl }));
+      toast.success('Logo mis à jour');
+    } catch (err: any) {
+      toast.error(err.message || 'Erreur upload logo');
+    }
+    setUploadingLogo(false);
+  };
+
+  const handleRemoveLogo = async () => {
+    try {
+      await onUpdate({ logo_url: null });
+      setForm(p => ({ ...p, logo_url: null }));
+      toast.success('Logo supprimé');
+    } catch {
+      toast.error('Erreur suppression logo');
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -331,6 +368,7 @@ function EnterpriseProfileEditor({ enterprise, onUpdate }: { enterprise: Enterpr
         city: form.city,
         phone: form.phone,
         email: form.email,
+        website: form.website,
         description: form.description,
       });
       toast.success('Profil mis à jour');
@@ -346,6 +384,34 @@ function EnterpriseProfileEditor({ enterprise, onUpdate }: { enterprise: Enterpr
         <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5" /> Informations de l'entreprise</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Logo */}
+        <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
+          {form.logo_url ? (
+            <img src={form.logo_url} alt="Logo" className="h-20 w-20 rounded-lg object-cover border" />
+          ) : (
+            <div className="h-20 w-20 rounded-lg border-2 border-dashed flex items-center justify-center text-muted-foreground">
+              <Building2 className="h-8 w-8" />
+            </div>
+          )}
+          <div className="flex-1 space-y-2">
+            <Label className="text-sm font-semibold">Logo de l'entreprise</Label>
+            <p className="text-xs text-muted-foreground">PNG/JPG, max 2 Mo. Sera utilisé sur vos factures et devis.</p>
+            <div className="flex gap-2">
+              <Button asChild variant="outline" size="sm" disabled={uploadingLogo}>
+                <label className="cursor-pointer">
+                  {uploadingLogo ? 'Envoi...' : (form.logo_url ? 'Remplacer' : 'Téléverser')}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+                </label>
+              </Button>
+              {form.logo_url && (
+                <Button variant="ghost" size="sm" onClick={handleRemoveLogo}>
+                  <Trash2 className="h-4 w-4 mr-1" /> Retirer
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Nom *</Label>
@@ -405,6 +471,7 @@ function EnterpriseProfileEditor({ enterprise, onUpdate }: { enterprise: Enterpr
     </Card>
   );
 }
+
 
 function TenderSubmissionsTab({ submissions, onSubmit, enterpriseId, isVerified }: {
   submissions: any[];

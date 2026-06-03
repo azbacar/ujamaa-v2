@@ -59,6 +59,8 @@ const GuidePage = lazy(() => import("./pages/GuidePage"));
 const VendorMapPage = lazy(() => import("./pages/VendorMapPage"));
 const PartnerPage = lazy(() => import("./pages/PartnerPage"));
 const ApiDocsPage = lazy(() => import("./pages/ApiDocsPage"));
+const VerifyInvoicePage = lazy(() => import("./pages/VerifyInvoicePage"));
+
 const MobileBottomNav = lazy(() => import("./components/MobileBottomNav"));
 const DeepLinkRedirect = lazy(() => import("./components/DeepLinkRedirect"));
 
@@ -171,6 +173,8 @@ const App = () => (
               <Route path="/carte-vendeurs" element={<Suspense fallback={<PageLoader />}><VendorMapPage /></Suspense>} />
               <Route path="/partener" element={<Suspense fallback={<PageLoader />}><PartnerPage /></Suspense>} />
               <Route path="/api-docs" element={<Suspense fallback={<PageLoader />}><ApiDocsPage /></Suspense>} />
+              <Route path="/verifier-facture/:id" element={<Suspense fallback={<PageLoader />}><VerifyInvoicePage /></Suspense>} />
+
 
               {/* Deep-links courts (notifications push, SMS, partages externes) */}
               <Route path="/p/:id" element={<Suspense fallback={<PageLoader />}><DeepLinkRedirect prefix="p" /></Suspense>} />

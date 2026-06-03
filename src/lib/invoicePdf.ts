@@ -1,13 +1,21 @@
-// Génère un PDF facture/devis avec jsPDF + autoTable
+// Génère un PDF facture/devis avec jsPDF + autoTable + QR vérification
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
 import type { EnterpriseInvoice } from '@/hooks/useEnterpriseCRM';
 import type { EnterpriseProfile } from '@/hooks/useEnterprise';
+import { amountInWordsFr } from './numberToWordsFr';
 
 const TYPE_TITLE: Record<string, string> = {
   invoice: 'FACTURE',
   quote: 'DEVIS',
   credit_note: 'AVOIR',
+};
+
+const TYPE_LABEL_FR: Record<string, string> = {
+  invoice: 'facture',
+  quote: 'devis',
+  credit_note: 'avoir',
 };
 
 async function loadImageAsDataUrl(url: string): Promise<string | null> {
@@ -25,6 +33,11 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
   }
 }
 
+function getVerifyUrl(invoiceId: string): string {
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ujamaan.com';
+  return `${origin}/verifier-facture/${invoiceId}`;
+}
+
 export async function generateInvoicePdf(
   inv: EnterpriseInvoice,
   enterprise: EnterpriseProfile,
@@ -32,6 +45,7 @@ export async function generateInvoicePdf(
 ): Promise<jsPDF> {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
   let y = 15;
 
   // Logo
@@ -116,22 +130,54 @@ export async function generateInvoicePdf(
   doc.text(`TOTAL : ${Number(inv.total).toLocaleString('fr-FR')} ${inv.currency}`, xRight, finalY + 12, { align: 'right' });
   doc.setTextColor(0, 0, 0);
 
+  // Montant en lettres
+  let cursorY = finalY + 22;
+  const docLabel = TYPE_LABEL_FR[inv.type] || 'facture';
+  const wordsAmount = amountInWordsFr(Number(inv.total), inv.currency);
+  doc.setFontSize(9).setFont('helvetica', 'bold');
+  const fullPhrase = `Arrêtée la présente ${docLabel} à la somme de : ${wordsAmount} (${Number(inv.total).toLocaleString('fr-FR')} ${inv.currency}).`;
+  const phraseLines = doc.splitTextToSize(fullPhrase, pageW - 28);
+  doc.text(phraseLines, 14, cursorY);
+  cursorY += phraseLines.length * 4 + 4;
+
   // Notes
   if (inv.notes) {
     doc.setFontSize(9).setFont('helvetica', 'italic');
     const split = doc.splitTextToSize(`Notes : ${inv.notes}`, pageW - 28);
-    doc.text(split, 14, finalY + 22);
+    doc.text(split, 14, cursorY);
+    cursorY += split.length * 4 + 2;
   }
 
-  // Statut
-  doc.setFontSize(8).setFont('helvetica', 'normal');
-  doc.setTextColor(120);
+  // QR code de vérification (bas-gauche)
+  const qrSize = 28;
+  const qrY = pageH - qrSize - 18;
+  try {
+    const verifyUrl = getVerifyUrl(inv.id);
+    const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 0, width: 200 });
+    doc.addImage(qrDataUrl, 'PNG', 14, qrY, qrSize, qrSize);
+    doc.setFontSize(7).setFont('helvetica', 'normal').setTextColor(80);
+    doc.text('Vérifier en ligne', 14 + qrSize / 2, qrY + qrSize + 3, { align: 'center' });
+    doc.text(verifyUrl.replace(/^https?:\/\//, ''), 14 + qrSize / 2, qrY + qrSize + 6, { align: 'center' });
+  } catch { /* ignore */ }
+
+  // Pied de page (bas-droite + bas-centre)
+  doc.setFontSize(8).setFont('helvetica', 'italic').setTextColor(100);
+  const footerLines = [
+    enterprise.name + (enterprise.rccm ? ` • RCCM : ${enterprise.rccm}` : '') + (enterprise.nif ? ` • NIF : ${enterprise.nif}` : ''),
+    [enterprise.address, enterprise.city, enterprise.island].filter(Boolean).join(' • '),
+    [enterprise.phone, enterprise.email, enterprise.website].filter(Boolean).join(' • '),
+  ].filter(s => s && s.length > 0);
+  footerLines.forEach((line, i) => {
+    doc.text(line, pageW / 2, pageH - 16 + i * 3.5, { align: 'center' });
+  });
+  doc.setFontSize(7).setTextColor(140);
   doc.text(
-    `Document généré via Ujamaan • ${enterprise.website || 'ujamaan.com'}`,
+    `Document généré via Ujamaan • ${new Date().toLocaleString('fr-FR')}`,
     pageW / 2,
-    doc.internal.pageSize.getHeight() - 8,
+    pageH - 5,
     { align: 'center' }
   );
+  doc.setTextColor(0, 0, 0);
 
   return doc;
 }
@@ -152,5 +198,5 @@ export async function invoicePdfBase64(
 ): Promise<string> {
   const doc = await generateInvoicePdf(inv, enterprise, clientInfo);
   const dataUri = doc.output('datauristring');
-  return dataUri.split(',')[1]; // base64 sans le préfixe
+  return dataUri.split(',')[1];
 }
