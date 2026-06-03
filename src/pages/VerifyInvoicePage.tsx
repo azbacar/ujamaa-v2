@@ -61,7 +61,7 @@ export default function VerifyInvoicePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 to-blue-50">
-      <Header />
+      <Header currentLanguage="fr" onLanguageChange={() => {}} />
       <main className="flex-1 container max-w-2xl mx-auto px-4 py-10">
         <div className="text-center mb-6">
           <FileText className="h-12 w-12 mx-auto text-emerald-700" />
