@@ -48,13 +48,14 @@ export default function VerifyInvoicePage() {
   useEffect(() => {
     if (!id) { setLoading(false); setNotFound(true); return; }
     (async () => {
-      const { data, error } = await supabase.rpc('get_invoice_verification', { _id: id });
+      const { data, error } = await (supabase as any).rpc('get_invoice_verification', { _id: id });
       if (error || !data || (Array.isArray(data) && data.length === 0)) {
         setNotFound(true);
       } else {
-        setData(Array.isArray(data) ? data[0] : data);
+        setData((Array.isArray(data) ? data[0] : data) as InvoiceVerification);
       }
       setLoading(false);
+
     })();
   }, [id]);
 
