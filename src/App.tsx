@@ -59,6 +59,8 @@ const GuidePage = lazy(() => import("./pages/GuidePage"));
 const VendorMapPage = lazy(() => import("./pages/VendorMapPage"));
 const PartnerPage = lazy(() => import("./pages/PartnerPage"));
 const ApiDocsPage = lazy(() => import("./pages/ApiDocsPage"));
+const VerifyInvoicePage = lazy(() => import("./pages/VerifyInvoicePage"));
+
 const MobileBottomNav = lazy(() => import("./components/MobileBottomNav"));
 const DeepLinkRedirect = lazy(() => import("./components/DeepLinkRedirect"));
 
