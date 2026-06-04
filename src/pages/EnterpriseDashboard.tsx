@@ -45,13 +45,20 @@ export default function EnterpriseDashboard() {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
   const [showNewForm, setShowNewForm] = useState(searchParams.get('new') === '1');
-  const { enterprises, loading: multiLoading, createEnterprise: createNew, refresh: refreshAll } = useMultiEnterprise();
+  const { enterprises, loading: multiLoading, refresh: refreshAll, updateEnterprise: updateSelectedEnterprise } = useMultiEnterprise();
   const [selectedIdx, setSelectedIdx] = useState(0);
   
   // Use the selected enterprise
   const selectedEnterprise = enterprises[selectedIdx] || null;
   const { enterprise, submissions, members, loading, updateEnterprise, submitTender, addMember, removeMember, refresh } = useEnterprise();
   const activeEnterprise = selectedEnterprise || enterprise;
+  const handleEnterpriseUpdate = async (updates: Partial<EnterpriseProfile>) => {
+    if (!activeEnterprise) return;
+    if (selectedEnterprise) await updateSelectedEnterprise(activeEnterprise.id, updates);
+    else await updateEnterprise(updates);
+    await refreshAll();
+    await refresh();
+  };
   const crm = useEnterpriseCRM(activeEnterprise?.id);
 
   if (loading || multiLoading) {
@@ -153,7 +160,7 @@ export default function EnterpriseDashboard() {
           </TabsList>
 
           <TabsContent value="profile">
-            <EnterpriseProfileEditor enterprise={activeEnterprise} onUpdate={updateEnterprise} />
+            <EnterpriseProfileEditor enterprise={activeEnterprise} onUpdate={handleEnterpriseUpdate} />
           </TabsContent>
 
           <TabsContent value="tenders">
@@ -330,12 +337,12 @@ function EnterpriseProfileEditor({ enterprise, onUpdate }: { enterprise: Enterpr
     setUploadingLogo(true);
     try {
       const ext = file.name.split('.').pop() || 'png';
-      const path = `${user.id}/${enterprise.id}-${Date.now()}.${ext}`;
+      const path = `${user.id}/enterprise-logos/${enterprise.id}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
-        .from('enterprise-logos')
+        .from('avatars')
         .upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from('enterprise-logos').getPublicUrl(path);
+      const { data: pub } = supabase.storage.from('avatars').getPublicUrl(path);
       await onUpdate({ logo_url: pub.publicUrl });
       setForm(p => ({ ...p, logo_url: pub.publicUrl }));
       toast.success('Logo mis à jour');
