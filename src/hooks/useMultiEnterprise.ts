@@ -34,5 +34,14 @@ export function useMultiEnterprise() {
     return data;
   };
 
-  return { enterprises, loading, createEnterprise, refresh: fetchEnterprises };
+  const updateEnterprise = async (enterpriseId: string, updates: Partial<EnterpriseProfile>) => {
+    const { error } = await supabase
+      .from('enterprise_profiles')
+      .update(updates as any)
+      .eq('id', enterpriseId);
+    if (error) throw error;
+    setEnterprises(prev => prev.map(e => e.id === enterpriseId ? { ...e, ...updates } : e));
+  };
+
+  return { enterprises, loading, createEnterprise, updateEnterprise, refresh: fetchEnterprises };
 }
