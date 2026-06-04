@@ -629,16 +629,21 @@ function TeamTab({ members, onAdd, onRemove }: { members: any[]; onAdd: (userId:
   const [adding, setAdding] = useState(false);
 
   const handleAdd = async () => {
-    if (!email.trim()) { toast.error('Entrez un email'); return; }
+    if (!email.trim()) { toast.error('Entrez un email ou un nom d\'utilisateur'); return; }
     setAdding(true);
     try {
-      const { data: uid } = await supabase.rpc('lookup_user_id_by_email', { _email: email.trim() });
-      if (!uid) { toast.error('Utilisateur non trouvé'); setAdding(false); return; }
+      const { data: uid, error: lookupErr } = await supabase.rpc('lookup_user_id_by_email_or_username', { _identifier: email.trim() });
+      if (lookupErr) throw lookupErr;
+      if (!uid) { toast.error('Aucun utilisateur trouvé avec cet email ou ce nom d\'utilisateur'); setAdding(false); return; }
       await onAdd(uid as string, role);
-      toast.success('Collaborateur ajouté');
+      toast.success('Collaborateur ajouté ✅');
       setEmail('');
     } catch (err: any) {
-      toast.error(err.message?.includes('unique') ? 'Ce collaborateur est déjà dans l\'équipe' : 'Erreur');
+      console.error('Add member error:', err);
+      const msg = err?.message || '';
+      if (msg.includes('unique') || msg.includes('duplicate')) toast.error('Ce collaborateur est déjà dans l\'équipe');
+      else if (msg.includes('row-level') || msg.includes('permission')) toast.error('Permission refusée — vous devez être propriétaire de l\'entreprise');
+      else toast.error('Erreur : ' + (msg || 'inconnue'));
     }
     setAdding(false);
   };
@@ -649,7 +654,7 @@ function TeamTab({ members, onAdd, onRemove }: { members: any[]; onAdd: (userId:
         <CardHeader><CardTitle className="text-base">Ajouter un collaborateur</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-2">
-            <Input placeholder="Email du collaborateur" value={email} onChange={e => setEmail(e.target.value)} className="flex-1" />
+            <Input placeholder="Email ou nom d'utilisateur" value={email} onChange={e => setEmail(e.target.value)} className="flex-1" />
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -661,6 +666,7 @@ function TeamTab({ members, onAdd, onRemove }: { members: any[]; onAdd: (userId:
               <Plus className="h-4 w-4" /> Ajouter
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">La personne doit avoir un compte Ujamaan. Saisissez son email d'inscription ou son nom d'utilisateur.</p>
         </CardContent>
       </Card>
 
