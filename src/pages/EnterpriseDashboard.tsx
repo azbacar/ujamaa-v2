@@ -632,7 +632,7 @@ function TeamTab({ members, onAdd, onRemove }: { members: any[]; onAdd: (userId:
     if (!email.trim()) { toast.error('Entrez un email ou un nom d\'utilisateur'); return; }
     setAdding(true);
     try {
-      const { data: uid, error: lookupErr } = await supabase.rpc('lookup_user_id_by_email_or_username', { _identifier: email.trim() });
+      const { data: uid, error: lookupErr } = await (supabase.rpc as any)('lookup_user_id_by_email_or_username', { _identifier: email.trim() });
       if (lookupErr) throw lookupErr;
       if (!uid) { toast.error('Aucun utilisateur trouvé avec cet email ou ce nom d\'utilisateur'); setAdding(false); return; }
       await onAdd(uid as string, role);
