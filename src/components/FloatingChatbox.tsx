@@ -189,7 +189,7 @@ const FloatingChatbox = () => {
         const { data, error } = await supabase
           .from('site_settings_public')
           .select('ai_assistant_name, ai_assistant_welcome_message, ai_assistant_enabled')
-          .single();
+          .maybeSingle();
         if (error) throw error;
         if (data) {
           setAssistantName(data.ai_assistant_name || 'Assistant UJAMAA');
@@ -200,7 +200,7 @@ const FloatingChatbox = () => {
           setAssistantEnabled(data.ai_assistant_enabled ?? true);
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des paramètres:', error);
+        console.warn('[FloatingChatbox] Paramètres indisponibles, fallback utilisé');
       }
     };
     loadSettings();
