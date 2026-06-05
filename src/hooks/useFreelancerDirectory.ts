@@ -122,21 +122,24 @@ export const useFreelancerProfileById = (profileId?: string) => {
   return useQuery({
     queryKey: ['freelancer-profile-by-id', profileId],
     queryFn: async () => {
+      // Page publique : passe par la vue _public (exclut whatsapp/email).
+      // Le whatsapp est récupéré séparément via RPC Pro-gated.
       const { data, error } = await supabase
-        .from('freelancer_profiles')
-        .select(FREELANCER_COLUMNS)
+        .from('freelancer_profiles_public' as any)
+        .select('*')
         .eq('id', profileId!)
         .maybeSingle();
 
       if (error) throw error;
       if (!data) return null;
 
+      const profile = data as any;
       const [{ data: u }, whatsapp] = await Promise.all([
-        supabase.from('users').select('account_type').eq('id', data.user_id).maybeSingle(),
-        fetchWhatsapp(data.id),
+        supabase.from('users').select('account_type').eq('id', profile.user_id).maybeSingle(),
+        fetchWhatsapp(profile.id),
       ]);
 
-      return { ...data, whatsapp, account_type: (u as any)?.account_type || 'free' } as FreelancerProfile;
+      return { ...profile, whatsapp, account_type: (u as any)?.account_type || 'free' } as FreelancerProfile;
     },
     enabled: !!profileId,
   });
