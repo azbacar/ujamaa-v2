@@ -20,40 +20,66 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           timeout: 60s
-          command_timeout: 15m
+          command_timeout: 20m
 
           script: |
+            set -e
             echo "=============================="
             echo "🚀 START DEPLOY UJAMAAN"
             echo "=============================="
 
-            echo "== Setup environment =="
             export HOME=/home/deploy
             export USER=deploy
             export PATH=/usr/local/bin:/usr/bin:/bin
 
-            echo "== Who am I =="
-            whoami
-            pwd
+            APP_DIR=/home/admin/web/ujamaan.com/app
+            PUBLIC_DIR=/home/admin/web/ujamaan.com/public_html
 
-            echo "== Node version =="
+            echo "== Node / NPM =="
             node -v || echo "Node not found"
+            npm -v  || echo "NPM not found"
 
-            echo "== NPM version =="
-            npm -v || echo "NPM not found"
-
-            echo "== Go to project =="
-            cd /home/admin/web/ujamaan.com/app || exit 1
-
-            echo "== Files check =="
+            cd "$APP_DIR" || exit 1
             ls -la
 
-            echo "== Ensure script executable =="
-            chmod +x deploy.sh
+            echo "== 🧹 PRE-DEPLOY: purge caches (dist, node_modules/.vite, .cache) =="
+            rm -rf "$APP_DIR/dist" "$APP_DIR/.vite" "$APP_DIR/node_modules/.vite" "$APP_DIR/node_modules/.cache" 2>/dev/null || true
 
-            echo "== Run deploy script =="
+            echo "== Ensure deploy script executable =="
+            chmod +x deploy.sh || true
+
+            echo "== ▶ Run deploy.sh (pull, build, copy to public_html) =="
             bash deploy.sh
 
+            echo "== 🧹 POST-DEPLOY: invalidate browser/CDN cache (touch + nginx reload) =="
+            if [ -d "$PUBLIC_DIR" ]; then
+              # Force fresh mtime sur index.html → ETag/Last-Modified changent → navigateurs récupèrent la nouvelle version
+              find "$PUBLIC_DIR" -maxdepth 2 -name "index.html" -exec touch {} \; 2>/dev/null || true
+              find "$PUBLIC_DIR" -maxdepth 2 -name "service-worker.js" -delete 2>/dev/null || true
+              find "$PUBLIC_DIR" -maxdepth 2 -name "sw.js" -delete 2>/dev/null || true
+            fi
+
+            echo "== 🔄 Reload nginx (if available) pour purger cache proxy =="
+            if command -v sudo >/dev/null 2>&1 && sudo -n nginx -t >/dev/null 2>&1; then
+              sudo -n nginx -s reload || true
+            elif command -v nginx >/dev/null 2>&1; then
+              nginx -s reload 2>/dev/null || true
+            fi
+
+            # Purge cache nginx FastCGI/proxy si présent
+            for CACHE_DIR in /var/cache/nginx /var/lib/nginx/cache /home/admin/conf/web/ujamaan.com/nginx.cache; do
+              if [ -d "$CACHE_DIR" ]; then
+                echo "  → Purge $CACHE_DIR"
+                find "$CACHE_DIR" -type f -delete 2>/dev/null || true
+              fi
+            done
+
+            echo "== 📦 Version déployée =="
+            if [ -f "$PUBLIC_DIR/index.html" ]; then
+              grep -oE '/assets/[^"]+\.js' "$PUBLIC_DIR/index.html" | head -1 || true
+              stat -c '  mtime: %y' "$PUBLIC_DIR/index.html" || true
+            fi
+
             echo "=============================="
-            echo "✅ DEPLOY FINISHED"
+            echo "✅ DEPLOY FINISHED — cache purgé"
             echo "=============================="
