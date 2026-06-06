@@ -42,34 +42,79 @@ jobs:
             cd "$APP_DIR" || exit 1
             ls -la
 
-            echo "== 🧹 PRE-DEPLOY: purge caches (dist, node_modules/.vite, .cache) =="
-            rm -rf "$APP_DIR/dist" "$APP_DIR/.vite" "$APP_DIR/node_modules/.vite" "$APP_DIR/node_modules/.cache" 2>/dev/null || true
+            # ============================================================
+            # ÉTAPE 1 — Suppression COMPLÈTE de l'ancien cache (build + SW)
+            # AVANT toute reconstruction. On invalide aussi le registre SW
+            # côté serveur pour éviter qu'un ancien sw.js soit re-servi.
+            # ============================================================
+            echo "== 🧹 PRE-DEPLOY (1/3): purge build caches =="
+            rm -rf "$APP_DIR/dist" \
+                   "$APP_DIR/.vite" \
+                   "$APP_DIR/node_modules/.vite" \
+                   "$APP_DIR/node_modules/.cache" 2>/dev/null || true
+
+            echo "== 🧹 PRE-DEPLOY (2/3): purge SW résiduels côté serveur =="
+            if [ -d "$PUBLIC_DIR" ]; then
+              # On supprime AVANT le build pour ne pas servir d'ancien SW pendant
+              # la fenêtre de déploiement. Le nouveau kill-switch sera copié
+              # par deploy.sh juste après.
+              find "$PUBLIC_DIR" -maxdepth 3 \
+                \( -name "sw.js" -o -name "service-worker.js" -o -name "workbox-*.js" \) \
+                -delete 2>/dev/null || true
+            fi
+
+            echo "== 🧹 PRE-DEPLOY (3/3): purge cache proxy nginx =="
+            for CACHE_DIR in /var/cache/nginx \
+                             /var/lib/nginx/cache \
+                             /home/admin/conf/web/ujamaan.com/nginx.cache; do
+              if [ -d "$CACHE_DIR" ]; then
+                echo "  → Purge $CACHE_DIR"
+                find "$CACHE_DIR" -type f -delete 2>/dev/null || true
+              fi
+            done
 
             echo "== Ensure deploy script executable =="
             chmod +x deploy.sh || true
 
+            # ============================================================
+            # ÉTAPE 2 — Build + copie des nouveaux assets (deploy.sh).
+            # Le nouveau public/sw.js (kill-switch) est inclus dans dist/
+            # et publié à /sw.js + /service-worker.js. Aucun NOUVEAU service
+            # worker applicatif n'est enregistré — règle "PWA INTERDITE".
+            # ============================================================
             echo "== ▶ Run deploy.sh (pull, build, copy to public_html) =="
             bash deploy.sh
 
-            echo "== 🧹 POST-DEPLOY: invalidate browser/CDN cache (touch + nginx reload) =="
+            # ============================================================
+            # ÉTAPE 3 — Invalidation registres + caches côté client/CDN.
+            # ============================================================
+            echo "== 🔁 POST-DEPLOY: invalider index.html + headers no-cache SW =="
             if [ -d "$PUBLIC_DIR" ]; then
-              # Force fresh mtime sur index.html → ETag/Last-Modified changent → navigateurs récupèrent la nouvelle version
+              # Force fresh mtime sur index.html → ETag/Last-Modified changent
+              # → navigateurs récupèrent la nouvelle version immédiatement
               find "$PUBLIC_DIR" -maxdepth 2 -name "index.html" -exec touch {} \; 2>/dev/null || true
-              find "$PUBLIC_DIR" -maxdepth 2 -name "service-worker.js" -delete 2>/dev/null || true
-              find "$PUBLIC_DIR" -maxdepth 2 -name "sw.js" -delete 2>/dev/null || true
+
+              # Force fresh mtime sur les kill-switch SW pour que les
+              # navigateurs détectent le "nouveau" worker et déclenchent
+              # l'activate → unregister.
+              for SW in "$PUBLIC_DIR/sw.js" "$PUBLIC_DIR/service-worker.js"; do
+                [ -f "$SW" ] && touch "$SW" 2>/dev/null || true
+              done
             fi
 
-            echo "== 🔄 Reload nginx (if available) pour purger cache proxy =="
+            echo "== 🔄 Reload nginx pour purger le cache proxy =="
             if command -v sudo >/dev/null 2>&1 && sudo -n nginx -t >/dev/null 2>&1; then
               sudo -n nginx -s reload || true
             elif command -v nginx >/dev/null 2>&1; then
               nginx -s reload 2>/dev/null || true
             fi
 
-            # Purge cache nginx FastCGI/proxy si présent
-            for CACHE_DIR in /var/cache/nginx /var/lib/nginx/cache /home/admin/conf/web/ujamaan.com/nginx.cache; do
+            # Re-purge nginx APRÈS reload (au cas où un cache aurait été
+            # repeuplé pendant la fenêtre de build)
+            for CACHE_DIR in /var/cache/nginx \
+                             /var/lib/nginx/cache \
+                             /home/admin/conf/web/ujamaan.com/nginx.cache; do
               if [ -d "$CACHE_DIR" ]; then
-                echo "  → Purge $CACHE_DIR"
                 find "$CACHE_DIR" -type f -delete 2>/dev/null || true
               fi
             done
@@ -77,9 +122,14 @@ jobs:
             echo "== 📦 Version déployée =="
             if [ -f "$PUBLIC_DIR/index.html" ]; then
               grep -oE '/assets/[^"]+\.js' "$PUBLIC_DIR/index.html" | head -1 || true
-              stat -c '  mtime: %y' "$PUBLIC_DIR/index.html" || true
+              stat -c '  index.html mtime: %y' "$PUBLIC_DIR/index.html" || true
             fi
+            for SW in "$PUBLIC_DIR/sw.js" "$PUBLIC_DIR/service-worker.js"; do
+              if [ -f "$SW" ]; then
+                stat -c "  $(basename $SW) mtime: %y" "$SW" || true
+              fi
+            done
 
             echo "=============================="
-            echo "✅ DEPLOY FINISHED — cache purgé"
+            echo "✅ DEPLOY FINISHED — caches purgés, kill-switch SW en place"
             echo "=============================="
