@@ -3,6 +3,8 @@ import { useLanguage } from '@/components/LanguageProvider';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowRight } from 'lucide-react';
+import grandeComoreImg from '@/assets/island-grande-comore.jpg';
+import moheliImg from '@/assets/island-moheli.jpg';
 
 interface Island {
   name: string;
@@ -12,9 +14,9 @@ interface Island {
 }
 
 const DEFAULT_IMAGES: Record<string, string> = {
-  'grande-comore': 'https://images.unsplash.com/photo-1544966503-7fdb24ac2dca?auto=format&fit=crop&w=400&q=80',
+  'grande-comore': grandeComoreImg,
   'anjouan': 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=400&q=80',
-  'moheli': 'https://images.unsplash.com/photo-1571041804726-53fb982d8c81?auto=format&fit=crop&w=400&q=80',
+  'moheli': moheliImg,
   'mayotte': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80',
 };
 
