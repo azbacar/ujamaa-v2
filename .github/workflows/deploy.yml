@@ -30,14 +30,34 @@ jobs:
 
             export HOME=/home/deploy
             export USER=deploy
-            export PATH=/usr/local/bin:/usr/bin:/bin
+            export PATH=/usr/local/bin:/usr/bin:/bin:/home/deploy/.local/bin
 
             APP_DIR=/home/admin/web/ujamaan.com/app
             PUBLIC_DIR=/home/admin/web/ujamaan.com/public_html
 
+            # === Charger nvm si présent (Node installé via nvm sur le VPS) ===
+            export NVM_DIR="$HOME/.nvm"
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              # shellcheck disable=SC1090
+              . "$NVM_DIR/nvm.sh"
+              # Respecte .nvmrc du projet (Node 20) si présent
+              if [ -f "$APP_DIR/.nvmrc" ]; then
+                nvm use "$(cat "$APP_DIR/.nvmrc")" || nvm install "$(cat "$APP_DIR/.nvmrc")"
+              else
+                nvm use --lts || true
+              fi
+            fi
+
             echo "== Node / NPM =="
-            node -v || echo "Node not found"
-            npm -v  || echo "NPM not found"
+            node -v || { echo "❌ Node not found — installe Node 20 sur le VPS"; exit 1; }
+            npm -v  || { echo "❌ NPM not found";  exit 1; }
+
+            # Garde-fou: majeur >= 20 (tsx + Vite 5)
+            NODE_MAJOR=$(node -v | sed 's/^v//' | cut -d. -f1)
+            if [ "$NODE_MAJOR" -lt 20 ]; then
+              echo "❌ Node $NODE_MAJOR < 20. Installe Node 20 sur le VPS (nvm install 20 && nvm alias default 20)."
+              exit 1
+            fi
 
             cd "$APP_DIR" || exit 1
             ls -la
