@@ -2,91 +2,91 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ujamaan.com/</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/prix</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/evenements</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/annonces</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/services</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/appels-offres</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/investissement</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/freelance</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/freelancers</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/carte-vendeurs</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/tourisme</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/infos-pratiques</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/pro</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/partener</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://ujamaan.com/guide</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-08-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -181,8 +181,8 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ujamaan.com/prix/39c5a896-1632-42d4-a1c8-2842485f270c</loc>
-    <lastmod>2026-07-14</lastmod>
+    <loc>https://ujamaan.com/prix/f9033142-e5f2-42d5-9830-fc5a31bc3f78</loc>
+    <lastmod>2026-07-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -260,7 +260,7 @@
   </url>
   <url>
     <loc>https://ujamaan.com/prix/b6923543-d0cf-4d25-b2ce-27e0620d7123</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-07-26</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -277,12 +277,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ujamaan.com/prix/ee52b5ab-2fce-44d5-950b-efe5c675b408</loc>
-    <lastmod>2026-04-02</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://ujamaan.com/prix/dc5c76fe-7e8c-4b4d-bfd7-f8c795d5e2ca</loc>
     <lastmod>2026-04-26</lastmod>
     <changefreq>daily</changefreq>
@@ -295,8 +289,8 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ujamaan.com/prix/f9033142-e5f2-42d5-9830-fc5a31bc3f78</loc>
-    <lastmod>2026-04-29</lastmod>
+    <loc>https://ujamaan.com/prix/2be3cad3-a373-4f5a-beb6-d083767eb278</loc>
+    <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -313,8 +307,8 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ujamaan.com/prix/519463d1-3c3d-433f-92f5-eba7ba7edc75</loc>
-    <lastmod>2026-05-29</lastmod>
+    <loc>https://ujamaan.com/prix/ee52b5ab-2fce-44d5-950b-efe5c675b408</loc>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
@@ -337,8 +331,14 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://ujamaan.com/prix/2be3cad3-a373-4f5a-beb6-d083767eb278</loc>
-    <lastmod>2026-07-15</lastmod>
+    <loc>https://ujamaan.com/prix/39c5a896-1632-42d4-a1c8-2842485f270c</loc>
+    <lastmod>2026-07-26</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://ujamaan.com/prix/519463d1-3c3d-433f-92f5-eba7ba7edc75</loc>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
