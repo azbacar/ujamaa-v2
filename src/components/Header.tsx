@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 import { Megaphone } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import NotificationSystemReal from './NotificationSystemReal';
+import NotificationSystem from './NotificationSystem';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import FullScreenSearch from './FullScreenSearch';
 import { useUnreadCount } from '@/hooks/useMessages';
@@ -124,7 +124,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
               </Button>
             )}
 
-            <NotificationSystemReal />
+            <NotificationSystem />
 
             {user ? (
               <DropdownMenu>
