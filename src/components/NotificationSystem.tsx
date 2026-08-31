@@ -1,123 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, X, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { Bell, X, AlertTriangle, Info, CheckCircle, BellRing, BellOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
-  timestamp: Date;
-  read: boolean;
-}
+import { useRealTimeNotifications } from '@/hooks/useRealTimeNotifications';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationSystem = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Nouvelle alerte météo',
-      message: 'Avis de tempête prévu sur Grande Comore dans les prochaines 24h',
-      type: 'warning',
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // Il y a 2h
-      read: false
-    },
-    {
-      id: '2',
-      title: 'Appel d\'offres urgent',
-      message: 'Nouveau marché public pour la construction d\'un centre de santé',
-      type: 'info',
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // Il y a 4h
-      read: false
-    },
-    {
-      id: '3',
-      title: 'Mise à jour des prix',
-      message: 'Les prix du marché de Moroni ont été actualisés',
-      type: 'success',
-      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // Il y a 6h
-      read: true
-    }
-  ]);
-  
   const [showPanel, setShowPanel] = useState(false);
-  const [permissionGranted, setPermissionGranted] = useState(false);
   const { toast } = useToast();
+  const { notifications, loading, markAsRead, deleteNotification } = useRealTimeNotifications();
+  const { isSubscribed, subscribe, unsubscribe, isSupported, loading: pushLoading } = usePushNotifications();
+  const navigate = useNavigate();
 
-  // Demander la permission pour les notifications
-  useEffect(() => {
-    if ('Notification' in window) {
-      if (Notification.permission === 'granted') {
-        setPermissionGranted(true);
-      } else if (Notification.permission !== 'denied') {
-        // La permission sera demandée lors du premier clic
-      }
-    }
-  }, []);
-
-  const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        setPermissionGranted(true);
-        toast({
-          title: "Notifications activées",
-          description: "Vous recevrez maintenant les alertes importantes",
-        });
-        // Envoyer une notification de test
-        new Notification('UJAMAA - Notifications activées', {
-          body: 'Vous recevrez maintenant toutes les alertes importantes des Comores',
-          icon: '/favicon.ico'
-        });
+  const handleTogglePush = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+      toast({ title: 'Notifications push désactivées' });
+    } else {
+      const ok = await subscribe();
+      if (ok) {
+        toast({ title: '🔔 Notifications push activées !' });
       } else {
-        toast({
-          title: "Notifications refusées",
-          description: "Vous pouvez les activer plus tard dans les paramètres de votre navigateur",
-          variant: "destructive"
-        });
+        toast({ title: 'Échec', description: 'Vérifiez les paramètres de votre navigateur.', variant: 'destructive' });
       }
     }
-  };
-
-  const sendNotification = (notification: Notification) => {
-    if (permissionGranted && 'Notification' in window) {
-      new Notification(notification.title, {
-        body: notification.message,
-        icon: '/favicon.ico',
-        tag: notification.id
-      });
-    }
-  };
-
-  const addNotification = (notif: Omit<Notification, 'id' | 'timestamp'>) => {
-    const newNotification: Notification = {
-      ...notif,
-      id: Date.now().toString(),
-      timestamp: new Date()
-    };
-    
-    setNotifications(prev => [newNotification, ...prev]);
-    sendNotification(newNotification);
-    
-    // Afficher aussi un toast
-    toast({
-      title: notif.title,
-      description: notif.message,
-    });
-  };
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-  };
-
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -151,30 +59,56 @@ const NotificationSystem = () => {
     return 'À l\'instant';
   };
 
-  // Simuler l'arrivée de nouvelles notifications
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Math.random() > 0.7) { // 30% de chance toutes les 30s
-        const types = ['info', 'warning', 'success'] as const;
-        const messages = [
-          { title: 'Nouveau prix disponible', message: 'Les prix du marché de Mutsamudu ont été mis à jour' },
-          { title: 'Événement à venir', message: 'Festival culturel prévu ce weekend à Fomboni' },
-          { title: 'Service administratif', message: 'La préfecture sera fermée demain pour maintenance' },
-        ];
-        
-        const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-        const randomType = types[Math.floor(Math.random() * types.length)];
-        
-        addNotification({
-          ...randomMessage,
-          type: randomType,
-          read: false
-        });
-      }
-    }, 30000); // Toutes les 30 secondes
+  const handleNotificationClick = (notification: typeof notifications[0]) => {
+    markAsRead(notification.id);
+    setShowPanel(false);
 
-    return () => clearInterval(interval);
-  }, [permissionGranted]);
+    // 1. Lien explicite stocké en base : priorité absolue
+    if (notification.link) {
+      navigate(notification.link);
+      return;
+    }
+
+    // 2. Détection d'un UUID dans le message (souvent injecté par les triggers)
+    const haystack = `${notification.title} ${notification.message}`;
+    const uuidMatch = haystack.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+
+    // Normalisation (sans accents, minuscules) pour matcher en français
+    const norm = haystack
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    const has = (...keywords: string[]) => keywords.some(k => norm.includes(k));
+
+    // 3. Routing par mots-clés (du plus spécifique au plus générique)
+    if (has('verifie', 'verification', 'kyc', 'identite', 'badge')) {
+      navigate('/profil?tab=verification');
+    } else if (has('pro ', 'abonnement', 'souscription', 'paiement', 'facture', 'mvola', 'paypal')) {
+      navigate('/profil?tab=abonnement');
+    } else if (has('modification', 'approuv', 'rejet', 'validation', 'en attente')) {
+      navigate('/annonceur');
+    } else if (has('message', 'discussion', 'conversation')) {
+      navigate('/messages');
+    } else if (has('appel d\'offre', 'appel d offre', 'soumission', 'tender')) {
+      navigate(uuidMatch ? `/ao/${uuidMatch[0]}` : '/appels-offres');
+    } else if (has('freelance', 'mission', 'proposition')) {
+      navigate(uuidMatch ? `/f/${uuidMatch[0]}` : '/freelance');
+    } else if (has('investissement', 'invest', 'projet')) {
+      navigate(uuidMatch ? `/i/${uuidMatch[0]}` : '/investissement');
+    } else if (has('evenement', 'festival', 'inscription')) {
+      navigate(uuidMatch ? `/e/${uuidMatch[0]}` : '/evenements');
+    } else if (has('prix', 'marche', 'carburant', 'tarif')) {
+      navigate(uuidMatch ? `/p/${uuidMatch[0]}` : '/prix');
+    } else if (has('service', 'administratif')) {
+      navigate('/services');
+    } else if (has('annonce', 'alerte', 'urgent')) {
+      navigate('/annonces');
+    } else {
+      // 4. Aucun signal exploitable → centre de notifications
+      navigate('/profil?tab=notifications');
+    }
+  };
 
   return (
     <div className="relative">
@@ -182,12 +116,7 @@ const NotificationSystem = () => {
         variant="outline" 
         size="sm" 
         className="h-12 w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50 relative"
-        onClick={() => {
-          if (!permissionGranted) {
-            requestNotificationPermission();
-          }
-          setShowPanel(!showPanel);
-        }}
+        onClick={() => setShowPanel(!showPanel)}
       >
         <Bell className="w-5 h-5 text-emerald-600" />
         {unreadCount > 0 && (
@@ -198,89 +127,96 @@ const NotificationSystem = () => {
       </Button>
 
       {showPanel && (
-        <div className="absolute right-0 top-14 w-96 max-h-96 overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl shadow-2xl border border-blue-200 z-50 text-gray-900">
-          <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-white">Notifications</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20"
-                onClick={() => setShowPanel(false)}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            {!permissionGranted && (
-              <Button
-                size="sm"
-                className="w-full mt-2 bg-white text-emerald-600 hover:bg-gray-50"
-                onClick={requestNotificationPermission}
-              >
-                Activer les notifications
-              </Button>
-            )}
-          </div>
-          
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
-                Aucune notification
-              </div>
-            ) : (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                    !notification.read ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : ''
-                  }`}
-                  onClick={() => {
-                    markAsRead(notification.id);
-                    // Rediriger vers la page appropriée selon le type de notification
-                    if (notification.title.includes('prix') || notification.title.includes('marché')) {
-                      window.location.href = '/prix';
-                    } else if (notification.title.includes('événement') || notification.title.includes('festival')) {
-                      window.location.href = '/evenements';
-                    } else if (notification.title.includes('service') || notification.title.includes('administratif')) {
-                      window.location.href = '/services';
-                    } else {
-                      window.location.href = '/annonces';
-                    }
-                  }}
+        <>
+          {/* Backdrop mobile */}
+          <div 
+            className="fixed inset-0 bg-black/20 z-40 sm:hidden" 
+            onClick={() => setShowPanel(false)} 
+          />
+          <div className="fixed inset-x-3 top-20 bottom-auto sm:absolute sm:inset-auto sm:right-0 sm:top-14 sm:w-96 max-h-[70vh] sm:max-h-96 overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-xl shadow-2xl border border-blue-200 z-50 text-foreground">
+            <div className="p-3 sm:p-4 border-b border-gray-100 bg-gradient-to-r from-emerald-500 to-ocean-500 text-white">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-white text-sm sm:text-base">
+                  Notifications {unreadCount > 0 && `(${unreadCount})`}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 h-8 w-8 p-0"
+                  onClick={() => setShowPanel(false)}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className={`p-1 rounded-full ${getTypeColor(notification.type)}`}>
-                        {getIcon(notification.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm text-gray-900">
-                          {notification.title}
-                        </h4>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {formatTime(notification.timestamp)}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteNotification(notification.id);
-                      }}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              {isSupported && (
+                <Button
+                  size="sm"
+                  className="w-full mt-2 bg-white text-emerald-600 hover:bg-gray-50 text-xs sm:text-sm"
+                  onClick={handleTogglePush}
+                  disabled={pushLoading}
+                >
+                  {isSubscribed ? (
+                    <><BellOff className="w-3 h-3 mr-1" /> Désactiver les push</>
+                  ) : (
+                    <><BellRing className="w-3 h-3 mr-1" /> Activer les push</>
+                  )}
+                </Button>
+              )}
+            </div>
+            
+            <div className="max-h-[55vh] sm:max-h-80 overflow-y-auto">
+              {loading ? (
+                <div className="p-6 text-center text-muted-foreground">
+                  Chargement...
                 </div>
-              ))
-            )}
+              ) : notifications.length === 0 ? (
+                <div className="p-6 text-center text-muted-foreground">
+                  Aucune notification
+                </div>
+              ) : (
+                notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`p-3 sm:p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                      !notification.read ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : ''
+                    }`}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <div className="flex items-start justify-between gap-2 sm:gap-3">
+                      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                        <div className={`p-1 rounded-full flex-shrink-0 ${getTypeColor(notification.type)}`}>
+                          {getIcon(notification.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-xs sm:text-sm truncate">
+                            {notification.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1 line-clamp-2">
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {formatTime(notification.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification.id);
+                        }}
+                      >
+                        <X className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
