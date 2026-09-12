@@ -1,134 +1,42 @@
-name: Deploy Ujamaan
+name: Deploy to VPS
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [ main ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 🚀 Deploy Ujamaan
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          timeout: 60s
-          command_timeout: 20m
+          node-version: '20'
+          cache: 'npm'
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build   # ou la commande spécifique de Lovable
+
+      - name: Deploy via SSH
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "dist/*"
+          target: "/home/admin/web/ujamaa.com/public_html"   # <-- à adapter
+   
+      - name: Reload web server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            set -Eeuo pipefail
-
-            echo "=============================="
-            echo "🚀 START DEPLOY UJAMAAN"
-            echo "=============================="
-
-            export HOME=/home/deploy
-            export USER=deploy
-            export PATH=/usr/local/bin:/usr/bin:/bin:/home/deploy/.local/bin
-
-            APP_DIR="/home/admin/web/ujamaan.com/app"
-            PUBLIC_DIR="/home/admin/web/ujamaan.com/public_html"
-
-            echo "== Vérification des chemins =="
-            [ -d "$APP_DIR" ] || { echo "❌ APP_DIR introuvable: $APP_DIR"; exit 1; }
-            [ -d "$PUBLIC_DIR" ] || { echo "❌ PUBLIC_DIR introuvable: $PUBLIC_DIR"; exit 1; }
-
-            echo "== Vérification sudo =="
-            sudo -n true 2>/dev/null || {
-              echo "❌ L'utilisateur deploy doit avoir sudo sans mot de passe pour les opérations de publication."
-              echo "   Configure une règle sudoers limitée avant de relancer."
-              exit 1
-            }
-
-            cd "$APP_DIR"
-
-            echo "== Git =="
-            git fetch origin main
-            git reset --hard origin/main
-            git clean -fd
-
-            echo "== Node / NPM =="
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] || {
-              echo "❌ NVM est absent pour l'utilisateur deploy ($NVM_DIR/nvm.sh)."
-              exit 1
-            }
-            . "$NVM_DIR/nvm.sh"
-            nvm install
-            nvm use
-            node -v
-            npm -v
-
-            NODE_MAJOR="$(node -p 'process.versions.node.split(`.`)[0]')"
-            if [ "$NODE_MAJOR" -lt 20 ]; then
-              echo "❌ Node $NODE_MAJOR < 20. Node 20+ est requis."
-              exit 1
-            fi
-
-            echo "== Nettoyage du build précédent =="
-            rm -rf dist .vite node_modules/.vite node_modules/.cache
-
-            echo "== Installation des dépendances =="
-            npm ci --no-audit --no-fund
-
-            echo "== Build production =="
-            npm run build
-
-            echo "== Validation du build =="
-            [ -f "$APP_DIR/dist/index.html" ] || {
-              echo "❌ dist/index.html absent après le build."
-              exit 1
-            }
-
-            echo "== Publication atomique des fichiers =="
-            TMP_DIR="/tmp/ujamaan-deploy-$$"
-            sudo mkdir -p "$TMP_DIR"
-            sudo rm -rf "$TMP_DIR"/*
-            sudo cp -a "$APP_DIR/dist/." "$TMP_DIR/"
-
-            # Supprime les anciens Service Workers applicatifs.
-            sudo rm -f \
-              "$PUBLIC_DIR/sw.js" \
-              "$PUBLIC_DIR/service-worker.js"
-
-            # Synchronise le nouveau build vers le dossier public.
-            # --delete évite les anciens assets Vite qui ne sont plus utilisés.
-            # Les fichiers système/personnalisés de Hestia restent exclus.
-            sudo rsync -a --delete \
-              --exclude='.htaccess' \
-              "$TMP_DIR/" "$PUBLIC_DIR/"
-
-            sudo rm -rf "$TMP_DIR"
-
-            echo "== Permissions du site =="
-            sudo chown -R admin:admin "$PUBLIC_DIR"
-            sudo find "$PUBLIC_DIR" -type d -exec chmod 755 {} \;
-            sudo find "$PUBLIC_DIR" -type f -exec chmod 644 {} \;
-
-            echo "== Vérification publication =="
-            sudo test -s "$PUBLIC_DIR/index.html" || {
-              echo "❌ index.html absent ou vide dans public_html."
-              exit 1
-            }
-
-            echo "== Version publiée =="
-            sudo grep -oE '/assets/[^"]+\.js' "$PUBLIC_DIR/index.html" | head -1 || true
-            sudo stat -c 'index.html: %y' "$PUBLIC_DIR/index.html"
-
-            echo "== Nginx =="
-            if sudo nginx -t; then
-              sudo nginx -s reload
-            else
-              echo "❌ nginx -t a échoué."
-              exit 1
-            fi
-
-            echo "=============================="
-            echo "✅ DEPLOY FINISHED"
-            echo "=============================="
+            sudo systemctl reload nginx
