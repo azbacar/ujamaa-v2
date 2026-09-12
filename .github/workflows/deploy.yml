@@ -11,9 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚀 Deploy to server via SSH
+      - name: 🚀 Deploy Ujamaan
         uses: appleboy/ssh-action@v1.0.3
-
         with:
           host: ${{ secrets.SSH_HOST }}
           username: deploy
@@ -23,7 +22,8 @@ jobs:
           command_timeout: 20m
 
           script: |
-            set -e
+            set -Eeuo pipefail
+
             echo "=============================="
             echo "🚀 START DEPLOY UJAMAAN"
             echo "=============================="
@@ -32,124 +32,104 @@ jobs:
             export USER=deploy
             export PATH=/usr/local/bin:/usr/bin:/bin:/home/deploy/.local/bin
 
-            APP_DIR=/home/admin/web/ujamaan.com/app
-            PUBLIC_DIR=/home/admin/web/ujamaan.com/public_html
+            APP_DIR="/home/admin/web/ujamaan.com/app"
+            PUBLIC_DIR="/home/admin/web/ujamaan.com/public_html"
 
-            # === Charger nvm si présent (Node installé via nvm sur le VPS) ===
-            export NVM_DIR="$HOME/.nvm"
-            if [ -s "$NVM_DIR/nvm.sh" ]; then
-              # shellcheck disable=SC1090
-              . "$NVM_DIR/nvm.sh"
-              # Respecte .nvmrc du projet (Node 20) si présent
-              if [ -f "$APP_DIR/.nvmrc" ]; then
-                nvm use "$(cat "$APP_DIR/.nvmrc")" || nvm install "$(cat "$APP_DIR/.nvmrc")"
-              else
-                nvm use --lts || true
-              fi
-            fi
+            echo "== Vérification des chemins =="
+            [ -d "$APP_DIR" ] || { echo "❌ APP_DIR introuvable: $APP_DIR"; exit 1; }
+            [ -d "$PUBLIC_DIR" ] || { echo "❌ PUBLIC_DIR introuvable: $PUBLIC_DIR"; exit 1; }
+
+            echo "== Vérification sudo =="
+            sudo -n true 2>/dev/null || {
+              echo "❌ L'utilisateur deploy doit avoir sudo sans mot de passe pour les opérations de publication."
+              echo "   Configure une règle sudoers limitée avant de relancer."
+              exit 1
+            }
 
             echo "== Node / NPM =="
-            node -v || { echo "❌ Node not found — installe Node 20 sur le VPS"; exit 1; }
-            npm -v  || { echo "❌ NPM not found";  exit 1; }
+            export NVM_DIR="$HOME/.nvm"
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              . "$NVM_DIR/nvm.sh"
+            fi
 
-            # Garde-fou: majeur >= 20 (tsx + Vite 5)
-            NODE_MAJOR=$(node -v | sed 's/^v//' | cut -d. -f1)
+            node -v
+            npm -v
+
+            NODE_MAJOR="$(node -v | sed 's/^v//' | cut -d. -f1)"
             if [ "$NODE_MAJOR" -lt 20 ]; then
-              echo "❌ Node $NODE_MAJOR < 20. Installe Node 20 sur le VPS (nvm install 20 && nvm alias default 20)."
+              echo "❌ Node $NODE_MAJOR < 20. Node 20+ est requis."
               exit 1
             fi
 
-            cd "$APP_DIR" || exit 1
-            ls -la
+            cd "$APP_DIR"
 
-            # ============================================================
-            # ÉTAPE 1 — Suppression COMPLÈTE de l'ancien cache (build + SW)
-            # AVANT toute reconstruction. On invalide aussi le registre SW
-            # côté serveur pour éviter qu'un ancien sw.js soit re-servi.
-            # ============================================================
-            echo "== 🧹 PRE-DEPLOY (1/3): purge build caches =="
-            rm -rf "$APP_DIR/dist" \
-                   "$APP_DIR/.vite" \
-                   "$APP_DIR/node_modules/.vite" \
-                   "$APP_DIR/node_modules/.cache" 2>/dev/null || true
+            echo "== Git =="
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd
 
-            echo "== 🧹 PRE-DEPLOY (2/3): purge SW résiduels côté serveur =="
-            if [ -d "$PUBLIC_DIR" ]; then
-              # On supprime AVANT le build pour ne pas servir d'ancien SW pendant
-              # la fenêtre de déploiement. Le nouveau kill-switch sera copié
-              # par deploy.sh juste après.
-              find "$PUBLIC_DIR" -maxdepth 3 \
-                \( -name "sw.js" -o -name "service-worker.js" -o -name "workbox-*.js" \) \
-                -delete 2>/dev/null || true
+            echo "== Nettoyage du build précédent =="
+            rm -rf dist .vite node_modules/.vite node_modules/.cache
+
+            echo "== Installation des dépendances =="
+            npm ci
+
+            echo "== Build production =="
+            npm run build
+
+            echo "== Validation du build =="
+            [ -f "$APP_DIR/dist/index.html" ] || {
+              echo "❌ dist/index.html absent après le build."
+              exit 1
+            }
+
+            echo "== Publication atomique des fichiers =="
+            TMP_DIR="/tmp/ujamaan-deploy-$$"
+            sudo mkdir -p "$TMP_DIR"
+            sudo rm -rf "$TMP_DIR"/*
+            sudo cp -a "$APP_DIR/dist/." "$TMP_DIR/"
+
+            # Supprime les anciens Service Workers applicatifs.
+            sudo rm -f \
+              "$PUBLIC_DIR/sw.js" \
+              "$PUBLIC_DIR/service-worker.js"
+
+            # Synchronise le nouveau build vers le dossier public.
+            # --delete évite les anciens assets Vite qui ne sont plus utilisés.
+            # Les fichiers système/personnalisés de Hestia restent exclus.
+            sudo rsync -a --delete \
+              --exclude='.htaccess' \
+              --exclude='favicon.ico' \
+              --exclude='favicon.png' \
+              --exclude='robots.txt' \
+              --exclude='sitemap.xml' \
+              "$TMP_DIR/" "$PUBLIC_DIR/"
+
+            sudo rm -rf "$TMP_DIR"
+
+            echo "== Permissions du site =="
+            sudo chown -R admin:admin "$PUBLIC_DIR"
+            sudo find "$PUBLIC_DIR" -type d -exec chmod 755 {} \;
+            sudo find "$PUBLIC_DIR" -type f -exec chmod 644 {} \;
+
+            echo "== Vérification publication =="
+            sudo test -s "$PUBLIC_DIR/index.html" || {
+              echo "❌ index.html absent ou vide dans public_html."
+              exit 1
+            }
+
+            echo "== Version publiée =="
+            sudo grep -oE '/assets/[^"]+\.js' "$PUBLIC_DIR/index.html" | head -1 || true
+            sudo stat -c 'index.html: %y' "$PUBLIC_DIR/index.html"
+
+            echo "== Nginx =="
+            if sudo nginx -t; then
+              sudo nginx -s reload
+            else
+              echo "❌ nginx -t a échoué."
+              exit 1
             fi
-
-            echo "== 🧹 PRE-DEPLOY (3/3): purge cache proxy nginx =="
-            for CACHE_DIR in /var/cache/nginx \
-                             /var/lib/nginx/cache \
-                             /home/admin/conf/web/ujamaan.com/nginx.cache; do
-              if [ -d "$CACHE_DIR" ]; then
-                echo "  → Purge $CACHE_DIR"
-                find "$CACHE_DIR" -type f -delete 2>/dev/null || true
-              fi
-            done
-
-            echo "== Ensure deploy script executable =="
-            chmod +x deploy.sh || true
-
-            # ============================================================
-            # ÉTAPE 2 — Build + copie des nouveaux assets (deploy.sh).
-            # Le nouveau public/sw.js (kill-switch) est inclus dans dist/
-            # et publié à /sw.js + /service-worker.js. Aucun NOUVEAU service
-            # worker applicatif n'est enregistré — règle "PWA INTERDITE".
-            # ============================================================
-            echo "== ▶ Run deploy.sh (pull, build, copy to public_html) =="
-            bash deploy.sh
-
-            # ============================================================
-            # ÉTAPE 3 — Invalidation registres + caches côté client/CDN.
-            # ============================================================
-            echo "== 🔁 POST-DEPLOY: invalider index.html + headers no-cache SW =="
-            if [ -d "$PUBLIC_DIR" ]; then
-              # Force fresh mtime sur index.html → ETag/Last-Modified changent
-              # → navigateurs récupèrent la nouvelle version immédiatement
-              find "$PUBLIC_DIR" -maxdepth 2 -name "index.html" -exec touch {} \; 2>/dev/null || true
-
-              # Force fresh mtime sur les kill-switch SW pour que les
-              # navigateurs détectent le "nouveau" worker et déclenchent
-              # l'activate → unregister.
-              for SW in "$PUBLIC_DIR/sw.js" "$PUBLIC_DIR/service-worker.js"; do
-                [ -f "$SW" ] && touch "$SW" 2>/dev/null || true
-              done
-            fi
-
-            echo "== 🔄 Reload nginx pour purger le cache proxy =="
-            if command -v sudo >/dev/null 2>&1 && sudo -n nginx -t >/dev/null 2>&1; then
-              sudo -n nginx -s reload || true
-            elif command -v nginx >/dev/null 2>&1; then
-              nginx -s reload 2>/dev/null || true
-            fi
-
-            # Re-purge nginx APRÈS reload (au cas où un cache aurait été
-            # repeuplé pendant la fenêtre de build)
-            for CACHE_DIR in /var/cache/nginx \
-                             /var/lib/nginx/cache \
-                             /home/admin/conf/web/ujamaan.com/nginx.cache; do
-              if [ -d "$CACHE_DIR" ]; then
-                find "$CACHE_DIR" -type f -delete 2>/dev/null || true
-              fi
-            done
-
-            echo "== 📦 Version déployée =="
-            if [ -f "$PUBLIC_DIR/index.html" ]; then
-              grep -oE '/assets/[^"]+\.js' "$PUBLIC_DIR/index.html" | head -1 || true
-              stat -c '  index.html mtime: %y' "$PUBLIC_DIR/index.html" || true
-            fi
-            for SW in "$PUBLIC_DIR/sw.js" "$PUBLIC_DIR/service-worker.js"; do
-              if [ -f "$SW" ]; then
-                stat -c "  $(basename $SW) mtime: %y" "$SW" || true
-              fi
-            done
 
             echo "=============================="
-            echo "✅ DEPLOY FINISHED — caches purgés, kill-switch SW en place"
+            echo "✅ DEPLOY FINISHED"
             echo "=============================="
