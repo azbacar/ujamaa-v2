@@ -46,21 +46,6 @@ jobs:
               exit 1
             }
 
-            echo "== Node / NPM =="
-            export NVM_DIR="$HOME/.nvm"
-            if [ -s "$NVM_DIR/nvm.sh" ]; then
-              . "$NVM_DIR/nvm.sh"
-            fi
-
-            node -v
-            npm -v
-
-            NODE_MAJOR="$(node -v | sed 's/^v//' | cut -d. -f1)"
-            if [ "$NODE_MAJOR" -lt 20 ]; then
-              echo "❌ Node $NODE_MAJOR < 20. Node 20+ est requis."
-              exit 1
-            fi
-
             cd "$APP_DIR"
 
             echo "== Git =="
@@ -68,11 +53,29 @@ jobs:
             git reset --hard origin/main
             git clean -fd
 
+            echo "== Node / NPM =="
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] || {
+              echo "❌ NVM est absent pour l'utilisateur deploy ($NVM_DIR/nvm.sh)."
+              exit 1
+            }
+            . "$NVM_DIR/nvm.sh"
+            nvm install
+            nvm use
+            node -v
+            npm -v
+
+            NODE_MAJOR="$(node -p 'process.versions.node.split(`.`)[0]')"
+            if [ "$NODE_MAJOR" -lt 20 ]; then
+              echo "❌ Node $NODE_MAJOR < 20. Node 20+ est requis."
+              exit 1
+            fi
+
             echo "== Nettoyage du build précédent =="
             rm -rf dist .vite node_modules/.vite node_modules/.cache
 
             echo "== Installation des dépendances =="
-            npm ci
+            npm ci --no-audit --no-fund
 
             echo "== Build production =="
             npm run build
@@ -99,10 +102,6 @@ jobs:
             # Les fichiers système/personnalisés de Hestia restent exclus.
             sudo rsync -a --delete \
               --exclude='.htaccess' \
-              --exclude='favicon.ico' \
-              --exclude='favicon.png' \
-              --exclude='robots.txt' \
-              --exclude='sitemap.xml' \
               "$TMP_DIR/" "$PUBLIC_DIR/"
 
             sudo rm -rf "$TMP_DIR"
