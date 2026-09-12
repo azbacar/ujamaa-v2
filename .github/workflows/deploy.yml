@@ -21,17 +21,17 @@ jobs:
         run: npm ci
 
       - name: Build site
-        run: npm run build   # ou la commande spécifique de Lovable
+        run: npm run build   # adaptez si votre script de build porte un autre nom
 
-      - name: Deploy via SSH
+      - name: Deploy via SSH (SCP)
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "dist/*"
-          target: "/home/admin/web/ujamaa.com/public_html"   # <-- à adapter
-   
+          target: "/home/admin/web/ujamaa.com/public_html"
+
       - name: Reload web server
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -39,4 +39,4 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            sudo systemctl reload nginx
+            sudo systemctl reload nginx   # ou apache2 selon votre configuration
