@@ -31,11 +31,11 @@ interface MvolaPaymentDialogProps {
 }
 
 
-const MVOLA_MERCHANT = "4102122";
+const MVOLA_MERCHANT = "4016886";
 
 function generateUSSD(amount: number, userRef: string) {
   const cleanRef = userRef.replace(/[^a-zA-Z0-9]/g, "").slice(0, 15);
-  return `*444*1*2*${MVOLA_MERCHANT}*${amount}*${cleanRef}#`;
+  return `*444*1*5*1*${MVOLA_MERCHANT}*${amount}*${cleanRef}#`;
 }
 
 export default function MvolaPaymentDialog({
