@@ -428,7 +428,7 @@ export default function ProPage() {
                 <p className="text-sm text-muted-foreground">
                   Le bouton <strong>Composer le code USSD</strong> ouvre directement votre clavier avec :
                   <code className="block mt-1 bg-muted px-2 py-1 rounded text-xs font-mono">
-                    *444*1*2*4102122*MONTANT*VOTRE-REF#
+                    *444*1*5*1*4016886*MONTANT*VOTRE-REF#
                   </code>
                 </p>
               </div>
@@ -446,7 +446,7 @@ export default function ProPage() {
             <div className="bg-white/80 rounded-xl p-4 border border-emerald-100">
               <h4 className="font-semibold text-foreground mb-2">📋 Détails importants</h4>
               <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-5">
-                <li><strong>Numéro marchand Ujamaan</strong> : <code className="bg-muted px-1.5 py-0.5 rounded font-mono">4102122</code></li>
+                <li><strong>Numéro marchand Ujamaan</strong> : <code className="bg-muted px-1.5 py-0.5 rounded font-mono">4016886</code></li>
                 <li><strong>Référence personnelle</strong> : générée automatiquement (commence par <code>UJA…</code>) — ne la modifiez pas, elle permet de retrouver votre paiement.</li>
                 <li><strong>Confirmation</strong> : après le paiement, vous recevez un SMS Mvola avec un <strong>numéro de référence</strong>. Collez-le dans le champ <em>Référence Mvola</em> et validez.</li>
                 <li><strong>Activation</strong> : un administrateur valide votre paiement (généralement sous <strong>24 h</strong>). Vous recevez ensuite une notification dans l'app dès l'activation du compte Pro.</li>
