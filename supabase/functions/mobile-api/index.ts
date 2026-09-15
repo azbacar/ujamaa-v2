@@ -137,14 +137,21 @@ Deno.serve(async (req) => {
       if (!hasPermission(keyInfo, "login") && !hasPermission(keyInfo, "admin")) return err("Permission denied", 403);
       // Alias : fundraising = invest (levée de fonds (alias public))
       const sub = (id === "fundraising" ? "invest" : id) as string | undefined;
-      const limit = parseInt(url.searchParams.get("limit") || "50");
-      const offset = parseInt(url.searchParams.get("offset") || "0");
+      // Détail : /public/<resource>/<uuid>
+      const detailId = url.pathname.split("/").filter(Boolean).slice(-1)[0];
+      const isDetail = !!detailId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(detailId);
+      const limit = isDetail ? 1 : parseInt(url.searchParams.get("limit") || "50");
+      const offset = isDetail ? 0 : parseInt(url.searchParams.get("offset") || "0");
       const tableMap: Record<string, string> = {
         prices: "prices", events: "events", content: "content_items",
         gastronomy: "gastronomy_items", freelancers: "freelancer_profiles", invest: "investments",
         "vendor-locations": "vendor_locations",
         enterprises: "enterprise_profiles_public",
         partners: "partner_accounts",
+        "freelance-jobs": "freelance_jobs",
+        announcements: "content_items",
+        tenders: "content_items",
+        services: "content_items",
       };
       const table = tableMap[sub || ""];
       if (!table) return err("Unknown public resource", 404);
@@ -153,7 +160,34 @@ Deno.serve(async (req) => {
       else if (table === "vendor_locations") q = q.eq("is_active", true);
       else if (table === "enterprise_profiles_public") { /* pas de status */ }
       else if (table === "partner_accounts") q = q.eq("status", "active");
+      else if (table === "freelance_jobs") q = q.eq("status", "open");
       else q = q.eq("status", "published");
+
+      // Filtre implicite sur les alias polymorphes de content_items
+      const implicitType: Record<string, string> = {
+        announcements: "announcement", tenders: "tender", services: "service",
+      };
+      if (table === "content_items") {
+        const t = implicitType[sub || ""] || url.searchParams.get("type");
+        if (t) q = q.eq("type", t);
+      }
+
+      // Filtres génériques
+      const fIsland = url.searchParams.get("island");
+      const fCategory = url.searchParams.get("category");
+      const fSearch = url.searchParams.get("q");
+      if (fIsland) q = q.eq("island", fIsland);
+      if (fCategory) q = q.eq("category", fCategory);
+      if (fSearch && fSearch.length >= 2) {
+        const searchCol = table === "prices" ? "product_name"
+          : table === "gastronomy_items" ? "name"
+          : table === "freelancer_profiles" ? "display_name"
+          : table === "enterprise_profiles_public" ? "company_name"
+          : "title";
+        q = q.ilike(searchCol, `%${fSearch}%`);
+      }
+      if (isDetail) q = q.eq("id", detailId);
+
       const orderCol = table === "vendor_locations" ? "last_seen_at" : "created_at";
       const { data, count, error: qErr } = await q.range(offset, offset + limit - 1).order(orderCol, { ascending: false });
       if (qErr) return err(qErr.message, 500);
