@@ -341,8 +341,28 @@ Deno.serve(async (req) => {
       };
 
       const normalized = (data || []).map(normalize);
+      if (isDetail) {
+        if (!normalized.length) return err("Not found", 404);
+        return json(normalized[0]);
+      }
       return json({ data: normalized, total: count, limit, offset });
     }
+
+    // ── HISTORIQUE DE PRIX (public) : GET /price-history/<price_id> ──
+    if (resource === "price-history" && method === "GET") {
+      if (!hasPermission(keyInfo, "login") && !hasPermission(keyInfo, "admin")) return err("Permission denied", 403);
+      if (!id) return err("price id required");
+      const limitH = parseInt(url.searchParams.get("limit") || "100");
+      const { data, error: e } = await supabase
+        .from("price_history")
+        .select("*")
+        .eq("price_id", id)
+        .order("created_at", { ascending: false })
+        .limit(limitH);
+      if (e) return err(e.message, 500);
+      return json({ data });
+    }
+
 
     // ─────────────────────────────────────────────────────────────────────
     // Helper : récupère l'utilisateur connecté à partir du Bearer token.
