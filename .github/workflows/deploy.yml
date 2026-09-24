@@ -1,42 +1,50 @@
-name: Deploy to VPS
+name: Deploy Ujamaan
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: 🚀 Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
         with:
-          node-version: '20'
-          cache: 'npm'
+          host: ${{ secrets.SSH_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          timeout: 60s
+          command_timeout: 15m
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build site
-        run: npm run build   # adaptez si votre script de build porte un autre nom
-
-      - name: Deploy via SSH (SCP)
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "dist/*"
-          target: "/home/admin/web/ujamaa.com/public_html"
-
-      - name: Reload web server
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            sudo systemctl reload nginx   # ou apache2 selon votre configuration
+            echo "=============================="
+            echo "🚀 START DEPLOY UJAMAAN"
+            echo "=============================="
+            echo "== Setup environment =="
+            export HOME=/home/deploy
+            export USER=deploy
+            export PATH=/usr/local/bin:/usr/bin:/bin
+            echo "== Who am I =="
+            whoami
+            pwd
+            echo "== Node version =="
+            node -v || echo "Node not found"
+            echo "== NPM version =="
+            npm -v || echo "NPM not found"
+            echo "== Go to project =="
+            cd /home/admin/web/ujamaan.com/app || exit 1
+            echo "== Files check =="
+            ls -la
+            echo "== Ensure script executable =="
+            chmod +x deploy.sh
+            echo "== Run deploy script =="
+            bash deploy.sh
+            echo "=============================="
+            echo "✅ DEPLOY FINISHED"
+            echo "=============================="
