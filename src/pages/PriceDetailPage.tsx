@@ -39,12 +39,12 @@ export default function PriceDetailPage() {
     price
       ? {
           title: `${price.product} — ${price.price.toLocaleString('fr-FR')} ${price.currency}/${price.unit}`,
-          description: `Prix de ${price.product} chez ${price.vendor} au marché ${price.market}, ${price.location.city} (${price.location.island}). Consultez les détails et l'historique sur UJAMAA.`,
+          description: `Prix de ${price.product} chez ${price.vendor} au marché ${price.market}, ${price.location.city} (${price.location.island}). Consultez les détails et l'historique sur Ujamaan.`,
           canonicalPath: `/prix/${price.id}`,
           ogImage: price.image_url || undefined,
           keywords: `${price.product}, prix Comores, ${price.location.island}, ${price.market}, ${price.category}`,
         }
-      : { title: 'Détail du prix', description: 'Détail d\'un prix sur UJAMAA', canonicalPath: `/prix/${id}` }
+      : { title: 'Détail du prix', description: 'Détail d\'un prix sur Ujamaan', canonicalPath: `/prix/${id}` }
   );
 
   // Inject Product JSON-LD for rich results

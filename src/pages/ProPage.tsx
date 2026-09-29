@@ -55,7 +55,7 @@ const PLANS = [
   },
   {
     id: "premium",
-    name: "UJAMAA Pro",
+    name: "Ujamaan Pro",
     // Le prix affiché est dynamique (mensuel/annuel) — voir billingCycle ci-dessous
     price: "990",
     amount: 990,
@@ -124,7 +124,7 @@ const PRO_ADVANTAGES = [
     title: "Contact direct",
     desc: "Les utilisateurs peuvent vous contacter directement depuis vos annonces",
   },
-  { icon: Search, title: "Boost IA", desc: "L'assistant UJAMAA recommande vos annonces aux utilisateurs pertinents" },
+  { icon: Search, title: "Boost IA", desc: "L'assistant Ujamaan recommande vos annonces aux utilisateurs pertinents" },
   {
     icon: BarChart3,
     title: "Rapports détaillés",
@@ -264,9 +264,9 @@ export default function ProPage() {
         <div className="text-center mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-4">
             <Crown className="w-5 h-5 text-primary" />
-            <span className="text-primary font-semibold text-sm">UJAMAA Pro</span>
+            <span className="text-primary font-semibold text-sm">Ujamaan Pro</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-bold text-foreground mb-4">Débloquez tout le potentiel d'UJAMAA</h1>
+          <h1 className="text-3xl sm:text-5xl font-bold text-foreground mb-4">Débloquez tout le potentiel d'Ujamaan</h1>
           <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto">
             Outils professionnels, visibilité maximale et données avancées pour réussir dans l'archipel des Comores
           </p>

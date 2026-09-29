@@ -195,7 +195,7 @@ const PriceSubmissionForm = ({ onClose, onSuccess, defaults }: PriceSubmissionFo
             <Plus className="w-6 h-6" />
             Ajouter un prix
           </CardTitle>
-          <p className="text-white/90 text-sm">Partagez vos prix avec la communauté UJAMAA</p>
+          <p className="text-white/90 text-sm">Partagez vos prix avec la communauté Ujamaan</p>
         </CardHeader>
         
         <CardContent className="p-6">

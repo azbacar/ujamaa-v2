@@ -1534,6 +1534,24 @@ export type Database = {
         }
         Relationships: []
       }
+      internal_config: {
+        Row: {
+          created_at: string
+          key: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       investments: {
         Row: {
           author_id: string
@@ -3540,6 +3558,7 @@ export type Database = {
         Args: { _profile_id: string }
         Returns: string
       }
+      get_internal_secret: { Args: never; Returns: string }
       get_public_usernames: {
         Args: { _user_ids: string[] }
         Returns: {

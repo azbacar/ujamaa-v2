@@ -84,7 +84,7 @@ export default function TourismePage() {
   };
 
   usePageSEO({
-    title: 'Tourisme & Gastronomie aux Comores | UJAMAA',
+    title: 'Tourisme & Gastronomie aux Comores | Ujamaan',
     description: 'Découvrez les restaurants, hôtels, recettes comoriennes et hébergements aux Comores. Réservez et explorez la gastronomie locale.',
     canonicalPath: '/tourisme',
     keywords: 'tourisme Comores, restaurants Comores, hôtels Comores, hébergement Comores, recettes comoriennes, gastronomie comorienne',

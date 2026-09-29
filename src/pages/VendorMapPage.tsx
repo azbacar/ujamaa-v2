@@ -412,7 +412,7 @@ export default function VendorMapPage() {
                             <Handshake className="h-3.5 w-3.5 text-amber-600" /> {p.business_name}
                           </div>
                           <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px]">
-                            Concessionnaire UJAMAA
+                            Concessionnaire Ujamaan
                           </Badge>
                           {p.address && <p className="text-xs text-muted-foreground">📍 {p.address}</p>}
                           {(p.city || p.island) && <p className="text-xs text-muted-foreground">🏝️ {p.city} {p.island}</p>}

@@ -258,7 +258,7 @@ const AnnouncementsPage = () => {
                   📢 Vous avez une annonce importante ?
                 </h3>
                 <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                  Partagez vos annonces avec la communauté sur UJAMAA pour toucher un large public aux Comores et à Mayotte.
+                  Partagez vos annonces avec la communauté sur Ujamaan pour toucher un large public aux Comores et à Mayotte.
                 </p>
                 <Button 
                   size="lg" 

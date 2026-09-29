@@ -41,7 +41,7 @@ const INTERNAL_LINK_LABELS: Record<string, string> = {
   '/freelance': '💼 Missions Freelance',
   '/freelancers': '👨‍💻 Répertoire Freelancers',
   '/investissement': '🌍 Investissement & Levée de fonds',
-  '/pro': '👑 UJAMAA Pro',
+  '/pro': '👑 Ujamaan Pro',
   '/entreprise': '🏢 Espace Entreprise',
   '/profil': '👤 Mon Profil',
   '/messages': '✉️ Messages',
@@ -155,9 +155,9 @@ const FloatingChatbox = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [assistantName, setAssistantName] = useState('Assistant UJAMAA');
+  const [assistantName, setAssistantName] = useState('Assistant Ujamaan');
   const [welcomeMessage, setWelcomeMessage] = useState(
-    "🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀"
+    "🌺 Salut ! Je suis votre guide Ujamaan pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀"
   );
   const [assistantEnabled, setAssistantEnabled] = useState(true);
 
@@ -192,10 +192,10 @@ const FloatingChatbox = () => {
           .maybeSingle();
         if (error) throw error;
         if (data) {
-          setAssistantName(data.ai_assistant_name || 'Assistant UJAMAA');
+          setAssistantName(data.ai_assistant_name || 'Assistant Ujamaan');
           setWelcomeMessage(
             data.ai_assistant_welcome_message ||
-              "🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀"
+              "🌺 Salut ! Je suis votre guide Ujamaan pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀"
           );
           setAssistantEnabled(data.ai_assistant_enabled ?? true);
         }

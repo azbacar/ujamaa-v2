@@ -447,7 +447,7 @@ serve(async (req) => {
       locationSection += `\n⚠️ PRIORITÉ ABSOLUE: filtre et présente d'abord les résultats correspondant à cette localisation. Si rien n'existe pour ce lieu, dis-le clairement puis propose les résultats des zones voisines (même île d'abord, puis archipel).\n`;
     }
 
-    const systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel de la plateforme ujamaan.com pour l'archipel des Comores (4 îles).
+    const systemPrompt = `Tu es Ujamaan AI, l'assistant intelligent officiel de la plateforme ujamaan.com pour l'archipel des Comores (4 îles).
 
 ${comorosKnowledge}
 ${locationSection}
@@ -684,7 +684,7 @@ ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les d
 
     // Tente plusieurs modèles + retries en cas de 503/429 (surcharge transitoire)
     const callGemini = async (): Promise<string> => {
-      const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+      const models = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
       let lastErr: any = null;
       for (const model of models) {
         for (let attempt = 0; attempt < 3; attempt++) {

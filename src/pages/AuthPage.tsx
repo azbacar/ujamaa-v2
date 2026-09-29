@@ -114,7 +114,7 @@ const AuthPage = () => {
             <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg mx-auto">
               U
             </div>
-            <CardTitle className="text-2xl font-bold text-foreground">UJAMAA Call Center</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">Ujamaan Call Center</CardTitle>
             <CardDescription className="text-muted-foreground">
               Accédez à votre compte ou créez-en un nouveau
             </CardDescription>

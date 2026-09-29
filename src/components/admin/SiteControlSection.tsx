@@ -97,8 +97,8 @@ export default function SiteControlSection() {
           allow_registration: true,
           public_view_access: true,
           email_notifications: true,
-          ai_assistant_name: 'Assistant UJAMAA',
-          ai_assistant_welcome_message: '🌺 Salut ! Je suis votre guide UJAMAA pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀',
+          ai_assistant_name: 'Assistant Ujamaan',
+          ai_assistant_welcome_message: '🌺 Salut ! Je suis votre guide Ujamaan pour les Comores et Mayotte ! Que cherchez-vous : prix des marchés, événements, services admin... ? 🚀',
           ai_assistant_enabled: true,
           updated_by: user?.id
         };
@@ -509,7 +509,7 @@ export default function SiteControlSection() {
                     value={settings?.ai_assistant_name || ''}
                     onChange={(e) => setSettings(prev => prev ? { ...prev, ai_assistant_name: e.target.value } : null)}
                     onBlur={() => settings && updateSettings({ ai_assistant_name: settings.ai_assistant_name })}
-                    placeholder="Assistant UJAMAA"
+                    placeholder="Assistant Ujamaan"
                     className="border-blue-200"
                   />
                   <p className="text-xs text-muted-foreground">

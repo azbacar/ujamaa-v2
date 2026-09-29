@@ -100,7 +100,7 @@ export const WelcomeDialog = () => {
             <Icon className="h-7 w-7" />
           </div>
           <DialogTitle className="text-xl">
-            Bienvenue sur UJAMAA !
+            Bienvenue sur Ujamaan !
           </DialogTitle>
           <DialogDescription className="flex flex-col items-center gap-2">
             <Badge variant={config.badgeVariant} className="text-sm px-3 py-1">

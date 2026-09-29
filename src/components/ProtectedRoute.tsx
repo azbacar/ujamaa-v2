@@ -76,7 +76,7 @@ const AnnouncerRequestPage = () => {
               <ul className="space-y-2">
                 {[
                   'Avoir un compte vérifié sur la plateforme',
-                  'Respecter la charte de publication UJAMAA',
+                  'Respecter la charte de publication Ujamaan',
                   'Les publications sont soumises à modération avant diffusion',
                   'Accès au tableau de bord annonceur avec statistiques',
                 ].map((condition, i) => (

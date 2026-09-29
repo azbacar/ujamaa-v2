@@ -23,7 +23,7 @@ export default function ProFeaturesGate({ feature, children, isPro }: Props) {
             <Lock className="h-6 w-6 text-amber-600" />
           </div>
           <h3 className="font-bold text-foreground mb-1">Fonctionnalité Pro</h3>
-          <p className="text-sm text-muted-foreground mb-4">{feature} est réservé aux abonnés UJAMAA Pro</p>
+          <p className="text-sm text-muted-foreground mb-4">{feature} est réservé aux abonnés Ujamaan Pro</p>
           <Button
             onClick={() => navigate(proPath())}
             className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"

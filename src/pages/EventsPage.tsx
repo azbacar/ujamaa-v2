@@ -263,7 +263,7 @@ const EventsPage = () => {
                   🎉 Vous organisez un événement ?
                 </h3>
                 <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                  Faites connaître votre événement sur UJAMAA et attirez plus de participants de toutes les îles.
+                  Faites connaître votre événement sur Ujamaan et attirez plus de participants de toutes les îles.
                 </p>
                 <Button 
                   size="lg" 

@@ -33,7 +33,7 @@ const THEME_RULES: { theme: string; keywords: string[] }[] = [
   { theme: 'Éducation', keywords: ['école', 'université', 'formation', 'cours', 'étude', 'bac', 'inscription'] },
   { theme: 'Emploi', keywords: ['emploi', 'travail', 'recrutement', 'offre', 'stage', 'salaire', 'embauche'] },
   { theme: 'Gastronomie', keywords: ['recette', 'plat', 'cuisine', 'manger', 'nourriture', 'langouste', 'mabawa'] },
-  { theme: 'Plateforme UJAMAA', keywords: ['ujamaa', 'site', 'plateforme', 'compte', 'inscription', 'connexion', 'profil'] },
+  { theme: 'Plateforme Ujamaan', keywords: ['ujamaa', 'site', 'plateforme', 'compte', 'inscription', 'connexion', 'profil'] },
 ];
 
 function classifyMessage(message: string): string {

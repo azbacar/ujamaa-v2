@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { authPath, proPath } from '@/lib/authRedirect';
 
 export default function FreelancerCRMPage() {
-  usePageSEO({ title: 'Espace Freelancer — UJAMAA', description: 'Gérez vos clients, factures et comptabilité freelancer' });
+  usePageSEO({ title: 'Espace Freelancer — Ujamaan', description: 'Gérez vos clients, factures et comptabilité freelancer' });
   const { user } = useAuth();
   const { currentLanguage, setLanguage } = useLanguage();
   const navigate = useNavigate();

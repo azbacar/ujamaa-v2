@@ -82,8 +82,8 @@ export default function PartnerPage() {
 
   usePageSEO({
     title: 'Portail Concessionnaires Partenaires',
-    description: 'Devenez concessionnaire partenaire UJAMAA : encaissez les abonnements Pro de vos clients en cash, déposez à AZZHY et gardez 2 % de commission sur chaque dépôt.',
-    keywords: 'concessionnaire UJAMAA, partenaire Comores, commission abonnement, AZZHY dépôt, mobile money cash, distributeur Pro',
+    description: 'Devenez concessionnaire partenaire Ujamaan : encaissez les abonnements Pro de vos clients en cash, déposez à AZZHY et gardez 2 % de commission sur chaque dépôt.',
+    keywords: 'concessionnaire Ujamaan, partenaire Comores, commission abonnement, AZZHY dépôt, mobile money cash, distributeur Pro',
     canonicalPath: '/partener',
   });
 
@@ -113,7 +113,7 @@ export default function PartnerPage() {
         clientId = (uid as any) || null;
       }
       if (!clientId) {
-        toast.error('Client introuvable. Demandez-lui de créer un compte UJAMAA d\'abord.');
+        toast.error('Client introuvable. Demandez-lui de créer un compte Ujamaan d\'abord.');
         setSubmitting(false);
         return;
       }
@@ -244,7 +244,7 @@ export default function PartnerPage() {
           <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-ocean-700 text-white py-16 sm:py-24">
             <div className="container mx-auto px-4 text-center">
               <Handshake className="h-16 w-16 mx-auto mb-4" />
-              <h1 className="text-3xl sm:text-5xl font-bold mb-4">Devenez Concessionnaire UJAMAA</h1>
+              <h1 className="text-3xl sm:text-5xl font-bold mb-4">Devenez Concessionnaire Ujamaan</h1>
               <p className="text-lg sm:text-xl max-w-2xl mx-auto opacity-95">
                 Encaissez les abonnements Pro de vos clients en cash, reversez à AZZHY
                 et gardez <strong>2 % de commission</strong> sur chaque dépôt.
@@ -260,7 +260,7 @@ export default function PartnerPage() {
               </Card>
               <Card>
                 <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-emerald-600" /> Visibilité sur la carte</CardTitle></CardHeader>
-                <CardContent>Votre point de vente apparaît sur la carte UJAMAA, accessible depuis le mode de paiement.</CardContent>
+                <CardContent>Votre point de vente apparaît sur la carte Ujamaan, accessible depuis le mode de paiement.</CardContent>
               </Card>
               <Card>
                 <CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-emerald-600" /> Traçabilité totale</CardTitle></CardHeader>
@@ -422,7 +422,7 @@ export default function PartnerPage() {
               <CardHeader>
                 <CardTitle>Encaisser un abonnement Pro</CardTitle>
                 <CardDescription>
-                  Le client doit avoir un compte UJAMAA. Tarif : <strong>{settings?.pro_plan_price || 990} {settings?.currency}</strong>.
+                  Le client doit avoir un compte Ujamaan. Tarif : <strong>{settings?.pro_plan_price || 990} {settings?.currency}</strong>.
                   Votre commission par encaissement : <strong className="text-emerald-700">
                     {settings?.commission_type === 'percentage'
                       ? `${settings.commission_value}%`
@@ -634,7 +634,7 @@ export default function PartnerPage() {
               <CardHeader>
                 <CardTitle>Mon point de vente</CardTitle>
                 <CardDescription>
-                  Ces informations apparaissent sur la carte UJAMAA et dans le mode de paiement
+                  Ces informations apparaissent sur la carte Ujamaan et dans le mode de paiement
                   pour que les clients puissent venir payer chez vous.
                 </CardDescription>
               </CardHeader>

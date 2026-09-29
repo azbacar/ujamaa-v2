@@ -34,7 +34,7 @@ const AIAssistantSection = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [aiName, setAiName] = useState('UJAMAA IA');
+  const [aiName, setAiName] = useState('Ujamaan IA');
   const [welcomeMessage, setWelcomeMessage] = useState('Bonjour ! Je suis votre assistant intelligent pour Mayotte et les Comores. Comment puis-je vous aider aujourd\'hui ?');
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -319,7 +319,7 @@ const AIAssistantSection = () => {
         .single();
 
       if (!error && data) {
-        setAiName(data.ai_assistant_name || 'UJAMAA IA');
+        setAiName(data.ai_assistant_name || 'Ujamaan IA');
         const welcome = data.ai_assistant_welcome_message || 'Bonjour ! Je suis votre assistant intelligent pour Mayotte et les Comores. Comment puis-je vous aider aujourd\'hui ?';
         setWelcomeMessage(welcome);
         setMessages([{ id: '1', content: welcome, sender: 'ai', timestamp: new Date(), type: 'info' }]);
