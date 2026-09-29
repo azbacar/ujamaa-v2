@@ -1,3 +1,4 @@
+import { isValidInternalSecret } from '../_shared/internalSecret.ts';
 // Edge function: envoie un email (Resend) + WhatsApp (Meta Cloud API) pour une alerte prix.
 // Appelée par le trigger DB notify_price_change pour chaque alerte utilisateur déclenchée.
 const corsHeaders = {
@@ -101,14 +102,13 @@ async function sendWhatsApp(p: Payload, to: string) {
   return data;
 }
 
-const INTERNAL_SECRET = Deno.env.get("NOTIFY_INTERNAL_SECRET");
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   // Internal-only: triggered by DB triggers with shared secret header
   const providedSecret = req.headers.get("x-internal-secret");
-  if (!INTERNAL_SECRET || providedSecret !== INTERNAL_SECRET) {
+  if (!(await isValidInternalSecret(providedSecret))) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

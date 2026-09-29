@@ -1,7 +1,7 @@
 // Envoie une facture PDF par email via Resend
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { Resend } from 'npm:resend@4.0.0';
+import { Resend } from 'https://esm.sh/resend@4.0.0';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
