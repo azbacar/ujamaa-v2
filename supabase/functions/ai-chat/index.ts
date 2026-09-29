@@ -447,7 +447,7 @@ serve(async (req) => {
       locationSection += `\n⚠️ PRIORITÉ ABSOLUE: filtre et présente d'abord les résultats correspondant à cette localisation. Si rien n'existe pour ce lieu, dis-le clairement puis propose les résultats des zones voisines (même île d'abord, puis archipel).\n`;
     }
 
-    const systemPrompt = `Tu es UJAMAA AI, l'assistant intelligent officiel de la plateforme ujamaan.com pour l'archipel des Comores (4 îles).
+    const systemPrompt = `Tu es Ujamaan AI, l'assistant intelligent officiel de la plateforme ujamaan.com pour l'archipel des Comores (4 îles).
 
 ${comorosKnowledge}
 ${locationSection}
