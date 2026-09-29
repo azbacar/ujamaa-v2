@@ -132,7 +132,7 @@ function ClientsTab({ clients, onAdd, onDelete }: {
               </div>
               <div className="space-y-1"><Label>Adresse</Label><Input value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} /></div>
               <div className="space-y-1">
-                <Label>Lier à un utilisateur UJAMAA (email)</Label>
+                <Label>Lier à un utilisateur Ujamaan (email)</Label>
                 <Input placeholder="utilisateur@email.com" value={form.linked_email} onChange={e => setForm(p => ({ ...p, linked_email: e.target.value }))} />
                 <p className="text-xs text-muted-foreground">Si renseigné, ce client recevra ses factures sur la plateforme</p>
               </div>
@@ -153,7 +153,7 @@ function ClientsTab({ clients, onAdd, onDelete }: {
                 <div>
                   <p className="font-medium">{c.name}</p>
                   <p className="text-sm text-muted-foreground">{[c.email, c.phone].filter(Boolean).join(' • ') || 'Pas de contact'}</p>
-                  {c.linked_user_id && <Badge variant="secondary" className="mt-1 text-xs">Utilisateur UJAMAA</Badge>}
+                  {c.linked_user_id && <Badge variant="secondary" className="mt-1 text-xs">Utilisateur Ujamaan</Badge>}
                 </div>
                 <Button variant="ghost" size="icon" className="text-red-500" onClick={() => { onDelete(c.id); toast.success('Client supprimé'); }}>
                   <Trash2 className="h-4 w-4" />

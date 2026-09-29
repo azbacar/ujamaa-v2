@@ -40,7 +40,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: any; color: string }>
 };
 
 export default function EnterpriseDashboard() {
-  usePageSEO({ title: 'Espace Entreprise — UJAMAA', description: 'Gérez votre profil entreprise, vos soumissions et vos collaborateurs' });
+  usePageSEO({ title: 'Espace Entreprise — Ujamaan', description: 'Gérez votre profil entreprise, vos soumissions et vos collaborateurs' });
   const { user } = useAuth();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);

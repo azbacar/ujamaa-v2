@@ -137,7 +137,7 @@ export default function PartnersManagementSection() {
     try {
       const { data: uid } = await supabase.rpc('lookup_user_id_by_email', { _email: createForm.email.toLowerCase().trim() });
       if (!uid) {
-        toast.error('Utilisateur introuvable. Demandez-lui de créer un compte UJAMAA d\'abord.');
+        toast.error('Utilisateur introuvable. Demandez-lui de créer un compte Ujamaan d\'abord.');
         return;
       }
       const { error } = await supabase.from('partner_accounts').insert({
@@ -274,12 +274,12 @@ export default function PartnersManagementSection() {
           <CardTitle className="flex items-center gap-2 text-primary">
             <Plus className="h-5 w-5" /> Créer un concessionnaire
           </CardTitle>
-          <CardDescription>L'utilisateur doit déjà avoir un compte UJAMAA</CardDescription>
+          <CardDescription>L'utilisateur doit déjà avoir un compte Ujamaan</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <Label>Email du compte UJAMAA *</Label>
+              <Label>Email du compte Ujamaan *</Label>
               <Input type="email" value={createForm.email} onChange={e => setCreateForm({ ...createForm, email: e.target.value })} />
             </div>
             <div>

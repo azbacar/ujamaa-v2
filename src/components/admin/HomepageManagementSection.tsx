@@ -270,11 +270,11 @@ export const HomepageManagementSection = () => {
   const [settingsId, setSettingsId] = useState<string>('');
   const [heroConfig, setHeroConfig] = useState<HeroConfig>({
     id: '1',
-    title: 'UJAMAA Plateforme Unifiée',
+    title: 'Ujamaan Plateforme Unifiée',
     subtitle: 'Votre portail d\'information centralisé pour les Comores - Prix, marchés, services publics et bien plus',
     primaryButtonText: '🚀 Voir Plus',
     primaryButtonLink: '/prix',
-    secondaryButtonText: '🤖 Assistant IA UJAMAA',
+    secondaryButtonText: '🤖 Assistant IA Ujamaan',
     isActive: true
   });
 

@@ -262,7 +262,7 @@ export default function MvolaPaymentDialog({
                   <Handshake className="w-4 h-4 text-primary" /> Payer chez un concessionnaire
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Rendez-vous chez un concessionnaire UJAMAA agréé près de chez vous, payez en espèces le
+                  Rendez-vous chez un concessionnaire Ujamaan agréé près de chez vous, payez en espèces le
                   montant de <strong>{amount.toLocaleString()} {currency}</strong> et présentez votre référence{" "}
                   <Badge variant="outline" className="text-[10px]">{userRef.slice(0, 15)}</Badge>.
                   Votre Pro sera activé dès l'enregistrement par le concessionnaire.

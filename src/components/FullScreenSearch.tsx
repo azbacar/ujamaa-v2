@@ -93,7 +93,7 @@ const AISearchChat = ({ onClose }: { onClose: () => void }) => {
     } catch {}
     setMessages([{
       id: '1',
-      text: "🌺 Salut ! Je suis l'assistant UJAMAA. Posez-moi vos questions sur les Comores et Mayotte !",
+      text: "🌺 Salut ! Je suis l'assistant Ujamaan. Posez-moi vos questions sur les Comores et Mayotte !",
       isUser: false,
       timestamp: new Date(),
     }]);

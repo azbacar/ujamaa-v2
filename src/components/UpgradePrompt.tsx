@@ -18,7 +18,7 @@ interface UpgradePromptProps {
 
 const CONDITIONS = [
   'Avoir un compte vérifié sur la plateforme',
-  'Respecter la charte de publication UJAMAA',
+  'Respecter la charte de publication Ujamaan',
   'Les publications sont soumises à modération',
   'Accès au tableau de bord avec statistiques',
 ];

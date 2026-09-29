@@ -216,7 +216,7 @@ const ServicesPage = () => {
                   🛠️ Vous proposez un service ?
                 </h3>
                 <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-                  Faites connaître vos services sur UJAMAA et développez votre activité dans toutes les îles.
+                  Faites connaître vos services sur Ujamaan et développez votre activité dans toutes les îles.
                 </p>
                 <Button 
                   size="lg" 

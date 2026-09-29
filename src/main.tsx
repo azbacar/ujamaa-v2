@@ -6,6 +6,19 @@ import { checkAndPurgeStaleCache } from './lib/cacheBuster'
 // 1) Purge automatique du cache si nouvelle version (corrige les pages blanches iPhone post-déploiement)
 checkAndPurgeStaleCache();
 
+// Après un déploiement, les anciens fichiers de page n'existent plus : on recharge une seule fois.
+window.addEventListener('vite:preloadError', (e) => {
+  e.preventDefault();
+  try {
+    if (sessionStorage.getItem('ujamaan_chunk_reload')) return;
+    sessionStorage.setItem('ujamaan_chunk_reload', '1');
+  } catch {}
+  window.location.reload();
+});
+window.addEventListener('ujamaan:ready', () => {
+  setTimeout(() => { try { sessionStorage.removeItem('ujamaan_chunk_reload'); } catch {} }, 10000);
+});
+
 // 2) Boot React avec filet de sécurité (évite la page blanche sur iOS Safari ancien)
 function boot() {
   try {
