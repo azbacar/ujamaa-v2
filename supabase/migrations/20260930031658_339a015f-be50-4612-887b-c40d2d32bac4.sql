@@ -1,0 +1,1 @@
+GRANT SELECT (images, price, location, service_subtype) ON public.content_items TO anon;
