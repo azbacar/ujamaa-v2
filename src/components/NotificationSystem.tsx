@@ -83,9 +83,9 @@ const NotificationSystem = () => {
 
     // 3. Routing par mots-clés (du plus spécifique au plus générique)
     if (has('verifie', 'verification', 'kyc', 'identite', 'badge')) {
-      navigate('/profil?tab=verification');
+      navigate('/profile?tab=verification');
     } else if (has('pro ', 'abonnement', 'souscription', 'paiement', 'facture', 'mvola', 'paypal')) {
-      navigate('/profil?tab=abonnement');
+      navigate('/profile?tab=abonnement');
     } else if (has('modification', 'approuv', 'rejet', 'validation', 'en attente')) {
       navigate('/annonceur');
     } else if (has('message', 'discussion', 'conversation')) {
@@ -106,7 +106,7 @@ const NotificationSystem = () => {
       navigate('/annonces');
     } else {
       // 4. Aucun signal exploitable → centre de notifications
-      navigate('/profil?tab=notifications');
+      navigate('/profile?tab=notifications');
     }
   };
 

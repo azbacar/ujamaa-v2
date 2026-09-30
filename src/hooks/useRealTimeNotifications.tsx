@@ -12,6 +12,30 @@ export interface Notification {
   link?: string;
 }
 
+const GLOBAL_READ_KEY = 'ujamaan_global_notifs_read';
+const GLOBAL_DISMISSED_KEY = 'ujamaan_global_notifs_dismissed';
+
+const loadIds = (key: string): string[] => {
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveId = (key: string, id: string) => {
+  try {
+    const ids = loadIds(key);
+    if (!ids.includes(id)) {
+      localStorage.setItem(key, JSON.stringify([...ids, id].slice(-200)));
+    }
+  } catch {
+    // stockage indisponible : on ignore
+  }
+};
+
 export const useRealTimeNotifications = () => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -63,15 +87,19 @@ export const useRealTimeNotifications = () => {
         .limit(20);
 
       if (globalData) {
-        results.push(...globalData.map(g => ({
-          id: `global-${g.id}`,
-          title: g.title,
-          message: g.content,
-          type: (g.type === 'urgent' ? 'error' : g.type === 'warning' ? 'warning' : g.type === 'maintenance' ? 'warning' : 'info') as Notification['type'],
-          timestamp: new Date(g.created_at),
-          read: false,
-          link: undefined,
-        })));
+        const readIds = loadIds(GLOBAL_READ_KEY);
+        const dismissedIds = loadIds(GLOBAL_DISMISSED_KEY);
+        results.push(...globalData
+          .map(g => ({
+            id: `global-${g.id}`,
+            title: g.title,
+            message: g.content,
+            type: (g.type === 'urgent' ? 'error' : g.type === 'warning' ? 'warning' : g.type === 'maintenance' ? 'warning' : 'info') as Notification['type'],
+            timestamp: new Date(g.created_at),
+            read: readIds.includes(`global-${g.id}`),
+            link: undefined,
+          }))
+          .filter(n => !dismissedIds.includes(n.id)));
       }
 
       // Fetch user-specific notifications if logged in
@@ -107,8 +135,9 @@ export const useRealTimeNotifications = () => {
   };
 
   const markAsRead = async (id: string) => {
-    // Global announcements can't be marked as read in DB
+    // Global announcements: persisted locally (no per-user column in DB)
     if (id.startsWith('global-')) {
+      saveId(GLOBAL_READ_KEY, id);
       setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
       return;
     }
@@ -129,8 +158,10 @@ export const useRealTimeNotifications = () => {
   };
 
   const deleteNotification = async (id: string) => {
-    // Global announcements: just remove from local state
+    // Global announcements: dismissal persisted locally
     if (id.startsWith('global-')) {
+      saveId(GLOBAL_DISMISSED_KEY, id);
+      saveId(GLOBAL_READ_KEY, id);
       setNotifications(prev => prev.filter(n => n.id !== id));
       return;
     }
