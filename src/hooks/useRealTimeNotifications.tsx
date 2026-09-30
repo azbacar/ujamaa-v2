@@ -12,6 +12,30 @@ export interface Notification {
   link?: string;
 }
 
+const GLOBAL_READ_KEY = 'ujamaan_global_notifs_read';
+const GLOBAL_DISMISSED_KEY = 'ujamaan_global_notifs_dismissed';
+
+const loadIds = (key: string): string[] => {
+  try {
+    const raw = localStorage.getItem(key);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveId = (key: string, id: string) => {
+  try {
+    const ids = loadIds(key);
+    if (!ids.includes(id)) {
+      localStorage.setItem(key, JSON.stringify([...ids, id].slice(-200)));
+    }
+  } catch {
+    // stockage indisponible : on ignore
+  }
+};
+
 export const useRealTimeNotifications = () => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
