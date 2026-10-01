@@ -894,8 +894,8 @@ Deno.serve(async (req) => {
         return json(data, 201);
       }
       if (id === "report") {
-        const { data, error: e } = await supabase.from("content_reports").insert({
-          reporter_id: user!.id, content_type: body.content_type, content_id: body.content_id,
+        const { data, error: e } = await supabase.from("reports").insert({
+          user_id: user!.id, content_type: body.content_type, content_id: body.content_id,
           reason: body.reason, details: body.details || null, status: "pending",
         }).select().single();
         if (e) return err(e.message, 500);
@@ -1042,24 +1042,24 @@ Deno.serve(async (req) => {
       const { data: ent } = await supabase.rpc("get_enterprise_id", { _user_id: user!.id });
       if (!ent) return err("No active enterprise profile", 403);
       if (method === "GET" && id === "clients") {
-        const { data, error: e } = await supabase.from("crm_clients").select("*").eq("enterprise_id", ent);
+        const { data, error: e } = await supabase.from("enterprise_clients").select("*").eq("enterprise_id", ent);
         if (e) return err(e.message, 500);
         return json({ data });
       }
       if (method === "POST" && id === "client") {
         const body = await req.json();
-        const { data, error: e } = await supabase.from("crm_clients").insert({ ...body, enterprise_id: ent }).select().single();
+        const { data, error: e } = await supabase.from("enterprise_clients").insert({ ...body, enterprise_id: ent }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
       if (method === "GET" && id === "invoices") {
-        const { data, error: e } = await supabase.from("crm_invoices").select("*").eq("enterprise_id", ent);
+        const { data, error: e } = await supabase.from("enterprise_invoices").select("*").eq("enterprise_id", ent);
         if (e) return err(e.message, 500);
         return json({ data });
       }
       if (method === "POST" && id === "invoice") {
         const body = await req.json();
-        const { data, error: e } = await supabase.from("crm_invoices").insert({ ...body, enterprise_id: ent }).select().single();
+        const { data, error: e } = await supabase.from("enterprise_invoices").insert({ ...body, enterprise_id: ent }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
       }
@@ -1072,8 +1072,8 @@ Deno.serve(async (req) => {
         const contentType = url.searchParams.get("content_type");
         const contentId = url.searchParams.get("content_id");
         if (!contentType || !contentId) return err("content_type and content_id required");
-        const { data, error: e } = await supabase.from("comments")
-          .select("*, users(username, avatar_url)").eq("content_type", contentType).eq("content_id", contentId)
+        const { data, error: e } = await supabase.from("content_comments")
+          .select("*").eq("content_type", contentType).eq("content_id", contentId)
           .order("created_at", { ascending: false });
         if (e) return err(e.message, 500);
         return json({ data });
@@ -1083,8 +1083,8 @@ Deno.serve(async (req) => {
         if (response) return response;
         const body = await req.json();
         if (!body.content_type || !body.content_id || !body.content) return err("content_type, content_id, content required");
-        const { data, error: e } = await supabase.from("comments").insert({
-          user_id: user!.id, content_type: body.content_type, content_id: body.content_id, content: body.content,
+        const { data, error: e } = await supabase.from("content_comments").insert({
+          user_id: user!.id, content_type: body.content_type, content_id: body.content_id, body: body.content,
         }).select().single();
         if (e) return err(e.message, 500);
         return json(data, 201);
