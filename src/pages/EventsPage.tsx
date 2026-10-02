@@ -229,9 +229,9 @@ const EventsPage = () => {
         {/* Liste des événements */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredEvents.map((event) => (
-            <Card key={event.id} className="card-hover">
+          <Card key={event.id} className={`card-hover ${getEventStatus(event) === 'past' ? 'opacity-75' : ''}`}>
               <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{getCategoryIcon(event.category)}</span>
                     <div>
@@ -239,9 +239,15 @@ const EventsPage = () => {
                       <p className="text-sm text-muted-foreground mt-1">{event.category || 'Général'}</p>
                     </div>
                   </div>
-                  {isFull(event) && (
-                    <Badge variant="destructive">Complet</Badge>
-                  )}
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                    <Badge variant="outline" className={statusMeta[getEventStatus(event)].className}>
+                      {getEventStatus(event) === 'ongoing' && '🔴 '}
+                      {statusMeta[getEventStatus(event)].label}
+                    </Badge>
+                    {isFull(event) && (
+                      <Badge variant="destructive">Complet</Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               
