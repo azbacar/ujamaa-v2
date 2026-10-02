@@ -80,16 +80,40 @@ const EventsPage = () => {
 
   const now = new Date();
 
-  const filteredEvents = events.filter(event => {
-    // Masquer les événements passés de la liste publique
-    if (new Date(event.date) < now) return false;
+  const endOfDay = (d: Date) => {
+    const e = new Date(d);
+    e.setHours(23, 59, 59, 999);
+    return e;
+  };
 
+  const getEventStatus = (event: Event): 'upcoming' | 'ongoing' | 'past' => {
+    const start = new Date(event.date).getTime();
+    if (start > now.getTime()) return 'upcoming';
+    const end = event.end_date ? new Date(event.end_date).getTime() : endOfDay(new Date(event.date)).getTime();
+    return end >= now.getTime() ? 'ongoing' : 'past';
+  };
+
+  const statusMeta: Record<'upcoming' | 'ongoing' | 'past', { label: string; className: string }> = {
+    upcoming: { label: 'À venir', className: 'bg-primary/10 text-primary border-primary/30' },
+    ongoing: { label: 'En cours', className: 'bg-emerald-500/15 text-emerald-700 border-emerald-400/40' },
+    past: { label: 'Événement passé', className: 'bg-muted text-muted-foreground border-border' },
+  };
+
+  const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesIsland = selectedIsland === 'all' || event.island === selectedIsland;
     const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
-    
-    return matchesSearch && matchesIsland && matchesCategory;
+    const matchesStatus = selectedStatus === 'all' || getEventStatus(event) === selectedStatus;
+
+    return matchesSearch && matchesIsland && matchesCategory && matchesStatus;
+  }).sort((a, b) => {
+    const statusOrder = { ongoing: 0, upcoming: 1, past: 2 } as const;
+    const sa = statusOrder[getEventStatus(a)];
+    const sb = statusOrder[getEventStatus(b)];
+    if (sa !== sb) return sa - sb;
+    if (sa === 2) return new Date(b.date).getTime() - new Date(a.date).getTime();
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
   });
 
   if (loading) {
