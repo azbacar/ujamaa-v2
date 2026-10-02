@@ -148,7 +148,12 @@ const EventDetail = () => {
     );
   }
 
-  const isUpcoming = new Date(event.date) > new Date();
+  const now = Date.now();
+  const eventStart = new Date(event.date).getTime();
+  const eventEnd = event.end_date ? new Date(event.end_date).getTime() : (() => { const e = new Date(event.date); e.setHours(23, 59, 59, 999); return e.getTime(); })();
+  const isUpcoming = eventStart > now;
+  const isOngoing = !isUpcoming && eventEnd >= now;
+  const isPast = !isUpcoming && !isOngoing;
   const isFull = event.capacity && event.registered_count >= event.capacity;
   const canRegister = isUpcoming && event.requires_registration && !isFull && !isRegistered;
 
@@ -204,7 +209,10 @@ const EventDetail = () => {
                     <span className="text-3xl">{getCategoryIcon(event.category)}</span>
                     <Badge variant="outline">{event.category}</Badge>
                   </div>
-                  {!isUpcoming && <Badge variant="secondary">Passé</Badge>}
+                  {isOngoing && (
+                    <Badge className="bg-emerald-500/15 text-emerald-700 border border-emerald-400/40">🔴 En cours</Badge>
+                  )}
+                  {isPast && <Badge variant="secondary">Événement passé</Badge>}
                   {isFull && isUpcoming && <Badge variant="destructive">Complet</Badge>}
                   {isRegistered && <Badge className="bg-green-500">✓ Inscrit</Badge>}
                 </div>

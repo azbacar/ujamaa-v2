@@ -23,6 +23,7 @@ interface Event {
   title: string;
   description: string;
   date: string;
+  end_date: string | null;
   location: string;
   island: string;
   category: string;
@@ -45,6 +46,7 @@ const EventsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -80,16 +82,40 @@ const EventsPage = () => {
 
   const now = new Date();
 
-  const filteredEvents = events.filter(event => {
-    // Masquer les événements passés de la liste publique
-    if (new Date(event.date) < now) return false;
+  const endOfDay = (d: Date) => {
+    const e = new Date(d);
+    e.setHours(23, 59, 59, 999);
+    return e;
+  };
 
+  const getEventStatus = (event: Event): 'upcoming' | 'ongoing' | 'past' => {
+    const start = new Date(event.date).getTime();
+    if (start > now.getTime()) return 'upcoming';
+    const end = event.end_date ? new Date(event.end_date).getTime() : endOfDay(new Date(event.date)).getTime();
+    return end >= now.getTime() ? 'ongoing' : 'past';
+  };
+
+  const statusMeta: Record<'upcoming' | 'ongoing' | 'past', { label: string; className: string }> = {
+    upcoming: { label: 'À venir', className: 'bg-primary/10 text-primary border-primary/30' },
+    ongoing: { label: 'En cours', className: 'bg-emerald-500/15 text-emerald-700 border-emerald-400/40' },
+    past: { label: 'Événement passé', className: 'bg-muted text-muted-foreground border-border' },
+  };
+
+  const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesIsland = selectedIsland === 'all' || event.island === selectedIsland;
     const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
-    
-    return matchesSearch && matchesIsland && matchesCategory;
+    const matchesStatus = selectedStatus === 'all' || getEventStatus(event) === selectedStatus;
+
+    return matchesSearch && matchesIsland && matchesCategory && matchesStatus;
+  }).sort((a, b) => {
+    const statusOrder = { ongoing: 0, upcoming: 1, past: 2 } as const;
+    const sa = statusOrder[getEventStatus(a)];
+    const sb = statusOrder[getEventStatus(b)];
+    if (sa !== sb) return sa - sb;
+    if (sa === 2) return new Date(b.date).getTime() - new Date(a.date).getTime();
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
   });
 
   if (loading) {
@@ -137,7 +163,7 @@ const EventsPage = () => {
         {/* Filtres */}
         <Card className="glass-effect mb-8">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
@@ -176,6 +202,18 @@ const EventsPage = () => {
                 </SelectContent>
               </Select>
 
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tous les statuts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="upcoming">À venir</SelectItem>
+                  <SelectItem value="ongoing">En cours</SelectItem>
+                  <SelectItem value="past">Passés</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Button className="bg-gradient-to-r from-emerald-500 to-ocean-500">
                 Filtrer ({filteredEvents.length})
               </Button>
@@ -191,9 +229,9 @@ const EventsPage = () => {
         {/* Liste des événements */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredEvents.map((event) => (
-            <Card key={event.id} className="card-hover">
+          <Card key={event.id} className={`card-hover ${getEventStatus(event) === 'past' ? 'opacity-75' : ''}`}>
               <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{getCategoryIcon(event.category)}</span>
                     <div>
@@ -201,9 +239,15 @@ const EventsPage = () => {
                       <p className="text-sm text-muted-foreground mt-1">{event.category || 'Général'}</p>
                     </div>
                   </div>
-                  {isFull(event) && (
-                    <Badge variant="destructive">Complet</Badge>
-                  )}
+                  <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                    <Badge variant="outline" className={statusMeta[getEventStatus(event)].className}>
+                      {getEventStatus(event) === 'ongoing' && '🔴 '}
+                      {statusMeta[getEventStatus(event)].label}
+                    </Badge>
+                    {isFull(event) && (
+                      <Badge variant="destructive">Complet</Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               
