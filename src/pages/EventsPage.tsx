@@ -18,7 +18,7 @@ import { useRole } from '@/hooks/useRole';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { authPath, proPath } from '@/lib/authRedirect';
 
-  interface Event {
+interface Event {
   id: string;
   title: string;
   description: string;
@@ -163,7 +163,7 @@ const EventsPage = () => {
         {/* Filtres */}
         <Card className="glass-effect mb-8">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
@@ -199,6 +199,18 @@ const EventsPage = () => {
                   <SelectItem value="Commerce">Commerce</SelectItem>
                   <SelectItem value="Business">Business</SelectItem>
                   <SelectItem value="Formation">Formation</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Tous les statuts" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="upcoming">À venir</SelectItem>
+                  <SelectItem value="ongoing">En cours</SelectItem>
+                  <SelectItem value="past">Passés</SelectItem>
                 </SelectContent>
               </Select>
 
