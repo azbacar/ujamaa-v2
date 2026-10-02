@@ -18,11 +18,12 @@ import { useRole } from '@/hooks/useRole';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { authPath, proPath } from '@/lib/authRedirect';
 
-interface Event {
+  interface Event {
   id: string;
   title: string;
   description: string;
   date: string;
+  end_date: string | null;
   location: string;
   island: string;
   category: string;
@@ -45,6 +46,7 @@ const EventsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIsland, setSelectedIsland] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpgrade, setShowUpgrade] = useState(false);
