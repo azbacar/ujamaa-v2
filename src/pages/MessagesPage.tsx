@@ -1,13 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Send, MessageCircle, User, Paperclip, FileIcon, Image as ImageIcon, X } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ArrowLeft, Send, MessageCircle, Paperclip, FileIcon, Image as ImageIcon, X, Search, CheckCheck } from 'lucide-react';
 import { useConversations, useDirectMessages, useSendMessage, useRealtimeMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -27,7 +27,7 @@ export default function MessagesPage() {
   const [attachment, setAttachment] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [myAccountType, setMyAccountType] = useState<string>('free');
-  const [partnerAccountType, setPartnerAccountType] = useState<string>('free');
+  const [conversationSearch, setConversationSearch] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   useRealtimeMessages(partnerId);
@@ -49,12 +49,6 @@ export default function MessagesPage() {
     supabase.from('users').select('account_type').eq('id', user.id).single()
       .then(({ data }) => setMyAccountType(data?.account_type || 'free'));
   }, [user]);
-
-  useEffect(() => {
-    if (!partnerId) return;
-    supabase.from('users').select('account_type').eq('id', partnerId).single()
-      .then(({ data }) => setPartnerAccountType(data?.account_type || 'free'));
-  }, [partnerId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -91,7 +85,8 @@ export default function MessagesPage() {
       setUploading(true);
       try {
         const ext = attachment.name.split('.').pop();
-        const filePath = `${user!.id}/${Date.now()}.${ext}`;
+        if (!user) return;
+        const filePath = `${user.id}/${Date.now()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from('chat-attachments')
           .upload(filePath, attachment);
@@ -158,13 +153,13 @@ export default function MessagesPage() {
 
     return (
       <>
-        {textPart && <p>{textPart}</p>}
+        {textPart && <p className="whitespace-pre-wrap leading-relaxed">{textPart}</p>}
         {attachmentMatch && (
           <a
             href={attachmentMatch[2]}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 text-xs underline mt-1 opacity-80 hover:opacity-100"
+            className="mt-2 flex items-center gap-2 rounded-md border border-current/15 bg-background/10 px-3 py-2 text-xs font-medium transition-colors hover:bg-background/20"
           >
             {attachmentMatch[2].match(/\.(jpg|jpeg|png|gif|webp)$/i)
               ? <ImageIcon className="h-3 w-3" />
@@ -175,6 +170,36 @@ export default function MessagesPage() {
       </>
     );
   };
+
+  const getInitials = (name: string) => name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase() ?? '')
+    .join('') || '?';
+
+  const formatConversationTime = (value: string) => {
+    const date = new Date(value);
+    const today = new Date();
+    if (date.toDateString() === today.toDateString()) {
+      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) return 'Hier';
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  };
+
+  const filteredConversations = useMemo(() => {
+    const query = conversationSearch.trim().toLocaleLowerCase('fr');
+    if (!query) return conversations ?? [];
+    return (conversations ?? []).filter(conversation =>
+      conversation.username.toLocaleLowerCase('fr').includes(query)
+      || conversation.last_message.toLocaleLowerCase('fr').includes(query)
+    );
+  }, [conversationSearch, conversations]);
+
+  const activeConversation = conversations?.find(conversation => conversation.user_id === partnerId);
 
   if (!user) {
     return (
@@ -192,93 +217,153 @@ export default function MessagesPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header currentLanguage={currentLanguage} onLanguageChange={setLanguage} />
-      <main className="container mx-auto px-4 sm:px-6 py-8">
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2 mb-6">
-          <MessageCircle className="h-6 w-6 text-primary" /> Messages
-        </h1>
+      <main className="messaging-page mx-auto w-full max-w-7xl px-0 py-0 md:px-6 md:py-8">
+        <div className="messaging-shell flex min-h-[calc(100dvh-4rem)] overflow-hidden border-y border-border bg-card md:h-[min(760px,calc(100dvh-8rem))] md:min-h-[620px] md:rounded-lg md:border md:shadow-lg">
+          <aside className={`w-full shrink-0 border-border bg-muted/35 md:block md:w-[340px] md:border-r ${partnerId ? 'hidden' : 'flex flex-col'}`}>
+            <div className="border-b border-border p-5 md:border-b-0 md:p-6 md:pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+                  <MessageCircle className="h-5 w-5" />
+                </div>
+                <div>
+                  <h1 className="messaging-title text-xl font-semibold text-foreground">Messages</h1>
+                  <p className="text-xs text-muted-foreground">Vos échanges sur Ujamaan</p>
+                </div>
+              </div>
+              <div className="relative mt-5">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={conversationSearch}
+                  onChange={event => setConversationSearch(event.target.value)}
+                  placeholder="Rechercher une conversation"
+                  aria-label="Rechercher une conversation"
+                  className="h-10 rounded-md border-border bg-card pl-9 shadow-none focus-visible:ring-secondary/20"
+                />
+              </div>
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ minHeight: '60vh' }}>
-          {/* Conversation list */}
-          <Card className={`md:col-span-1 ${partnerId ? 'hidden md:block' : ''}`}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Conversations</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {!conversations?.length ? (
-                <p className="text-sm text-muted-foreground p-4">Aucune conversation</p>
-              ) : (
-                <div className="divide-y divide-border">
-                  {conversations.map(conv => (
-                    <Link
-                      key={conv.user_id}
-                      to={`/messages/${conv.user_id}`}
-                      className={`block px-4 py-3 hover:bg-muted/50 transition-colors ${partnerId === conv.user_id ? 'bg-muted' : ''}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm text-foreground flex items-center gap-2">
-                          <User className="h-3 w-3" /> {conv.username}
+            <div className="flex-1 overflow-y-auto px-2 pb-4">
+              {!filteredConversations.length ? (
+                <div className="px-5 py-12 text-center">
+                  <MessageCircle className="mx-auto h-7 w-7 text-muted-foreground/50" />
+                  <p className="mt-3 text-sm font-medium text-foreground">
+                    {conversationSearch ? 'Aucun résultat' : 'Aucune conversation'}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {conversationSearch ? 'Essayez un autre nom ou message.' : 'Vos nouveaux échanges apparaîtront ici.'}
+                  </p>
+                </div>
+              ) : filteredConversations.map(conversation => {
+                const isActive = partnerId === conversation.user_id;
+                return (
+                  <Link
+                    key={conversation.user_id}
+                    to={`/messages/${conversation.user_id}`}
+                    className={`mb-1 flex items-center gap-3 rounded-lg border px-3 py-3 transition-colors ${isActive ? 'border-border bg-card shadow-sm' : 'border-transparent hover:bg-card/70'}`}
+                  >
+                    <Avatar className="h-11 w-11">
+                      <AvatarFallback className={isActive ? 'bg-secondary/15 font-semibold text-secondary' : 'bg-muted font-semibold text-muted-foreground'}>
+                        {getInitials(conversation.username)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className={`truncate text-sm ${conversation.unread_count > 0 ? 'font-semibold text-foreground' : 'font-medium text-foreground'}`}>
+                          {conversation.username}
                         </span>
-                        {conv.unread_count > 0 && (
-                          <Badge variant="default" className="text-xs h-5 w-5 p-0 flex items-center justify-center rounded-full">
-                            {conv.unread_count}
+                        <span className="shrink-0 text-[10px] uppercase text-muted-foreground">
+                          {formatConversationTime(conversation.last_message_at)}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 flex items-center gap-2">
+                        <p className={`min-w-0 flex-1 truncate text-xs ${conversation.unread_count > 0 ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+                          {conversation.last_message}
+                        </p>
+                        {conversation.unread_count > 0 && (
+                          <Badge className="flex h-5 min-w-5 items-center justify-center rounded-full bg-secondary px-1.5 text-[10px] text-secondary-foreground">
+                            {conversation.unread_count > 99 ? '99+' : conversation.unread_count}
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{conv.last_message}</p>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </aside>
 
-          {/* Chat area */}
-          <Card className="md:col-span-2 flex flex-col">
+          <section className={`min-w-0 flex-1 flex-col bg-card ${partnerId ? 'flex' : 'hidden md:flex'}`}>
             {partnerId ? (
               <>
-                <CardHeader className="pb-2 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <Link to="/messages" className="md:hidden">
-                      <ArrowLeft className="h-4 w-4" />
-                    </Link>
-                    <CardTitle className="text-sm">
-                      {conversations?.find(c => c.user_id === partnerId)?.username || 'Conversation'}
-                    </CardTitle>
+                <header className="flex h-[72px] shrink-0 items-center border-b border-border px-4 md:px-6">
+                  <Link to="/messages" className="mr-2 md:hidden" aria-label="Revenir aux conversations">
+                    <ArrowLeft className="h-5 w-5" />
+                  </Link>
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-secondary/15 font-semibold text-secondary">
+                      {getInitials(activeConversation?.username || 'Conversation')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="ml-3 min-w-0">
+                    <h2 className="messaging-title truncate text-sm font-semibold text-foreground">
+                      {activeConversation?.username || 'Conversation'}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">Conversation privée</p>
                   </div>
-                </CardHeader>
-                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3" style={{ maxHeight: '50vh' }}>
+                </header>
+
+                <div ref={scrollRef} className="messaging-thread flex-1 space-y-4 overflow-y-auto bg-muted/20 px-4 py-6 md:px-8">
+                  {messages?.length ? (
+                    <div className="flex justify-center pb-1">
+                      <span className="rounded-full border border-border bg-card px-3 py-1 text-[10px] font-medium uppercase text-muted-foreground">Aujourd’hui</span>
+                    </div>
+                  ) : null}
                   {messages?.map(msg => {
                     const isMine = msg.sender_id === user.id;
                     const displayContent = processMessageContent(msg.content, msg.sender_id);
                     return (
-                      <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
-                          isMine
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-foreground'
-                        }`}>
+                      <div key={msg.id} className={`animate-slideIn flex items-end gap-2 ${isMine ? 'justify-end' : 'justify-start'}`}>
+                        {!isMine && (
+                          <Avatar className="h-7 w-7">
+                            <AvatarFallback className="bg-secondary/15 text-[9px] font-semibold text-secondary">
+                              {getInitials(activeConversation?.username || 'Conversation')}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        <div className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm md:max-w-[72%] ${isMine ? 'rounded-br-sm bg-secondary text-secondary-foreground shadow-sm' : 'rounded-bl-sm border border-border bg-card text-card-foreground shadow-sm'}`}>
                           {renderContent(displayContent)}
-                          <p className={`text-[10px] mt-1 ${isMine ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
-                            {new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                          <div className={`mt-1.5 flex items-center justify-end gap-1 text-[10px] ${isMine ? 'text-secondary-foreground/75' : 'text-muted-foreground'}`}>
+                            <span>{new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                            {isMine && <CheckCheck className="h-3 w-3" aria-label="Envoyé" />}
+                          </div>
                         </div>
                       </div>
                     );
                   })}
+                  {!messages?.length && (
+                    <div className="flex h-full min-h-64 flex-col items-center justify-center text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+                        <MessageCircle className="h-6 w-6" />
+                      </div>
+                      <p className="mt-4 text-sm font-medium text-foreground">Commencez la conversation</p>
+                      <p className="mt-1 max-w-xs text-xs text-muted-foreground">Envoyez votre premier message à {activeConversation?.username || 'ce contact'}.</p>
+                    </div>
+                  )}
                 </div>
 
-                {/* Attachment preview */}
                 {attachment && (
-                  <div className="px-3 pt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                    <Paperclip className="h-3 w-3" />
-                    <span className="truncate flex-1">{attachment.name}</span>
-                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachment(null)}>
-                      <X className="h-3 w-3" />
+                  <div className="flex items-center gap-2 border-t border-border bg-muted/20 px-4 pt-3 text-xs text-muted-foreground md:px-6">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary/10 text-secondary">
+                      <Paperclip className="h-4 w-4" />
+                    </div>
+                    <span className="min-w-0 flex-1 truncate">{attachment.name}</span>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setAttachment(null)} aria-label="Retirer la pièce jointe">
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
 
-                <form onSubmit={handleSend} className="p-3 border-t border-border flex gap-2">
+                <form onSubmit={handleSend} className="flex shrink-0 items-center gap-2 border-t border-border bg-card p-3 md:p-5">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -286,32 +371,34 @@ export default function MessagesPage() {
                     onChange={handleFileSelect}
                     accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    value={newMessage}
-                    onChange={e => setNewMessage(e.target.value)}
-                    placeholder="Écrire un message..."
-                    className="flex-1"
-                  />
-                  <Button type="submit" size="icon" disabled={sendMessage.isPending || uploading || (!newMessage.trim() && !attachment)}>
-                    <Send className="h-4 w-4" />
-                  </Button>
+                  <div className="flex min-w-0 flex-1 items-center gap-1 rounded-lg border border-border bg-muted/35 p-1.5 focus-within:border-secondary/50 focus-within:ring-2 focus-within:ring-secondary/10">
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button type="button" variant="ghost" size="icon" className="h-9 w-9 shrink-0 text-muted-foreground hover:text-secondary" onClick={() => fileInputRef.current?.click()} aria-label="Joindre un fichier">
+                            <Paperclip className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Joindre un fichier</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <Input value={newMessage} onChange={event => setNewMessage(event.target.value)} placeholder="Écrire un message…" aria-label="Votre message" className="h-9 min-w-0 flex-1 border-0 bg-transparent px-2 shadow-none focus-visible:ring-0" />
+                    <Button type="submit" size="icon" className="h-9 w-9 shrink-0 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/90" disabled={sendMessage.isPending || uploading || (!newMessage.trim() && !attachment)} aria-label="Envoyer le message">
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </form>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-                <p>Sélectionnez une conversation ou contactez un freelancer depuis le répertoire</p>
+              <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary/10 text-secondary">
+                  <MessageCircle className="h-7 w-7" />
+                </div>
+                <h2 className="messaging-title mt-5 text-lg font-semibold text-foreground">Vos conversations</h2>
+                <p className="mt-2 max-w-sm text-sm text-muted-foreground">Sélectionnez une conversation ou contactez un freelancer depuis le répertoire.</p>
               </div>
             )}
-          </Card>
+          </section>
         </div>
       </main>
       <Footer />
