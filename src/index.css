@@ -343,4 +343,39 @@
   .admin-stat-card:hover::before {
     left: 100%;
   }
+
+  .messaging-page {
+    --background: 150 14% 96%;
+    --foreground: 150 18% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 150 18% 14%;
+    --secondary: 133 66% 24%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 150 13% 94%;
+    --muted-foreground: 150 8% 43%;
+    --border: 145 15% 80%;
+    --input: 145 15% 80%;
+    --ring: 133 66% 24%;
+    background: hsl(var(--background));
+    font-family: 'Figtree', sans-serif;
+  }
+
+  .messaging-title {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .messaging-thread {
+    scrollbar-color: hsl(var(--border)) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .messaging-page *,
+  .messaging-page *::before,
+  .messaging-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
