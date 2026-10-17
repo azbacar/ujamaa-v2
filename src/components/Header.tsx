@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Menu, Globe, User, LogOut, Settings, Shield, MessageCircle, Building2 } from 'lucide-react';
+import { Search, Menu, X, User, LogOut, Settings, Shield, MessageCircle, Building2, Home, DollarSign, Megaphone, Calendar, Landmark, Briefcase, Users, Palmtree, MapPin, Globe2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -186,51 +186,90 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
             )}
 
             {/* Menu mobile */}
-            <div className="lg:hidden relative">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50"
-                onClick={() => setShowMobileMenu(!showMobileMenu)}
+            <div className="lg:hidden">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-11 w-11 rounded-xl border-emerald-200 bg-white/80 hover:bg-emerald-50"
+                onClick={() => setShowMobileMenu(true)}
+                aria-label="Ouvrir le menu"
               >
                 <Menu className="w-5 h-5 text-emerald-600" />
-                <span className="sr-only">Menu</span>
               </Button>
-              
+
               {showMobileMenu && (
-                <div className="absolute right-0 top-14 w-64 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
-                  <nav className="py-2">
-                    <Link to="/prix" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      💰 Prix
-                    </Link>
-                    <Link to="/annonces" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      📢 {t('nav.announcements')}
-                    </Link>
-                    <Link to="/evenements" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      🎭 {t('nav.events')}
-                    </Link>
-                    <Link to="/services" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      🏛️ {t('nav.services')}
-                    </Link>
-                    <Link to="/freelance" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      💼 Missions
-                    </Link>
-                    <Link to="/freelancers" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      👨‍💻 Répertoire Freelancers
-                    </Link>
-                    <Link to="/tourisme" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      🏝️ Tourisme
-                    </Link>
-                    <Link to="/carte-vendeurs" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      📍 Carte des vendeurs
-                    </Link>
-                    <Link to="/investissement" className="block px-4 py-3 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      🌍 Invest
-                    </Link>
-                    <div className="border-t border-gray-100 my-1" />
-                    <Link to="/guide" className="block px-4 py-3 text-emerald-600 hover:bg-emerald-50 font-medium transition-colors" onClick={() => setShowMobileMenu(false)}>
-                      📚 Guide d'utilisation
-                    </Link>
+                <div className="fixed inset-0 z-[60] flex flex-col bg-white">
+                  <div className="flex items-center justify-between border-b border-emerald-100 px-5 py-4">
+                    <span className="text-lg font-bold gradient-text">{settings?.site_name || 'Ujamaan'}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-11 w-11 rounded-xl text-gray-600"
+                      onClick={() => setShowMobileMenu(false)}
+                      aria-label="Fermer le menu"
+                    >
+                      <X className="w-6 h-6" />
+                    </Button>
+                  </div>
+                  <nav className="flex-1 overflow-y-auto px-4 py-4 pb-[env(safe-area-inset-bottom)]">
+                    <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Explorer</p>
+                    <ul className="space-y-1">
+                      {[
+                        { to: '/', label: 'Accueil', icon: Home },
+                        { to: '/prix', label: 'Prix', icon: DollarSign },
+                        { to: '/annonces', label: t('nav.announcements'), icon: Megaphone },
+                        { to: '/evenements', label: t('nav.events'), icon: Calendar },
+                        { to: '/services', label: t('nav.services'), icon: Landmark },
+                        { to: '/carte-vendeurs', label: 'Carte des vendeurs', icon: MapPin },
+                      ].map(({ to, label, icon: Icon }) => (
+                        <li key={to}>
+                          <Link
+                            to={to}
+                            onClick={() => setShowMobileMenu(false)}
+                            className="flex items-center gap-4 rounded-xl px-3 py-3.5 text-base font-medium text-gray-800 active:bg-emerald-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                          >
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                              <Icon className="w-5 h-5" />
+                            </span>
+                            {label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="px-2 pb-2 pt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Professionnel</p>
+                    <ul className="space-y-1">
+                      {[
+                        { to: '/freelance', label: 'Missions freelance', icon: Briefcase },
+                        { to: '/freelancers', label: 'Répertoire Freelancers', icon: Users },
+                        { to: '/tourisme', label: 'Tourisme', icon: Palmtree },
+                        { to: '/investissement', label: 'Invest', icon: Globe2 },
+                      ].map(({ to, label, icon: Icon }) => (
+                        <li key={to}>
+                          <Link
+                            to={to}
+                            onClick={() => setShowMobileMenu(false)}
+                            className="flex items-center gap-4 rounded-xl px-3 py-3.5 text-base font-medium text-gray-800 active:bg-emerald-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                          >
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ocean-50 text-ocean-600">
+                              <Icon className="w-5 h-5" />
+                            </span>
+                            {label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-5 border-t border-gray-100 pt-4">
+                      <Link
+                        to="/guide"
+                        onClick={() => setShowMobileMenu(false)}
+                        className="flex items-center gap-4 rounded-xl px-3 py-3.5 text-base font-semibold text-emerald-700 active:bg-emerald-50 hover:bg-emerald-50 transition-colors"
+                      >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                          <BookOpen className="w-5 h-5" />
+                        </span>
+                        Guide d'utilisation
+                      </Link>
+                    </div>
                   </nav>
                 </div>
               )}
