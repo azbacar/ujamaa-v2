@@ -157,6 +157,8 @@ async function getDynamicSiteData(authHeader: string | null) {
   }
 }
 
+const sourceCache = new Map<string, { text: string; at: number }>();
+
 async function getKnowledgeSources() {
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, serviceRoleKey);
@@ -166,7 +168,29 @@ async function getKnowledgeSources() {
     .select('name, url, description')
     .eq('is_active', true);
   
-  return data || [];
+  const sources = data || [];
+  const withContent = await Promise.all(sources.map(async (src: any) => {
+    const cached = sourceCache.get(src.url);
+    if (cached && Date.now() - cached.at < 30 * 60 * 1000) return { ...src, content: cached.text };
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 5000);
+      const res = await fetch(src.url, { signal: ctrl.signal, headers: { 'User-Agent': 'UjamaanBot/1.0' } });
+      clearTimeout(t);
+      if (!res.ok) return src;
+      const html = await res.text();
+      const text = html
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#039;|&rsquo;/g, "'")
+        .replace(/https?:\/\/\S+/g, '')
+        .replace(/\s+/g, ' ').trim().slice(0, 3000);
+      sourceCache.set(src.url, { text, at: Date.now() });
+      return { ...src, content: text };
+    } catch { return src; }
+  }));
+  return withContent;
 }
 
 async function getConversationHistory(sessionId: string, authHeader: string | null) {
@@ -252,7 +276,7 @@ serve(async (req) => {
         const date = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '';
         const trend = p.trend && p.trend !== 'stable' ? ` [${p.trend === 'up' ? '📈 hausse' : '📉 baisse'}]` : '';
         const location = [p.village, p.city, p.region].filter(Boolean).join(', ');
-        dynamicContent += `- [ID:${p.id}] ${p.product}: ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}, ${location} (${p.market || ''}, vendeur: ${p.vendor || 'n/a'}, catégorie: ${p.category})${trend}${date ? ' — ' + date : ''}\n`;
+        dynamicContent += `- [${p.product}](/prix/${p.id}): ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}, ${location} (${p.market || ''}, vendeur: ${p.vendor || 'n/a'}, catégorie: ${p.category})${trend}${date ? ' — ' + date : ''}\n`;
       });
       dynamicContent += '\n';
     }
@@ -261,7 +285,7 @@ serve(async (req) => {
       dynamicContent += '🎉 ÉVÉNEMENTS À VENIR:\n';
       dynamicData.events.slice(0, 10).forEach(e => {
         const price = e.price && e.price > 0 ? ` — ${e.price} ${e.currency || 'FC'}` : ' — Gratuit';
-        dynamicContent += `- [ID:${e.id}] ${e.title} - ${new Date(e.date).toLocaleDateString('fr-FR')} à ${e.location} (${e.island}) [${e.category}]${price}\n`;
+        dynamicContent += `- [${e.title}](/evenements/${e.id}) - ${new Date(e.date).toLocaleDateString('fr-FR')} à ${e.location} (${e.island}) [${e.category}]${price}\n`;
       });
       dynamicContent += '\n';
     }
@@ -269,7 +293,7 @@ serve(async (req) => {
     if (dynamicData.announcements.length > 0) {
       dynamicContent += '📢 ANNONCES RÉCENTES:\n';
       dynamicData.announcements.slice(0, 8).forEach(a => {
-        dynamicContent += `- [ID:${a.id}] ${a.title} (${a.category || a.type || 'général'})\n`;
+        dynamicContent += `- [${a.title}](/annonces/${a.id}) (${a.category || a.type || 'général'})\n`;
       });
       dynamicContent += '\n';
     }
@@ -279,7 +303,7 @@ serve(async (req) => {
       dynamicData.freelancers.slice(0, 15).forEach((f: any) => {
         const skills = (f.skills || []).slice(0, 5).join(', ');
         const rate = f.hourly_rate_min ? `${f.hourly_rate_min}${f.hourly_rate_max ? '-' + f.hourly_rate_max : '+'} ${f.currency}/h` : '';
-        dynamicContent += `- [ID:${f.id}] ${f.display_name} (${skills})${f.island ? ' - ' + f.island : ''}${f.location ? ', ' + f.location : ''}${rate ? ' - ' + rate : ''}${f.experience_years ? ' - ' + f.experience_years + ' ans exp.' : ''}\n`;
+        dynamicContent += `- [${f.display_name}](/freelancer/${f.id}) (${skills})${f.island ? ' - ' + f.island : ''}${f.location ? ', ' + f.location : ''}${rate ? ' - ' + rate : ''}${f.experience_years ? ' - ' + f.experience_years + ' ans exp.' : ''}\n`;
       });
       dynamicContent += '\n';
     }
@@ -289,7 +313,7 @@ serve(async (req) => {
       dynamicData.investments.forEach((p: any) => {
         const progress = p.target_amount > 0 ? Math.round((p.current_amount / p.target_amount) * 100) : 0;
         const deadline = p.deadline ? new Date(p.deadline).toLocaleDateString('fr-FR') : '';
-        dynamicContent += `- [ID:${p.id}] ${p.title} (${p.category}) - Objectif: ${p.target_amount} ${p.currency} - ${progress}% financé${p.island ? ' - ' + p.island : ''}${p.min_investment ? ' - Min: ' + p.min_investment + ' ' + p.currency : ''}${deadline ? ' - Échéance: ' + deadline : ''}\n`;
+        dynamicContent += `- [${p.title}](/investissement/${p.id}) (${p.category}) - Objectif: ${p.target_amount} ${p.currency} - ${progress}% financé${p.island ? ' - ' + p.island : ''}${p.min_investment ? ' - Min: ' + p.min_investment + ' ' + p.currency : ''}${deadline ? ' - Échéance: ' + deadline : ''}\n`;
       });
       dynamicContent += '\n';
     }
@@ -327,7 +351,7 @@ serve(async (req) => {
       (dynamicData as any).jobs.forEach((j: any) => {
         const budget = j.budget_min ? `${j.budget_min}${j.budget_max ? '-' + j.budget_max : '+'} ${j.currency || 'FC'}` : 'à négocier';
         const skills = (j.skills || []).slice(0, 4).join(', ');
-        dynamicContent += `- [ID:${j.id}] ${j.title} (${j.category || 'général'}) — ${budget}${j.island ? ' - ' + j.island : ''}${j.is_remote ? ' [Remote]' : ''}${skills ? ' — Compétences: ' + skills : ''}\n`;
+        dynamicContent += `- [${j.title}](/freelance/${j.id}) (${j.category || 'général'}) — ${budget}${j.island ? ' - ' + j.island : ''}${j.is_remote ? ' [Remote]' : ''}${skills ? ' — Compétences: ' + skills : ''}\n`;
       });
       dynamicContent += 'Lien: [Voir toutes les missions](/freelance)\n\n';
     }
@@ -337,7 +361,7 @@ serve(async (req) => {
       (dynamicData as any).gastronomy.forEach((g: any) => {
         const price = g.price_min ? ` - ${g.price_min}${g.price_max ? '-' + g.price_max : ''} FC` : '';
         const extra = g.dining_style || g.accommodation_type || '';
-        dynamicContent += `- [ID:${g.id}] ${g.title} (${g.type}${extra ? ', ' + extra : ''})${g.location ? ' - ' + g.location : ''}${price}\n`;
+        dynamicContent += `- [${g.title}](/tourisme) (${g.type}${extra ? ', ' + extra : ''})${g.location ? ' - ' + g.location : ''}${price}\n`;
       });
       dynamicContent += 'Lien: [Voir tourisme & gastronomie](/tourisme)\n\n';
     }
@@ -345,7 +369,7 @@ serve(async (req) => {
     if ((dynamicData as any).tenders && (dynamicData as any).tenders.length > 0) {
       dynamicContent += '📋 APPELS D\'OFFRES PUBLIÉS:\n';
       (dynamicData as any).tenders.forEach((t: any) => {
-        dynamicContent += `- [ID:${t.id}] ${t.title}${t.category ? ' (' + t.category + ')' : ''}\n`;
+        dynamicContent += `- [${t.title}](/appels-offres/${t.id})${t.category ? ' (' + t.category + ')' : ''}\n`;
       });
       dynamicContent += 'Lien: [Voir les appels d\'offres](/appels-offres)\n\n';
     }
@@ -372,8 +396,9 @@ serve(async (req) => {
     if (knowledgeSources.length > 0) {
       knowledgeSection = '\n\n📚 SOURCES DE RÉFÉRENCE AUTORISÉES:\n';
       knowledgeSection += 'Tu peux citer ces sources PAR LEUR NOM quand pertinent, mais tu ne dois JAMAIS afficher leur URL.\n';
-      knowledgeSources.forEach(s => {
-        knowledgeSection += `- "${s.name}" (${s.description || 'source générale'})\n`;
+      knowledgeSources.forEach((s: any) => {
+        knowledgeSection += `\n### Source "${s.name}" (${s.description || 'source générale'})\n`;
+        if (s.content) knowledgeSection += `Contenu extrait:\n${s.content}\n`;
       });
       knowledgeSection += '\nQuand tu cites une source, écris par exemple: "Selon [Nom de la source]..." sans jamais montrer le lien.\n';
     }
@@ -389,13 +414,13 @@ serve(async (req) => {
         searchSection += '💰 Prix correspondants:\n';
         sh.prices.forEach((p: any) => {
           const loc = [p.village, p.city, p.market].filter(Boolean).join(', ');
-          searchSection += `- [ID:${p.id}] ${p.product}: ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}${loc ? ', ' + loc : ''}${p.vendor ? ' (vendeur: ' + p.vendor + ')' : ''}\n`;
+          searchSection += `- [${p.product}](/prix/${p.id}): ${p.price} ${p.currency || 'FC'}/${p.unit} — ${p.island}${loc ? ', ' + loc : ''}${p.vendor ? ' (vendeur: ' + p.vendor + ')' : ''}\n`;
         });
       }
       if (sh.content?.length) {
         searchSection += '\n📄 Contenus correspondants:\n';
         sh.content.forEach((c: any) => {
-          const path = c.type === 'announcement' ? `/annonces/${c.id}` : c.type === 'tender' ? `/appels-offres` : `/${c.type || 'contenu'}/${c.id}`;
+          const path = c.type === 'announcement' ? `/annonces/${c.id}` : c.type === 'tender' ? `/appels-offres/${c.id}` : c.type === 'service' ? `/services/${c.id}` : `/${c.type || 'contenu'}/${c.id}`;
           searchSection += `- [${c.title}](${path}) — ${c.type || 'contenu'}: ${(c.description || '').slice(0, 120)}\n`;
         });
       }
@@ -408,19 +433,19 @@ serve(async (req) => {
       if (sh.gastronomy?.length) {
         searchSection += '\n🍽️ Tourisme/Restos correspondants:\n';
         sh.gastronomy.forEach((g: any) => {
-          searchSection += `- [ID:${g.id}] ${g.title} (${g.type})${g.location ? ' - ' + g.location : ''}${g.price_min ? ' - dès ' + g.price_min + ' FC' : ''}\n`;
+          searchSection += `- [${g.title}](/tourisme) (${g.type})${g.location ? ' - ' + g.location : ''}${g.price_min ? ' - dès ' + g.price_min + ' FC' : ''}\n`;
         });
       }
       if (sh.jobs?.length) {
         searchSection += '\n💼 Missions correspondantes:\n';
         sh.jobs.forEach((j: any) => {
-          searchSection += `- [ID:${j.id}] ${j.title} — ${j.budget_min || '?'}-${j.budget_max || '?'} ${j.currency || 'FC'} (${j.island || 'partout'})\n`;
+          searchSection += `- [${j.title}](/freelance/${j.id}) — ${j.budget_min || '?'}-${j.budget_max || '?'} ${j.currency || 'FC'} (${j.island || 'partout'})\n`;
         });
       }
       if (sh.freelancers?.length) {
         searchSection += '\n👨‍💻 Freelancers correspondants:\n';
         sh.freelancers.forEach((f: any) => {
-          searchSection += `- [ID:${f.id}] ${f.display_name} — ${(f.skills || []).slice(0, 4).join(', ')} (${f.island || 'n/a'})\n`;
+          searchSection += `- [${f.display_name}](/freelancer/${f.id}) — ${(f.skills || []).slice(0, 4).join(', ')} (${f.island || 'n/a'})\n`;
         });
       }
       if (sh.invest?.length) {
@@ -468,10 +493,14 @@ ${knowledgeSection}
 🔗 LIENS DIRECTS — TU DOIS IMPÉRATIVEMENT LIER VERS LES PRODUITS/CONTENUS SPÉCIFIQUES:
 
 Quand tu mentionnes un produit, un événement, un freelancer ou un projet, tu DOIS inclure un lien DIRECT vers ce contenu en utilisant son ID:
-- Prix/Produit → [Voir ce produit](/prix) ← lien vers la page prix avec le produit mentionné
+- Prix/Produit → [Nom du produit](/prix/ID)
 - Événement → [Voir cet événement](/evenements/ID_EVENEMENT)
 - Annonce → [Voir cette annonce](/annonces/ID_ANNONCE)  
-- Freelancer → [Voir le profil](/freelancers) ← vers le répertoire
+- Freelancer → [Nom](/freelancer/ID)
+- Mission freelance → [Titre](/freelance/ID)
+- Appel d'offres → [Titre](/appels-offres/ID)
+
+⭐ Dans les données ci-dessus, CHAQUE élément est DÉJÀ écrit sous forme de lien markdown [Nom](/chemin/id). RECOPIE ce lien tel quel dans ta réponse. N'invente JAMAIS un ID ou un chemin.
 - Projet d'investissement → [Voir ce projet](/investissement/ID_PROJET)
 
 EXEMPLES DE RÉPONSES AVEC LIENS DIRECTS:
@@ -495,7 +524,7 @@ PAGES INTERNES DU SITE:
 - /investissement/:id → Détail d'un projet
 - /pro → Forfaits Pro et Entreprise 👑
 - /entreprise → Tableau de bord entreprise (CRM, factures, comptabilité) 🏢
-- /profil → Mon profil utilisateur 👤
+- /profile → Mon profil utilisateur 👤
 - /messages → Messagerie directe ✉️
 - /auth → Inscription / Connexion 🔐
 - /guide → Guide d'utilisation interactif 📚
@@ -516,7 +545,7 @@ PUBLIER DU CONTENU (requiert le rôle Annonceur):
 
 FORFAIT PRO (5 000 FC/mois):
 - Avantages: alertes prix en temps réel, historique complet, statistiques avancées, badge ✅ vérifié, boost IA, contact direct, support 24/7
-- Paiement: via Mvola (code USSD *444*1*2*4102122*5000*référence#) ou dépôt cash
+- Paiement: via Mvola (code USSD *444*1*5*1*4016886*5000*référence#) ou dépôt cash
 - [Voir les forfaits](/pro)
 
 FORFAIT ENTREPRISE (sur devis):
@@ -525,7 +554,7 @@ FORFAIT ENTREPRISE (sur devis):
 - [En savoir plus](/pro) ou [Accéder à l'espace entreprise](/entreprise)
 
 PAIEMENT PAR MVOLA:
-- Format: *444*1*2*4102122*montant*référence#
+- Format: *444*1*5*1*4016886*montant*référence#
 - Sur mobile: appuyer sur "Payer" → le code s'inscrit directement dans le composeur
 - Sur ordinateur: scanner le QR code avec son téléphone
 - La référence est générée automatiquement (15 caractères max)
@@ -561,7 +590,7 @@ TOURISME & GASTRONOMIE (/tourisme):
 - Filtrer par île et catégorie
 
 🚨 RÈGLES ABSOLUES:
-1. Tu te bases EXCLUSIVEMENT sur les données de la plateforme ujamaan.com listées ci-dessus et les sources de référence autorisées. RIEN D'AUTRE.
+1. Tu te bases EXCLUSIVEMENT sur (a) les données de la plateforme ujamaan.com listées ci-dessus et (b) le contenu extrait des \"SOURCES DE RÉFÉRENCE AUTORISÉES\". N'utilise JAMAIS tes connaissances générales ni Internet pour des faits (prix, noms, dates, chiffres, actualités). Les connaissances générales sur l'archipel ci-dessus sont la seule exception.
 2. Si une information N'EST PAS dans les données ci-dessus, tu dis clairement : "Cette information n'est pas encore disponible sur ujamaan.com" puis tu SUGGÈRES la page la plus pertinente pour que l'utilisateur explore lui-même.
 3. N'INVENTE JAMAIS de prix, de noms, de dates, d'événements ou de freelancers. Utilise UNIQUEMENT les données fournies.
 4. Les SEULS LIENS que tu donnes sont les chemins internes du site. JAMAIS d'URLs externes (pas de https://...).
@@ -601,6 +630,13 @@ TOURISME & GASTRONOMIE (/tourisme):
 - Évite le jargon technique. Donne des exemples concrets quand c'est utile.
 - Tu peux utiliser des expressions naturelles : "tiens", "écoute", "regarde", "voilà", "d'accord", "pas de souci", "avec plaisir".
 
+🎓 INTELLIGENCE DES RÉPONSES:
+- Va droit au but : la réponse exacte en première phrase, puis les détails utiles.
+- Anticipe le besoin suivant (ex : prix → comparer avec une autre île, vendeur le plus proche, moyenne).
+- Synthétise : moyennes, prix le plus bas/haut, tendance, nombre d'offres trouvées.
+- Si la question est ambiguë, donne la meilleure réponse probable PUIS pose UNE question de précision.
+- Chaque élément cité (produit, événement, annonce, freelancer, projet, mission) porte son lien direct cliquable.
+
 🧠 PROCESSUS DE RAISONNEMENT (à appliquer SILENCIEUSEMENT avant de répondre):
 1. **Comprendre l'intention** : Que cherche vraiment l'utilisateur ? (info, action, comparaison, conseil ?)
 2. **Vérifier le contexte** : Y a-t-il des messages précédents qui éclairent la question ?
@@ -612,7 +648,7 @@ TOURISME & GASTRONOMIE (/tourisme):
 🔍 EN CAS D'INFO MANQUANTE:
 - Reconnais-le franchement : "Je n'ai pas trouvé ça précisément dans nos données 😊"
 - MAIS propose toujours une piste : page la plus proche, action à faire, ou demande de précision.
-- Exemple : "Je n'ai pas le prix exact du poisson à Mutsamudu aujourd'hui, mais [voir tous les prix poisson](/prix?q=poisson) ou tu peux signaler un prix toi-même via [Mes prix](/profil)."
+- Exemple : "Je n'ai pas le prix exact du poisson à Mutsamudu aujourd'hui, mais [voir tous les prix poisson](/prix?q=poisson) ou tu peux signaler un prix toi-même via [Mes prix](/profile)."
 ${searchQuery ? `\nL'utilisateur recherche: "${searchQuery}". Aide-le avec les données de la plateforme et donne des liens directs vers les résultats pertinents.` : ''}`;
 
     // Build messages array with history
