@@ -227,52 +227,81 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                     </Button>
                   </div>
                   <nav className="flex-1 overflow-y-auto px-4 py-4 pb-[env(safe-area-inset-bottom)]">
-                    <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Explorer</p>
-                    <ul className="space-y-1">
-                      {[
+                    {(() => {
+                      const exploreItems = [
                         { to: '/', label: 'Accueil', icon: Home },
                         { to: '/prix', label: 'Prix', icon: DollarSign },
                         { to: '/annonces', label: t('nav.announcements'), icon: Megaphone },
                         { to: '/evenements', label: t('nav.events'), icon: Calendar },
                         { to: '/services', label: t('nav.services'), icon: Landmark },
                         { to: '/carte-vendeurs', label: 'Carte des vendeurs', icon: MapPin },
-                      ].map(({ to, label, icon: Icon }) => (
-                        <li key={to}>
-                          <Link
-                            to={to}
-                            onClick={() => setShowMobileMenu(false)}
-                            className="flex items-center gap-4 rounded-xl px-3 py-3.5 text-base font-medium text-gray-800 active:bg-emerald-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
-                          >
-                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                              <Icon className="w-5 h-5" />
-                            </span>
-                            {label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="px-2 pb-2 pt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Professionnel</p>
-                    <ul className="space-y-1">
-                      {[
+                      ];
+                      const proItems = [
                         { to: '/freelance', label: 'Missions freelance', icon: Briefcase },
                         { to: '/freelancers', label: 'Répertoire Freelancers', icon: Users },
                         { to: '/tourisme', label: 'Tourisme', icon: Palmtree },
                         { to: '/investissement', label: 'Invest', icon: Globe2 },
-                      ].map(({ to, label, icon: Icon }) => (
-                        <li key={to}>
-                          <Link
-                            to={to}
-                            onClick={() => setShowMobileMenu(false)}
-                            className="flex items-center gap-4 rounded-xl px-3 py-3.5 text-base font-medium text-gray-800 active:bg-emerald-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
-                          >
-                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ocean-50 text-ocean-600">
-                              <Icon className="w-5 h-5" />
-                            </span>
-                            {label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+                      ];
+                      const allItems = [...exploreItems, ...proItems];
+                      const pinnedItems = shortcuts
+                        .map(to => allItems.find(item => item.to === to))
+                        .filter((item): item is (typeof allItems)[number] => Boolean(item));
+
+                      const renderRow = (item: (typeof allItems)[number], accent: 'emerald' | 'ocean') => {
+                        const Icon = item.icon;
+                        const pinned = shortcuts.includes(item.to);
+                        return (
+                          <li key={item.to} className="flex items-center gap-1">
+                            <Link
+                              to={item.to}
+                              onClick={() => setShowMobileMenu(false)}
+                              className="flex flex-1 items-center gap-4 rounded-xl px-3 py-3.5 text-base font-medium text-gray-800 active:bg-emerald-50 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                            >
+                              <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${accent === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-ocean-50 text-ocean-600'}`}>
+                                <Icon className="w-5 h-5" />
+                              </span>
+                              {item.label}
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => toggleShortcut(item.to)}
+                              aria-label={pinned ? `Retirer ${item.label} des raccourcis` : `Épingler ${item.label} en raccourci`}
+                              aria-pressed={pinned}
+                              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${pinned ? 'text-amber-500' : 'text-gray-300 hover:text-amber-400 active:text-amber-500'}`}
+                            >
+                              <Star className={`w-5 h-5 ${pinned ? 'fill-amber-400' : ''}`} />
+                            </button>
+                          </li>
+                        );
+                      };
+
+                      return (
+                        <>
+                          {pinnedItems.length > 0 && (
+                            <>
+                              <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-amber-600">Mes raccourcis</p>
+                              <ul className="space-y-1 rounded-2xl bg-amber-50/60 p-1.5">
+                                {pinnedItems.map(item => renderRow(item, 'emerald'))}
+                              </ul>
+                              <div className="my-4 border-t border-gray-100" />
+                            </>
+                          )}
+                          <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">Explorer</p>
+                          <ul className="space-y-1">
+                            {exploreItems.map(item => renderRow(item, 'emerald'))}
+                          </ul>
+                          <p className="px-2 pb-2 pt-5 text-xs font-semibold uppercase tracking-wide text-gray-400">Professionnel</p>
+                          <ul className="space-y-1">
+                            {proItems.map(item => renderRow(item, 'ocean'))}
+                          </ul>
+                          {pinnedItems.length === 0 && (
+                            <p className="mt-5 rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-500">
+                              Astuce : touchez l'étoile à droite d'une rubrique pour l'épingler en haut du menu.
+                            </p>
+                          )}
+                        </>
+                      );
+                    })()}
                     <div className="mt-5 border-t border-gray-100 pt-4">
                       <Link
                         to="/guide"
