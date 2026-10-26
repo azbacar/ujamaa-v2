@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Search, Menu, X, User, LogOut, Settings, Shield, MessageCircle, Building2, Home, DollarSign, Megaphone, Calendar, Landmark, Briefcase, Users, Palmtree, MapPin, Globe2, BookOpen } from 'lucide-react';
+import { Search, Menu, X, User, LogOut, Settings, Shield, MessageCircle, Building2, Home, DollarSign, Megaphone, Calendar, Landmark, Briefcase, Users, Palmtree, MapPin, Globe2, BookOpen, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/components/LanguageProvider';
