@@ -27,6 +27,21 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
   const navigate = useNavigate();
   const { settings } = useSiteSettings();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [shortcuts, setShortcuts] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('mobile_nav_shortcuts') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const toggleShortcut = (to: string) => {
+    setShortcuts(prev => {
+      const next = prev.includes(to) ? prev.filter(s => s !== to) : [...prev, to];
+      try { localStorage.setItem('mobile_nav_shortcuts', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
   const [showFullScreenSearch, setShowFullScreenSearch] = useState(false);
   const { data: unreadCount } = useUnreadCount();
 
