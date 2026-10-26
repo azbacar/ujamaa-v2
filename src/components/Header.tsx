@@ -271,7 +271,8 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                       </Link>
                     </div>
                   </nav>
-                </div>
+                </div>,
+                document.body
               )}
             </div>
           </div>
