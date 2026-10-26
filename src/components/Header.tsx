@@ -113,7 +113,7 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/messages')}
-                className="h-10 w-10 rounded-xl text-emerald-600 relative"
+                className="hidden sm:flex h-10 w-10 rounded-xl text-emerald-600 relative"
               >
                 <MessageCircle className="w-5 h-5" />
                 {(unreadCount ?? 0) > 0 && (
