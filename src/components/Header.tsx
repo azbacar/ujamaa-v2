@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Menu, X, User, LogOut, Settings, Shield, MessageCircle, Building2, Home, DollarSign, Megaphone, Calendar, Landmark, Briefcase, Users, Palmtree, MapPin, Globe2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -196,8 +197,8 @@ const Header = ({ currentLanguage, onLanguageChange }: HeaderProps) => {
                 <Menu className="w-5 h-5 text-emerald-600" />
               </Button>
 
-              {showMobileMenu && (
-                <div className="fixed inset-0 z-[60] flex flex-col bg-white">
+              {showMobileMenu && createPortal(
+                <div className="fixed inset-0 z-[60] flex flex-col bg-white lg:hidden">
                   <div className="flex items-center justify-between border-b border-emerald-100 px-5 py-4">
                     <span className="text-lg font-bold gradient-text">{settings?.site_name || 'Ujamaan'}</span>
                     <Button
